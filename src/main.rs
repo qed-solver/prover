@@ -1,51 +1,23 @@
-use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufReader, Read};
 
 use crate::nbe::normalize;
-use crate::nbe::shared::{Env, Predicate, Schema, Tuple, VIndex, VLevel, Value};
-use crate::nbe::syntax::{Table, Term};
+use crate::nbe::syntax::{Payload, Relation};
+use crate::sql::SQL;
 
-mod nbe;
+pub mod nbe;
+pub mod sql;
 
 fn main() {
-	use Term::*;
-	// let ast = Sum(
-	// 	Schema::new(vec![], Some(1), HashMap::new()),
-	// 	Box::new(
-	// 		App(Table::Var(VIndex(1)), Tuple::Var(VIndex(2))) * (One + One)
-	// 			* App(Table::Var(VIndex(1)), Tuple::Var(VIndex(0)))
-	// 	)
-	// ) * Sum(
-	// 	Schema::new(vec![], Some(2), HashMap::new()),
-	// 	Box::new(One)
-	// );
-	let ast = Sum(
-		Schema::new(vec![], Some(1), HashMap::new()),
-		Box::new(Sum(
-			Schema::new(vec![], Some(2), HashMap::new()),
-			Box::new(
-				Pred(Predicate::TupEq(Tuple::Var(VIndex(0)), Tuple::Var(VIndex(2))))
-					* Sum(
-						Schema::new(vec![], Some(3), HashMap::new()),
-						Box::new(
-							Pred(Predicate::ValEq(
-								Value::Attr(Tuple::Var(VIndex(0)), 1),
-								Value::Attr(Tuple::Var(VIndex(2)), 1),
-							)) * Pred(Predicate::ValEq(
-								Value::Attr(Tuple::Var(VIndex(0)), 2),
-								Value::Attr(Tuple::Var(VIndex(2)), 2),
-							)) * App(Table::Var(VIndex(4)), Tuple::Var(VIndex(0))),
-						),
-					) * App(Table::Var(VIndex(3)), Tuple::Var(VIndex(0)))
-					* Pred(Predicate::ValEq(
-						Value::Attr(Tuple::Var(VIndex(1)), 1),
-						Value::Attr(Tuple::Var(VIndex(0)), 1),
-					)) * Pred(Predicate::Rel(">".to_string(), vec![
-					Value::Attr(Tuple::Var(VIndex(1)), 2),
-					Value::Op("2".to_string(), vec![]),
-				])),
-			),
-		)),
-	);
-
-	println!("{:?}", normalize(ast, Env::new(vec![VLevel(0), VLevel(1)])))
+	let file = File::open("input.json").unwrap();
+	let mut buf_reader = BufReader::new(file);
+	let mut contents = String::new();
+	buf_reader.read_to_string(&mut contents).unwrap();
+	let sql: SQL = serde_json::from_str(&contents).unwrap();
+	let Payload(env, r1, r2) = Payload::from(sql);
+	if let (Relation::Lam(_, uexpr1), Relation::Lam(_, uexpr2)) = (r1, r2) {
+		let uexpr1 = normalize(*uexpr1, &env);
+		let uexpr2 = normalize(*uexpr2, &env);
+		println!("Expression 1: {:#?}\nExpression 2: {:#?}", uexpr1, uexpr2);
+	}
 }

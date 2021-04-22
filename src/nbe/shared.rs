@@ -1,21 +1,43 @@
 use std::collections::{HashMap, VecDeque};
-use std::rc::Rc;
+use std::hash::Hash;
 
-use sqlparser::ast::DataType;
+use serde::{Deserialize, Serialize};
 
-#[derive(Copy, Clone, Debug)]
-pub struct VIndex(pub usize);
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct VL(pub usize);
 
-#[derive(Copy, Clone, Debug)]
-pub struct VLevel(pub usize);
-
-#[derive(Debug, Clone, Default)]
-pub struct Env<E> {
-	pub(crate) entries: VecDeque<E>,
+#[derive(Debug, Clone)]
+pub enum Entry {
+	Table(VL, Schema),
+	Value(VL, DataType),
 }
 
-impl<E: Copy> Env<E> {
-	pub fn new(entries: Vec<E>) -> Self {
+impl Entry {
+	pub fn new_value(data: VL, ty: DataType) -> Entry {
+		Entry::Value(data, ty)
+	}
+
+	pub fn new_table(data: VL, schema: Schema) -> Entry {
+		Entry::Table(data, schema)
+	}
+
+	pub fn var(&self) -> VL {
+		match self {
+			Entry::Table(l, _) => *l,
+			Entry::Value(l, _) => *l,
+		}
+	}
+}
+
+/// The environment of some expression, which maps every variable that occurs in the expression to some value.
+#[derive(Debug, Clone, Default)]
+pub struct Env {
+	pub entries: VecDeque<Entry>,
+}
+
+impl Env {
+	pub fn new(entries: Vec<Entry>) -> Self {
 		Env { entries: entries.into() }
 	}
 
@@ -23,68 +45,74 @@ impl<E: Copy> Env<E> {
 		self.entries.len()
 	}
 
-	pub fn get_by_index(&self, index: VIndex) -> E {
-		self.entries[self.size() - index.0 - 1]
+	pub fn get(&self, level: VL) -> &Entry {
+		&self.entries[level.0]
 	}
 
-	pub fn get_by_level(&self, level: VLevel) -> E {
-		self.entries[level.0]
+	pub fn get_var(&self, level: VL) -> VL {
+		self.get(level).var()
 	}
 
-	pub fn add_inner(&mut self, entry: E) {
+	pub fn get_schema(&self, level: VL) -> &Schema {
+		if let Entry::Table(_, schema) = self.get(level) {
+			schema
+		} else {
+			panic!()
+		}
+	}
+
+	pub fn get_type(&self, level: VL) -> &DataType {
+		if let Entry::Value(_, ty) = &self.get(level) {
+			ty
+		} else {
+			panic!()
+		}
+	}
+
+	pub fn introduce(&mut self, entry: Entry) {
 		self.entries.push_back(entry);
 	}
 
-	pub fn add_outer(&mut self, entry: E) {
-		self.entries.push_front(entry);
+	pub fn append(&mut self, entries: Vec<Entry>) {
+		self.entries.extend(entries);
 	}
 }
 
-#[derive(Clone, Debug)]
-pub enum Tuple<V> {
-	Var(V),
-	Proj(V, Vec<usize>),
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Expr {
+	Var(VL),
+	Op(String, Vec<Expr>),
 }
 
-#[derive(Clone, Debug)]
-pub enum Value<V> {
-	Attr(Tuple<V>, usize),
-	Op(String, Vec<Value<V>>),
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Predicate {
+	Eq(Expr, Expr),
+	Pred(String, Vec<Expr>),
+	And(Box<Predicate>, Box<Predicate>),
+	Or(Box<Predicate>, Box<Predicate>),
+	Not(Box<Predicate>),
+	Like(Expr, String),
 }
 
-#[derive(Clone, Debug)]
-pub enum Predicate<V> {
-	TupEq(Tuple<V>, Tuple<V>),
-	ValEq(Value<V>, Value<V>),
-	Rel(String, Vec<Value<V>>),
-	And(Box<Predicate<V>>, Box<Predicate<V>>),
-	Or(Box<Predicate<V>>, Box<Predicate<V>>),
-	Not(Box<Predicate<V>>),
-}
-
-impl Env<VIndex> {
-	pub fn read_tup(&self, tuple: Tuple<VLevel>) -> Tuple<VIndex> {
-		match tuple {
-			Tuple::Var(l) => Tuple::Var(self.get_by_level(l)),
-			Tuple::Proj(l, p) => Tuple::Proj(self.get_by_level(l), p),
-		}
+impl Env {
+	pub fn read_args(&self, args: Vec<VL>) -> Vec<VL> {
+		args.into_iter().map(|arg| self.get_var(arg)).collect()
 	}
 
-	pub fn read_val(&self, value: Value<VLevel>) -> Value<VIndex> {
+	pub fn read_val(&self, value: Expr) -> Expr {
 		match value {
-			Value::Attr(tup, a) => Value::Attr(self.read_tup(tup), a),
-			Value::Op(f, args) => {
-				Value::Op(f, args.into_iter().map(|v| self.read_val(v)).collect())
-			},
+			Expr::Var(l) => Expr::Var(self.get_var(l)),
+			Expr::Op(f, args) => Expr::Op(f, args.into_iter().map(|v| self.read_val(v)).collect()),
 		}
 	}
 
-	pub fn read_pred(&self, pred: Predicate<VLevel>) -> Predicate<VIndex> {
+	pub fn read_pred(&self, pred: Predicate) -> Predicate {
 		match pred {
-			Predicate::TupEq(t1, t2) => Predicate::TupEq(self.read_tup(t1), self.read_tup(t2)),
-			Predicate::ValEq(v1, v2) => Predicate::ValEq(self.read_val(v1), self.read_val(v2)),
-			Predicate::Rel(r, args) => {
-				Predicate::Rel(r, args.into_iter().map(|v| self.read_val(v)).collect())
+			Predicate::Eq(v1, v2) => Predicate::Eq(self.read_val(v1), self.read_val(v2)),
+			Predicate::Pred(r, args) => {
+				Predicate::Pred(r, args.into_iter().map(|v| self.read_val(v)).collect())
 			},
 			Predicate::And(p1, p2) => {
 				Predicate::And(Box::new(self.read_pred(*p1)), Box::new(self.read_pred(*p2)))
@@ -93,38 +121,29 @@ impl Env<VIndex> {
 				Predicate::Or(Box::new(self.read_pred(*p1)), Box::new(self.read_pred(*p2)))
 			},
 			Predicate::Not(p) => Predicate::Not(Box::new(self.read_pred(*p))),
+			Predicate::Like(v, s) => Predicate::Like(self.read_val(v), s),
 		}
 	}
 
-	pub fn transpose(&self) -> Env<VLevel> {
-		let entries = self.entries.iter().map(|VIndex(l)| VLevel(self.size() - l - 1)).collect();
-		Env { entries }
+	pub fn read_sch(&self, schema: Schema) -> Schema {
+		let foreign = schema.foreign.into_iter().map(|(col, t)| (col, self.get_var(t))).collect();
+		Schema { types: schema.types, primary: schema.primary, foreign }
 	}
 }
 
-impl Env<VLevel> {
-	pub fn eval_tup(&self, tuple: Tuple<VIndex>) -> Tuple<VLevel> {
-		match tuple {
-			Tuple::Var(l) => Tuple::Var(self.get_by_index(l)),
-			Tuple::Proj(l, p) => Tuple::Proj(self.get_by_index(l), p),
-		}
-	}
-
-	pub fn eval_val(&self, value: Value<VIndex>) -> Value<VLevel> {
+impl Env {
+	pub fn eval_expr(&self, value: Expr) -> Expr {
 		match value {
-			Value::Attr(tup, a) => Value::Attr(self.eval_tup(tup), a),
-			Value::Op(f, args) => {
-				Value::Op(f, args.into_iter().map(|v| self.eval_val(v)).collect())
-			},
+			Expr::Var(l) => Expr::Var(self.get_var(l)),
+			Expr::Op(f, args) => Expr::Op(f, args.into_iter().map(|v| self.eval_expr(v)).collect()),
 		}
 	}
 
-	pub fn eval_pred(&self, pred: Predicate<VIndex>) -> Predicate<VLevel> {
+	pub fn eval_pred(&self, pred: Predicate) -> Predicate {
 		match pred {
-			Predicate::TupEq(t1, t2) => Predicate::TupEq(self.eval_tup(t1), self.eval_tup(t2)),
-			Predicate::ValEq(v1, v2) => Predicate::ValEq(self.eval_val(v1), self.eval_val(v2)),
-			Predicate::Rel(r, args) => {
-				Predicate::Rel(r, args.into_iter().map(|v| self.eval_val(v)).collect())
+			Predicate::Eq(v1, v2) => Predicate::Eq(self.eval_expr(v1), self.eval_expr(v2)),
+			Predicate::Pred(r, args) => {
+				Predicate::Pred(r, args.into_iter().map(|v| self.eval_expr(v)).collect())
 			},
 			Predicate::And(p1, p2) => {
 				Predicate::And(Box::new(self.eval_pred(*p1)), Box::new(self.eval_pred(*p2)))
@@ -133,28 +152,82 @@ impl Env<VLevel> {
 				Predicate::Or(Box::new(self.eval_pred(*p1)), Box::new(self.eval_pred(*p2)))
 			},
 			Predicate::Not(p) => Predicate::Not(Box::new(self.eval_pred(*p))),
+			Predicate::Like(v, s) => Predicate::Like(self.eval_expr(v), s),
 		}
 	}
 
-	pub fn transpose(&self) -> Env<VIndex> {
-		let entries = self.entries.iter().map(|VLevel(l)| VIndex(self.size() - l - 1)).collect();
-		Env { entries }
+	pub fn eval_sch(&self, schema: Schema) -> Schema {
+		let foreign = schema.foreign.into_iter().map(|(col, t)| (col, self.get_var(t))).collect();
+		Schema { types: schema.types, primary: schema.primary, foreign }
 	}
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Schema {
-	types: Vec<DataType>,
-	key: Option<usize>,
-	foreign_keys: HashMap<usize, Rc<Schema>>,
+	pub types: Vec<String>,
+	pub primary: Option<usize>,
+	pub foreign: HashMap<usize, VL>,
 }
 
 impl Schema {
-	pub fn new(
-		types: Vec<DataType>,
-		key: Option<usize>,
-		foreign_keys: HashMap<usize, Rc<Schema>>,
-	) -> Self {
-		Schema { types, key, foreign_keys }
+	pub fn new(types: Vec<String>, primary: Option<usize>, foreign: HashMap<usize, VL>) -> Self {
+		Schema { types, primary, foreign }
 	}
+}
+
+/// SQL data types (adapted from sqlparser)
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum DataType {
+	/// Fixed-length character type e.g. CHAR(10)
+	Char(Option<u64>),
+	/// Variable-length character type e.g. VARCHAR(10)
+	Varchar(Option<u64>),
+	/// Uuid type
+	Uuid,
+	/// Large character object e.g. CLOB(1000)
+	Clob(u64),
+	/// Fixed-length binary type e.g. BINARY(10)
+	Binary(u64),
+	/// Variable-length binary type e.g. VARBINARY(10)
+	Varbinary(u64),
+	/// Large binary object e.g. BLOB(1000)
+	Blob(u64),
+	/// Decimal type with optional precision and scale e.g. DECIMAL(10,2)
+	Decimal(Option<u64>, Option<u64>),
+	/// Floating point with optional precision e.g. FLOAT(8)
+	Float(Option<u64>),
+	/// Small integer
+	SmallInt,
+	/// Integer
+	Int,
+	/// Big integer
+	BigInt,
+	/// Floating point e.g. REAL
+	Real,
+	/// Double e.g. DOUBLE PRECISION
+	Double,
+	/// Boolean
+	Boolean,
+	/// Date
+	Date,
+	/// Time
+	Time,
+	/// Timestamp
+	Timestamp,
+	/// Interval
+	Interval,
+	/// Regclass used in postgresql serial
+	Regclass,
+	/// Text
+	Text,
+	/// String
+	String,
+	/// Bytea
+	Bytea,
+	/// Custom type such as enums
+	Custom(String),
+	/// Arrays
+	Array(Box<DataType>),
+	/// Any type
+	Any,
 }
