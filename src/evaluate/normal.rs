@@ -4,21 +4,49 @@ use std::ops::{Add, Mul};
 
 use ena::unify::{InPlaceUnificationTable, NoError, UnifyKey, UnifyValue};
 
-use crate::nbe::shared::{DataType, Env, Expr, Predicate, VL};
-use crate::nbe::syntax as syn;
+use crate::evaluate::shared::{DataType, Entry, Env, Expr, Predicate, VL};
+use crate::evaluate::syntax as syn;
 
 #[derive(Clone, Debug)]
 pub struct Closure {
 	pub body: syn::UExpr,
-	pub env: Env,
+	pub env: Env<Entry>,
 }
 
 #[derive(Clone, Debug, Default)]
-pub(crate) struct UExpr(pub Vec<Term>);
+pub struct UExpr(pub Vec<Term>);
 
 impl UExpr {
-	pub(crate) fn into_terms(self) -> impl Iterator<Item = Term> {
+	pub fn into_terms(self) -> impl Iterator<Item = Term> {
 		self.0.into_iter()
+	}
+
+	pub fn one() -> Self {
+		UExpr(vec![Term::default()])
+	}
+
+	pub fn with_term(term: Term) -> Self {
+		UExpr(vec![term])
+	}
+
+	pub fn with_squash<T: Into<Box<UExpr>>>(squash: T) -> Self {
+		UExpr(vec![Term { squash: Some(squash.into()), ..Term::default() }])
+	}
+
+	pub fn with_not<T: Into<Box<UExpr>>>(not: T) -> Self {
+		UExpr(vec![Term { not: Some(not.into()), ..Term::default() }])
+	}
+
+	pub fn with_preds(preds: Vec<Predicate>) -> Self {
+		UExpr(vec![Term { preds, ..Term::default() }])
+	}
+
+	pub fn with_app(table: VL, args: Vec<VL>) -> Self {
+		UExpr(vec![Term { apps: vec![Application { table, args }], ..Term::default() }])
+	}
+
+	pub fn with_sum(types: Vec<DataType>, summand: Closure) -> Self {
+		UExpr(vec![Term { sums: vec![Summation { types, summand }], ..Term::default() }])
 	}
 }
 
@@ -44,7 +72,7 @@ impl Mul for UExpr {
 }
 
 #[derive(Clone, Debug, Default)]
-pub(crate) struct Term {
+pub struct Term {
 	pub preds: Vec<Predicate>,
 	pub squash: Option<Box<UExpr>>,
 	pub not: Option<Box<UExpr>>,
@@ -53,13 +81,13 @@ pub(crate) struct Term {
 }
 
 #[derive(Clone, Debug)]
-pub(crate) struct Summation {
+pub struct Summation {
 	pub types: Vec<DataType>,
 	pub summand: Closure,
 }
 
-#[derive(Clone, Debug)]
-pub(crate) struct Application {
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub struct Application {
 	pub table: VL,
 	pub args: Vec<VL>,
 }
@@ -71,24 +99,14 @@ impl Application {
 }
 
 impl Term {
-	pub fn with_squash<T: Into<Box<UExpr>>>(squash: T) -> Self {
-		Term { squash: Some(squash.into()), ..Term::default() }
-	}
-
-	pub fn with_not<T: Into<Box<UExpr>>>(not: T) -> Self {
-		Term { not: Some(not.into()), ..Term::default() }
-	}
-
-	pub fn with_preds(preds: Vec<Predicate>) -> Self {
-		Term { preds, ..Term::default() }
-	}
-
-	pub fn with_app(table: VL, args: Vec<VL>) -> Self {
-		Term { apps: vec![Application { table, args }], ..Term::default() }
-	}
-
-	pub fn with_sum(types: Vec<DataType>, summand: Closure) -> Self {
-		Term { sums: vec![Summation { types, summand }], ..Term::default() }
+	pub fn extract_equiv(&self) -> EquivClass {
+		let mut equiv = EquivClass::default();
+		for pred in &self.preds {
+			if let Predicate::Eq(e1, e2) = pred {
+				equiv.equate(e1.clone(), e2.clone());
+			}
+		}
+		equiv
 	}
 }
 
@@ -111,12 +129,6 @@ impl Mul for Term {
 		self.sums.extend(rhs.sums);
 		self
 	}
-}
-
-#[derive(Clone, Debug)]
-pub(crate) enum Relation {
-	Var(VL),
-	Lam(Vec<DataType>, Box<UExpr>),
 }
 
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
@@ -147,7 +159,7 @@ impl UnifyValue for Expr {
 }
 
 #[derive(Clone, Debug, Default)]
-pub(crate) struct EquivClass {
+pub struct EquivClass {
 	uni: InPlaceUnificationTable<UniKey>,
 	map: HashMap<Expr, UniKey>,
 }
@@ -179,30 +191,5 @@ impl EquivClass {
 		let map = self.map;
 		let mut uni = self.uni;
 		map.into_iter().map(move |(expr, k)| (expr, uni.probe_value(k)))
-	}
-}
-
-#[derive(Clone, Debug, Default)]
-pub(crate) struct StableTerm {
-	pub preds: Vec<Predicate>,
-	pub equiv: EquivClass,
-	pub squash: Option<Box<UExpr>>,
-	pub not: Option<Box<UExpr>>,
-	pub apps: Vec<Application>,
-	pub scopes: Vec<DataType>,
-}
-
-impl StableTerm {
-	pub fn from(term: Term, scopes: Vec<DataType>) -> Self {
-		let mut equiv = EquivClass::default();
-		let mut preds = Vec::new();
-		for pred in term.preds {
-			if let Predicate::Eq(e1, e2) = pred {
-				equiv.equate(e1, e2);
-			} else {
-				preds.push(pred);
-			}
-		}
-		StableTerm { preds, equiv, squash: term.squash, not: term.not, apps: term.apps, scopes }
 	}
 }

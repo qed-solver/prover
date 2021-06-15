@@ -32,12 +32,12 @@ impl Entry {
 
 /// The environment of some expression, which maps every variable that occurs in the expression to some value.
 #[derive(Debug, Clone, Default)]
-pub struct Env {
-	pub entries: VecDeque<Entry>,
+pub struct Env<E> {
+	pub entries: VecDeque<E>,
 }
 
-impl Env {
-	pub fn new(entries: Vec<Entry>) -> Self {
+impl<E> Env<E> {
+	pub fn new(entries: Vec<E>) -> Self {
 		Env { entries: entries.into() }
 	}
 
@@ -45,10 +45,48 @@ impl Env {
 		self.entries.len()
 	}
 
-	pub fn get(&self, level: VL) -> &Entry {
+	pub fn get(&self, level: VL) -> &E {
 		&self.entries[level.0]
 	}
 
+	pub fn introduce(&mut self, entry: E) {
+		self.entries.push_back(entry);
+	}
+
+	pub fn extend<T: IntoIterator<Item = E>>(&mut self, entries: T) {
+		self.entries.extend(entries);
+	}
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Expr {
+	Var(VL),
+	Op(String, Vec<Expr>),
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Predicate {
+	Eq(Expr, Expr),
+	Pred(String, Vec<Expr>),
+	Like(Expr, String),
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct Schema {
+	pub types: Vec<String>,
+	pub primary: Option<usize>,
+	pub foreign: HashMap<usize, VL>,
+}
+
+impl Schema {
+	pub fn new(types: Vec<String>, primary: Option<usize>, foreign: HashMap<usize, VL>) -> Self {
+		Schema { types, primary, foreign }
+	}
+}
+
+impl Env<Entry> {
 	pub fn get_var(&self, level: VL) -> VL {
 		self.get(level).var()
 	}
@@ -69,69 +107,10 @@ impl Env {
 		}
 	}
 
-	pub fn introduce(&mut self, entry: Entry) {
-		self.entries.push_back(entry);
-	}
-
-	pub fn append(&mut self, entries: Vec<Entry>) {
-		self.entries.extend(entries);
-	}
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Expr {
-	Var(VL),
-	Op(String, Vec<Expr>),
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Predicate {
-	Eq(Expr, Expr),
-	Pred(String, Vec<Expr>),
-	And(Box<Predicate>, Box<Predicate>),
-	Or(Box<Predicate>, Box<Predicate>),
-	Not(Box<Predicate>),
-	Like(Expr, String),
-}
-
-impl Env {
-	pub fn read_args(&self, args: Vec<VL>) -> Vec<VL> {
+	pub fn eval_args(&self, args: Vec<VL>) -> Vec<VL> {
 		args.into_iter().map(|arg| self.get_var(arg)).collect()
 	}
 
-	pub fn read_val(&self, value: Expr) -> Expr {
-		match value {
-			Expr::Var(l) => Expr::Var(self.get_var(l)),
-			Expr::Op(f, args) => Expr::Op(f, args.into_iter().map(|v| self.read_val(v)).collect()),
-		}
-	}
-
-	pub fn read_pred(&self, pred: Predicate) -> Predicate {
-		match pred {
-			Predicate::Eq(v1, v2) => Predicate::Eq(self.read_val(v1), self.read_val(v2)),
-			Predicate::Pred(r, args) => {
-				Predicate::Pred(r, args.into_iter().map(|v| self.read_val(v)).collect())
-			},
-			Predicate::And(p1, p2) => {
-				Predicate::And(Box::new(self.read_pred(*p1)), Box::new(self.read_pred(*p2)))
-			},
-			Predicate::Or(p1, p2) => {
-				Predicate::Or(Box::new(self.read_pred(*p1)), Box::new(self.read_pred(*p2)))
-			},
-			Predicate::Not(p) => Predicate::Not(Box::new(self.read_pred(*p))),
-			Predicate::Like(v, s) => Predicate::Like(self.read_val(v), s),
-		}
-	}
-
-	pub fn read_sch(&self, schema: Schema) -> Schema {
-		let foreign = schema.foreign.into_iter().map(|(col, t)| (col, self.get_var(t))).collect();
-		Schema { types: schema.types, primary: schema.primary, foreign }
-	}
-}
-
-impl Env {
 	pub fn eval_expr(&self, value: Expr) -> Expr {
 		match value {
 			Expr::Var(l) => Expr::Var(self.get_var(l)),
@@ -145,13 +124,6 @@ impl Env {
 			Predicate::Pred(r, args) => {
 				Predicate::Pred(r, args.into_iter().map(|v| self.eval_expr(v)).collect())
 			},
-			Predicate::And(p1, p2) => {
-				Predicate::And(Box::new(self.eval_pred(*p1)), Box::new(self.eval_pred(*p2)))
-			},
-			Predicate::Or(p1, p2) => {
-				Predicate::Or(Box::new(self.eval_pred(*p1)), Box::new(self.eval_pred(*p2)))
-			},
-			Predicate::Not(p) => Predicate::Not(Box::new(self.eval_pred(*p))),
 			Predicate::Like(v, s) => Predicate::Like(self.eval_expr(v), s),
 		}
 	}
@@ -159,19 +131,6 @@ impl Env {
 	pub fn eval_sch(&self, schema: Schema) -> Schema {
 		let foreign = schema.foreign.into_iter().map(|(col, t)| (col, self.get_var(t))).collect();
 		Schema { types: schema.types, primary: schema.primary, foreign }
-	}
-}
-
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct Schema {
-	pub types: Vec<String>,
-	pub primary: Option<usize>,
-	pub foreign: HashMap<usize, VL>,
-}
-
-impl Schema {
-	pub fn new(types: Vec<String>, primary: Option<usize>, foreign: HashMap<usize, VL>) -> Self {
-		Schema { types, primary, foreign }
 	}
 }
 
