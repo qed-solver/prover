@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::evaluate::shared;
 use crate::evaluate::shared::{DataType, Entry, Env, Schema, VL};
-use crate::evaluate::syntax::{Payload, Relation, UExpr};
+use crate::evaluate::syntax::{Relation, UExpr};
+use crate::solver::Payload;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SQL {
@@ -72,12 +73,12 @@ impl Predicate {
 			Or(p1, p2) => {
 				UExpr::Squash(Box::new(p1.shift_var(schemas, level) + p2.shift_var(schemas, level)))
 			},
-			Not(p) => UExpr::Not(Box::new(p.shift_var(schemas, level))),
+			Not(p) => !p.shift_var(schemas, level),
 			Like(e, pattern) => UExpr::Pred(shared::Predicate::Like(e.shift_var(level), pattern)),
 			Exists(t) => {
 				let rel = parse(*t, schemas, level);
 				let (types, body) = extract(rel, schemas, level);
-				UExpr::Sum(types, Box::new(body))
+				UExpr::Squash(Box::new(UExpr::Sum(types, Box::new(body))))
 			},
 		}
 	}

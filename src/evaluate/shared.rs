@@ -53,8 +53,16 @@ impl<E> Env<E> {
 		self.entries.push_back(entry);
 	}
 
-	pub fn extend<T: IntoIterator<Item = E>>(&mut self, entries: T) {
-		self.entries.extend(entries);
+	pub fn extend<T: IntoIterator<Item = E>>(&mut self, entries_iter: T) {
+		self.entries.extend(entries_iter);
+	}
+}
+
+impl<E: Clone> Env<E> {
+	pub fn append<T: IntoIterator<Item = E>>(&self, entries_iter: T) -> Env<E> {
+		let mut entries = self.entries.clone();
+		entries.extend(entries_iter);
+		Env { entries }
 	}
 }
 
@@ -78,12 +86,6 @@ pub struct Schema {
 	pub types: Vec<String>,
 	pub primary: Option<usize>,
 	pub foreign: HashMap<usize, VL>,
-}
-
-impl Schema {
-	pub fn new(types: Vec<String>, primary: Option<usize>, foreign: HashMap<usize, VL>) -> Self {
-		Schema { types, primary, foreign }
-	}
 }
 
 impl Env<Entry> {
@@ -135,7 +137,7 @@ impl Env<Entry> {
 }
 
 /// SQL data types (adapted from sqlparser)
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum DataType {
 	/// Fixed-length character type e.g. CHAR(10)
 	Char(Option<u64>),

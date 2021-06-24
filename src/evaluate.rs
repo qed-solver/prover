@@ -73,7 +73,6 @@ fn stabilize(uexp: nom::UExpr, env: &Env<Entry>) -> stb::UExpr {
 				})
 				.collect();
 			let not = term.not.map(|e| Box::new(stabilize(*e, &new_env)));
-			// TODO: Handle squash expressions better
 			let squash = term.squash.map(|e| Box::new(stabilize(flatten_squash(*e), &new_env)));
 			stb::Term::new(preds, squash, not, apps, scopes)
 		})

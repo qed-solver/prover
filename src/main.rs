@@ -3,12 +3,13 @@ use std::io::{BufReader, Read};
 use std::path::Path;
 use std::{fs, io};
 
-use crate::evaluate::syntax::Payload;
+use crate::solver::Payload;
 use crate::sql::SQL;
 
-pub mod evaluate;
-pub mod sql;
-pub mod unify;
+mod evaluate;
+mod sql;
+mod unify;
+mod solver;
 
 fn visit<P: AsRef<Path>>(dir: P, cb: &dyn Fn(&Path)) -> io::Result<()> {
 	let path = dir.as_ref();

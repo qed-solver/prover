@@ -1,8 +1,6 @@
 use std::ops::{Add, AddAssign, Mul, MulAssign, Not};
 
-use crate::evaluate::evaluate;
-use crate::evaluate::shared::{DataType, Entry, Env, Predicate, VL};
-use crate::unify::unify;
+use crate::evaluate::shared::{DataType, Predicate, VL};
 
 /// An expression that evaluates to a U-semiring value.
 /// This include all constants and operation defined over the U-semiring,
@@ -82,27 +80,4 @@ impl Not for UExpr {
 pub enum Relation {
 	Var(VL),
 	Lam(Vec<DataType>, Box<UExpr>),
-}
-
-/// The collection of all data in a request.
-/// We need to check the equivalence of the two relations under the given environment.
-#[derive(Clone, Debug)]
-pub struct Payload(pub Env<Entry>, pub Relation, pub Relation);
-
-impl Payload {
-	pub fn check(self) -> bool {
-		let Payload(mut env, r1, r2) = self;
-		match (r1, r2) {
-			(Relation::Lam(tys1, uexpr1), Relation::Lam(tys2, uexpr2)) if tys1 == tys2 => {
-				let level = env.size();
-				for (i, ty) in tys1.into_iter().enumerate() {
-					env.introduce(Entry::Value(VL(level + i), ty))
-				}
-				// println!("{:?}\n{:?}", evaluate(uexpr1.as_ref().clone(), &env), evaluate(uexpr2.as_ref().clone(), &env));
-				unify(&evaluate(*uexpr1, &env), &evaluate(*uexpr2, &env), &env)
-			},
-			(Relation::Var(v1), Relation::Var(v2)) => v1 == v2,
-			_ => false,
-		}
-	}
 }
