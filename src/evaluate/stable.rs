@@ -1,6 +1,7 @@
-use crate::evaluate::normal::{Application, EquivClass};
+use crate::evaluate::normal::Application;
 use crate::evaluate::shared::{DataType, Predicate};
 
+// SUM(v1 v2..., [p] * R(a, b) * |..|)
 #[derive(Clone, Debug, Default)]
 pub struct Term {
 	pub preds: Vec<Predicate>,
@@ -20,26 +21,7 @@ impl Term {
 	) -> Self {
 		Term { preds, squash, not, apps, scopes }
 	}
-
-	pub fn extract_equiv(&mut self) -> EquivClass {
-		let mut equiv = EquivClass::default();
-		self.preds.retain(|pred| {
-			if let Predicate::Eq(e1, e2) = pred {
-				equiv.equate(e1.clone(), e2.clone());
-				false
-			} else {
-				true
-			}
-		});
-		equiv
-	}
 }
 
 #[derive(Clone, Debug, Default)]
 pub struct UExpr(pub Vec<Term>);
-
-impl UExpr {
-	pub fn terms_mut(&mut self) -> impl Iterator<Item = &mut Term> {
-		self.0.iter_mut()
-	}
-}

@@ -80,6 +80,12 @@ pub struct Term {
 	pub sums: Vec<Summation>,
 }
 
+// a * b * SUM(c + d)
+// a * b * SUM(c) + a * b * SUM(d)
+
+// SUM(a, c) * SUM(b, d)
+// SUM(a b, c * d)
+
 #[derive(Clone, Debug)]
 pub struct Summation {
 	pub types: Vec<DataType>,

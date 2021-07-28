@@ -3,13 +3,13 @@ use std::io::{BufReader, Read};
 use std::path::Path;
 use std::{fs, io};
 
+use crate::relation::Input;
 use crate::solver::Payload;
-use crate::sql::SQL;
 
 mod evaluate;
-mod sql;
-mod unify;
+mod relation;
 mod solver;
+mod unify;
 
 fn visit<P: AsRef<Path>>(dir: P, cb: &dyn Fn(&Path)) -> io::Result<()> {
 	let path = dir.as_ref();
@@ -28,18 +28,29 @@ fn visit<P: AsRef<Path>>(dir: P, cb: &dyn Fn(&Path)) -> io::Result<()> {
 }
 
 fn main() {
-	visit("tests", &|path| {
-		let file = File::open(&path).unwrap();
-		let mut buf_reader = BufReader::new(file);
-		let mut contents = String::new();
-		buf_reader.read_to_string(&mut contents).unwrap();
-		let sql: SQL = serde_json::from_str(&contents).unwrap();
-		let payload = Payload::from(sql);
-		println!(
-			"Equivalence is {}provable for {}",
-			if payload.check() { "" } else { "not " },
-			path.file_name().unwrap().to_str().unwrap()
-		);
-	})
-	.unwrap();
+	for arg in std::env::args() {
+		visit(arg, &|path| {
+			let file = File::open(&path).unwrap();
+			let mut buf_reader = BufReader::new(file);
+			let mut contents = String::new();
+			println!("\n{}", path.to_str().unwrap());
+			buf_reader.read_to_string(&mut contents).unwrap();
+			let result = std::panic::catch_unwind(|| match serde_json::from_str::<Input>(&contents) {
+				Ok(rel) => {
+					let payload = Payload::from(rel);
+					println!(
+						"Equivalence is {}provable for {}",
+						if payload.check() { "" } else { "not " },
+						path.file_name().unwrap().to_str().unwrap()
+					);
+				},
+				Err(e) => {
+					println!("Not successfully parsed.\n{}", e);
+				},
+			});
+			if let Err(r) = result {
+				eprintln!("{:?}", r);
+			}
+		});
+	}
 }

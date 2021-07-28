@@ -1,5 +1,6 @@
 use std::collections::{HashMap, VecDeque};
 use std::hash::Hash;
+use std::iter::FromIterator;
 
 use serde::{Deserialize, Serialize};
 
@@ -14,18 +15,26 @@ pub enum Entry {
 }
 
 impl Entry {
-	pub fn new_value(data: VL, ty: DataType) -> Entry {
-		Entry::Value(data, ty)
-	}
-
-	pub fn new_table(data: VL, schema: Schema) -> Entry {
-		Entry::Table(data, schema)
-	}
-
 	pub fn var(&self) -> VL {
 		match self {
 			Entry::Table(l, _) => *l,
 			Entry::Value(l, _) => *l,
+		}
+	}
+
+	pub fn sch(&self) -> Schema {
+		if let Entry::Table(_, sch) = self {
+			sch.clone()
+		} else {
+			panic!()
+		}
+	}
+
+	pub fn ty(&self) -> DataType {
+		if let Entry::Value(_, ty) = self {
+			ty.clone()
+		} else {
+			panic!()
 		}
 	}
 }
@@ -37,8 +46,12 @@ pub struct Env<E> {
 }
 
 impl<E> Env<E> {
-	pub fn new(entries: Vec<E>) -> Self {
-		Env { entries: entries.into() }
+	pub fn empty() -> Self {
+		Env { entries: VecDeque::new() }
+	}
+
+	pub fn new<T: IntoIterator<Item = E>>(entries: T) -> Self {
+		Env { entries: VecDeque::from_iter(entries) }
 	}
 
 	pub fn size(&self) -> usize {
@@ -53,8 +66,8 @@ impl<E> Env<E> {
 		self.entries.push_back(entry);
 	}
 
-	pub fn extend<T: IntoIterator<Item = E>>(&mut self, entries_iter: T) {
-		self.entries.extend(entries_iter);
+	pub fn extend<T: IntoIterator<Item = E>>(&mut self, entries: T) {
+		self.entries.extend(entries);
 	}
 }
 
@@ -73,40 +86,29 @@ pub enum Expr {
 	Op(String, Vec<Expr>),
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Predicate {
 	Eq(Expr, Expr),
 	Pred(String, Vec<Expr>),
 	Like(Expr, String),
+	Null(Expr),
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Schema {
-	pub types: Vec<String>,
+	pub types: Vec<DataType>,
+	#[serde(skip)] // TODO: Multiple primary keys
+	#[serde(rename = "primary_key")]
 	pub primary: Option<usize>,
+	#[serde(skip)] // TODO: Multiple primary keys
+	#[serde(rename = "foreign_key")]
 	pub foreign: HashMap<usize, VL>,
 }
 
 impl Env<Entry> {
 	pub fn get_var(&self, level: VL) -> VL {
 		self.get(level).var()
-	}
-
-	pub fn get_schema(&self, level: VL) -> &Schema {
-		if let Entry::Table(_, schema) = self.get(level) {
-			schema
-		} else {
-			panic!()
-		}
-	}
-
-	pub fn get_type(&self, level: VL) -> &DataType {
-		if let Entry::Value(_, ty) = &self.get(level) {
-			ty
-		} else {
-			panic!()
-		}
 	}
 
 	pub fn eval_args(&self, args: Vec<VL>) -> Vec<VL> {
@@ -127,17 +129,14 @@ impl Env<Entry> {
 				Predicate::Pred(r, args.into_iter().map(|v| self.eval_expr(v)).collect())
 			},
 			Predicate::Like(v, s) => Predicate::Like(self.eval_expr(v), s),
+			Predicate::Null(v) => Predicate::Null(self.eval_expr(v)),
 		}
-	}
-
-	pub fn eval_sch(&self, schema: Schema) -> Schema {
-		let foreign = schema.foreign.into_iter().map(|(col, t)| (col, self.get_var(t))).collect();
-		Schema { types: schema.types, primary: schema.primary, foreign }
 	}
 }
 
 /// SQL data types (adapted from sqlparser)
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
 pub enum DataType {
 	/// Fixed-length character type e.g. CHAR(10)
 	Char(Option<u64>),
@@ -190,5 +189,6 @@ pub enum DataType {
 	/// Arrays
 	Array(Box<DataType>),
 	/// Any type
+	#[serde(other)]
 	Any,
 }

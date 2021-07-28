@@ -31,13 +31,13 @@ fn normalize(term: syn::UExpr, env: &Env<Entry>) -> nom::UExpr {
 fn apply(table: Relation, args: Vec<VL>, env: &Env<Entry>) -> nom::UExpr {
 	match table {
 		Relation::Var(l) => nom::UExpr::with_app(env.get_var(l), env.eval_args(args)),
-		Relation::Lam(scheme, body) => {
-			// TODO: Type checking
-			let mut env = env.clone();
-			for arg in args {
-				env.introduce(env.get(arg).clone());
-			}
-			normalize(*body, &env)
+		Relation::Lam(types, body) => {
+			let entries = args.into_iter().zip(types).map(|(v, ty)| {
+				let entry = env.get(v);
+				assert_eq!(entry.ty(), ty);
+				entry.clone()
+			});
+			normalize(*body, &env.append(entries))
 		},
 	}
 }
@@ -85,18 +85,15 @@ fn full_reduce(
 	mut scopes: Vec<DataType>,
 	level: usize,
 ) -> Vec<(nom::Term, Vec<DataType>)> {
-	if let Some(Summation { types, summand: Closure { body, env: mut sum_env } }) = term.sums.pop()
-	{
+	if let Some(Summation { types, summand: Closure { body, mut env } }) = term.sums.pop() {
 		scopes.extend(types.clone());
-		let vars: Vec<_> = types
-			.iter()
-			.enumerate()
-			.map(|(i, ty)| Entry::Value(VL(i + level), ty.clone()))
-			.collect();
-		sum_env.extend(vars);
-		(nom::UExpr(vec![term]) * normalize(body, &sum_env))
+		let next_level = level + types.len();
+		let vars: Vec<_> =
+			(level..next_level).zip(types).map(|(l, ty)| Entry::Value(VL(l), ty)).collect();
+		env.extend(vars);
+		(nom::UExpr(vec![term]) * normalize(body, &env))
 			.into_terms()
-			.flat_map(|t| full_reduce(t, scopes.clone(), level + types.len()))
+			.flat_map(|t| full_reduce(t, scopes.clone(), next_level))
 			.collect()
 	} else {
 		vec![(term, scopes)]
@@ -104,9 +101,9 @@ fn full_reduce(
 }
 
 fn chase(app: Application, term: &mut nom::Term, scopes: &mut Vec<DataType>, env: &Env<Entry>) {
-	let schema = env.get_schema(app.table);
+	let schema = env.get(app.table).sch();
 	for (&col, &tab) in &schema.foreign {
-		let dest_schema = env.get_schema(tab);
+		let dest_schema = env.get(tab).sch();
 		let primary_col = dest_schema.primary.unwrap();
 		let types = vec![DataType::Any; dest_schema.types.len()];
 		let level = env.size() + scopes.len();
@@ -127,8 +124,8 @@ fn merge_keys(term: &mut nom::Term, env: &Env<Entry>, equiv: &mut EquivClass) {
 		while j < term.apps.len() {
 			let Application { table: t2, args: args2 } = term.apps[j].clone();
 			if t1 == t2 {
-				let e1 = env.get_schema(t1).primary.map(|c1| Expr::Var(args1[c1]));
-				let e2 = env.get_schema(t2).primary.map(|c2| Expr::Var(args2[c2]));
+				let e1 = env.get(t1).sch().primary.map(|c1| Expr::Var(args1[c1]));
+				let e2 = env.get(t2).sch().primary.map(|c2| Expr::Var(args2[c2]));
 				if let (Some(c1), Some(c2)) = (e1, e2) {
 					if equiv.equal(&c1, &c2) {
 						args1.iter().zip(args2.iter()).for_each(|(&a1, &a2)| {

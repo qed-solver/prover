@@ -144,16 +144,12 @@ fn trans_squashed<'a>(ctx: &'a Context, exp: &stable::UExpr, env: &Env<Dynamic<'
 pub fn unify(exp1: &stable::UExpr, exp2: &stable::UExpr, env: &Env<Entry>) -> bool {
 	let cfg = Config::new();
 	let ctx = Context::new(&cfg);
-	let env = Env::new(
-		env.entries
-			.iter()
-			.map(|entry| match entry {
-				Entry::Value(v, ty) => Int::fresh_const(&ctx, "v").into(),
-				Entry::Table(v, sch) => Int::from_i64(&ctx, 0).into(),
-			})
-			.collect(),
-	);
+	let env = Env::new(env.entries.iter().map(|entry| match entry {
+		Entry::Value(v, ty) => Int::fresh_const(&ctx, "v").into(),
+		Entry::Table(v, sch) => Int::from_i64(&ctx, 0).into(),
+	}));
 	let solver = Solver::new(&ctx);
+	println!("{:?}\n{:?}", exp1, exp2);
 	unify_impl(&solver, exp1, exp2, &env, &env)
 }
 
@@ -238,6 +234,9 @@ fn unify_term(
 	let vars = perm1.apply_slice(vars1.as_slice());
 	let env1 = env1.append(vars1);
 	perms(t1.scopes.clone(), vars.clone()).any(|vars2| {
+		println!("{:?}", vars2);
+		solver.push();
+		defer!(solver.pop(1));
 		let env2 = env2.append(vars2);
 		let preds1 = trans_preds(ctx, &t1.preds, &env1);
 		let preds2 = trans_preds(ctx, &t2.preds, &env2);
