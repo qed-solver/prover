@@ -1,11 +1,25 @@
+use std::fmt::{Debug, Display, Formatter, Write};
 use std::ops::{Add, AddAssign, Mul, MulAssign, Not};
 
-use crate::evaluate::shared::{DataType, Env, Predicate, Schema, VL};
+use indenter::indented;
+use itertools::Itertools;
+
+use crate::evaluate::shared;
+use crate::evaluate::shared::{DataType, VL};
+
+/// A relation in the U-semiring formalism is a function that maps a tuple to a U-semiring value.
+/// It can be represented as a variable for an unknown relation, or encoded as a lambda function
+/// when having the explict definition.
+/// Here the lambda term uses a vector of data types to bind every components of the input tuple.
+/// That is, each component is treated as a unique variable that might appear in the function body.
+pub type Relation = shared::Relation<UExpr>;
+pub type Predicate = shared::Predicate<UExpr>;
+pub type Expr = shared::Expr<UExpr>;
 
 /// An expression that evaluates to a U-semiring value.
 /// This include all constants and operation defined over the U-semiring,
 /// as well as the result of a predicate and application of a relation with some arguments.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum UExpr {
 	Zero,
 	One,
@@ -33,6 +47,28 @@ impl UExpr {
 
 	pub fn squash<T: Into<Box<UExpr>>>(body: T) -> Self {
 		UExpr::Squash(body.into())
+	}
+}
+
+impl Display for UExpr {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		match self {
+			UExpr::Zero => write!(f, "0"),
+			UExpr::One => write!(f, "1"),
+			UExpr::Add(u1, u2) => write!(f, "({} + {})", u1, u2),
+			UExpr::Mul(u1, u2) => write!(f, "({} × {})", u1, u2),
+			UExpr::Squash(u) => write!(f, "‖{}‖", u),
+			UExpr::Not(u) => write!(f, "not({})", u),
+			UExpr::Sum(types, body) => {
+				writeln!(f, "∑ {:?} {{", types)?;
+				writeln!(indented(f).with_str("\t"), "{}", body)?;
+				write!(f, "}}")
+			},
+			UExpr::Pred(pred) => write!(f, "⟦{}⟧", pred),
+			UExpr::App(rel, args) => {
+				write!(f, "{}({})", rel, args.iter().map(|arg| format!("{}", arg)).join(", "))
+			},
+		}
 	}
 }
 
@@ -78,29 +114,5 @@ impl Not for UExpr {
 
 	fn not(self) -> Self::Output {
 		UExpr::Not(self.into())
-	}
-}
-
-/// A relation in the U-semiring formalism is a function that maps a tuple to a U-semiring value.
-/// It can be represented as a variable for an unknown relation, or encoded as a lambda function
-/// when having the explict definition.
-/// Here the lambda term uses a vector of data types to bind every components of the input tuple.
-/// That is, each component is treated as a unique variable that might appear in the function body.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Relation {
-	Var(VL),
-	Lam(Vec<DataType>, Box<UExpr>),
-}
-
-impl Relation {
-	pub fn lam<T: Into<Box<UExpr>>>(types: Vec<DataType>, body: T) -> Self {
-		Relation::Lam(types, body.into())
-	}
-
-	pub fn types(&self, schemas: &Env<Schema>) -> Vec<DataType> {
-		match self {
-			Relation::Var(table) => schemas.get(*table).types.clone(),
-			Relation::Lam(types, _) => types.clone(),
-		}
 	}
 }

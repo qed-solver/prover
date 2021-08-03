@@ -1,5 +1,5 @@
 use crate::evaluate::evaluate;
-use crate::evaluate::shared::{Entry, Env, VL};
+use crate::evaluate::shared::{Entry, Env};
 use crate::evaluate::syntax::Relation;
 use crate::unify::unify;
 
@@ -10,17 +10,7 @@ pub struct Payload(pub Env<Entry>, pub Relation, pub Relation);
 
 impl Payload {
 	pub fn check(self) -> bool {
-		let Payload(mut env, r1, r2) = self;
-		match (r1, r2) {
-			(Relation::Lam(tys1, uexpr1), Relation::Lam(tys2, uexpr2)) if tys1 == tys2 => {
-				let level = env.size();
-				for (i, ty) in tys1.into_iter().enumerate() {
-					env.introduce(Entry::Value(VL(level + i), ty))
-				}
-				unify(&evaluate(*uexpr1, &env), &evaluate(*uexpr2, &env), &env)
-			},
-			(Relation::Var(v1), Relation::Var(v2)) => v1 == v2,
-			_ => false,
-		}
+		let Payload(ref env, r1, r2) = self;
+		unify(&evaluate(r1, env), &evaluate(r2, env), env)
 	}
 }

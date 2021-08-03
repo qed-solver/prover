@@ -1,7 +1,9 @@
 use std::fs::File;
-use std::io::{BufReader, Read};
+use std::io::{Write, BufReader, Read};
 use std::path::Path;
 use std::{fs, io};
+
+use env_logger::{Builder, Env};
 
 use crate::relation::Input;
 use crate::solver::Payload;
@@ -27,7 +29,10 @@ fn visit<P: AsRef<Path>>(dir: P, cb: &dyn Fn(&Path)) -> io::Result<()> {
 	Ok(())
 }
 
-fn main() {
+fn main() -> io::Result<()> {
+	Builder::from_env(Env::default().default_filter_or("off"))
+		.format(|buf, record| writeln!(buf, "{}", record.args()))
+		.init();
 	for arg in std::env::args() {
 		visit(arg, &|path| {
 			let file = File::open(&path).unwrap();
@@ -35,22 +40,24 @@ fn main() {
 			let mut contents = String::new();
 			println!("\n{}", path.to_str().unwrap());
 			buf_reader.read_to_string(&mut contents).unwrap();
-			let result = std::panic::catch_unwind(|| match serde_json::from_str::<Input>(&contents) {
-				Ok(rel) => {
-					let payload = Payload::from(rel);
-					println!(
-						"Equivalence is {}provable for {}",
-						if payload.check() { "" } else { "not " },
-						path.file_name().unwrap().to_str().unwrap()
-					);
-				},
-				Err(e) => {
-					println!("Not successfully parsed.\n{}", e);
-				},
-			});
+			let result =
+				std::panic::catch_unwind(|| match serde_json::from_str::<Input>(&contents) {
+					Ok(rel) => {
+						let payload = Payload::from(rel);
+						println!(
+							"Equivalence is {}provable for {}",
+							if payload.check() { "" } else { "not " },
+							path.file_name().unwrap().to_str().unwrap()
+						);
+					},
+					Err(e) => {
+						log::error!("Not successfully parsed.\n{}", e);
+					},
+				});
 			if let Err(r) = result {
-				eprintln!("{:?}", r);
+				log::error!("{:?}", r);
 			}
-		});
+		})?;
 	}
+	Ok(())
 }

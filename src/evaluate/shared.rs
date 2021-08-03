@@ -1,14 +1,23 @@
 use std::collections::{HashMap, VecDeque};
+use std::fmt::{Debug, Display, Formatter, Write};
 use std::hash::Hash;
 use std::iter::FromIterator;
 
+use indenter::indented;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct VL(pub usize);
 
-#[derive(Debug, Clone)]
+impl Display for VL {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		write!(f, "${}", self.0)
+	}
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Entry {
 	Table(VL, Schema),
 	Value(VL, DataType),
@@ -40,18 +49,21 @@ impl Entry {
 }
 
 /// The environment of some expression, which maps every variable that occurs in the expression to some value.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Ord, PartialOrd, Eq, PartialEq)]
 pub struct Env<E> {
 	pub entries: VecDeque<E>,
+	pub level: usize,
 }
 
 impl<E> Env<E> {
 	pub fn empty() -> Self {
-		Env { entries: VecDeque::new() }
+		Env { entries: VecDeque::new(), level: 0 }
 	}
 
 	pub fn new<T: IntoIterator<Item = E>>(entries: T) -> Self {
-		Env { entries: VecDeque::from_iter(entries) }
+		let entries = VecDeque::from_iter(entries);
+		let level = entries.len();
+		Env { entries, level }
 	}
 
 	pub fn size(&self) -> usize {
@@ -66,8 +78,9 @@ impl<E> Env<E> {
 		self.entries.push_back(entry);
 	}
 
-	pub fn extend<T: IntoIterator<Item = E>>(&mut self, entries: T) {
-		self.entries.extend(entries);
+	pub fn shift_to(mut self, level: usize) -> Self {
+		self.level = level;
+		self
 	}
 }
 
@@ -75,35 +88,8 @@ impl<E: Clone> Env<E> {
 	pub fn append<T: IntoIterator<Item = E>>(&self, entries_iter: T) -> Env<E> {
 		let mut entries = self.entries.clone();
 		entries.extend(entries_iter);
-		Env { entries }
+		Env { entries, level: self.level }
 	}
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Expr {
-	Var(VL),
-	Op(String, Vec<Expr>),
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Predicate {
-	Eq(Expr, Expr),
-	Pred(String, Vec<Expr>),
-	Like(Expr, String),
-	Null(Expr),
-}
-
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct Schema {
-	pub types: Vec<DataType>,
-	#[serde(skip)] // TODO: Multiple primary keys
-	#[serde(rename = "primary_key")]
-	pub primary: Option<usize>,
-	#[serde(skip)] // TODO: Multiple primary keys
-	#[serde(rename = "foreign_key")]
-	pub foreign: HashMap<usize, VL>,
 }
 
 impl Env<Entry> {
@@ -115,21 +101,144 @@ impl Env<Entry> {
 		args.into_iter().map(|arg| self.get_var(arg)).collect()
 	}
 
-	pub fn eval_expr(&self, value: Expr) -> Expr {
-		match value {
-			Expr::Var(l) => Expr::Var(self.get_var(l)),
-			Expr::Op(f, args) => Expr::Op(f, args.into_iter().map(|v| self.eval_expr(v)).collect()),
+	pub fn append_vars(&self, types: Vec<DataType>) -> Env<Entry> {
+		let level = self.level + types.len();
+		let mut entries = self.entries.clone();
+		entries.extend(
+			types.into_iter().enumerate().map(|(l, ty)| Entry::Value(VL(self.level + l), ty)),
+		);
+		Env { entries, level }
+	}
+}
+
+#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub enum Expr<U> {
+	Var(VL),
+	Op(String, Vec<Expr<U>>),
+	Agg(String, Box<Relation<U>>),
+}
+
+impl<U: Display> Display for Expr<U> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Expr::Var(v) => write!(f, "{}", v),
+			Expr::Op(op, args) if args.is_empty() => write!(f, "\"{}\"", op),
+			Expr::Op(op, args) => {
+				write!(f, "{}({})", op, args.iter().map(|arg| format!("{}", arg)).join(", "))
+			},
+			Expr::Agg(op, arg) => write!(f, "{}{}", op, arg),
 		}
 	}
+}
 
-	pub fn eval_pred(&self, pred: Predicate) -> Predicate {
-		match pred {
-			Predicate::Eq(v1, v2) => Predicate::Eq(self.eval_expr(v1), self.eval_expr(v2)),
-			Predicate::Pred(r, args) => {
-				Predicate::Pred(r, args.into_iter().map(|v| self.eval_expr(v)).collect())
+#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub enum Predicate<U> {
+	Eq(Expr<U>, Expr<U>),
+	Pred(String, Vec<Expr<U>>),
+	Like(Expr<U>, String),
+	Null(Expr<U>),
+}
+
+impl<U: Display> Display for Predicate<U> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Predicate::Eq(e1, e2) => write!(f, "{} = {}", e1, e2),
+			Predicate::Pred(p, args) => match p.as_str() {
+				"<" | ">" | "<=" | ">=" => write!(f, "{} {} {}", args[0], p, args[1]),
+				_ => {
+					write!(f, "{}({})", p, args.iter().map(|arg| format!("{}", arg)).join(", "))
+				},
 			},
-			Predicate::Like(v, s) => Predicate::Like(self.eval_expr(v), s),
-			Predicate::Null(v) => Predicate::Null(self.eval_expr(v)),
+			Predicate::Like(e, pat) => write!(f, "Like({}, {})", e, pat),
+			Predicate::Null(e) => write!(f, "Null({})", e),
+		}
+	}
+}
+
+#[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub struct Schema {
+	pub types: Vec<DataType>,
+	#[serde(skip)] // TODO: Multiple primary keys
+	#[serde(rename = "primary_key")]
+	pub primary: Option<usize>,
+	#[serde(skip)]
+	#[serde(rename = "foreign_key")]
+	pub foreign: HashMap<usize, VL>,
+}
+
+pub trait Eval {
+	type Output;
+
+	fn eval(self, env: &Env<Entry>) -> Self::Output;
+}
+
+impl<U: Eval> Eval for Predicate<U> {
+	type Output = Predicate<U::Output>;
+
+	fn eval(self, env: &Env<Entry>) -> Self::Output {
+		use Predicate::*;
+		match self {
+			Eq(v1, v2) => Eq(v1.eval(env), v2.eval(env)),
+			Pred(r, args) => Pred(r, args.into_iter().map(|v| v.eval(env)).collect()),
+			Like(v, s) => Like(v.eval(env), s),
+			Null(v) => Null(v.eval(env)),
+		}
+	}
+}
+
+impl<U: Eval> Eval for Expr<U> {
+	type Output = Expr<U::Output>;
+
+	fn eval(self, env: &Env<Entry>) -> Self::Output {
+		use Expr::*;
+		match self {
+			Var(l) => Var(env.get_var(l)),
+			Op(f, args) => Op(f, args.into_iter().map(|v| v.eval(env)).collect()),
+			Agg(f, arg) => Agg(f, Box::new(arg.eval(env))),
+		}
+	}
+}
+
+impl<U: Eval> Eval for Relation<U> {
+	type Output = Relation<U::Output>;
+
+	fn eval(self, env: &Env<Entry>) -> Self::Output {
+		use Relation::*;
+		match self {
+			Var(l) => Var(env.get_var(l)),
+			Lam(types, body) => Relation::lam(types.clone(), body.eval(&env.append_vars(types))),
+		}
+	}
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub enum Relation<U> {
+	Var(VL),
+	Lam(Vec<DataType>, Box<U>),
+}
+
+impl<U> Relation<U> {
+	pub fn lam<T: Into<Box<U>>>(types: Vec<DataType>, body: T) -> Self {
+		Relation::Lam(types, body.into())
+	}
+
+	pub fn types(&self, schemas: &Env<Schema>) -> Vec<DataType> {
+		match self {
+			Relation::Var(table) => schemas.get(*table).types.clone(),
+			Relation::Lam(types, _) => types.clone(),
+		}
+	}
+}
+
+impl<U: Display> Display for Relation<U> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Relation::Var(table) => write!(f, "#{}", table.0),
+			Relation::Lam(types, body) => {
+				writeln!(f, "(λ {:?}", types)?;
+				writeln!(indented(f).with_str("\t"), "{}", body)?;
+				write!(f, ")")
+			},
 		}
 	}
 }
@@ -159,6 +268,7 @@ pub enum DataType {
 	/// Small integer
 	SmallInt,
 	/// Integer
+	#[serde(alias="INTEGER")]
 	Int,
 	/// Big integer
 	BigInt,
@@ -191,4 +301,32 @@ pub enum DataType {
 	/// Any type
 	#[serde(other)]
 	Any,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct Application {
+	pub table: VL,
+	pub args: Vec<VL>,
+}
+
+impl Application {
+	pub fn new(table: VL, args: Vec<VL>) -> Self {
+		Application { table, args }
+	}
+}
+
+impl Display for Application {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}({})", self.table, self.args.iter().map(|arg| format!("{}", arg)).join(", "))
+	}
+}
+
+impl Eval for Application {
+	type Output = Application;
+
+	fn eval(mut self, env: &Env<Entry>) -> Self::Output {
+		self.table = env.get_var(self.table);
+		self.args.iter_mut().for_each(|a| *a = env.get_var(*a));
+		self
+	}
 }

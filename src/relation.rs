@@ -11,19 +11,20 @@ use crate::solver::Payload;
 pub struct Input {
 	schemas: Vec<Schema>,
 	queries: (Relation, Relation),
+	help: (String, String),
 }
 
 impl From<Input> for Payload {
 	fn from(input: Input) -> Self {
-		let Input { schemas, queries: (r1, r2) } = input;
+		let Input { schemas, queries: (r1, r2), help } = input;
 		let env = Env::new(
 			schemas.clone().into_iter().enumerate().map(|(i, schema)| Entry::Table(VL(i), schema)),
 		);
 		let schemas = &Env::new(schemas);
-		println!("{:?}\n{:?}", r1, r2);
+		log::info!("Schemas:\n{:?}", schemas.entries);
+		log::info!("Input:\n{}\n{}", help.0, help.1);
 		let r1 = r1.eval(&Env::empty(), schemas, schemas.size());
 		let r2 = r2.eval(&Env::empty(), schemas, schemas.size());
-		println!("{:?}\n{:?}", r1, r2);
 		Payload(env, r1, r2)
 	}
 }
@@ -62,6 +63,11 @@ pub enum Relation {
 	Values {
 		schema: Vec<DataType>,
 		content: Vec<Vec<Expr>>,
+	},
+	Aggregate {
+		#[serde(rename = "function")]
+		columns: Vec<(Expr, DataType)>,
+		source: Box<Relation>,
 	},
 }
 
@@ -128,10 +134,10 @@ impl Relation {
 				let left_miss = || miss(*left, left_level..body_level, left_types) * right_body;
 				let types = types.clone();
 				match kind {
-					JoinKind::INNER => Rel::lam(types, matching),
-					JoinKind::LEFT => Rel::lam(types, matching + right_miss()),
-					JoinKind::RIGHT => Rel::lam(types, matching + left_miss()),
-					JoinKind::FULL => Rel::lam(types, matching + left_miss() + right_miss()),
+					JoinKind::Inner => Rel::lam(types, matching),
+					JoinKind::Left => Rel::lam(types, matching + right_miss()),
+					JoinKind::Right => Rel::lam(types, matching + left_miss()),
+					JoinKind::Full => Rel::lam(types, matching + left_miss() + right_miss()),
 				}
 			},
 			Correlate(left, right) => {
@@ -178,11 +184,24 @@ impl Relation {
 					.fold(UExpr::Zero, UExpr::add);
 				Rel::lam(schema, body)
 			},
+			Aggregate { columns, source } => {
+				let new_level = level + columns.len();
+				let (source_types, _) = source.clone().split(env, schemas, new_level);
+				let (aggs, types): (Vec<_>, Vec<_>) = columns.into_iter().unzip();
+				let new_body = aggs
+					.into_iter()
+					.enumerate()
+					.map(|(i, agg)| {
+						UExpr::Pred(Pred::Eq(Var(VL(level + i)), agg.eval_agg(*source.clone(), env, schemas, new_level)))
+					})
+					.fold(UExpr::One, UExpr::mul);
+				Rel::lam(types, UExpr::sum(source_types, new_body))
+			},
 		}
 	}
 
 	fn split(self, env: &Env<VL>, schemas: &Env<Schema>, level: usize) -> (Vec<DataType>, UExpr) {
-		use syntax::Relation::*;
+		use shared::Relation::*;
 		match self.eval(env, schemas, level) {
 			Var(l) => {
 				let types = schemas.get(l).types.clone();
@@ -205,16 +224,18 @@ impl Relation {
 			Union(rel1, _) | Except(rel1, _) => rel1.arity(schemas),
 			Distinct(rel) => rel.arity(schemas),
 			Values { schema, .. } => schema.len(),
+			Aggregate { columns, .. } => columns.len(),
 		}
 	}
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
 pub enum JoinKind {
-	INNER,
-	LEFT,
-	RIGHT,
-	FULL,
+	Inner,
+	Left,
+	Right,
+	Full,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -230,16 +251,29 @@ pub enum Expr {
 		#[serde(rename = "operand")]
 		args: Vec<Expr>,
 	},
-	Agg(String, Box<Relation>),
 }
 
 impl Expr {
-	fn eval(self, env: &Env<VL>, level: usize) -> shared::Expr {
+	fn eval(self, env: &Env<VL>, level: usize) -> syntax::Expr {
 		use shared::Expr::*;
 		match self {
 			Expr::Col { column } => Var(*env.get(column)),
 			Expr::Op { op, args } => Op(op, args.into_iter().map(|e| e.eval(env, level)).collect()),
-			Expr::Agg(op, rel) => todo!(),
+		}
+	}
+
+	fn eval_agg(self, source: Relation, env: &Env<VL>, schemas: &Env<Schema>, level: usize) -> syntax::Expr {
+		use shared::Expr::*;
+		if let Expr::Op { op, args } = self {
+			match op.as_str() {
+				"COUNT" if args.is_empty() => Agg(op, Box::new(source.eval(env, schemas, level))),
+				_ => Agg(op, Box::new(Relation::Project {
+					columns: args.into_iter().map(|arg| (arg, DataType::Any)).collect(),
+					source: Box::new(source),
+				}.eval(env, schemas, level))),
+			}
+		} else {
+			panic!()
 		}
 	}
 
@@ -257,6 +291,9 @@ impl Expr {
 				"OR" => {
 					Or(Box::new(args[0].clone().into_pred()), Box::new(args[1].clone().into_pred()))
 				},
+				"NOT" => Not(Box::new(args[0].clone().into_pred())),
+				"IS NULL" => Null(args[0].clone()),
+				"IS NOT NULL" => Not(Box::new(Null(args[0].clone()))),
 				op => Pred(op.to_string(), args),
 			}
 		} else {

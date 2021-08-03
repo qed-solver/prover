@@ -1,21 +1,31 @@
 use itertools::{Either, Itertools};
 use scopeguard::defer;
-use z3::ast::*;
+use z3::ast::{Dynamic, Int, Ast, Bool, Real, exists_const, String as Str};
 use z3::*;
 
-use crate::evaluate::normal::Application;
-use crate::evaluate::shared::{Entry, Env, Expr, Predicate};
+use crate::evaluate::shared::{Application, Entry, Env, DataType};
 use crate::evaluate::stable;
+use crate::evaluate::stable::{Expr, Predicate, Relation};
+use crate::unify::null::Nullable;
+use std::collections::HashMap;
 
-fn trans_expr<'a>(ctx: &'a Context, expr: Expr, env: &Env<Dynamic<'a>>) -> Int<'a> {
+type Agg = (String, Relation);
+
+fn trans_expr<'a>(ctx: &'a Context, expr: Expr, env: &Env<Dynamic<'a>>, aggs: &mut HashMap<Agg, Dynamic<'a>>) -> Dynamic<'a> {
 	match expr {
-		Expr::Var(v) => env.get(v).as_int().unwrap(),
+		Expr::Var(v) => env.get(v).clone(),
 		Expr::Op(op, args) => {
 			if args.is_empty() {
-				let num = op.parse().unwrap();
-				Int::from_i64(ctx, num)
+				if let Ok(num) = op.parse() {
+					Int::from_i64(ctx, num).into()
+				} else {
+					Str::from_str(ctx, op.as_str()).unwrap().into()
+				}
 			} else {
-				let args: Vec<_> = args.into_iter().map(|arg| trans_expr(ctx, arg, env)).collect();
+				if op == "CAST" {
+					return trans_expr(ctx, args[0].clone(), env, aggs);
+				}
+				let args: Vec<_> = args.into_iter().map(|arg| trans_expr(ctx, arg, env, aggs).as_int().unwrap()).collect();
 				match op.as_str() {
 					"+" => Int::add(ctx, args.iter().collect::<Vec<_>>().as_slice()),
 					"-" => Int::sub(ctx, args.iter().collect::<Vec<_>>().as_slice()),
@@ -33,23 +43,30 @@ fn trans_expr<'a>(ctx: &'a Context, expr: Expr, env: &Env<Dynamic<'a>>) -> Int<'
 						);
 						f.apply(args.iter().collect::<Vec<_>>().as_slice()).as_int().unwrap()
 					},
-				}
+				}.into()
 			}
+		},
+		Expr::Agg(f, arg) => {
+			// TODO: Correct type of fresh var
+			aggs.entry((f, *arg)).or_insert_with(|| Int::fresh_const(ctx, "a").into()).clone()
 		},
 	}
 }
 
-fn trans_pred<'a>(ctx: &'a Context, pred: Predicate, env: &Env<Dynamic<'a>>) -> Bool<'a> {
+fn trans_pred<'a>(ctx: &'a Context, pred: Predicate, env: &Env<Dynamic<'a>>, aggs: &mut HashMap<Agg, Dynamic<'a>>) -> Bool<'a> {
 	match pred {
-		Predicate::Eq(e1, e2) => trans_expr(ctx, e1, env)._eq(&trans_expr(ctx, e2, env)),
+		Predicate::Eq(e1, e2) => trans_expr(ctx, e1, env, aggs)._eq(&trans_expr(ctx, e2, env, aggs)),
 		Predicate::Pred(pred, args) => {
-			let args: Vec<_> = args.into_iter().map(|arg| trans_expr(ctx, arg, env)).collect();
+			if pred == "=" {
+				let args: Vec<_> = args.into_iter().map(|arg| trans_expr(ctx, arg, env, aggs)).collect();
+				return args[0]._eq(&args[1]);
+			}
+			let args: Vec<_> = args.into_iter().map(|arg| trans_expr(ctx, arg, env, aggs).as_int().unwrap()).collect();
 			match pred.as_str() {
 				">" => args[0].gt(&args[1]),
 				"<" => args[0].lt(&args[1]),
 				">=" => args[0].ge(&args[1]),
 				"<=" => args[0].le(&args[1]),
-				"=" => args[0]._eq(&args[1]),
 				pred => {
 					let domain: Vec<_> = args.iter().map(|_| Sort::int(ctx)).collect();
 					let args: Vec<_> = args.iter().map(|int| Dynamic::from_ast(int)).collect();
@@ -67,8 +84,8 @@ fn trans_pred<'a>(ctx: &'a Context, pred: Predicate, env: &Env<Dynamic<'a>>) -> 
 	}
 }
 
-fn trans_preds<'a>(ctx: &'a Context, preds: &[Predicate], env: &Env<Dynamic<'a>>) -> Bool<'a> {
-	let preds: Vec<_> = preds.iter().map(|pred| trans_pred(ctx, pred.clone(), env)).collect();
+fn trans_preds<'a>(ctx: &'a Context, preds: &[Predicate], env: &Env<Dynamic<'a>>, aggs: &mut HashMap<Agg, Dynamic<'a>>) -> Bool<'a> {
+	let preds: Vec<_> = preds.iter().map(|pred| trans_pred(ctx, pred.clone(), env, aggs)).collect();
 	Bool::and(ctx, &preds.iter().collect::<Vec<_>>())
 }
 
@@ -122,38 +139,45 @@ fn trans_squashed_term<'a>(
 	ctx: &'a Context,
 	term: &stable::Term,
 	env: &Env<Dynamic<'a>>,
+	aggs: &mut HashMap<Agg, Dynamic<'a>>,
 ) -> Bool<'a> {
 	let vars = term.scopes.iter().map(|ty| Int::fresh_const(ctx, "v").into()).collect_vec();
-	let env = env.append(vars.clone());
-	let preds = trans_preds(ctx, &term.preds, &env);
-	let apps = trans_apps_squashed(ctx, &term.apps, &env);
+	let env = &env.append(vars.clone());
+	let preds = trans_preds(ctx, &term.preds, env, aggs);
+	let apps = trans_apps_squashed(ctx, &term.apps, env);
 	let not = term
 		.not
 		.as_ref()
-		.map_or(Bool::from_bool(ctx, true), |n| trans_squashed(ctx, n, &env).not());
+		.map_or(Bool::from_bool(ctx, true), |n| trans_squashed(ctx, n, env, aggs).not());
 	let body = Bool::and(ctx, &[&preds, &apps, &not]);
 	exists_const(ctx, &vars.iter().collect_vec(), &[], &body).as_bool().unwrap()
 }
 
-fn trans_squashed<'a>(ctx: &'a Context, exp: &stable::UExpr, env: &Env<Dynamic<'a>>) -> Bool<'a> {
+fn trans_squashed<'a>(ctx: &'a Context, exp: &stable::UExpr, env: &Env<Dynamic<'a>>, aggs: &mut HashMap<Agg, Dynamic<'a>>) -> Bool<'a> {
 	let terms =
-		exp.0.iter().enumerate().map(|(i, term)| trans_squashed_term(ctx, term, env)).collect_vec();
+		exp.0.iter().enumerate().map(|(i, term)| trans_squashed_term(ctx, term, env, aggs)).collect_vec();
 	Bool::or(ctx, &terms.iter().collect_vec())
 }
 
-pub fn unify(exp1: &stable::UExpr, exp2: &stable::UExpr, env: &Env<Entry>) -> bool {
-	let cfg = Config::new();
-	let ctx = Context::new(&cfg);
-	let env = Env::new(env.entries.iter().map(|entry| match entry {
-		Entry::Value(v, ty) => Int::fresh_const(&ctx, "v").into(),
-		Entry::Table(v, sch) => Int::from_i64(&ctx, 0).into(),
-	}));
-	let solver = Solver::new(&ctx);
-	println!("{:?}\n{:?}", exp1, exp2);
-	unify_impl(&solver, exp1, exp2, &env, &env)
+pub fn unify(rel1: &stable::Relation, rel2: &stable::Relation, env: &Env<Entry>) -> bool {
+	match (rel1, rel2) {
+		(Relation::Lam(tys1, uexpr1), Relation::Lam(tys2, uexpr2)) if tys1 == tys2 => {
+			let env = &env.append_vars(tys1.clone());
+			let cfg = Config::new();
+			let ctx = Context::new(&cfg);
+			let env = Env::new(env.entries.iter().map(|entry| match entry {
+				Entry::Value(v, ty) => Int::fresh_const(&ctx, "v").into(),
+				Entry::Table(v, sch) => Int::from_i64(&ctx, 0).into(),
+			}));
+			let solver = Solver::new(&ctx);
+			unify_uexpr(&solver, uexpr1, uexpr2, &env, &env)
+		},
+		(Relation::Var(v1), Relation::Var(v2)) => v1 == v2,
+		_ => false,
+	}
 }
 
-fn unify_impl(
+fn unify_uexpr(
 	solver: &Solver,
 	exp1: &stable::UExpr,
 	exp2: &stable::UExpr,
@@ -230,42 +254,49 @@ fn unify_term(
 	}
 	let perm1 = permutation::sort(t1.scopes.as_slice());
 	let ctx = solver.get_context();
-	let vars1 = t1.scopes.iter().map(|ty| Int::fresh_const(ctx, "v").into()).collect_vec();
+	let vars1 = t1.scopes.iter().map(|ty| {
+		use DataType::*;
+		match ty {
+			DataType::Boolean => Bool::fresh_const(ctx, "v").into(),
+			Text | String => z3::ast::Int::fresh_const(ctx, "v").into(),
+			_ => z3::ast::Int::fresh_const(ctx, "v").into(),
+		}
+	}).collect_vec();
 	let vars = perm1.apply_slice(vars1.as_slice());
-	let env1 = env1.append(vars1);
-	perms(t1.scopes.clone(), vars.clone()).any(|vars2| {
-		println!("{:?}", vars2);
-		solver.push();
-		defer!(solver.pop(1));
-		let env2 = env2.append(vars2);
-		let preds1 = trans_preds(ctx, &t1.preds, &env1);
-		let preds2 = trans_preds(ctx, &t2.preds, &env2);
-		let preds_equiv = preds1.iff(&preds2);
-		let apps1 = trans_apps(ctx, &t1.apps, &env1);
-		let apps2 = trans_apps(ctx, &t2.apps, &env2);
+	let env1 = &env1.append(vars1);
+	perms(t1.scopes.clone(), vars.clone()).take(10).any(|vars2| {
+		log::info!("Permutation: {:?}", vars2);
+		let aggs = &mut HashMap::new();
+		let env2 = &env2.append(vars2);
+		let preds1 = trans_preds(ctx, &t1.preds, env1, aggs);
+		let preds2 = trans_preds(ctx, &t2.preds, env2, aggs);
+		let apps1 = trans_apps(ctx, &t1.apps, env1);
+		let apps2 = trans_apps(ctx, &t2.apps, env2);
 		let apps_equiv = apps1._eq(&apps2);
-		let equiv = Bool::and(ctx, &[&preds_equiv, &apps_equiv]);
-		if solver.check_assumptions(&[equiv.not()]) == SatResult::Unsat {
-			solver.assert(&equiv);
-		} else {
-			return false;
-		}
-		match (&t1.squash, &t2.squash) {
-			(Some(s1), Some(s2)) => {
-				let sq1 = trans_squashed(ctx, &s1, &env1);
-				let sq2 = trans_squashed(ctx, &s2, &env2);
-				if solver.check_assumptions(&[sq1.iff(&sq2).not()]) != SatResult::Unsat {
-					return false;
-				}
-			},
-			(None, None) => (),
-			_ => return false,
-		}
-		match (&t1.not, &t2.not) {
-			(Some(n1), Some(n2)) if unify_impl(solver, n1, n2, &env1, &env2) => (),
-			(None, None) => (),
-			_ => return false,
-		}
-		true
+		let squash1 = t1.squash.as_ref().map_or(Bool::from_bool(ctx, true), |sq| trans_squashed(ctx, sq, env1, aggs));
+		let squash2 = t2.squash.as_ref().map_or(Bool::from_bool(ctx, true), |sq| trans_squashed(ctx, sq, env2, aggs));
+		let not1 = t1.not.as_ref().map_or(Bool::from_bool(ctx, true), |n| trans_squashed(ctx, n, env1, aggs).not());
+		let not2 = t2.not.as_ref().map_or(Bool::from_bool(ctx, true), |n| trans_squashed(ctx, n, env2, aggs).not());
+		let logic1 = Bool::and(ctx, &[&preds1, &squash1, &not1]);
+		let logic2 = Bool::and(ctx, &[&preds2, &squash2, &not2]);
+		let equiv = Bool::and(ctx, &[&logic1.iff(&logic2), &apps_equiv]);
+		log::info!("{}", equiv);
+		solver.check_assumptions(&[equiv.not()]) == SatResult::Unsat
 	})
 }
+
+struct SolverContext<'ctx> {
+	solver: Solver<'ctx>,
+	null_int: Nullable<'ctx, Int<'ctx>>,
+	null_real: Nullable<'ctx, Real<'ctx>>,
+}
+
+impl<'ctx> SolverContext<'ctx> {
+	pub fn new(solver: Solver<'ctx>) -> Self {
+		let null_int = Nullable::<Int>::setup(&solver);
+		let null_real = Nullable::<Real>::setup(&solver);
+		SolverContext { solver, null_int, null_real }
+	}
+}
+
+mod null;
