@@ -1,8 +1,9 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter, Write};
 use std::hash::Hash;
 use std::iter::FromIterator;
 
+use im::Vector;
 use indenter::indented;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
@@ -26,8 +27,7 @@ pub enum Entry {
 impl Entry {
 	pub fn var(&self) -> VL {
 		match self {
-			Entry::Table(l, _) => *l,
-			Entry::Value(l, _) => *l,
+			Entry::Table(l, _) | Entry::Value(l, _) => *l,
 		}
 	}
 
@@ -49,19 +49,19 @@ impl Entry {
 }
 
 /// The environment of some expression, which maps every variable that occurs in the expression to some value.
-#[derive(Debug, Clone, Default, Ord, PartialOrd, Eq, PartialEq)]
-pub struct Env<E> {
-	pub entries: VecDeque<E>,
+#[derive(Debug, Clone, Default, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub struct Env<E: Clone> {
+	pub entries: Vector<E>,
 	pub level: usize,
 }
 
-impl<E> Env<E> {
+impl<E: Clone> Env<E> {
 	pub fn empty() -> Self {
-		Env { entries: VecDeque::new(), level: 0 }
+		Env { entries: Vector::new(), level: 0 }
 	}
 
 	pub fn new<T: IntoIterator<Item = E>>(entries: T) -> Self {
-		let entries = VecDeque::from_iter(entries);
+		let entries = Vector::from_iter(entries);
 		let level = entries.len();
 		Env { entries, level }
 	}
@@ -77,11 +77,6 @@ impl<E> Env<E> {
 	pub fn introduce(&mut self, entry: E) {
 		self.entries.push_back(entry);
 	}
-
-	pub fn shift_to(mut self, level: usize) -> Self {
-		self.level = level;
-		self
-	}
 }
 
 impl<E: Clone> Env<E> {
@@ -90,6 +85,17 @@ impl<E: Clone> Env<E> {
 		entries.extend(entries_iter);
 		Env { entries, level: self.level }
 	}
+
+	pub fn shift_to(&self, level: usize) -> Self {
+		Env { entries: self.entries.clone(), level }
+	}
+
+	pub fn shift(&self, amount: usize) -> (Self, Vector<VL>) {
+		(
+			Env { entries: self.entries.clone(), level: self.level + amount },
+			(0..amount).map(move |l| VL(self.level + l)).collect(),
+		)
+	}
 }
 
 impl Env<Entry> {
@@ -97,25 +103,26 @@ impl Env<Entry> {
 		self.get(level).var()
 	}
 
-	pub fn eval_args(&self, args: Vec<VL>) -> Vec<VL> {
+	pub fn eval_args(&self, args: Vector<VL>) -> Vector<VL> {
 		args.into_iter().map(|arg| self.get_var(arg)).collect()
 	}
 
-	pub fn append_vars(&self, types: Vec<DataType>) -> Env<Entry> {
-		let level = self.level + types.len();
-		let mut entries = self.entries.clone();
-		entries.extend(
+	pub fn extend(&self, types: impl IntoIterator<Item = DataType>) -> Env<Entry> {
+		let new_entries = Vector::from_iter(
 			types.into_iter().enumerate().map(|(l, ty)| Entry::Value(VL(self.level + l), ty)),
 		);
+		let level = self.level + new_entries.len();
+		let mut entries = self.entries.clone();
+		entries.append(new_entries);
 		Env { entries, level }
 	}
 }
 
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub enum Expr<U> {
+pub enum Expr<R> {
 	Var(VL),
-	Op(String, Vec<Expr<U>>),
-	Agg(String, Box<Relation<U>>),
+	Op(String, Vec<Expr<R>>),
+	Agg(String, Box<R>),
 }
 
 impl<U: Display> Display for Expr<U> {
@@ -132,14 +139,14 @@ impl<U: Display> Display for Expr<U> {
 }
 
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub enum Predicate<U> {
-	Eq(Expr<U>, Expr<U>),
-	Pred(String, Vec<Expr<U>>),
-	Like(Expr<U>, String),
-	Null(Expr<U>),
+pub enum Predicate<R> {
+	Eq(Expr<R>, Expr<R>),
+	Pred(String, Vec<Expr<R>>),
+	Like(Expr<R>, String),
+	Null(Expr<R>),
 }
 
-impl<U: Display> Display for Predicate<U> {
+impl<R: Display> Display for Predicate<R> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
 			Predicate::Eq(e1, e2) => write!(f, "{} = {}", e1, e2),
@@ -166,16 +173,12 @@ pub struct Schema {
 	pub foreign: HashMap<usize, VL>,
 }
 
-pub trait Eval {
-	type Output;
-
-	fn eval(self, env: &Env<Entry>) -> Self::Output;
+pub trait Eval<T> {
+	fn eval(self, env: &Env<Entry>) -> T;
 }
 
-impl<U: Eval> Eval for Predicate<U> {
-	type Output = Predicate<U::Output>;
-
-	fn eval(self, env: &Env<Entry>) -> Self::Output {
+impl<T, R: Eval<T>> Eval<Predicate<T>> for Predicate<R> {
+	fn eval(self, env: &Env<Entry>) -> Predicate<T> {
 		use Predicate::*;
 		match self {
 			Eq(v1, v2) => Eq(v1.eval(env), v2.eval(env)),
@@ -186,10 +189,8 @@ impl<U: Eval> Eval for Predicate<U> {
 	}
 }
 
-impl<U: Eval> Eval for Expr<U> {
-	type Output = Expr<U::Output>;
-
-	fn eval(self, env: &Env<Entry>) -> Self::Output {
+impl<T, R: Eval<T>> Eval<Expr<T>> for Expr<R> {
+	fn eval(self, env: &Env<Entry>) -> Expr<T> {
 		use Expr::*;
 		match self {
 			Var(l) => Var(env.get_var(l)),
@@ -199,14 +200,12 @@ impl<U: Eval> Eval for Expr<U> {
 	}
 }
 
-impl<U: Eval> Eval for Relation<U> {
-	type Output = Relation<U::Output>;
-
-	fn eval(self, env: &Env<Entry>) -> Self::Output {
+impl<T, U: Eval<T>> Eval<Relation<T>> for Relation<U> {
+	fn eval(self, env: &Env<Entry>) -> Relation<T> {
 		use Relation::*;
 		match self {
 			Var(l) => Var(env.get_var(l)),
-			Lam(types, body) => Relation::lam(types.clone(), body.eval(&env.append_vars(types))),
+			Lam(types, body) => Relation::lam(types.clone(), body.eval(&env.extend(types))),
 		}
 	}
 }
@@ -214,17 +213,17 @@ impl<U: Eval> Eval for Relation<U> {
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub enum Relation<U> {
 	Var(VL),
-	Lam(Vec<DataType>, Box<U>),
+	Lam(Vector<DataType>, Box<U>),
 }
 
 impl<U> Relation<U> {
-	pub fn lam<T: Into<Box<U>>>(types: Vec<DataType>, body: T) -> Self {
-		Relation::Lam(types, body.into())
+	pub fn lam<T: Into<Box<U>>>(types: impl IntoIterator<Item = DataType>, body: T) -> Self {
+		Relation::Lam(types.into_iter().collect(), body.into())
 	}
 
-	pub fn types(&self, schemas: &Env<Schema>) -> Vec<DataType> {
+	pub fn types(&self, schemas: &Env<Schema>) -> Vector<DataType> {
 		match self {
-			Relation::Var(table) => schemas.get(*table).types.clone(),
+			Relation::Var(table) => schemas.get(*table).types.clone().into(),
 			Relation::Lam(types, _) => types.clone(),
 		}
 	}
@@ -268,7 +267,7 @@ pub enum DataType {
 	/// Small integer
 	SmallInt,
 	/// Integer
-	#[serde(alias="INTEGER")]
+	#[serde(alias = "INTEGER")]
 	Int,
 	/// Big integer
 	BigInt,
@@ -291,6 +290,7 @@ pub enum DataType {
 	/// Text
 	Text,
 	/// String
+	#[serde(alias = "VARCHAR", alias = "CHAR")]
 	String,
 	/// Bytea
 	Bytea,
@@ -306,25 +306,28 @@ pub enum DataType {
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Application {
 	pub table: VL,
-	pub args: Vec<VL>,
+	pub args: Vector<VL>,
 }
 
 impl Application {
-	pub fn new(table: VL, args: Vec<VL>) -> Self {
+	pub fn new(table: VL, args: Vector<VL>) -> Self {
 		Application { table, args }
 	}
 }
 
 impl Display for Application {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{}({})", self.table, self.args.iter().map(|arg| format!("{}", arg)).join(", "))
+		write!(
+			f,
+			"#{}({})",
+			self.table.0,
+			self.args.iter().map(|arg| format!("{}", arg)).join(", ")
+		)
 	}
 }
 
-impl Eval for Application {
-	type Output = Application;
-
-	fn eval(mut self, env: &Env<Entry>) -> Self::Output {
+impl Eval<Application> for Application {
+	fn eval(mut self, env: &Env<Entry>) -> Application {
 		self.table = env.get_var(self.table);
 		self.args.iter_mut().for_each(|a| *a = env.get_var(*a));
 		self

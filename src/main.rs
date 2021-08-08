@@ -1,9 +1,9 @@
 use std::fs::File;
-use std::io::{Write, BufReader, Read};
+use std::io::{BufReader, Read, Write};
 use std::path::Path;
 use std::{fs, io};
 
-use env_logger::{Builder, Env};
+use env_logger::{Builder, Env, Target};
 
 use crate::relation::Input;
 use crate::solver::Payload;
@@ -20,11 +20,11 @@ fn visit<P: AsRef<Path>>(dir: P, cb: &dyn Fn(&Path)) -> io::Result<()> {
 			let entry = entry?;
 			let path = entry.path();
 			if path.is_file() && path.extension() == Some("json".as_ref()) {
-				cb(path.as_path())
+				cb(path.as_path());
 			}
 		}
 	} else if path.is_file() && path.extension() == Some("json".as_ref()) {
-		cb(path)
+		cb(path);
 	}
 	Ok(())
 }
@@ -32,6 +32,7 @@ fn visit<P: AsRef<Path>>(dir: P, cb: &dyn Fn(&Path)) -> io::Result<()> {
 fn main() -> io::Result<()> {
 	Builder::from_env(Env::default().default_filter_or("off"))
 		.format(|buf, record| writeln!(buf, "{}", record.args()))
+		.target(Target::Stdout)
 		.init();
 	for arg in std::env::args() {
 		visit(arg, &|path| {

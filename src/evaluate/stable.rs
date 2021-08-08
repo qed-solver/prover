@@ -1,6 +1,7 @@
 use std::fmt::{Debug, Display, Formatter, Write};
 use std::iter::FromIterator;
 
+use im::Vector;
 use indenter::indented;
 use itertools::Itertools;
 
@@ -8,11 +9,11 @@ use crate::evaluate::shared;
 use crate::evaluate::shared::{Application, DataType};
 
 pub type Relation = shared::Relation<UExpr>;
-pub type Predicate = shared::Predicate<UExpr>;
-pub type Expr = shared::Expr<UExpr>;
+pub type Predicate = shared::Predicate<Relation>;
+pub type Expr = shared::Expr<Relation>;
 
 #[derive(Debug, Clone, Default, Eq, PartialEq, Hash)]
-pub struct UExpr(pub Vec<Term>);
+pub struct UExpr(pub Vector<Term>);
 
 impl UExpr {
 	pub fn into_terms(self) -> impl Iterator<Item = Term> {
@@ -35,23 +36,11 @@ impl FromIterator<Term> for UExpr {
 // SUM(v1 v2..., [p] * R(a, b) * |..|)
 #[derive(Debug, Clone, Default, Eq, PartialEq, Hash)]
 pub struct Term {
-	pub preds: Vec<Predicate>,
+	pub preds: Vector<Predicate>,
 	pub squash: Option<UExpr>,
 	pub not: Option<UExpr>,
-	pub apps: Vec<Application>,
-	pub scopes: Vec<DataType>,
-}
-
-impl Term {
-	pub fn new(
-		preds: Vec<Predicate>,
-		squash: Option<UExpr>,
-		not: Option<UExpr>,
-		apps: Vec<Application>,
-		scopes: Vec<DataType>,
-	) -> Self {
-		Term { preds, squash, not, apps, scopes }
-	}
+	pub apps: Vector<Application>,
+	pub scopes: Vector<DataType>,
 }
 
 impl Display for Term {
@@ -60,10 +49,10 @@ impl Display for Term {
 			.preds
 			.iter()
 			.map(|pred| format!("⟦{}⟧", pred))
-			.chain(self.not.iter().map(|n| format!("not({})", n)))
+			.chain(self.not.iter().map(|n| format!("¬({})", n)))
 			.chain(self.squash.iter().map(|sq| format!("‖{}‖", sq)))
 			.chain(self.apps.iter().map(|app| format!("{}", app)))
-			.join(" × ");
+			.format(" × ");
 		writeln!(f, "∑ {:?} {{", self.scopes)?;
 		writeln!(indented(f).with_str("\t"), "{}", preds)?;
 		write!(f, "}}")

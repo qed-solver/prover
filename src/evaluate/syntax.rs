@@ -1,6 +1,7 @@
 use std::fmt::{Debug, Display, Formatter, Write};
 use std::ops::{Add, AddAssign, Mul, MulAssign, Not};
 
+use im::Vector;
 use indenter::indented;
 use itertools::Itertools;
 
@@ -13,8 +14,8 @@ use crate::evaluate::shared::{DataType, VL};
 /// Here the lambda term uses a vector of data types to bind every components of the input tuple.
 /// That is, each component is treated as a unique variable that might appear in the function body.
 pub type Relation = shared::Relation<UExpr>;
-pub type Predicate = shared::Predicate<UExpr>;
-pub type Expr = shared::Expr<UExpr>;
+pub type Predicate = shared::Predicate<Relation>;
+pub type Expr = shared::Expr<Relation>;
 
 /// An expression that evaluates to a U-semiring value.
 /// This include all constants and operation defined over the U-semiring,
@@ -32,20 +33,20 @@ pub enum UExpr {
 	// Not operator
 	Not(Box<UExpr>),
 	// Summation that ranges over tuples of certain schema
-	Sum(Vec<DataType>, Box<UExpr>),
+	Sum(Vector<DataType>, Box<UExpr>),
 	// Predicate that can be evaluated to 0 or 1
 	Pred(Predicate),
 	// Application of a relation with arguments.
 	// Here each argument are required to be a single variable.
-	App(Relation, Vec<VL>),
+	App(Relation, Vector<VL>),
 }
 
 impl UExpr {
-	pub fn sum<T: Into<Box<UExpr>>>(types: Vec<DataType>, body: T) -> Self {
-		UExpr::Sum(types, body.into())
+	pub fn sum(types: impl Into<Vector<DataType>>, body: impl Into<Box<UExpr>>) -> Self {
+		UExpr::Sum(types.into(), body.into())
 	}
 
-	pub fn squash<T: Into<Box<UExpr>>>(body: T) -> Self {
+	pub fn squash(body: impl Into<Box<UExpr>>) -> Self {
 		UExpr::Squash(body.into())
 	}
 }
@@ -58,7 +59,7 @@ impl Display for UExpr {
 			UExpr::Add(u1, u2) => write!(f, "({} + {})", u1, u2),
 			UExpr::Mul(u1, u2) => write!(f, "({} × {})", u1, u2),
 			UExpr::Squash(u) => write!(f, "‖{}‖", u),
-			UExpr::Not(u) => write!(f, "not({})", u),
+			UExpr::Not(u) => write!(f, "¬({})", u),
 			UExpr::Sum(types, body) => {
 				writeln!(f, "∑ {:?} {{", types)?;
 				writeln!(indented(f).with_str("\t"), "{}", body)?;

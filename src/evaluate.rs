@@ -1,45 +1,57 @@
 use std::collections::HashMap;
 
+use im::{vector, Vector};
+use itertools::Itertools;
 use shared::{Application, Env, VL};
-use {normal as nom, scoped as scp, stable as stb, syntax as syn};
+use {normal as nom, partial as prt, stable as stb, syntax as syn};
 
-use crate::evaluate::normal::{Closure, Summation};
-use crate::evaluate::scoped::EquivClass;
-use crate::evaluate::shared::{DataType, Entry, Eval, Expr, Predicate};
-use crate::evaluate::syntax::Relation;
+use crate::evaluate::normal::EquivClass;
+use crate::evaluate::partial::{Closure, Summation};
+use crate::evaluate::shared::{DataType, Entry, Eval, Expr, Predicate, Relation};
 
-pub(crate) mod normal;
-pub(crate) mod scoped;
-pub(crate) mod shared;
-pub(crate) mod stable;
-pub(crate) mod syntax;
+pub mod normal;
+pub mod partial;
+pub mod shared;
+pub mod stable;
+pub mod syntax;
 #[cfg(test)]
 mod tests;
 
-/// Syntax to normalized
-impl Eval for syn::UExpr {
-	type Output = nom::UExpr;
-
-	fn eval(self, env: &Env<Entry>) -> Self::Output {
+/// Syntax to partial
+impl Eval<prt::UExpr> for syn::UExpr {
+	fn eval(self, env: &Env<Entry>) -> prt::UExpr {
 		use syn::UExpr::*;
 		match self {
-			Zero => nom::UExpr::default(),
-			One => nom::UExpr::one(),
+			Zero => prt::UExpr::zero(),
+			One => prt::UExpr::one(),
 			Add(t1, t2) => t1.eval(env) + t2.eval(env),
-			Sum(types, body) => nom::UExpr::sum(types, Closure { body: *body, env: env.clone() }),
+			Sum(types, body) => prt::UExpr::sum(types, Closure { body: *body, env: env.clone() }),
 			Mul(t1, t2) => t1.eval(env) * t2.eval(env),
-			Squash(term) => nom::UExpr::squash(term.eval(env)),
-			Not(term) => nom::UExpr::not(term.eval(env)),
-			Pred(pred) => nom::UExpr::preds(vec![pred.eval(env)]),
+			Squash(term) => prt::UExpr::squash(term.eval(env)),
+			Not(term) => prt::UExpr::not(term.eval(env)),
+			Pred(pred) => prt::UExpr::preds(vec![pred.eval(env)]),
 			App(table, args) => apply(table, args, env),
 		}
 	}
 }
 
-fn apply(table: Relation, args: Vec<VL>, env: &Env<Entry>) -> nom::UExpr {
+impl Eval<prt::Relation> for syn::Relation {
+	fn eval(self, env: &Env<Entry>) -> prt::Relation {
+		use shared::Relation::*;
+		match self {
+			Var(l) => Var(env.get_var(l)),
+			Lam(types, body) => {
+				prt::Relation::lam(types, Closure { body: *body, env: env.clone() })
+			},
+		}
+	}
+}
+
+fn apply(table: syn::Relation, args: Vector<VL>, env: &Env<Entry>) -> prt::UExpr {
+	use shared::Relation::*;
 	match table {
-		Relation::Var(l) => nom::UExpr::app(env.get_var(l), env.eval_args(args)),
-		Relation::Lam(types, body) => {
+		Var(l) => prt::UExpr::app(env.get_var(l), env.eval_args(args)),
+		Lam(types, body) => {
 			let entries = args.into_iter().zip(types).map(|(v, ty)| {
 				let entry = env.get(v);
 				assert_eq!(entry.ty(), ty);
@@ -50,33 +62,47 @@ fn apply(table: Relation, args: Vec<VL>, env: &Env<Entry>) -> nom::UExpr {
 	}
 }
 
-impl Eval for nom::UExpr {
-	type Output = scp::UExpr;
-
-	fn eval(self, env: &Env<Entry>) -> Self::Output {
+impl Eval<nom::UExpr> for prt::UExpr {
+	fn eval(self, env: &Env<Entry>) -> nom::UExpr {
 		self.into_terms()
-			.flat_map(|t| full_reduce(t, vec![], env.level))
+			.flat_map(|t| full_reduce(t, vector![], env.level))
 			.map(|(term, scopes)| {
-				let env = &env.append_vars(scopes.clone());
+				let env = &env.extend(scopes.clone());
 				let preds = term.preds.into_iter().map(|p| p.eval(env)).collect();
 				let squash = term.squash.map(|sq| flatten_squash(sq.eval(env)));
-				let not = term.not.map(|n| n.eval(env));
+				let not = term.not.map(|n| flatten_squash(n.eval(env)));
 				let apps = term.apps.into_iter().map(|app| app.eval(env)).collect();
-				scp::Term { preds, squash, not, apps, scopes }
+				nom::Term { preds, squash, not, apps, scopes }
 			})
 			.collect()
 	}
 }
 
+impl Eval<nom::Relation> for prt::Relation {
+	fn eval(self, env: &Env<Entry>) -> nom::Relation {
+		use Relation::*;
+		match self {
+			Var(l) => Var(env.get_var(l)),
+			Lam(types, body) => {
+				let Closure { env: lam_env, body } = *body;
+				let body = body
+					.eval(&lam_env.shift_to(env.level).extend(types.clone()))
+					.eval(&env.extend(types.clone()));
+				Relation::lam(types, body)
+			},
+		}
+	}
+}
+
 fn full_reduce(
-	mut term: nom::Term,
-	mut scopes: Vec<DataType>,
+	mut term: prt::Term,
+	scopes: Vector<DataType>,
 	level: usize,
-) -> Vec<(nom::Term, Vec<DataType>)> {
-	if let Some(Summation { types, summand: Closure { body, env } }) = term.sums.pop() {
-		scopes.extend(types.clone());
+) -> Vec<(prt::Term, Vector<DataType>)> {
+	if let Some(Summation { types, summand: Closure { body, env } }) = term.sums.pop_front() {
+		let scopes = scopes + types.clone();
 		let next_level = level + types.len();
-		(nom::UExpr(vec![term]) * body.eval(&env.shift_to(level).append_vars(types)))
+		(prt::UExpr(vector![term]) * body.eval(&env.shift_to(level).extend(types)))
 			.into_terms()
 			.flat_map(|t| full_reduce(t, scopes.clone(), next_level))
 			.collect()
@@ -85,34 +111,29 @@ fn full_reduce(
 	}
 }
 
-fn flatten_squash(uexp: scp::UExpr) -> scp::UExpr {
+fn flatten_squash(uexp: nom::UExpr) -> nom::UExpr {
 	uexp.into_terms()
-		.flat_map(|mut term| {
-			let inner =
-				std::mem::replace(&mut term.squash, None).map_or(scp::UExpr::one(), flatten_squash);
-			term.not = term.not.map(flatten_squash);
-			inner.into_terms().map(move |t| {
-				let mut term = term.clone();
-				term.scopes.extend(t.scopes);
-				term.preds.extend(t.preds);
-				let t_apps = t.apps;
-				let t_not = t.not;
-				term.apps.extend(t_apps);
-				term.not = term.not.map(|mut u1| {
-					u1.0.extend(t_not.map_or(vec![], |u2| u2.0));
-					u1
-				});
-				assert_eq!(term.squash, None);
-				term
-			})
+		.flat_map(|term| {
+			term.squash.clone().map_or(nom::UExpr::one(), flatten_squash).into_terms().map(
+				move |t| {
+					let term = term.clone();
+					let scopes = term.scopes + t.scopes;
+					let preds = term.preds + t.preds;
+					let apps = term.apps + t.apps;
+					let not = match (term.not.map(flatten_squash), t.not) {
+						(Some(u1), Some(u2)) => Some(u1 + u2),
+						(s, None) | (None, s) => s,
+					};
+					assert_eq!(t.squash, None);
+					nom::Term { scopes, preds, apps, not, squash: None }
+				},
+			)
 		})
 		.collect()
 }
 
-impl Eval for scp::UExpr {
-	type Output = stb::UExpr;
-
-	fn eval(self, env: &Env<Entry>) -> Self::Output {
+impl Eval<stb::UExpr> for nom::UExpr {
+	fn eval(self, env: &Env<Entry>) -> stb::UExpr {
 		self.into_terms()
 			.map(|mut term| {
 				for app in term.apps.clone() {
@@ -120,10 +141,10 @@ impl Eval for scp::UExpr {
 				}
 				let mut equiv = term.extract_equiv();
 				merge_keys(&mut term, &mut equiv, env);
-				let new_env = &merge_scopes(&mut term.scopes, env, &mut equiv);
+				let (ref new_env, scopes) = merge_scopes(&term.scopes, env, &mut equiv);
 				term.preds.retain(|pred| !matches!(pred, Predicate::Eq(_, _)));
 				for (expr, root) in equiv.into_pairs() {
-					term.preds.push(Predicate::Eq(root, expr));
+					term.preds.push_back(Predicate::Eq(root, expr));
 				}
 				let preds = term
 					.preds
@@ -142,60 +163,60 @@ impl Eval for scp::UExpr {
 					.collect();
 				let not = term.not.map(|e| e.eval(new_env));
 				let squash = term.squash.map(|e| e.eval(new_env));
-				stb::Term::new(preds, squash, not, apps, term.scopes)
+				stb::Term { preds, squash, not, apps, scopes }
 			})
 			.collect()
 	}
 }
 
-fn chase(app: &Application, term: &mut scp::Term, env: &Env<Entry>) {
+fn chase(app: &Application, term: &mut nom::Term, env: &Env<Entry>) {
 	let schema = env.get(app.table).sch();
 	for (&col, &tab) in &schema.foreign {
 		let dest_schema = env.get(tab).sch();
 		let primary_col = dest_schema.primary.unwrap();
 		let types = vec![DataType::Any; dest_schema.types.len()];
 		let level = env.size() + term.scopes.len();
-		let vars: Vec<_> = (0..dest_schema.types.len()).map(|i| VL(level + i)).collect();
-		term.preds.push(Predicate::Eq(Expr::Var(app.args[col]), Expr::Var(vars[primary_col])));
+		let vars: Vector<_> = (0..dest_schema.types.len()).map(|i| VL(level + i)).collect();
+		term.preds.push_back(Predicate::Eq(Expr::Var(app.args[col]), Expr::Var(vars[primary_col])));
 		let new_app = Application::new(tab, vars);
-		term.apps.push(new_app.clone());
+		term.apps.push_back(new_app.clone());
 		term.scopes.extend(types);
 		chase(&new_app, term, env);
 	}
 }
 
-fn merge_keys(term: &mut scp::Term, equiv: &mut EquivClass, env: &Env<Entry>) {
-	let mut i = 0;
-	while i < term.apps.len() {
-		let Application { table: t1, args: args1 } = term.apps[i].clone();
-		let mut j = i + 1;
-		while j < term.apps.len() {
-			let Application { table: t2, args: args2 } = term.apps[j].clone();
-			if t1 == t2 {
-				let e1 = env.get(t1).sch().primary.map(|c1| Expr::Var(args1[c1]));
-				let e2 = env.get(t2).sch().primary.map(|c2| Expr::Var(args2[c2]));
-				if let (Some(c1), Some(c2)) = (e1, e2) {
-					if equiv.equal(&c1, &c2) {
-						args1.iter().zip(args2.iter()).for_each(|(&a1, &a2)| {
-							equiv.equate(Expr::Var(a1), Expr::Var(a2));
-						});
-						term.apps.swap_remove(j);
-						continue;
-					}
-				}
+fn merge_keys(term: &mut nom::Term, equiv: &mut EquivClass, env: &Env<Entry>) {
+	let (mut term_apps, mut squashed) = (vector![], vector![]);
+	for (t, apps) in term.apps.iter().cloned().into_group_map_by(|a| a.table) {
+		if let Some(col) = env.get(t).sch().primary {
+			use shared::Expr::Var;
+			squashed.extend(apps.clone());
+			let groups = apps
+				.into_iter()
+				.filter_map(|app| equiv.get(&Var(app.args[col])).map(|root| (root, app.args)))
+				.into_group_map();
+			for (_, vars) in groups {
+				let mut vars = vars.into_iter();
+				let args = vars.next().unwrap();
+				vars.flat_map(|v| v.into_iter().zip(args.clone()))
+					.for_each(|(v1, v2)| equiv.equate(Var(v1), Var(v2)));
 			}
-			j += 1;
+		} else {
+			term_apps.extend(apps);
 		}
-		i += 1;
+	}
+	term.apps = term_apps;
+	if let Some(sq) = &mut term.squash {
+		sq.0.iter_mut().for_each(|term| term.apps.extend(squashed.clone()));
 	}
 }
 
 fn merge_scopes(
-	scopes: &mut Vec<DataType>,
+	scopes: &Vector<DataType>,
 	env: &Env<Entry>,
 	equiv: &mut EquivClass,
-) -> Env<Entry> {
-	let mut new_scopes = vec![];
+) -> (Env<Entry>, Vector<DataType>) {
+	let mut new_scopes = vector![];
 	let mut mapping = HashMap::new();
 	let level = env.size();
 	let mut env = env.clone();
@@ -207,17 +228,17 @@ fn merge_scopes(
 				mapping
 					.entry(v)
 					.or_insert_with(|| {
-						new_scopes.push(ty.clone());
+						new_scopes.push_back(ty.clone());
 						let entry = Entry::Value(VL(free), ty.clone());
 						free += 1;
 						entry
 					})
 					.clone()
 			} else {
-				Entry::Value(v, ty.clone())
+				Entry::Value(env.get_var(v), ty.clone())
 			}
 		} else {
-			new_scopes.push(ty.clone());
+			new_scopes.push_back(ty.clone());
 			let entry = Entry::Value(VL(free), ty.clone());
 			free += 1;
 			entry
@@ -225,17 +246,15 @@ fn merge_scopes(
 		env.introduce(entry);
 	}
 	env.level = free;
-	*scopes = new_scopes;
-	env
+	(env, new_scopes)
 }
 
 pub fn evaluate(rel: syn::Relation, env: &Env<Entry>) -> stb::Relation {
 	log::info!("Syntax:\n{}", rel);
-	let nom = rel.eval(env);
+	let prt: prt::Relation = rel.eval(env);
+	let nom = prt.eval(env);
 	log::info!("Normal:\n{}", nom);
-	let scp = nom.eval(env);
-	log::info!("Scoped:\n{}", scp);
-	let stb = scp.eval(env);
+	let stb = nom.eval(env);
 	log::info!("Stable:\n{}", stb);
 	stb
 }

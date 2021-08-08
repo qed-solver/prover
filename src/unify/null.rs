@@ -38,12 +38,12 @@ macro_rules! optional_op {
 		let ctx = $solver.get_context();
 		let func =
 			FuncDecl::new(ctx, format!("n-{}", stringify!($name)), &[$osort], $osort);
-		$(let $v = &Datatype::fresh_const(ctx, "v", $osort).into();)*
+		$(let $v = &Datatype::fresh_const(ctx, "v", $osort) as &dyn Ast;)*
 		let vars = &[$($v),*];
 		let f_vs = &func.apply(vars);
 		let body = f_vs._eq(optional_op!(ctx $sort $some $none; $mode ($($v)*) ($name $($v)*)));
 		let p = Pattern::new(ctx, &[f_vs]);
-		let f_def = forall_const(ctx, vars, &[&p], &body).as_bool().unwrap();
+		let f_def = forall_const(ctx, vars, &[&p], &body);
 		$solver.assert(&f_def);
 	};
     ($ctx:ident $sort:tt $some:ident $none:ident; $mode:ident ($v:ident $($tail:ident)*) ($name:ident $($vs:ident)*)) => {
@@ -55,13 +55,13 @@ macro_rules! optional_op {
 	($ctx:ident $sort:tt $some:ident $none:ident; fix () ($name:ident $($v:ident)*)) => {
 		{
 			paste!($(let $v = &$some.accessors[0].apply(&[$v]).[<as_ $sort:snake>]().unwrap();)*);
-			&$some.constructor.apply(&[&$sort::$name($(&$v),*).into()])
+			&$some.constructor.apply(&[&$sort::$name($(&$v),*)])
 		}
 	};
 	($ctx:ident $sort:tt $some:ident $none:ident; var () ($name:ident $($v:ident)*)) => {
 		{
 			paste!($(let $v = &$some.accessors[0].apply(&[$v]).[<as_ $sort:snake>]().unwrap();)*);
-			&$some.constructor.apply(&[&$sort::$name($ctx, &[$($v),*]).into()])
+			&$some.constructor.apply(&[&$sort::$name($ctx, &[$($v),*])])
 		}
 	};
 }
@@ -89,7 +89,7 @@ macro_rules! nullable {
 				let ctx = solver.get_context();
 				let optional = DatatypeBuilder::new(ctx, format!("Option{}", stringify!($sort)))
 					.variant("none", vec![])
-					.variant("some", vec![("val", DatatypeAccessor::Sort(&Sort::$lsort(ctx)))])
+					.variant("some", vec![("val", DatatypeAccessor::Sort(Sort::$lsort(ctx)))])
 					.finish();
 				let none = &optional.variants[0];
 				let some = &optional.variants[1];
