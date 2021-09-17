@@ -1,0 +1,68 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "operator" : "CASE",
+        "operand" : [ {
+          "operator" : "=",
+          "operand" : [ {
+            "column" : 0
+          }, {
+            "operator" : "1",
+            "operand" : [ ]
+          } ]
+        }, {
+          "operator" : "1",
+          "operand" : [ ]
+        }, {
+          "operator" : "IS NOT NULL",
+          "operand" : [ {
+            "operator" : "1",
+            "operand" : [ ]
+          } ]
+        }, {
+          "operator" : "2",
+          "operand" : [ ]
+        }, {
+          "operator" : "NULL:INTEGER",
+          "operand" : [ ]
+        } ]
+      }, "INTEGER" ] ],
+      "source" : {
+        "scan" : 0
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "operator" : "CAST",
+        "operand" : [ {
+          "operator" : "CASE",
+          "operand" : [ {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 0
+            }, {
+              "operator" : "1",
+              "operand" : [ ]
+            } ]
+          }, {
+            "operator" : "1",
+            "operand" : [ ]
+          }, {
+            "operator" : "2",
+            "operand" : [ ]
+          } ]
+        } ]
+      }, "INTEGER" ] ],
+      "source" : {
+        "scan" : 0
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(QX=[CASE(=($0, 1), 1, IS NOT NULL(1), 2, null:INTEGER)])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(QX=[CAST(CASE(=($0, 1), 1, 2)):INTEGER])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+}

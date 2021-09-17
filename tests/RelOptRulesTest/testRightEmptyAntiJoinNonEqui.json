@@ -1,0 +1,56 @@
+{
+  "schemas" : [ {
+    "types" : [ "SMALLINT", "VARCHAR(10)", "VARCHAR(9)", "SMALLINT", "DATE", "DECIMAL(7, 2)", "DECIMAL(7, 2)", "TINYINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "SMALLINT" ] ],
+      "source" : {
+        "join" : {
+          "type" : "ANTI",
+          "condition" : {
+            "operator" : "AND",
+            "operand" : [ {
+              "operator" : "=",
+              "operand" : [ {
+                "column" : 7
+              }, {
+                "column" : 8
+              } ]
+            }, {
+              "operator" : "=",
+              "operand" : [ {
+                "column" : 5
+              }, {
+                "operator" : "2000",
+                "operand" : [ ]
+              } ]
+            } ]
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "value" : {
+              "schema" : [ "TINYINT", "VARCHAR(14)", "VARCHAR(13)" ],
+              "content" : [ ]
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "SMALLINT" ] ],
+      "source" : {
+        "scan" : 0
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(EMPNO=[$0])\r\n  LogicalJoin(condition=[AND(=($7, $8), =($5, 2000))], joinType=[anti])\r\n    LogicalTableScan(table=[[scott, EMP]])\r\n    LogicalValues(tuples=[[]])\r\n", "LogicalProject(EMPNO=[$0])\r\n  LogicalTableScan(table=[[scott, EMP]])\r\n" ]
+}

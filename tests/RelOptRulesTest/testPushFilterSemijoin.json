@@ -1,0 +1,85 @@
+{
+  "schemas" : [ {
+    "types" : [ "TINYINT", "VARCHAR(14)", "VARCHAR(13)" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE" ]
+  }, {
+    "types" : [ "SMALLINT", "VARCHAR(10)", "VARCHAR(9)", "SMALLINT", "DATE", "DECIMAL(7, 2)", "DECIMAL(7, 2)", "TINYINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 1
+      }, "VARCHAR(14)" ] ],
+      "source" : {
+        "join" : {
+          "type" : "SEMI",
+          "condition" : {
+            "operator" : "AND",
+            "operand" : [ {
+              "operator" : "=",
+              "operand" : [ {
+                "column" : 0
+              }, {
+                "column" : 10
+              } ]
+            }, {
+              "operator" : "=",
+              "operand" : [ {
+                "column" : 8
+              }, {
+                "operator" : "100",
+                "operand" : [ ]
+              } ]
+            } ]
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "scan" : 1
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 1
+      }, "VARCHAR(14)" ] ],
+      "source" : {
+        "join" : {
+          "type" : "SEMI",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 0
+            }, {
+              "column" : 10
+            } ]
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "=",
+                "operand" : [ {
+                  "column" : 5
+                }, {
+                  "operator" : "100",
+                  "operand" : [ ]
+                } ]
+              },
+              "source" : {
+                "scan" : 1
+              }
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(DNAME=[$1])\r\n  LogicalJoin(condition=[AND(=($0, $10), =($8, 100))], joinType=[semi])\r\n    LogicalTableScan(table=[[scott, DEPT]])\r\n    LogicalTableScan(table=[[scott, EMP]])\r\n", "LogicalProject(DNAME=[$1])\r\n  LogicalJoin(condition=[=($0, $10)], joinType=[semi])\r\n    LogicalTableScan(table=[[scott, DEPT]])\r\n    LogicalFilter(condition=[=($5, 100)])\r\n      LogicalTableScan(table=[[scott, EMP]])\r\n" ]
+}

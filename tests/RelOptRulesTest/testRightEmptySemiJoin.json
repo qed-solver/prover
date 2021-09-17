@@ -1,0 +1,48 @@
+{
+  "schemas" : [ {
+    "types" : [ "SMALLINT", "VARCHAR(10)", "VARCHAR(9)", "SMALLINT", "DATE", "DECIMAL(7, 2)", "DECIMAL(7, 2)", "TINYINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "SMALLINT" ] ],
+      "source" : {
+        "join" : {
+          "type" : "SEMI",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 7
+            }, {
+              "column" : 8
+            } ]
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "value" : {
+              "schema" : [ "TINYINT", "VARCHAR(14)", "VARCHAR(13)" ],
+              "content" : [ ]
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "SMALLINT" ] ],
+      "source" : {
+        "value" : {
+          "schema" : [ "SMALLINT", "VARCHAR(10)", "VARCHAR(9)", "SMALLINT", "DATE", "DECIMAL(7, 2)", "DECIMAL(7, 2)", "TINYINT" ],
+          "content" : [ ]
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(EMPNO=[$0])\r\n  LogicalJoin(condition=[=($7, $8)], joinType=[semi])\r\n    LogicalTableScan(table=[[scott, EMP]])\r\n    LogicalValues(tuples=[[]])\r\n", "LogicalProject(EMPNO=[$0])\r\n  LogicalValues(tuples=[[]])\r\n" ]
+}

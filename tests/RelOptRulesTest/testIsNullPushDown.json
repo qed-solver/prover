@@ -1,0 +1,55 @@
+{
+  "schemas" : [ ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "INTEGER" ], [ {
+        "column" : 2
+      }, "BIGINT" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "IS NULL",
+            "operand" : [ {
+              "column" : 2
+            } ]
+          },
+          "source" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 0
+              }, "INTEGER" ], [ {
+                "column" : 7
+              }, "INTEGER" ], [ {
+                "column" : 9
+              }, "BIGINT" ] ],
+              "source" : {
+                "error" : "Not implemented: LogicalWindow"
+              }
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "INTEGER" ], [ {
+        "column" : 2
+      }, "BIGINT" ] ],
+      "source" : {
+        "value" : {
+          "schema" : [ "INTEGER", "INTEGER", "BIGINT" ],
+          "content" : [ ]
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(EMPNO=[$0], DEPTNO=[$1], W_COUNT=[$2])\r\n  LogicalFilter(condition=[IS NULL($2)])\r\n    LogicalProject(EMPNO=[$0], DEPTNO=[$7], $2=[$9])\r\n      LogicalWindow(window#0=[window(partition {7} order by [0] aggs [COUNT($0)])])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EMPNO=[$0], DEPTNO=[$1], W_COUNT=[$2])\r\n  LogicalValues(tuples=[[]])\r\n" ]
+}

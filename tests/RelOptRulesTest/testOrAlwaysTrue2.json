@@ -1,0 +1,162 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "VARCHAR(20)" ], [ {
+        "column" : 2
+      }, "VARCHAR(10)" ], [ {
+        "column" : 3
+      }, "INTEGER" ], [ {
+        "column" : 4
+      }, "TIMESTAMP(0)" ], [ {
+        "column" : 5
+      }, "INTEGER" ], [ {
+        "column" : 6
+      }, "INTEGER" ], [ {
+        "column" : 7
+      }, "BOOLEAN" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "OR",
+            "operand" : [ {
+              "operator" : "IS NOT NULL",
+              "operand" : [ {
+                "column" : 5
+              } ]
+            }, {
+              "operator" : "IS NULL",
+              "operand" : [ {
+                "column" : 5
+              } ]
+            } ]
+          },
+          "source" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 0
+              }, "INTEGER" ], [ {
+                "column" : 1
+              }, "VARCHAR(20)" ], [ {
+                "column" : 2
+              }, "VARCHAR(10)" ], [ {
+                "column" : 3
+              }, "INTEGER" ], [ {
+                "column" : 4
+              }, "TIMESTAMP(0)" ], [ {
+                "column" : 5
+              }, "INTEGER" ], [ {
+                "column" : 6
+              }, "INTEGER" ], [ {
+                "column" : 8
+              }, "BOOLEAN" ] ],
+              "source" : {
+                "filter" : {
+                  "condition" : {
+                    "operator" : "AND",
+                    "operand" : [ {
+                      "operator" : "=",
+                      "operand" : [ {
+                        "column" : 7
+                      }, {
+                        "operator" : "20",
+                        "operand" : [ ]
+                      } ]
+                    }, {
+                      "operator" : ">",
+                      "operand" : [ {
+                        "column" : 5
+                      }, {
+                        "operator" : "1000",
+                        "operand" : [ ]
+                      } ]
+                    } ]
+                  },
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "VARCHAR(20)" ], [ {
+        "column" : 2
+      }, "VARCHAR(10)" ], [ {
+        "column" : 3
+      }, "INTEGER" ], [ {
+        "column" : 4
+      }, "TIMESTAMP(0)" ], [ {
+        "column" : 5
+      }, "INTEGER" ], [ {
+        "column" : 6
+      }, "INTEGER" ], [ {
+        "column" : 7
+      }, "BOOLEAN" ] ],
+      "source" : {
+        "project" : {
+          "target" : [ [ {
+            "column" : 0
+          }, "INTEGER" ], [ {
+            "column" : 1
+          }, "VARCHAR(20)" ], [ {
+            "column" : 2
+          }, "VARCHAR(10)" ], [ {
+            "column" : 3
+          }, "INTEGER" ], [ {
+            "column" : 4
+          }, "TIMESTAMP(0)" ], [ {
+            "column" : 5
+          }, "INTEGER" ], [ {
+            "column" : 6
+          }, "INTEGER" ], [ {
+            "column" : 8
+          }, "BOOLEAN" ] ],
+          "source" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "AND",
+                "operand" : [ {
+                  "operator" : "=",
+                  "operand" : [ {
+                    "column" : 7
+                  }, {
+                    "operator" : "20",
+                    "operand" : [ ]
+                  } ]
+                }, {
+                  "operator" : ">",
+                  "operand" : [ {
+                    "column" : 5
+                  }, {
+                    "operator" : "1000",
+                    "operand" : [ ]
+                  } ]
+                } ]
+              },
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], SLACKER=[$7])\r\n  LogicalFilter(condition=[OR(IS NOT NULL($5), IS NULL($5))])\r\n    LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], SLACKER=[$8])\r\n      LogicalFilter(condition=[AND(=($7, 20), >($5, 1000))])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\r\n", "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], SLACKER=[$7])\r\n  LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], SLACKER=[$8])\r\n    LogicalFilter(condition=[AND(=($7, 20), >($5, 1000))])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\r\n" ]
+}

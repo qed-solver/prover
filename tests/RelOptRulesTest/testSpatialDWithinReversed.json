@@ -1,0 +1,101 @@
+{
+  "schemas" : [ {
+    "types" : [ "VARCHAR(20)", "INTEGER", "INTEGER", "VARCHAR(10)", "BIGINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "VARCHAR(20)" ], [ {
+        "column" : 1
+      }, "INTEGER" ], [ {
+        "column" : 2
+      }, "INTEGER" ], [ {
+        "column" : 3
+      }, "VARCHAR(10)" ], [ {
+        "column" : 4
+      }, "BIGINT" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "ST_DWITHIN",
+            "operand" : [ {
+              "operator" : "ST_POINT",
+              "operand" : [ {
+                "column" : 2
+              }, {
+                "column" : 1
+              } ]
+            }, {
+              "operator" : "ST_POINT",
+              "operand" : [ {
+                "operator" : "10.0:DECIMAL(3, 1)",
+                "operand" : [ ]
+              }, {
+                "operator" : "20.0:DECIMAL(3, 1)",
+                "operand" : [ ]
+              } ]
+            }, {
+              "operator" : "6",
+              "operand" : [ ]
+            } ]
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "VARCHAR(20)" ], [ {
+        "column" : 1
+      }, "INTEGER" ], [ {
+        "column" : 2
+      }, "INTEGER" ], [ {
+        "column" : 3
+      }, "VARCHAR(10)" ], [ {
+        "column" : 4
+      }, "BIGINT" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "AND",
+            "operand" : [ {
+              "operator" : "SEARCH",
+              "operand" : [ {
+                "column" : 4
+              }, {
+                "operator" : "SARG[[33033..33035], [33050..33053], [33055..33080], [33092..33100], [33112..33156], [33164..33176], [33236..33244], [33252..33254], [36456..36464], [36496..36520]]",
+                "operand" : [ ]
+              } ]
+            }, {
+              "operator" : "ST_DWITHIN",
+              "operand" : [ {
+                "operator" : "ST_POINT",
+                "operand" : [ {
+                  "column" : 2
+                }, {
+                  "column" : 1
+                } ]
+              }, {
+                "operator" : "POINT (10 20):GEOMETRY",
+                "operand" : [ ]
+              }, {
+                "operator" : "6",
+                "operand" : [ ]
+              } ]
+            } ]
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(NAME=[$0], LATITUDE=[$1], LONGITUDE=[$2], CUISINE=[$3], HILBERT=[$4])\r\n  LogicalFilter(condition=[ST_DWITHIN(ST_POINT($2, $1), ST_POINT(10.0:DECIMAL(3, 1), 20.0:DECIMAL(3, 1)), 6)])\r\n    LogicalTableScan(table=[[CATALOG, GEO, RESTAURANTS]])\r\n", "LogicalProject(NAME=[$0], LATITUDE=[$1], LONGITUDE=[$2], CUISINE=[$3], HILBERT=[$4])\r\n  LogicalFilter(condition=[AND(SEARCH($4, Sarg[[33033..33035], [33050..33053], [33055..33080], [33092..33100], [33112..33156], [33164..33176], [33236..33244], [33252..33254], [36456..36464], [36496..36520]]), ST_DWITHIN(ST_POINT($2, $1), POINT (10 20):GEOMETRY, 6))])\r\n    LogicalTableScan(table=[[CATALOG, GEO, RESTAURANTS]])\r\n" ]
+}

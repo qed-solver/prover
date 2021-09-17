@@ -1,0 +1,101 @@
+{
+  "schemas" : [ {
+    "types" : [ "VARCHAR(20)", "INTEGER", "INTEGER", "VARCHAR(10)", "BIGINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "VARCHAR(20)" ], [ {
+        "column" : 1
+      }, "INTEGER" ], [ {
+        "column" : 2
+      }, "INTEGER" ], [ {
+        "column" : 3
+      }, "VARCHAR(10)" ], [ {
+        "column" : 4
+      }, "BIGINT" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "ST_DWITHIN",
+            "operand" : [ {
+              "operator" : "ST_POINT",
+              "operand" : [ {
+                "operator" : "10.0:DECIMAL(3, 1)",
+                "operand" : [ ]
+              }, {
+                "operator" : "20.0:DECIMAL(3, 1)",
+                "operand" : [ ]
+              } ]
+            }, {
+              "operator" : "ST_POINT",
+              "operand" : [ {
+                "column" : 2
+              }, {
+                "column" : 1
+              } ]
+            }, {
+              "operator" : "10",
+              "operand" : [ ]
+            } ]
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "VARCHAR(20)" ], [ {
+        "column" : 1
+      }, "INTEGER" ], [ {
+        "column" : 2
+      }, "INTEGER" ], [ {
+        "column" : 3
+      }, "VARCHAR(10)" ], [ {
+        "column" : 4
+      }, "BIGINT" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "AND",
+            "operand" : [ {
+              "operator" : "SEARCH",
+              "operand" : [ {
+                "column" : 4
+              }, {
+                "operator" : "SARG[[28988..28989], [28991..28994], [29006..29009], [29011..29014], [32426..32429], [32431..32434], [32446..32449], [32451..32454], [32506..32509], [32511..32514], [32526..32527], [32929..32930], [32942..32949], [32951..32953], [32955..32970], [32973..32975], [33009..33011], [33014..33185], [33187..33190], [33205..33207], [33209..33211], [33226..33229], [33231..33265], [33267..33270], [36392..36401], [36403..36404], [36421..36423], [36425..36427], [36442..36445], [36447..36548], [36556..36568]]",
+                "operand" : [ ]
+              } ]
+            }, {
+              "operator" : "ST_DWITHIN",
+              "operand" : [ {
+                "operator" : "POINT (10 20):GEOMETRY",
+                "operand" : [ ]
+              }, {
+                "operator" : "ST_POINT",
+                "operand" : [ {
+                  "column" : 2
+                }, {
+                  "column" : 1
+                } ]
+              }, {
+                "operator" : "10",
+                "operand" : [ ]
+              } ]
+            } ]
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(NAME=[$0], LATITUDE=[$1], LONGITUDE=[$2], CUISINE=[$3], HILBERT=[$4])\r\n  LogicalFilter(condition=[ST_DWITHIN(ST_POINT(10.0:DECIMAL(3, 1), 20.0:DECIMAL(3, 1)), ST_POINT($2, $1), 10)])\r\n    LogicalTableScan(table=[[CATALOG, GEO, RESTAURANTS]])\r\n", "LogicalProject(NAME=[$0], LATITUDE=[$1], LONGITUDE=[$2], CUISINE=[$3], HILBERT=[$4])\r\n  LogicalFilter(condition=[AND(SEARCH($4, Sarg[[28988..28989], [28991..28994], [29006..29009], [29011..29014], [32426..32429], [32431..32434], [32446..32449], [32451..32454], [32506..32509], [32511..32514], [32526..32527], [32929..32930], [32942..32949], [32951..32953], [32955..32970], [32973..32975], [33009..33011], [33014..33185], [33187..33190], [33205..33207], [33209..33211], [33226..33229], [33231..33265], [33267..33270], [36392..36401], [36403..36404], [36421..36423], [36425..36427], [36442..36445], [36447..36548], [36556..36568]]), ST_DWITHIN(POINT (10 20):GEOMETRY, ST_POINT($2, $1), 10))])\r\n    LogicalTableScan(table=[[CATALOG, GEO, RESTAURANTS]])\r\n" ]
+}

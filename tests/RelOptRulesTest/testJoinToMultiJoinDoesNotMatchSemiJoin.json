@@ -1,0 +1,66 @@
+{
+  "schemas" : [ {
+    "types" : [ "SMALLINT", "VARCHAR(10)", "VARCHAR(9)", "SMALLINT", "DATE", "DECIMAL(7, 2)", "DECIMAL(7, 2)", "TINYINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ]
+  }, {
+    "types" : [ "TINYINT", "VARCHAR(14)", "VARCHAR(13)" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE" ]
+  }, {
+    "types" : [ "VARCHAR(10)", "VARCHAR(9)", "DECIMAL(7, 2)", "DECIMAL(7, 2)" ],
+    "strategy" : [ "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "join" : {
+      "type" : "SEMI",
+      "condition" : {
+        "operator" : "=",
+        "operand" : [ {
+          "column" : 2
+        }, {
+          "column" : 12
+        } ]
+      },
+      "left" : {
+        "join" : {
+          "type" : "INNER",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 7
+            }, {
+              "column" : 8
+            } ]
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "scan" : 1
+          }
+        }
+      },
+      "right" : {
+        "scan" : 2
+      }
+    }
+  }, {
+    "join" : {
+      "type" : "SEMI",
+      "condition" : {
+        "operator" : "=",
+        "operand" : [ {
+          "column" : 2
+        }, {
+          "column" : 12
+        } ]
+      },
+      "left" : {
+        "error" : "Not implemented: MultiJoin"
+      },
+      "right" : {
+        "scan" : 2
+      }
+    }
+  } ],
+  "help" : [ "LogicalJoin(condition=[=($2, $12)], joinType=[semi])\r\n  LogicalJoin(condition=[=($7, $8)], joinType=[inner])\r\n    LogicalTableScan(table=[[scott, EMP]])\r\n    LogicalTableScan(table=[[scott, DEPT]])\r\n  LogicalTableScan(table=[[scott, BONUS]])\r\n", "LogicalJoin(condition=[=($2, $12)], joinType=[semi])\r\n  MultiJoin(joinFilter=[=($7, $8)], isFullOuterJoin=[false], joinTypes=[[INNER, INNER]], outerJoinConditions=[[NULL, NULL]], projFields=[[ALL, ALL]])\r\n    LogicalTableScan(table=[[scott, EMP]])\r\n    LogicalTableScan(table=[[scott, DEPT]])\r\n  LogicalTableScan(table=[[scott, BONUS]])\r\n" ]
+}

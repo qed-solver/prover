@@ -1,0 +1,66 @@
+{
+  "schemas" : [ ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 1
+      }, "INTEGER" ] ],
+      "source" : {
+        "distinct" : {
+          "correlate" : [ {
+            "project" : {
+              "target" : [ [ {
+                "column" : 0
+              }, "INTEGER" ] ],
+              "source" : {
+                "value" : {
+                  "schema" : [ "INTEGER", "INTEGER" ],
+                  "content" : [ ]
+                }
+              }
+            }
+          }, {
+            "aggregate" : {
+              "function" : [ [ {
+                "operator" : "SUM",
+                "operand" : [ {
+                  "column" : 2
+                } ]
+              }, "INTEGER" ] ],
+              "source" : {
+                "filter" : {
+                  "condition" : {
+                    "operator" : "AND",
+                    "operand" : [ {
+                      "operator" : "TRUE",
+                      "operand" : [ ]
+                    }, {
+                      "operator" : "=",
+                      "operand" : [ {
+                        "column" : 0
+                      }, {
+                        "column" : 1
+                      } ]
+                    } ]
+                  },
+                  "source" : {
+                    "value" : {
+                      "schema" : [ "INTEGER", "INTEGER" ],
+                      "content" : [ ]
+                    }
+                  }
+                }
+              }
+            }
+          } ]
+        }
+      }
+    }
+  }, {
+    "value" : {
+      "schema" : [ "INTEGER" ],
+      "content" : [ ]
+    }
+  } ],
+  "help" : [ "LogicalProject(EXPR$0=[$1])\r\n  LogicalAggregate(group=[{0}], EXPR$0=[SUM($1)])\r\n    LogicalValues(tuples=[[]])\r\n", "LogicalValues(tuples=[[]])\r\n" ]
+}

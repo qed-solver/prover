@@ -1,0 +1,61 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER" ],
+    "strategy" : [ "NOT_NULLABLE" ]
+  }, {
+    "types" : [ "INTEGER" ],
+    "strategy" : [ "NOT_NULLABLE" ]
+  }, {
+    "types" : [ "INTEGER" ],
+    "strategy" : [ "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "INTEGER" ], [ {
+        "column" : 2
+      }, "INTEGER" ] ],
+      "source" : {
+        "join" : {
+          "type" : "LEFT",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 1
+            }, {
+              "column" : 2
+            } ]
+          },
+          "left" : {
+            "join" : {
+              "type" : "INNER",
+              "condition" : {
+                "operator" : "=",
+                "operand" : [ {
+                  "column" : 0
+                }, {
+                  "column" : 1
+                } ]
+              },
+              "left" : {
+                "scan" : 0
+              },
+              "right" : {
+                "scan" : 1
+              }
+            }
+          },
+          "right" : {
+            "scan" : 2
+          }
+        }
+      }
+    }
+  }, {
+    "error" : "Not implemented: MultiJoin"
+  } ],
+  "help" : [ "LogicalProject(A=[$0], B=[$1], C=[$2])\r\n  LogicalJoin(condition=[=($1, $2)], joinType=[left])\r\n    LogicalJoin(condition=[=($0, $1)], joinType=[inner])\r\n      LogicalTableScan(table=[[CATALOG, SALES, A]])\r\n      LogicalTableScan(table=[[CATALOG, SALES, B]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, C]])\r\n", "MultiJoin(joinFilter=[=($0, $1)], isFullOuterJoin=[false], joinTypes=[[INNER, INNER, LEFT]], outerJoinConditions=[[NULL, NULL, =($1, $2)]], projFields=[[ALL, ALL, ALL]])\r\n  LogicalTableScan(table=[[CATALOG, SALES, A]])\r\n  LogicalTableScan(table=[[CATALOG, SALES, B]])\r\n  LogicalTableScan(table=[[CATALOG, SALES, C]])\r\n" ]
+}

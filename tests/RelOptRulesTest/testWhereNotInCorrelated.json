@@ -1,0 +1,213 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ]
+  }, {
+    "types" : [ "INTEGER", "VARCHAR(10)" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 5
+      }, "INTEGER" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "NOT",
+            "operand" : [ {
+              "operator" : "IN",
+              "operand" : [ {
+                "project" : {
+                  "target" : [ [ {
+                    "column" : 9
+                  }, "INTEGER" ] ],
+                  "source" : {
+                    "filter" : {
+                      "condition" : {
+                        "operator" : "=",
+                        "operand" : [ {
+                          "column" : 2
+                        }, {
+                          "column" : 10
+                        } ]
+                      },
+                      "source" : {
+                        "scan" : 1
+                      }
+                    }
+                  }
+                }
+              } ]
+            } ]
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 5
+      }, "INTEGER" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "OR",
+            "operand" : [ {
+              "operator" : "=",
+              "operand" : [ {
+                "column" : 9
+              }, {
+                "operator" : "0",
+                "operand" : [ ]
+              } ]
+            }, {
+              "operator" : "IS NOT TRUE",
+              "operand" : [ {
+                "operator" : "OR",
+                "operand" : [ {
+                  "operator" : "IS NOT NULL",
+                  "operand" : [ {
+                    "column" : 13
+                  } ]
+                }, {
+                  "operator" : "<",
+                  "operand" : [ {
+                    "column" : 10
+                  }, {
+                    "column" : 9
+                  } ]
+                } ]
+              } ]
+            } ]
+          },
+          "source" : {
+            "join" : {
+              "type" : "LEFT",
+              "condition" : {
+                "operator" : "AND",
+                "operand" : [ {
+                  "operator" : "=",
+                  "operand" : [ {
+                    "column" : 0
+                  }, {
+                    "column" : 12
+                  } ]
+                }, {
+                  "operator" : "=",
+                  "operand" : [ {
+                    "column" : 2
+                  }, {
+                    "column" : 14
+                  } ]
+                } ]
+              },
+              "left" : {
+                "join" : {
+                  "type" : "LEFT",
+                  "condition" : {
+                    "operator" : "=",
+                    "operand" : [ {
+                      "column" : 2
+                    }, {
+                      "column" : 11
+                    } ]
+                  },
+                  "left" : {
+                    "scan" : 0
+                  },
+                  "right" : {
+                    "project" : {
+                      "target" : [ [ {
+                        "column" : 1
+                      }, "BIGINT" ], [ {
+                        "column" : 1
+                      }, "BIGINT" ], [ {
+                        "column" : 0
+                      }, "VARCHAR(10)" ] ],
+                      "source" : {
+                        "distinct" : {
+                          "correlate" : [ {
+                            "project" : {
+                              "target" : [ [ {
+                                "column" : 0
+                              }, "VARCHAR(10)" ] ],
+                              "source" : {
+                                "project" : {
+                                  "target" : [ [ {
+                                    "column" : 1
+                                  }, "VARCHAR(10)" ] ],
+                                  "source" : {
+                                    "scan" : 1
+                                  }
+                                }
+                              }
+                            }
+                          }, {
+                            "aggregate" : {
+                              "function" : [ [ {
+                                "operator" : "COUNT",
+                                "operand" : [ ]
+                              }, "BIGINT" ] ],
+                              "source" : {
+                                "filter" : {
+                                  "condition" : {
+                                    "operator" : "AND",
+                                    "operand" : [ {
+                                      "operator" : "TRUE",
+                                      "operand" : [ ]
+                                    }, {
+                                      "operator" : "=",
+                                      "operand" : [ {
+                                        "column" : 0
+                                      }, {
+                                        "column" : 1
+                                      } ]
+                                    } ]
+                                  },
+                                  "source" : {
+                                    "project" : {
+                                      "target" : [ [ {
+                                        "column" : 2
+                                      }, "VARCHAR(10)" ] ],
+                                      "source" : {
+                                        "scan" : 1
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          } ]
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "right" : {
+                "project" : {
+                  "target" : [ [ {
+                    "column" : 0
+                  }, "INTEGER" ], [ {
+                    "operator" : "TRUE",
+                    "operand" : [ ]
+                  }, "BOOLEAN" ], [ {
+                    "column" : 1
+                  }, "VARCHAR(10)" ] ],
+                  "source" : {
+                    "scan" : 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(SAL=[$5])\r\n  LogicalFilter(condition=[NOT(IN($0, {\nLogicalProject(DEPTNO=[$0])\r\n  LogicalFilter(condition=[=($cor0.JOB, $1)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n}))], variablesSet=[[$cor0]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(SAL=[$5])\r\n  LogicalFilter(condition=[OR(=($9, 0), IS NOT TRUE(OR(IS NOT NULL($13), <($10, $9))))])\r\n    LogicalJoin(condition=[AND(=($0, $12), =($2, $14))], joinType=[left])\r\n      LogicalJoin(condition=[=($2, $11)], joinType=[left])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n        LogicalProject(c=[$1], ck=[$1], NAME=[$0])\r\n          LogicalAggregate(group=[{0}], c=[COUNT()])\r\n            LogicalProject(NAME=[$1])\r\n              LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n      LogicalProject(DEPTNO=[$0], i=[true], NAME=[$1])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+}

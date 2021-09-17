@@ -1,0 +1,175 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "operator" : "IN",
+        "operand" : [ {
+          "project" : {
+            "target" : [ [ {
+              "column" : 9
+            }, "INTEGER" ] ],
+            "source" : {
+              "filter" : {
+                "condition" : {
+                  "operator" : "<",
+                  "operand" : [ {
+                    "column" : 2
+                  }, {
+                    "operator" : "20",
+                    "operand" : [ ]
+                  } ]
+                },
+                "source" : {
+                  "scan" : 0
+                }
+              }
+            }
+          }
+        } ]
+      }, "BOOLEAN" ] ],
+      "source" : {
+        "scan" : 0
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "operator" : "CASE",
+        "operand" : [ {
+          "operator" : "IS NOT NULL",
+          "operand" : [ {
+            "column" : 10
+          } ]
+        }, {
+          "operator" : "TRUE",
+          "operand" : [ ]
+        }, {
+          "operator" : "FALSE",
+          "operand" : [ ]
+        } ]
+      }, "BOOLEAN" ] ],
+      "source" : {
+        "join" : {
+          "type" : "LEFT",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 7
+            }, {
+              "column" : 9
+            } ]
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "distinct" : {
+              "correlate" : [ {
+                "project" : {
+                  "target" : [ [ {
+                    "column" : 0
+                  }, "INTEGER" ], [ {
+                    "column" : 1
+                  }, "BOOLEAN" ] ],
+                  "source" : {
+                    "project" : {
+                      "target" : [ [ {
+                        "column" : 7
+                      }, "INTEGER" ], [ {
+                        "operator" : "TRUE",
+                        "operand" : [ ]
+                      }, "BOOLEAN" ] ],
+                      "source" : {
+                        "filter" : {
+                          "condition" : {
+                            "operator" : "<",
+                            "operand" : [ {
+                              "column" : 0
+                            }, {
+                              "operator" : "20",
+                              "operand" : [ ]
+                            } ]
+                          },
+                          "source" : {
+                            "scan" : 0
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }, {
+                "aggregate" : {
+                  "function" : [ ],
+                  "source" : {
+                    "filter" : {
+                      "condition" : {
+                        "operator" : "AND",
+                        "operand" : [ {
+                          "operator" : "AND",
+                          "operand" : [ {
+                            "operator" : "TRUE",
+                            "operand" : [ ]
+                          }, {
+                            "operator" : "=",
+                            "operand" : [ {
+                              "column" : 0
+                            }, {
+                              "column" : 2
+                            } ]
+                          } ]
+                        }, {
+                          "operator" : "=",
+                          "operand" : [ {
+                            "column" : 1
+                          }, {
+                            "column" : 3
+                          } ]
+                        } ]
+                      },
+                      "source" : {
+                        "project" : {
+                          "target" : [ [ {
+                            "column" : 9
+                          }, "INTEGER" ], [ {
+                            "operator" : "TRUE",
+                            "operand" : [ ]
+                          }, "BOOLEAN" ] ],
+                          "source" : {
+                            "filter" : {
+                              "condition" : {
+                                "operator" : "<",
+                                "operand" : [ {
+                                  "column" : 2
+                                }, {
+                                  "operator" : "20",
+                                  "operand" : [ ]
+                                } ]
+                              },
+                              "source" : {
+                                "scan" : 0
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              } ]
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(EMPNO=[$0], D=[IN($7, {\nLogicalProject(DEPTNO=[$7])\r\n  LogicalFilter(condition=[<($0, 20)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n})])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EMPNO=[$0], D=[CASE(IS NOT NULL($10), true, false)])\r\n  LogicalJoin(condition=[=($7, $9)], joinType=[left])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalAggregate(group=[{0, 1}])\r\n      LogicalProject(DEPTNO=[$7], i=[true])\r\n        LogicalFilter(condition=[<($0, 20)])\r\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+}

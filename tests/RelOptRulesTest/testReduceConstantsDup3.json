@@ -1,0 +1,50 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(10)" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "OR",
+            "operand" : [ {
+              "operator" : "<>",
+              "operand" : [ {
+                "column" : 0
+              }, {
+                "operator" : "7",
+                "operand" : [ ]
+              } ]
+            }, {
+              "operator" : "<>",
+              "operand" : [ {
+                "column" : 0
+              }, {
+                "operator" : "8",
+                "operand" : [ ]
+              } ]
+            } ]
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ] ],
+      "source" : {
+        "scan" : 0
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(DEPTNO=[$0])\r\n  LogicalFilter(condition=[OR(<>($0, 7), <>($0, 8))])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(DEPTNO=[$0])\r\n  LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+}

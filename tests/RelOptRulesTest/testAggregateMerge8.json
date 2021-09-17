@@ -1,0 +1,148 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "distinct" : {
+      "correlate" : [ {
+        "project" : {
+          "target" : [ ],
+          "source" : {
+            "distinct" : {
+              "correlate" : [ {
+                "project" : {
+                  "target" : [ ],
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              }, {
+                "aggregate" : {
+                  "function" : [ [ {
+                    "operator" : "SUM",
+                    "operand" : [ {
+                      "column" : 5
+                    } ]
+                  }, "INTEGER" ], [ {
+                    "operator" : "MIN",
+                    "operand" : [ {
+                      "column" : 5
+                    } ]
+                  }, "INTEGER" ] ],
+                  "source" : {
+                    "filter" : {
+                      "condition" : {
+                        "operator" : "TRUE",
+                        "operand" : [ ]
+                      },
+                      "source" : {
+                        "scan" : 0
+                      }
+                    }
+                  }
+                }
+              } ]
+            }
+          }
+        }
+      }, {
+        "aggregate" : {
+          "function" : [ [ {
+            "operator" : "SUM",
+            "operand" : [ {
+              "column" : 0
+            } ]
+          }, "INTEGER" ], [ {
+            "operator" : "MIN",
+            "operand" : [ {
+              "column" : 1
+            } ]
+          }, "INTEGER" ] ],
+          "source" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "TRUE",
+                "operand" : [ ]
+              },
+              "source" : {
+                "distinct" : {
+                  "correlate" : [ {
+                    "project" : {
+                      "target" : [ ],
+                      "source" : {
+                        "scan" : 0
+                      }
+                    }
+                  }, {
+                    "aggregate" : {
+                      "function" : [ [ {
+                        "operator" : "SUM",
+                        "operand" : [ {
+                          "column" : 5
+                        } ]
+                      }, "INTEGER" ], [ {
+                        "operator" : "MIN",
+                        "operand" : [ {
+                          "column" : 5
+                        } ]
+                      }, "INTEGER" ] ],
+                      "source" : {
+                        "filter" : {
+                          "condition" : {
+                            "operator" : "TRUE",
+                            "operand" : [ ]
+                          },
+                          "source" : {
+                            "scan" : 0
+                          }
+                        }
+                      }
+                    }
+                  } ]
+                }
+              }
+            }
+          }
+        }
+      } ]
+    }
+  }, {
+    "distinct" : {
+      "correlate" : [ {
+        "project" : {
+          "target" : [ ],
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }, {
+        "aggregate" : {
+          "function" : [ [ {
+            "operator" : "SUM",
+            "operand" : [ {
+              "column" : 5
+            } ]
+          }, "INTEGER" ], [ {
+            "operator" : "MIN",
+            "operand" : [ {
+              "column" : 5
+            } ]
+          }, "INTEGER" ] ],
+          "source" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "TRUE",
+                "operand" : [ ]
+              },
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      } ]
+    }
+  } ],
+  "help" : [ "LogicalAggregate(group=[{}], X=[SUM($0)], Z=[MIN($1)])\r\n  LogicalAggregate(group=[{}], X=[SUM($5)], Y=[MIN($5)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalAggregate(group=[{}], X=[SUM($5)], Z=[MIN($5)])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+}

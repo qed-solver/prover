@@ -1,0 +1,149 @@
+{
+  "schemas" : [ {
+    "types" : [ "SMALLINT", "VARCHAR(10)", "VARCHAR(9)", "SMALLINT", "DATE", "DECIMAL(7, 2)", "DECIMAL(7, 2)", "TINYINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ]
+  }, {
+    "types" : [ "TINYINT", "VARCHAR(14)", "VARCHAR(13)" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "TINYINT" ] ],
+      "source" : {
+        "join" : {
+          "type" : "SEMI",
+          "condition" : {
+            "operator" : "AND",
+            "operand" : [ {
+              "operator" : "OR",
+              "operand" : [ {
+                "operator" : "=",
+                "operand" : [ {
+                  "column" : 0
+                }, {
+                  "column" : 2
+                } ]
+              }, {
+                "operator" : "AND",
+                "operand" : [ {
+                  "operator" : "IS NULL",
+                  "operand" : [ {
+                    "column" : 0
+                  } ]
+                }, {
+                  "operator" : "IS NULL",
+                  "operand" : [ {
+                    "column" : 2
+                  } ]
+                } ]
+              } ]
+            }, {
+              "operator" : "OR",
+              "operand" : [ {
+                "operator" : "=",
+                "operand" : [ {
+                  "column" : 1
+                }, {
+                  "column" : 3
+                } ]
+              }, {
+                "operator" : "AND",
+                "operand" : [ {
+                  "operator" : "IS NULL",
+                  "operand" : [ {
+                    "column" : 1
+                  } ]
+                }, {
+                  "operator" : "IS NULL",
+                  "operand" : [ {
+                    "column" : 3
+                  } ]
+                } ]
+              } ]
+            } ]
+          },
+          "left" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 7
+              }, "TINYINT" ], [ {
+                "column" : 1
+              }, "VARCHAR(10)" ] ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          },
+          "right" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 0
+              }, "TINYINT" ], [ {
+                "column" : 1
+              }, "VARCHAR(14)" ] ],
+              "source" : {
+                "scan" : 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "TINYINT" ] ],
+      "source" : {
+        "project" : {
+          "target" : [ [ {
+            "column" : 7
+          }, "TINYINT" ], [ {
+            "column" : 1
+          }, "VARCHAR(10)" ] ],
+          "source" : {
+            "join" : {
+              "type" : "SEMI",
+              "condition" : {
+                "operator" : "AND",
+                "operand" : [ {
+                  "operator" : "IS NOT DISTINCT FROM",
+                  "operand" : [ {
+                    "column" : 7
+                  }, {
+                    "column" : 8
+                  } ]
+                }, {
+                  "operator" : "IS NOT DISTINCT FROM",
+                  "operand" : [ {
+                    "column" : 1
+                  }, {
+                    "column" : 9
+                  } ]
+                } ]
+              },
+              "left" : {
+                "scan" : 0
+              },
+              "right" : {
+                "project" : {
+                  "target" : [ [ {
+                    "column" : 0
+                  }, "TINYINT" ], [ {
+                    "column" : 1
+                  }, "VARCHAR(14)" ] ],
+                  "source" : {
+                    "scan" : 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(DEPTNO=[$0])\r\n  LogicalJoin(condition=[AND(OR(=($0, $2), AND(IS NULL($0), IS NULL($2))), OR(=($1, $3), AND(IS NULL($1), IS NULL($3))))], joinType=[semi])\r\n    LogicalProject(DEPTNO=[$7], ENAME=[$1])\r\n      LogicalTableScan(table=[[scott, EMP]])\r\n    LogicalProject(DEPTNO=[$0], DNAME=[$1])\r\n      LogicalTableScan(table=[[scott, DEPT]])\r\n", "LogicalProject(DEPTNO=[$0])\r\n  LogicalProject(DEPTNO=[$7], ENAME=[$1])\r\n    LogicalJoin(condition=[AND(IS NOT DISTINCT FROM($7, $8), IS NOT DISTINCT FROM($1, $9))], joinType=[semi])\r\n      LogicalTableScan(table=[[scott, EMP]])\r\n      LogicalProject(DEPTNO=[$0], DNAME=[$1])\r\n        LogicalTableScan(table=[[scott, DEPT]])\r\n" ]
+}

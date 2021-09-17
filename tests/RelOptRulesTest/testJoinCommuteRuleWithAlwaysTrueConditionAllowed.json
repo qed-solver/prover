@@ -1,0 +1,66 @@
+{
+  "schemas" : [ {
+    "types" : [ "SMALLINT", "VARCHAR(10)", "VARCHAR(9)", "SMALLINT", "DATE", "DECIMAL(7, 2)", "DECIMAL(7, 2)", "TINYINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ]
+  }, {
+    "types" : [ "TINYINT", "VARCHAR(14)", "VARCHAR(13)" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "join" : {
+      "type" : "INNER",
+      "condition" : {
+        "operator" : "TRUE",
+        "operand" : [ ]
+      },
+      "left" : {
+        "scan" : 0
+      },
+      "right" : {
+        "scan" : 1
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 3
+      }, "SMALLINT" ], [ {
+        "column" : 4
+      }, "VARCHAR(10)" ], [ {
+        "column" : 5
+      }, "VARCHAR(9)" ], [ {
+        "column" : 6
+      }, "SMALLINT" ], [ {
+        "column" : 7
+      }, "DATE" ], [ {
+        "column" : 8
+      }, "DECIMAL(7, 2)" ], [ {
+        "column" : 9
+      }, "DECIMAL(7, 2)" ], [ {
+        "column" : 10
+      }, "TINYINT" ], [ {
+        "column" : 0
+      }, "TINYINT" ], [ {
+        "column" : 1
+      }, "VARCHAR(14)" ], [ {
+        "column" : 2
+      }, "VARCHAR(13)" ] ],
+      "source" : {
+        "join" : {
+          "type" : "INNER",
+          "condition" : {
+            "operator" : "TRUE",
+            "operand" : [ ]
+          },
+          "left" : {
+            "scan" : 1
+          },
+          "right" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalJoin(condition=[true], joinType=[inner])\r\n  LogicalTableScan(table=[[scott, EMP]])\r\n  LogicalTableScan(table=[[scott, DEPT]])\r\n", "LogicalProject(EMPNO=[$3], ENAME=[$4], JOB=[$5], MGR=[$6], HIREDATE=[$7], SAL=[$8], COMM=[$9], DEPTNO=[$10], DEPTNO0=[$0], DNAME=[$1], LOC=[$2])\r\n  LogicalJoin(condition=[true], joinType=[inner])\r\n    LogicalTableScan(table=[[scott, DEPT]])\r\n    LogicalTableScan(table=[[scott, EMP]])\r\n" ]
+}

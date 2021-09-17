@@ -1,0 +1,90 @@
+{
+  "schemas" : [ ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "CHAR(1)" ] ],
+      "source" : {
+        "correlate" : [ {
+          "value" : {
+            "schema" : [ "CHAR(1)", "CHAR(1)" ],
+            "content" : [ [ {
+              "operator" : "'1'",
+              "operand" : [ ]
+            }, {
+              "operator" : "'2'",
+              "operand" : [ ]
+            } ] ]
+          }
+        }, {
+          "project" : {
+            "target" : [ [ {
+              "column" : 2
+            }, "CHAR(1)" ], [ {
+              "column" : 0
+            }, "CHAR(1)" ] ],
+            "source" : {
+              "value" : {
+                "schema" : [ "CHAR(1)", "CHAR(1)" ],
+                "content" : [ [ {
+                  "operator" : "'1'",
+                  "operand" : [ ]
+                }, {
+                  "operator" : "'2'",
+                  "operand" : [ ]
+                } ] ]
+              }
+            }
+          }
+        } ]
+      }
+    }
+  }, {
+    "correlate" : [ {
+      "project" : {
+        "target" : [ [ {
+          "column" : 0
+        }, "CHAR(1)" ] ],
+        "source" : {
+          "value" : {
+            "schema" : [ "CHAR(1)", "CHAR(1)" ],
+            "content" : [ [ {
+              "operator" : "'1'",
+              "operand" : [ ]
+            }, {
+              "operator" : "'2'",
+              "operand" : [ ]
+            } ] ]
+          }
+        }
+      }
+    }, {
+      "project" : {
+        "target" : [ ],
+        "source" : {
+          "project" : {
+            "target" : [ [ {
+              "column" : 1
+            }, "CHAR(1)" ], [ {
+              "column" : 0
+            }, "CHAR(1)" ] ],
+            "source" : {
+              "value" : {
+                "schema" : [ "CHAR(1)", "CHAR(1)" ],
+                "content" : [ [ {
+                  "operator" : "'1'",
+                  "operand" : [ ]
+                }, {
+                  "operator" : "'2'",
+                  "operand" : [ ]
+                } ] ]
+              }
+            }
+          }
+        }
+      }
+    } ]
+  } ],
+  "help" : [ "LogicalProject(f=[$0])\r\n  LogicalCorrelate(correlation=[$cor0], joinType=[semi], requiredColumns=[{0}])\r\n    LogicalValues(tuples=[[{ '1', '2' }]])\r\n    LogicalProject(f3=[$0], $f1=[$cor0.f])\r\n      LogicalValues(tuples=[[{ '1', '2' }]])\r\n", "LogicalCorrelate(correlation=[$cor0], joinType=[semi], requiredColumns=[{0}])\r\n  LogicalProject(f=[$0])\r\n    LogicalValues(tuples=[[{ '1', '2' }]])\r\n  LogicalProject\r\n    LogicalProject(f3=[$0], $f1=[$cor0.f])\r\n      LogicalValues(tuples=[[{ '1', '2' }]])\r\n" ]
+}

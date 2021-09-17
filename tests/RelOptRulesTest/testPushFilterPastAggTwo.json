@@ -1,0 +1,269 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(10)" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "VARCHAR(10)" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "AND",
+            "operand" : [ {
+              "operator" : ">",
+              "operand" : [ {
+                "column" : 0
+              }, {
+                "operator" : "'C'",
+                "operand" : [ ]
+              } ]
+            }, {
+              "operator" : "OR",
+              "operand" : [ {
+                "operator" : ">",
+                "operand" : [ {
+                  "column" : 1
+                }, {
+                  "operator" : "30",
+                  "operand" : [ ]
+                } ]
+              }, {
+                "operator" : "<",
+                "operand" : [ {
+                  "column" : 0
+                }, {
+                  "operator" : "'Z'",
+                  "operand" : [ ]
+                } ]
+              } ]
+            } ]
+          },
+          "source" : {
+            "distinct" : {
+              "correlate" : [ {
+                "project" : {
+                  "target" : [ [ {
+                    "column" : 0
+                  }, "VARCHAR(10)" ] ],
+                  "source" : {
+                    "project" : {
+                      "target" : [ [ {
+                        "column" : 1
+                      }, "VARCHAR(10)" ] ],
+                      "source" : {
+                        "filter" : {
+                          "condition" : {
+                            "operator" : ">",
+                            "operand" : [ {
+                              "column" : 1
+                            }, {
+                              "operator" : "'B'",
+                              "operand" : [ ]
+                            } ]
+                          },
+                          "source" : {
+                            "scan" : 0
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }, {
+                "aggregate" : {
+                  "function" : [ [ {
+                    "operator" : "COUNT",
+                    "operand" : [ ]
+                  }, "BIGINT" ] ],
+                  "source" : {
+                    "filter" : {
+                      "condition" : {
+                        "operator" : "AND",
+                        "operand" : [ {
+                          "operator" : "TRUE",
+                          "operand" : [ ]
+                        }, {
+                          "operator" : "=",
+                          "operand" : [ {
+                            "column" : 0
+                          }, {
+                            "column" : 1
+                          } ]
+                        } ]
+                      },
+                      "source" : {
+                        "project" : {
+                          "target" : [ [ {
+                            "column" : 2
+                          }, "VARCHAR(10)" ] ],
+                          "source" : {
+                            "filter" : {
+                              "condition" : {
+                                "operator" : ">",
+                                "operand" : [ {
+                                  "column" : 2
+                                }, {
+                                  "operator" : "'B'",
+                                  "operand" : [ ]
+                                } ]
+                              },
+                              "source" : {
+                                "scan" : 0
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              } ]
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "VARCHAR(10)" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "OR",
+            "operand" : [ {
+              "operator" : ">",
+              "operand" : [ {
+                "column" : 1
+              }, {
+                "operator" : "30",
+                "operand" : [ ]
+              } ]
+            }, {
+              "operator" : "<",
+              "operand" : [ {
+                "column" : 0
+              }, {
+                "operator" : "'Z'",
+                "operand" : [ ]
+              } ]
+            } ]
+          },
+          "source" : {
+            "distinct" : {
+              "correlate" : [ {
+                "project" : {
+                  "target" : [ [ {
+                    "column" : 0
+                  }, "VARCHAR(10)" ] ],
+                  "source" : {
+                    "filter" : {
+                      "condition" : {
+                        "operator" : ">",
+                        "operand" : [ {
+                          "column" : 0
+                        }, {
+                          "operator" : "'C'",
+                          "operand" : [ ]
+                        } ]
+                      },
+                      "source" : {
+                        "project" : {
+                          "target" : [ [ {
+                            "column" : 1
+                          }, "VARCHAR(10)" ] ],
+                          "source" : {
+                            "filter" : {
+                              "condition" : {
+                                "operator" : ">",
+                                "operand" : [ {
+                                  "column" : 1
+                                }, {
+                                  "operator" : "'B'",
+                                  "operand" : [ ]
+                                } ]
+                              },
+                              "source" : {
+                                "scan" : 0
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }, {
+                "aggregate" : {
+                  "function" : [ [ {
+                    "operator" : "COUNT",
+                    "operand" : [ ]
+                  }, "BIGINT" ] ],
+                  "source" : {
+                    "filter" : {
+                      "condition" : {
+                        "operator" : "AND",
+                        "operand" : [ {
+                          "operator" : "TRUE",
+                          "operand" : [ ]
+                        }, {
+                          "operator" : "=",
+                          "operand" : [ {
+                            "column" : 0
+                          }, {
+                            "column" : 1
+                          } ]
+                        } ]
+                      },
+                      "source" : {
+                        "filter" : {
+                          "condition" : {
+                            "operator" : ">",
+                            "operand" : [ {
+                              "column" : 1
+                            }, {
+                              "operator" : "'C'",
+                              "operand" : [ ]
+                            } ]
+                          },
+                          "source" : {
+                            "project" : {
+                              "target" : [ [ {
+                                "column" : 2
+                              }, "VARCHAR(10)" ] ],
+                              "source" : {
+                                "filter" : {
+                                  "condition" : {
+                                    "operator" : ">",
+                                    "operand" : [ {
+                                      "column" : 2
+                                    }, {
+                                      "operator" : "'B'",
+                                      "operand" : [ ]
+                                    } ]
+                                  },
+                                  "source" : {
+                                    "scan" : 0
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              } ]
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(C1=[$0])\r\n  LogicalFilter(condition=[AND(>($0, 'c'), OR(>($1, 30), <($0, 'z')))])\r\n    LogicalAggregate(group=[{0}], C2=[COUNT()])\r\n      LogicalProject(C1=[$1])\r\n        LogicalFilter(condition=[>($1, 'b')])\r\n          LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(C1=[$0])\r\n  LogicalFilter(condition=[OR(>($1, 30), <($0, 'z'))])\r\n    LogicalAggregate(group=[{0}], C2=[COUNT()])\r\n      LogicalFilter(condition=[>($0, 'c')])\r\n        LogicalProject(C1=[$1])\r\n          LogicalFilter(condition=[>($1, 'b')])\r\n            LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+}

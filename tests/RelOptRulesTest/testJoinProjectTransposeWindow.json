@@ -1,0 +1,137 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(10)" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "VARCHAR(10)" ], [ {
+        "column" : 3
+      }, "BIGINT" ], [ {
+        "column" : 4
+      }, "INTEGER" ] ],
+      "source" : {
+        "join" : {
+          "type" : "INNER",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 2
+            }, {
+              "column" : 3
+            } ]
+          },
+          "left" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 0
+              }, "INTEGER" ], [ {
+                "column" : 1
+              }, "VARCHAR(10)" ], [ {
+                "operator" : "CAST",
+                "operand" : [ {
+                  "column" : 1
+                } ]
+              }, "BIGINT" ] ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          },
+          "right" : {
+            "project" : {
+              "target" : [ [ {
+                "error" : "Not implemented: RANK"
+              }, "BIGINT" ], [ {
+                "operator" : "+",
+                "operand" : [ {
+                  "operator" : "1",
+                  "operand" : [ ]
+                }, {
+                  "operator" : "1",
+                  "operand" : [ ]
+                } ]
+              }, "INTEGER" ] ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "VARCHAR(10)" ], [ {
+        "column" : 3
+      }, "BIGINT" ], [ {
+        "column" : 4
+      }, "INTEGER" ] ],
+      "source" : {
+        "project" : {
+          "target" : [ [ {
+            "column" : 0
+          }, "INTEGER" ], [ {
+            "column" : 1
+          }, "VARCHAR(10)" ], [ {
+            "operator" : "CAST",
+            "operand" : [ {
+              "column" : 1
+            } ]
+          }, "BIGINT" ], [ {
+            "column" : 2
+          }, "BIGINT" ], [ {
+            "column" : 3
+          }, "INTEGER" ] ],
+          "source" : {
+            "join" : {
+              "type" : "INNER",
+              "condition" : {
+                "operator" : "=",
+                "operand" : [ {
+                  "operator" : "CAST",
+                  "operand" : [ {
+                    "column" : 1
+                  } ]
+                }, {
+                  "column" : 2
+                } ]
+              },
+              "left" : {
+                "scan" : 0
+              },
+              "right" : {
+                "project" : {
+                  "target" : [ [ {
+                    "error" : "Not implemented: RANK"
+                  }, "BIGINT" ], [ {
+                    "operator" : "+",
+                    "operand" : [ {
+                      "operator" : "1",
+                      "operand" : [ ]
+                    }, {
+                      "operator" : "1",
+                      "operand" : [ ]
+                    } ]
+                  }, "INTEGER" ] ],
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(DEPTNO=[$0], NAME=[$1], R=[$3], EXPR$1=[$4])\r\n  LogicalJoin(condition=[=($2, $3)], joinType=[inner])\r\n    LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[CAST($1):BIGINT NOT NULL])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalProject(R=[RANK() OVER (ORDER BY $1)], EXPR$1=[+(1, 1)])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(DEPTNO=[$0], NAME=[$1], R=[$3], EXPR$1=[$4])\r\n  LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[CAST($1):BIGINT NOT NULL], R=[$2], EXPR$1=[$3])\r\n    LogicalJoin(condition=[=(CAST($1):BIGINT NOT NULL, $2)], joinType=[inner])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n      LogicalProject(R=[RANK() OVER (ORDER BY $1)], EXPR$1=[+(1, 1)])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+}

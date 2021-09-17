@@ -1,0 +1,84 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(10)" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "VARCHAR(10)" ], [ {
+        "column" : 2
+      }, "VARCHAR(10)" ] ],
+      "source" : {
+        "join" : {
+          "type" : "LEFT",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 1
+            }, {
+              "column" : 2
+            } ]
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 1
+              }, "VARCHAR(10)" ] ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "VARCHAR(10)" ], [ {
+        "column" : 2
+      }, "VARCHAR(10)" ] ],
+      "source" : {
+        "project" : {
+          "target" : [ [ {
+            "column" : 0
+          }, "INTEGER" ], [ {
+            "column" : 1
+          }, "VARCHAR(10)" ], [ {
+            "column" : 3
+          }, "VARCHAR(10)" ] ],
+          "source" : {
+            "join" : {
+              "type" : "LEFT",
+              "condition" : {
+                "operator" : "=",
+                "operand" : [ {
+                  "column" : 1
+                }, {
+                  "column" : 3
+                } ]
+              },
+              "left" : {
+                "scan" : 0
+              },
+              "right" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[$2])\r\n  LogicalJoin(condition=[=($1, $2)], joinType=[left])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalProject(NAME=[$1])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[$2])\r\n  LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[$3])\r\n    LogicalJoin(condition=[=($1, $3)], joinType=[left])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+}

@@ -1,0 +1,60 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "AND",
+            "operand" : [ {
+              "operator" : "=",
+              "operand" : [ {
+                "column" : 0
+              }, {
+                "operator" : "10",
+                "operand" : [ ]
+              } ]
+            }, {
+              "operator" : "IS NOT NULL",
+              "operand" : [ {
+                "column" : 0
+              } ]
+            } ]
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 0
+            }, {
+              "operator" : "10",
+              "operand" : [ ]
+            } ]
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(EMPNO=[$0])\r\n  LogicalFilter(condition=[AND(=($0, 10), IS NOT NULL($0))])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EMPNO=[$0])\r\n  LogicalFilter(condition=[=($0, 10)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+}

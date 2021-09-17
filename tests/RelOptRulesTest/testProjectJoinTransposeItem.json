@@ -1,0 +1,164 @@
+{
+  "schemas" : [ {
+    "types" : [ "ANY" ],
+    "strategy" : [ "NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "operator" : "ITEM",
+        "operand" : [ {
+          "column" : 0
+        }, {
+          "operator" : "0",
+          "operand" : [ ]
+        } ]
+      }, "ANY" ], [ {
+        "operator" : "ITEM",
+        "operand" : [ {
+          "column" : 2
+        }, {
+          "operator" : "0",
+          "operand" : [ ]
+        } ]
+      }, "ANY" ] ],
+      "source" : {
+        "join" : {
+          "type" : "LEFT",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 1
+            }, {
+              "column" : 3
+            } ]
+          },
+          "left" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 0
+              }, "ANY" ], [ {
+                "operator" : "ITEM",
+                "operand" : [ {
+                  "column" : 0
+                }, {
+                  "operator" : "0",
+                  "operand" : [ ]
+                } ]
+              }, "ANY" ] ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          },
+          "right" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 0
+              }, "ANY" ], [ {
+                "operator" : "ITEM",
+                "operand" : [ {
+                  "column" : 0
+                }, {
+                  "operator" : "0",
+                  "operand" : [ ]
+                } ]
+              }, "ANY" ] ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 1
+      }, "ANY" ], [ {
+        "column" : 3
+      }, "ANY" ] ],
+      "source" : {
+        "join" : {
+          "type" : "LEFT",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 0
+            }, {
+              "column" : 2
+            } ]
+          },
+          "left" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 1
+              }, "ANY" ], [ {
+                "operator" : "ITEM",
+                "operand" : [ {
+                  "column" : 0
+                }, {
+                  "operator" : "0",
+                  "operand" : [ ]
+                } ]
+              }, "ANY" ] ],
+              "source" : {
+                "project" : {
+                  "target" : [ [ {
+                    "column" : 0
+                  }, "ANY" ], [ {
+                    "operator" : "ITEM",
+                    "operand" : [ {
+                      "column" : 0
+                    }, {
+                      "operator" : "0",
+                      "operand" : [ ]
+                    } ]
+                  }, "ANY" ] ],
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              }
+            }
+          },
+          "right" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 1
+              }, "ANY" ], [ {
+                "operator" : "ITEM",
+                "operand" : [ {
+                  "column" : 0
+                }, {
+                  "operator" : "0",
+                  "operand" : [ ]
+                } ]
+              }, "ANY" ] ],
+              "source" : {
+                "project" : {
+                  "target" : [ [ {
+                    "column" : 0
+                  }, "ANY" ], [ {
+                    "operator" : "ITEM",
+                    "operand" : [ {
+                      "column" : 0
+                    }, {
+                      "operator" : "0",
+                      "operand" : [ ]
+                    } ]
+                  }, "ANY" ] ],
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(EXPR$0=[ITEM($0, 0)], EXPR$1=[ITEM($2, 0)])\r\n  LogicalJoin(condition=[=($1, $3)], joinType=[left])\r\n    LogicalProject(C_NATIONKEY=[$0], $f1=[ITEM($0, 0)])\r\n      LogicalTableScan(table=[[CATALOG, SALES, CUSTOMER]])\r\n    LogicalProject(C_NATIONKEY=[$0], $f1=[ITEM($0, 0)])\r\n      LogicalTableScan(table=[[CATALOG, SALES, CUSTOMER]])\r\n", "LogicalProject(EXPR$0=[$1], EXPR$1=[$3])\r\n  LogicalJoin(condition=[=($0, $2)], joinType=[left])\r\n    LogicalProject($f1=[$1], EXPR$0=[ITEM($0, 0)])\r\n      LogicalProject(C_NATIONKEY=[$0], $f1=[ITEM($0, 0)])\r\n        LogicalTableScan(table=[[CATALOG, SALES, CUSTOMER]])\r\n    LogicalProject($f1=[$1], EXPR$0=[ITEM($0, 0)])\r\n      LogicalProject(C_NATIONKEY=[$0], $f1=[ITEM($0, 0)])\r\n        LogicalTableScan(table=[[CATALOG, SALES, CUSTOMER]])\r\n" ]
+}

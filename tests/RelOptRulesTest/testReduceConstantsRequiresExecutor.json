@@ -1,0 +1,65 @@
+{
+  "schemas" : [ ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "INTEGER" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : ">",
+            "operand" : [ {
+              "operator" : "+",
+              "operand" : [ {
+                "operator" : "1",
+                "operand" : [ ]
+              }, {
+                "operator" : "2",
+                "operand" : [ ]
+              } ]
+            }, {
+              "operator" : "+",
+              "operand" : [ {
+                "operator" : "3",
+                "operand" : [ ]
+              }, {
+                "operator" : "NULL:INTEGER",
+                "operand" : [ ]
+              } ]
+            } ]
+          },
+          "source" : {
+            "value" : {
+              "schema" : [ "INTEGER", "INTEGER" ],
+              "content" : [ [ {
+                "operator" : "1",
+                "operand" : [ ]
+              }, {
+                "operator" : "2",
+                "operand" : [ ]
+              } ] ]
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "INTEGER" ] ],
+      "source" : {
+        "value" : {
+          "schema" : [ "INTEGER", "INTEGER" ],
+          "content" : [ ]
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(EXPR$0=[$0], EXPR$1=[$1])\r\n  LogicalFilter(condition=[>(+(1, 2), +(3, null))])\r\n    LogicalValues(tuples=[[{ 1, 2 }]])\r\n", "LogicalProject(EXPR$0=[$0], EXPR$1=[$1])\r\n  LogicalValues(tuples=[[]])\r\n" ]
+}

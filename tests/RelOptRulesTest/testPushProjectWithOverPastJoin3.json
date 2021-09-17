@@ -1,0 +1,132 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ]
+  }, {
+    "types" : [ "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "INTEGER" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "operator" : "+",
+        "operand" : [ {
+          "column" : 5
+        }, {
+          "column" : 12
+        } ]
+      }, "INTEGER" ], [ {
+        "error" : "Not implemented: SUM"
+      }, "INTEGER" ] ],
+      "source" : {
+        "join" : {
+          "type" : "INNER",
+          "condition" : {
+            "operator" : "AND",
+            "operand" : [ {
+              "operator" : "=",
+              "operand" : [ {
+                "column" : 1
+              }, {
+                "column" : 9
+              } ]
+            }, {
+              "operator" : "=",
+              "operand" : [ {
+                "column" : 7
+              }, {
+                "operator" : "10",
+                "operand" : [ ]
+              } ]
+            } ]
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "scan" : 1
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "operator" : "+",
+        "operand" : [ {
+          "column" : 1
+        }, {
+          "column" : 5
+        } ]
+      }, "INTEGER" ], [ {
+        "error" : "Not implemented: SUM"
+      }, "INTEGER" ] ],
+      "source" : {
+        "join" : {
+          "type" : "INNER",
+          "condition" : {
+            "operator" : "AND",
+            "operand" : [ {
+              "operator" : "=",
+              "operand" : [ {
+                "column" : 0
+              }, {
+                "column" : 3
+              } ]
+            }, {
+              "column" : 2
+            } ]
+          },
+          "left" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 1
+              }, "VARCHAR(20)" ], [ {
+                "column" : 5
+              }, "INTEGER" ], [ {
+                "operator" : "=",
+                "operand" : [ {
+                  "column" : 7
+                }, {
+                  "operator" : "10",
+                  "operand" : [ ]
+                } ]
+              }, "BOOLEAN" ] ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          },
+          "right" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 0
+              }, "VARCHAR(20)" ], [ {
+                "column" : 1
+              }, "VARCHAR(10)" ], [ {
+                "column" : 3
+              }, "INTEGER" ], [ {
+                "operator" : "+",
+                "operand" : [ {
+                  "operator" : "+",
+                  "operand" : [ {
+                    "column" : 2
+                  }, {
+                    "column" : 2
+                  } ]
+                }, {
+                  "operator" : "100",
+                  "operand" : [ ]
+                } ]
+              }, "INTEGER" ] ],
+              "source" : {
+                "scan" : 1
+              }
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(EXPR$0=[+($5, $12)], EXPR$1=[SUM(+(+($11, $11), 100)) OVER (PARTITION BY $10)])\r\n  LogicalJoin(condition=[AND(=($1, $9), =($7, 10))], joinType=[inner])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, BONUS]])\r\n", "LogicalProject(EXPR$0=[+($1, $5)], EXPR$1=[SUM($6) OVER (PARTITION BY $4)])\r\n  LogicalJoin(condition=[AND(=($0, $3), $2)], joinType=[inner])\r\n    LogicalProject(ENAME=[$1], SAL=[$5], EXPR$0=[=($7, 10)])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalProject(ENAME=[$0], JOB=[$1], COMM=[$3], EXPR$0=[+(+($2, $2), 100)])\r\n      LogicalTableScan(table=[[CATALOG, SALES, BONUS]])\r\n" ]
+}

@@ -1,0 +1,64 @@
+{
+  "schemas" : [ ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "CHAR(1)" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "<",
+            "operand" : [ {
+              "column" : 0
+            }, {
+              "operator" : "15",
+              "operand" : [ ]
+            } ]
+          },
+          "source" : {
+            "value" : {
+              "schema" : [ "INTEGER", "CHAR(1)" ],
+              "content" : [ [ {
+                "operator" : "10",
+                "operand" : [ ]
+              }, {
+                "operator" : "'X'",
+                "operand" : [ ]
+              } ], [ {
+                "operator" : "20",
+                "operand" : [ ]
+              }, {
+                "operator" : "'Y'",
+                "operand" : [ ]
+              } ] ]
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "CHAR(1)" ] ],
+      "source" : {
+        "value" : {
+          "schema" : [ "INTEGER", "CHAR(1)" ],
+          "content" : [ [ {
+            "operator" : "10",
+            "operand" : [ ]
+          }, {
+            "operator" : "'X'",
+            "operand" : [ ]
+          } ] ]
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(A=[$0], B=[$1])\r\n  LogicalFilter(condition=[<($0, 15)])\r\n    LogicalValues(tuples=[[{ 10, 'x' }, { 20, 'y' }]])\r\n", "LogicalProject(A=[$0], B=[$1])\r\n  LogicalValues(tuples=[[{ 10, 'x' }]])\r\n" ]
+}

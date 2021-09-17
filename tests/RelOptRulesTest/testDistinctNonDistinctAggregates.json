@@ -1,0 +1,357 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ]
+  }, {
+    "types" : [ "INTEGER", "VARCHAR(10)" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "distinct" : {
+      "correlate" : [ {
+        "project" : {
+          "target" : [ [ {
+            "column" : 0
+          }, "INTEGER" ] ],
+          "source" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 0
+              }, "INTEGER" ], [ {
+                "column" : 9
+              }, "INTEGER" ] ],
+              "source" : {
+                "join" : {
+                  "type" : "INNER",
+                  "condition" : {
+                    "operator" : "=",
+                    "operand" : [ {
+                      "column" : 7
+                    }, {
+                      "column" : 9
+                    } ]
+                  },
+                  "left" : {
+                    "scan" : 0
+                  },
+                  "right" : {
+                    "scan" : 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }, {
+        "aggregate" : {
+          "function" : [ [ {
+            "operator" : "COUNT",
+            "operand" : [ ]
+          }, "BIGINT" ], [ {
+            "operator" : "AVG",
+            "operand" : [ {
+              "column" : 2
+            } ]
+          }, "INTEGER" ] ],
+          "source" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "AND",
+                "operand" : [ {
+                  "operator" : "TRUE",
+                  "operand" : [ ]
+                }, {
+                  "operator" : "=",
+                  "operand" : [ {
+                    "column" : 0
+                  }, {
+                    "column" : 1
+                  } ]
+                } ]
+              },
+              "source" : {
+                "project" : {
+                  "target" : [ [ {
+                    "column" : 1
+                  }, "INTEGER" ], [ {
+                    "column" : 10
+                  }, "INTEGER" ] ],
+                  "source" : {
+                    "join" : {
+                      "type" : "INNER",
+                      "condition" : {
+                        "operator" : "=",
+                        "operand" : [ {
+                          "column" : 8
+                        }, {
+                          "column" : 10
+                        } ]
+                      },
+                      "left" : {
+                        "scan" : 0
+                      },
+                      "right" : {
+                        "scan" : 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      } ]
+    }
+  }, {
+    "distinct" : {
+      "correlate" : [ {
+        "project" : {
+          "target" : [ [ {
+            "column" : 0
+          }, "INTEGER" ] ],
+          "source" : {
+            "distinct" : {
+              "correlate" : [ {
+                "project" : {
+                  "target" : [ [ {
+                    "column" : 0
+                  }, "INTEGER" ], [ {
+                    "column" : 1
+                  }, "INTEGER" ] ],
+                  "source" : {
+                    "project" : {
+                      "target" : [ [ {
+                        "column" : 0
+                      }, "INTEGER" ], [ {
+                        "column" : 9
+                      }, "INTEGER" ] ],
+                      "source" : {
+                        "join" : {
+                          "type" : "INNER",
+                          "condition" : {
+                            "operator" : "=",
+                            "operand" : [ {
+                              "column" : 7
+                            }, {
+                              "column" : 9
+                            } ]
+                          },
+                          "left" : {
+                            "scan" : 0
+                          },
+                          "right" : {
+                            "scan" : 1
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }, {
+                "aggregate" : {
+                  "function" : [ [ {
+                    "operator" : "COUNT",
+                    "operand" : [ ]
+                  }, "BIGINT" ] ],
+                  "source" : {
+                    "filter" : {
+                      "condition" : {
+                        "operator" : "AND",
+                        "operand" : [ {
+                          "operator" : "AND",
+                          "operand" : [ {
+                            "operator" : "TRUE",
+                            "operand" : [ ]
+                          }, {
+                            "operator" : "=",
+                            "operand" : [ {
+                              "column" : 0
+                            }, {
+                              "column" : 2
+                            } ]
+                          } ]
+                        }, {
+                          "operator" : "=",
+                          "operand" : [ {
+                            "column" : 1
+                          }, {
+                            "column" : 3
+                          } ]
+                        } ]
+                      },
+                      "source" : {
+                        "project" : {
+                          "target" : [ [ {
+                            "column" : 2
+                          }, "INTEGER" ], [ {
+                            "column" : 11
+                          }, "INTEGER" ] ],
+                          "source" : {
+                            "join" : {
+                              "type" : "INNER",
+                              "condition" : {
+                                "operator" : "=",
+                                "operand" : [ {
+                                  "column" : 9
+                                }, {
+                                  "column" : 11
+                                } ]
+                              },
+                              "left" : {
+                                "scan" : 0
+                              },
+                              "right" : {
+                                "scan" : 1
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              } ]
+            }
+          }
+        }
+      }, {
+        "aggregate" : {
+          "function" : [ [ {
+            "operator" : "$SUM0",
+            "operand" : [ {
+              "column" : 3
+            } ]
+          }, "BIGINT" ], [ {
+            "operator" : "AVG",
+            "operand" : [ {
+              "column" : 2
+            } ]
+          }, "INTEGER" ] ],
+          "source" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "AND",
+                "operand" : [ {
+                  "operator" : "TRUE",
+                  "operand" : [ ]
+                }, {
+                  "operator" : "=",
+                  "operand" : [ {
+                    "column" : 0
+                  }, {
+                    "column" : 1
+                  } ]
+                } ]
+              },
+              "source" : {
+                "distinct" : {
+                  "correlate" : [ {
+                    "project" : {
+                      "target" : [ [ {
+                        "column" : 1
+                      }, "INTEGER" ], [ {
+                        "column" : 2
+                      }, "INTEGER" ] ],
+                      "source" : {
+                        "project" : {
+                          "target" : [ [ {
+                            "column" : 1
+                          }, "INTEGER" ], [ {
+                            "column" : 10
+                          }, "INTEGER" ] ],
+                          "source" : {
+                            "join" : {
+                              "type" : "INNER",
+                              "condition" : {
+                                "operator" : "=",
+                                "operand" : [ {
+                                  "column" : 8
+                                }, {
+                                  "column" : 10
+                                } ]
+                              },
+                              "left" : {
+                                "scan" : 0
+                              },
+                              "right" : {
+                                "scan" : 1
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }, {
+                    "aggregate" : {
+                      "function" : [ [ {
+                        "operator" : "COUNT",
+                        "operand" : [ ]
+                      }, "BIGINT" ] ],
+                      "source" : {
+                        "filter" : {
+                          "condition" : {
+                            "operator" : "AND",
+                            "operand" : [ {
+                              "operator" : "AND",
+                              "operand" : [ {
+                                "operator" : "TRUE",
+                                "operand" : [ ]
+                              }, {
+                                "operator" : "=",
+                                "operand" : [ {
+                                  "column" : 1
+                                }, {
+                                  "column" : 3
+                                } ]
+                              } ]
+                            }, {
+                              "operator" : "=",
+                              "operand" : [ {
+                                "column" : 2
+                              }, {
+                                "column" : 4
+                              } ]
+                            } ]
+                          },
+                          "source" : {
+                            "project" : {
+                              "target" : [ [ {
+                                "column" : 3
+                              }, "INTEGER" ], [ {
+                                "column" : 12
+                              }, "INTEGER" ] ],
+                              "source" : {
+                                "join" : {
+                                  "type" : "INNER",
+                                  "condition" : {
+                                    "operator" : "=",
+                                    "operand" : [ {
+                                      "column" : 10
+                                    }, {
+                                      "column" : 12
+                                    } ]
+                                  },
+                                  "left" : {
+                                    "scan" : 0
+                                  },
+                                  "right" : {
+                                    "scan" : 1
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  } ]
+                }
+              }
+            }
+          }
+        }
+      } ]
+    }
+  } ],
+  "help" : [ "LogicalAggregate(group=[{0}], EXPR$1=[COUNT()], EXPR$2=[AVG(DISTINCT $1)])\r\n  LogicalProject(EMPNO=[$0], DEPTNO0=[$9])\r\n    LogicalJoin(condition=[=($7, $9)], joinType=[inner])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalAggregate(group=[{0}], EXPR$1=[$SUM0($2)], EXPR$2=[AVG($1)])\r\n  LogicalAggregate(group=[{0, 1}], EXPR$1=[COUNT()])\r\n    LogicalProject(EMPNO=[$0], DEPTNO0=[$9])\r\n      LogicalJoin(condition=[=($7, $9)], joinType=[inner])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+}

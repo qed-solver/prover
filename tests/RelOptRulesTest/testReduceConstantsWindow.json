@@ -1,0 +1,47 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "error" : "Not implemented: SUM"
+      }, "INTEGER" ], [ {
+        "error" : "Not implemented: SUM"
+      }, "INTEGER" ], [ {
+        "error" : "Not implemented: SUM"
+      }, "INTEGER" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 5
+            }, {
+              "operator" : "5000",
+              "operand" : [ ]
+            } ]
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 2
+      }, "INTEGER" ], [ {
+        "column" : 3
+      }, "INTEGER" ], [ {
+        "column" : 4
+      }, "INTEGER" ] ],
+      "source" : {
+        "error" : "Not implemented: LogicalWindow"
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(COL1=[SUM(100) OVER (PARTITION BY $7, $5 ORDER BY $5)], COL2=[SUM(100) OVER (PARTITION BY $5 ORDER BY $7)], COL3=[SUM($5) OVER (PARTITION BY $7 ORDER BY $5)])\r\n  LogicalFilter(condition=[=($5, 5000)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject($0=[$2], $1=[$3], $2=[$4])\r\n  LogicalWindow(window#0=[window(partition {1} range between UNBOUNDED PRECEDING and CURRENT ROW aggs [SUM($2)])], window#1=[window(order by [1] aggs [SUM($2)])], window#2=[window(partition {1} range between UNBOUNDED PRECEDING and CURRENT ROW aggs [SUM(5000)])])\r\n    LogicalProject(SAL=[$5], DEPTNO=[$7])\r\n      LogicalFilter(condition=[=($5, 5000)])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+}

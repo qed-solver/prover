@@ -1,0 +1,126 @@
+{
+  "schemas" : [ ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "VARCHAR(26)" ], [ {
+        "column" : 1
+      }, "VARCHAR(13)" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 0
+            }, {
+              "operator" : "'TABLE':VARCHAR(26)",
+              "operand" : [ ]
+            } ]
+          },
+          "source" : {
+            "project" : {
+              "target" : [ [ {
+                "operator" : "UPPER",
+                "operand" : [ {
+                  "operator" : "||",
+                  "operand" : [ {
+                    "operator" : "SUBSTRING",
+                    "operand" : [ {
+                      "column" : 0
+                    }, {
+                      "operator" : "1",
+                      "operand" : [ ]
+                    }, {
+                      "operator" : "2",
+                      "operand" : [ ]
+                    } ]
+                  }, {
+                    "operator" : "SUBSTRING",
+                    "operand" : [ {
+                      "column" : 0
+                    }, {
+                      "operator" : "3",
+                      "operand" : [ ]
+                    } ]
+                  } ]
+                } ]
+              }, "VARCHAR(26)" ], [ {
+                "operator" : "SUBSTRING",
+                "operand" : [ {
+                  "column" : 0
+                }, {
+                  "operator" : "1",
+                  "operand" : [ ]
+                }, {
+                  "operator" : "1",
+                  "operand" : [ ]
+                } ]
+              }, "VARCHAR(13)" ] ],
+              "source" : {
+                "distinct" : {
+                  "union" : [ {
+                    "distinct" : {
+                      "union" : [ {
+                        "project" : {
+                          "target" : [ [ {
+                            "operator" : "'TABLE'",
+                            "operand" : [ ]
+                          }, "CHAR(5)" ] ],
+                          "source" : {
+                            "value" : {
+                              "schema" : [ "BOOLEAN" ],
+                              "content" : [ [ {
+                                "operator" : "TRUE",
+                                "operand" : [ ]
+                              } ] ]
+                            }
+                          }
+                        }
+                      }, {
+                        "project" : {
+                          "target" : [ [ {
+                            "operator" : "'VIEW'",
+                            "operand" : [ ]
+                          }, "CHAR(4)" ] ],
+                          "source" : {
+                            "value" : {
+                              "schema" : [ "BOOLEAN" ],
+                              "content" : [ [ {
+                                "operator" : "TRUE",
+                                "operand" : [ ]
+                              } ] ]
+                            }
+                          }
+                        }
+                      } ]
+                    }
+                  }, {
+                    "project" : {
+                      "target" : [ [ {
+                        "operator" : "'FOREIGN TABLE'",
+                        "operand" : [ ]
+                      }, "CHAR(13)" ] ],
+                      "source" : {
+                        "value" : {
+                          "schema" : [ "BOOLEAN" ],
+                          "content" : [ [ {
+                            "operator" : "TRUE",
+                            "operand" : [ ]
+                          } ] ]
+                        }
+                      }
+                    }
+                  } ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "error" : "Not implemented: LogicalCalc"
+  } ],
+  "help" : [ "LogicalProject(U=[$0], S=[$1])\r\n  LogicalFilter(condition=[=($0, 'TABLE')])\r\n    LogicalProject(U=[UPPER(||(SUBSTRING($0, 1, 2), SUBSTRING($0, 3)))], S=[SUBSTRING($0, 1, 1)])\r\n      LogicalUnion(all=[false])\r\n        LogicalUnion(all=[false])\r\n          LogicalProject(X=['table'])\r\n            LogicalValues(tuples=[[{ true }]])\r\n          LogicalProject(EXPR$0=['view'])\r\n            LogicalValues(tuples=[[{ true }]])\r\n        LogicalProject(EXPR$0=['foreign table'])\r\n          LogicalValues(tuples=[[{ true }]])\r\n", "LogicalCalc(expr#0=[{inputs}], expr#1=['TABLE        ':VARCHAR(26)], expr#2=['t':VARCHAR(13)], U=[$t1], S=[$t2])\r\n  LogicalValues(tuples=[[{ true }]])\r\n" ]
+}

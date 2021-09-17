@@ -1,0 +1,100 @@
+{
+  "schemas" : [ ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "INTEGER" ] ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : ">",
+            "operand" : [ {
+              "operator" : "+",
+              "operand" : [ {
+                "column" : 0
+              }, {
+                "column" : 1
+              } ]
+            }, {
+              "operator" : "30",
+              "operand" : [ ]
+            } ]
+          },
+          "source" : {
+            "union" : [ {
+              "project" : {
+                "target" : [ [ {
+                  "column" : 0
+                }, "INTEGER" ], [ {
+                  "column" : 1
+                }, "INTEGER" ] ],
+                "source" : {
+                  "value" : {
+                    "schema" : [ "INTEGER", "INTEGER" ],
+                    "content" : [ [ {
+                      "operator" : "10",
+                      "operand" : [ ]
+                    }, {
+                      "operator" : "1",
+                      "operand" : [ ]
+                    } ], [ {
+                      "operator" : "30",
+                      "operand" : [ ]
+                    }, {
+                      "operator" : "3",
+                      "operand" : [ ]
+                    } ] ]
+                  }
+                }
+              }
+            }, {
+              "project" : {
+                "target" : [ [ {
+                  "column" : 0
+                }, "INTEGER" ], [ {
+                  "column" : 1
+                }, "INTEGER" ] ],
+                "source" : {
+                  "value" : {
+                    "schema" : [ "INTEGER", "INTEGER" ],
+                    "content" : [ [ {
+                      "operator" : "20",
+                      "operand" : [ ]
+                    }, {
+                      "operator" : "2",
+                      "operand" : [ ]
+                    } ] ]
+                  }
+                }
+              }
+            } ]
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ], [ {
+        "column" : 1
+      }, "INTEGER" ] ],
+      "source" : {
+        "value" : {
+          "schema" : [ "INTEGER", "INTEGER" ],
+          "content" : [ [ {
+            "operator" : "30",
+            "operand" : [ ]
+          }, {
+            "operator" : "3",
+            "operand" : [ ]
+          } ] ]
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(X=[$0], Y=[$1])\r\n  LogicalFilter(condition=[>(+($0, $1), 30)])\r\n    LogicalUnion(all=[true])\r\n      LogicalProject(X=[$0], Y=[$1])\r\n        LogicalValues(tuples=[[{ 10, 1 }, { 30, 3 }]])\r\n      LogicalProject(EXPR$0=[$0], EXPR$1=[$1])\r\n        LogicalValues(tuples=[[{ 20, 2 }]])\r\n", "LogicalProject(X=[$0], Y=[$1])\r\n  LogicalValues(tuples=[[{ 30, 3 }]])\r\n" ]
+}

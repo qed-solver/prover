@@ -1,0 +1,62 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(10)", "RecordType(VARCHAR(10) TYPE, VARCHAR(20) DESC, RecordType(VARCHAR(10) A, VARCHAR(10) B) OTHERS)", "RecordType:peek(INTEGER EMPNO, VARCHAR(10) ENAME, RecordType(RecordType(VARCHAR(10) TYPE, VARCHAR(20) DESC, RecordType(VARCHAR(10) A, VARCHAR(10) B) OTHERS) ARRAY SKILLS) DETAIL) ARRAY" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "error" : "Not implemented: SUM"
+      }, "INTEGER" ], [ {
+        "error" : "Not implemented: COUNT"
+      }, "BIGINT" ] ],
+      "source" : {
+        "correlate" : [ {
+          "scan" : 0
+        }, {
+          "error" : "Not implemented: Uncollect"
+        } ]
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "error" : "Not implemented: SUM"
+      }, "INTEGER" ], [ {
+        "error" : "Not implemented: COUNT"
+      }, "BIGINT" ] ],
+      "source" : {
+        "correlate" : [ {
+          "project" : {
+            "target" : [ [ {
+              "column" : 1
+            }, "VARCHAR(10)" ], [ {
+              "column" : 3
+            }, "RecordType:peek(INTEGER EMPNO, VARCHAR(10) ENAME, RecordType(RecordType(VARCHAR(10) TYPE, VARCHAR(20) DESC, RecordType(VARCHAR(10) A, VARCHAR(10) B) OTHERS) ARRAY SKILLS) DETAIL) ARRAY" ], [ {
+              "operator" : "+",
+              "operand" : [ {
+                "column" : 0
+              }, {
+                "operator" : "1",
+                "operand" : [ ]
+              } ]
+            }, "INTEGER" ] ],
+            "source" : {
+              "scan" : 0
+            }
+          }
+        }, {
+          "project" : {
+            "target" : [ [ {
+              "column" : 3
+            }, "INTEGER" ] ],
+            "source" : {
+              "error" : "Not implemented: Uncollect"
+            }
+          }
+        } ]
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(EXPR$0=[SUM(+($0, 1)) OVER (PARTITION BY $1)], EXPR$1=[COUNT($4) OVER ()])\r\n  LogicalCorrelate(correlation=[$cor0], joinType=[inner], requiredColumns=[{3}])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT_NESTED]])\r\n    Uncollect\r\n      LogicalProject(EMPLOYEES=[$cor0.EMPLOYEES])\r\n        LogicalValues(tuples=[[{ 0 }]])\r\n", "LogicalProject(EXPR$0=[SUM($2) OVER (PARTITION BY $0)], EXPR$1=[COUNT($3) OVER ()])\r\n  LogicalCorrelate(correlation=[$cor1], joinType=[inner], requiredColumns=[{1}])\r\n    LogicalProject(NAME=[$1], EMPLOYEES=[$3], EXPR$0=[+($0, 1)])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT_NESTED]])\r\n    LogicalProject(EMPNO=[$0])\r\n      Uncollect\r\n        LogicalProject(EMPLOYEES=[$cor1.EMPLOYEES])\r\n          LogicalValues(tuples=[[{ 0 }]])\r\n" ]
+}

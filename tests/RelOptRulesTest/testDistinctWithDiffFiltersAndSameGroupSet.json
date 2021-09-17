@@ -1,0 +1,386 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "distinct" : {
+      "correlate" : [ {
+        "project" : {
+          "target" : [ ],
+          "source" : {
+            "project" : {
+              "target" : [ [ {
+                "operator" : ">",
+                "operand" : [ {
+                  "column" : 5
+                }, {
+                  "operator" : "1000",
+                  "operand" : [ ]
+                } ]
+              }, "BOOLEAN" ], [ {
+                "operator" : "<",
+                "operand" : [ {
+                  "column" : 5
+                }, {
+                  "operator" : "500",
+                  "operand" : [ ]
+                } ]
+              }, "BOOLEAN" ] ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      }, {
+        "aggregate" : {
+          "function" : [ [ {
+            "operator" : "COUNT",
+            "operand" : [ {
+              "column" : 0
+            } ]
+          }, "BIGINT" ], [ {
+            "operator" : "COUNT",
+            "operand" : [ {
+              "column" : 1
+            } ]
+          }, "BIGINT" ] ],
+          "source" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "TRUE",
+                "operand" : [ ]
+              },
+              "source" : {
+                "project" : {
+                  "target" : [ [ {
+                    "operator" : ">",
+                    "operand" : [ {
+                      "column" : 5
+                    }, {
+                      "operator" : "1000",
+                      "operand" : [ ]
+                    } ]
+                  }, "BOOLEAN" ], [ {
+                    "operator" : "<",
+                    "operand" : [ {
+                      "column" : 5
+                    }, {
+                      "operator" : "500",
+                      "operand" : [ ]
+                    } ]
+                  }, "BOOLEAN" ] ],
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      } ]
+    }
+  }, {
+    "distinct" : {
+      "correlate" : [ {
+        "project" : {
+          "target" : [ ],
+          "source" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 0
+              }, "BOOLEAN" ], [ {
+                "column" : 1
+              }, "BOOLEAN" ], [ {
+                "operator" : "AND",
+                "operand" : [ {
+                  "operator" : "=",
+                  "operand" : [ {
+                    "column" : 2
+                  }, {
+                    "operator" : "0",
+                    "operand" : [ ]
+                  } ]
+                }, {
+                  "column" : 0
+                } ]
+              }, "BOOLEAN" ], [ {
+                "operator" : "AND",
+                "operand" : [ {
+                  "operator" : "=",
+                  "operand" : [ {
+                    "column" : 2
+                  }, {
+                    "operator" : "0",
+                    "operand" : [ ]
+                  } ]
+                }, {
+                  "column" : 1
+                } ]
+              }, "BOOLEAN" ] ],
+              "source" : {
+                "distinct" : {
+                  "correlate" : [ {
+                    "project" : {
+                      "target" : [ [ {
+                        "column" : 0
+                      }, "BOOLEAN" ], [ {
+                        "column" : 1
+                      }, "BOOLEAN" ] ],
+                      "source" : {
+                        "project" : {
+                          "target" : [ [ {
+                            "operator" : ">",
+                            "operand" : [ {
+                              "column" : 5
+                            }, {
+                              "operator" : "1000",
+                              "operand" : [ ]
+                            } ]
+                          }, "BOOLEAN" ], [ {
+                            "operator" : "<",
+                            "operand" : [ {
+                              "column" : 5
+                            }, {
+                              "operator" : "500",
+                              "operand" : [ ]
+                            } ]
+                          }, "BOOLEAN" ] ],
+                          "source" : {
+                            "scan" : 0
+                          }
+                        }
+                      }
+                    }
+                  }, {
+                    "aggregate" : {
+                      "function" : [ [ {
+                        "operator" : "GROUPING",
+                        "operand" : [ {
+                          "column" : 2
+                        }, {
+                          "column" : 3
+                        } ]
+                      }, "BIGINT" ] ],
+                      "source" : {
+                        "filter" : {
+                          "condition" : {
+                            "operator" : "AND",
+                            "operand" : [ {
+                              "operator" : "AND",
+                              "operand" : [ {
+                                "operator" : "TRUE",
+                                "operand" : [ ]
+                              }, {
+                                "operator" : "=",
+                                "operand" : [ {
+                                  "column" : 0
+                                }, {
+                                  "column" : 2
+                                } ]
+                              } ]
+                            }, {
+                              "operator" : "=",
+                              "operand" : [ {
+                                "column" : 1
+                              }, {
+                                "column" : 3
+                              } ]
+                            } ]
+                          },
+                          "source" : {
+                            "project" : {
+                              "target" : [ [ {
+                                "operator" : ">",
+                                "operand" : [ {
+                                  "column" : 7
+                                }, {
+                                  "operator" : "1000",
+                                  "operand" : [ ]
+                                } ]
+                              }, "BOOLEAN" ], [ {
+                                "operator" : "<",
+                                "operand" : [ {
+                                  "column" : 7
+                                }, {
+                                  "operator" : "500",
+                                  "operand" : [ ]
+                                } ]
+                              }, "BOOLEAN" ] ],
+                              "source" : {
+                                "scan" : 0
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  } ]
+                }
+              }
+            }
+          }
+        }
+      }, {
+        "aggregate" : {
+          "function" : [ [ {
+            "operator" : "COUNT",
+            "operand" : [ {
+              "column" : 0
+            } ]
+          }, "BIGINT" ], [ {
+            "operator" : "COUNT",
+            "operand" : [ {
+              "column" : 1
+            } ]
+          }, "BIGINT" ] ],
+          "source" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "TRUE",
+                "operand" : [ ]
+              },
+              "source" : {
+                "project" : {
+                  "target" : [ [ {
+                    "column" : 0
+                  }, "BOOLEAN" ], [ {
+                    "column" : 1
+                  }, "BOOLEAN" ], [ {
+                    "operator" : "AND",
+                    "operand" : [ {
+                      "operator" : "=",
+                      "operand" : [ {
+                        "column" : 2
+                      }, {
+                        "operator" : "0",
+                        "operand" : [ ]
+                      } ]
+                    }, {
+                      "column" : 0
+                    } ]
+                  }, "BOOLEAN" ], [ {
+                    "operator" : "AND",
+                    "operand" : [ {
+                      "operator" : "=",
+                      "operand" : [ {
+                        "column" : 2
+                      }, {
+                        "operator" : "0",
+                        "operand" : [ ]
+                      } ]
+                    }, {
+                      "column" : 1
+                    } ]
+                  }, "BOOLEAN" ] ],
+                  "source" : {
+                    "distinct" : {
+                      "correlate" : [ {
+                        "project" : {
+                          "target" : [ [ {
+                            "column" : 0
+                          }, "BOOLEAN" ], [ {
+                            "column" : 1
+                          }, "BOOLEAN" ] ],
+                          "source" : {
+                            "project" : {
+                              "target" : [ [ {
+                                "operator" : ">",
+                                "operand" : [ {
+                                  "column" : 5
+                                }, {
+                                  "operator" : "1000",
+                                  "operand" : [ ]
+                                } ]
+                              }, "BOOLEAN" ], [ {
+                                "operator" : "<",
+                                "operand" : [ {
+                                  "column" : 5
+                                }, {
+                                  "operator" : "500",
+                                  "operand" : [ ]
+                                } ]
+                              }, "BOOLEAN" ] ],
+                              "source" : {
+                                "scan" : 0
+                              }
+                            }
+                          }
+                        }
+                      }, {
+                        "aggregate" : {
+                          "function" : [ [ {
+                            "operator" : "GROUPING",
+                            "operand" : [ {
+                              "column" : 2
+                            }, {
+                              "column" : 3
+                            } ]
+                          }, "BIGINT" ] ],
+                          "source" : {
+                            "filter" : {
+                              "condition" : {
+                                "operator" : "AND",
+                                "operand" : [ {
+                                  "operator" : "AND",
+                                  "operand" : [ {
+                                    "operator" : "TRUE",
+                                    "operand" : [ ]
+                                  }, {
+                                    "operator" : "=",
+                                    "operand" : [ {
+                                      "column" : 0
+                                    }, {
+                                      "column" : 2
+                                    } ]
+                                  } ]
+                                }, {
+                                  "operator" : "=",
+                                  "operand" : [ {
+                                    "column" : 1
+                                  }, {
+                                    "column" : 3
+                                  } ]
+                                } ]
+                              },
+                              "source" : {
+                                "project" : {
+                                  "target" : [ [ {
+                                    "operator" : ">",
+                                    "operand" : [ {
+                                      "column" : 7
+                                    }, {
+                                      "operator" : "1000",
+                                      "operand" : [ ]
+                                    } ]
+                                  }, "BOOLEAN" ], [ {
+                                    "operator" : "<",
+                                    "operand" : [ {
+                                      "column" : 7
+                                    }, {
+                                      "operator" : "500",
+                                      "operand" : [ ]
+                                    } ]
+                                  }, "BOOLEAN" ] ],
+                                  "source" : {
+                                    "scan" : 0
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      } ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      } ]
+    }
+  } ],
+  "help" : [ "LogicalAggregate(group=[{}], EXPR$0=[COUNT(DISTINCT $0) FILTER $1], EXPR$1=[COUNT(DISTINCT $1) FILTER $0])\r\n  LogicalProject(C=[>($5, 1000)], D=[<($5, 500)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalAggregate(group=[{}], EXPR$0=[COUNT($0) FILTER $3], EXPR$1=[COUNT($1) FILTER $2])\r\n  LogicalProject(C=[$0], D=[$1], $g_0_f_0=[AND(=($2, 0), $0)], $g_0_f_1=[AND(=($2, 0), $1)])\r\n    LogicalAggregate(group=[{0, 1}], $g=[GROUPING($0, $1)])\r\n      LogicalProject(C=[>($5, 1000)], D=[<($5, 500)])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+}

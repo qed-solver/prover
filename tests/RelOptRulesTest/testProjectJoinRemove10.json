@@ -1,0 +1,49 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ]
+  }, {
+    "types" : [ "INTEGER", "VARCHAR(10)" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 7
+      }, "INTEGER" ], [ {
+        "column" : 8
+      }, "BOOLEAN" ] ],
+      "source" : {
+        "join" : {
+          "type" : "LEFT",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 7
+            }, {
+              "column" : 9
+            } ]
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "scan" : 1
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 7
+      }, "INTEGER" ], [ {
+        "column" : 8
+      }, "BOOLEAN" ] ],
+      "source" : {
+        "scan" : 0
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(DEPTNO=[$7], SLACKER=[$8])\r\n  LogicalJoin(condition=[=($7, $9)], joinType=[left])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(DEPTNO=[$7], SLACKER=[$8])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+}

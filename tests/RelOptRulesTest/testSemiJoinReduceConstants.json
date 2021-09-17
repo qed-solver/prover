@@ -1,0 +1,161 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ] ],
+      "source" : {
+        "join" : {
+          "type" : "SEMI",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 1
+            }, {
+              "column" : 2
+            } ]
+          },
+          "left" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "=",
+                "operand" : [ {
+                  "column" : 1
+                }, {
+                  "operator" : "200",
+                  "operand" : [ ]
+                } ]
+              },
+              "source" : {
+                "project" : {
+                  "target" : [ [ {
+                    "column" : 5
+                  }, "INTEGER" ], [ {
+                    "column" : 7
+                  }, "INTEGER" ] ],
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              }
+            }
+          },
+          "right" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 1
+              }, "INTEGER" ] ],
+              "source" : {
+                "filter" : {
+                  "condition" : {
+                    "operator" : "=",
+                    "operand" : [ {
+                      "column" : 0
+                    }, {
+                      "operator" : "100",
+                      "operand" : [ ]
+                    } ]
+                  },
+                  "source" : {
+                    "project" : {
+                      "target" : [ [ {
+                        "column" : 5
+                      }, "INTEGER" ], [ {
+                        "column" : 7
+                      }, "INTEGER" ] ],
+                      "source" : {
+                        "scan" : 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "INTEGER" ] ],
+      "source" : {
+        "join" : {
+          "type" : "SEMI",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "operator" : "200",
+              "operand" : [ ]
+            }, {
+              "column" : 2
+            } ]
+          },
+          "left" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "=",
+                "operand" : [ {
+                  "column" : 1
+                }, {
+                  "operator" : "200",
+                  "operand" : [ ]
+                } ]
+              },
+              "source" : {
+                "project" : {
+                  "target" : [ [ {
+                    "column" : 5
+                  }, "INTEGER" ], [ {
+                    "column" : 7
+                  }, "INTEGER" ] ],
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              }
+            }
+          },
+          "right" : {
+            "project" : {
+              "target" : [ [ {
+                "column" : 1
+              }, "INTEGER" ] ],
+              "source" : {
+                "filter" : {
+                  "condition" : {
+                    "operator" : "=",
+                    "operand" : [ {
+                      "column" : 0
+                    }, {
+                      "operator" : "100",
+                      "operand" : [ ]
+                    } ]
+                  },
+                  "source" : {
+                    "project" : {
+                      "target" : [ [ {
+                        "column" : 5
+                      }, "INTEGER" ], [ {
+                        "column" : 7
+                      }, "INTEGER" ] ],
+                      "source" : {
+                        "scan" : 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(SAL=[$0])\r\n  LogicalJoin(condition=[=($1, $2)], joinType=[semi])\r\n    LogicalFilter(condition=[=($1, 200)])\r\n      LogicalProject(SAL=[$5], DEPTNO=[$7])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalProject(DEPTNO=[$1])\r\n      LogicalFilter(condition=[=($0, 100)])\r\n        LogicalProject(SAL=[$5], DEPTNO=[$7])\r\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(SAL=[$0])\r\n  LogicalJoin(condition=[=(200, $2)], joinType=[semi])\r\n    LogicalFilter(condition=[=($1, 200)])\r\n      LogicalProject(SAL=[$5], DEPTNO=[$7])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalProject(DEPTNO=[$1])\r\n      LogicalFilter(condition=[=($0, 100)])\r\n        LogicalProject(SAL=[$5], DEPTNO=[$7])\r\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+}

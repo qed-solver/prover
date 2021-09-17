@@ -1,0 +1,54 @@
+{
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR(10)", "RecordType(VARCHAR(10) TYPE, VARCHAR(20) DESC, RecordType(VARCHAR(10) A, VARCHAR(10) B) OTHERS)", "RecordType:peek(INTEGER EMPNO, VARCHAR(10) ENAME, RecordType(RecordType(VARCHAR(10) TYPE, VARCHAR(20) DESC, RecordType(VARCHAR(10) A, VARCHAR(10) B) OTHERS) ARRAY SKILLS) DETAIL) ARRAY" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ [ {
+        "column" : 1
+      }, "VARCHAR(10)" ], [ {
+        "column" : 5
+      }, "VARCHAR(10)" ] ],
+      "source" : {
+        "correlate" : [ {
+          "scan" : 0
+        }, {
+          "error" : "Not implemented: Uncollect"
+        } ]
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ [ {
+        "column" : 0
+      }, "VARCHAR(10)" ], [ {
+        "column" : 2
+      }, "VARCHAR(10)" ] ],
+      "source" : {
+        "correlate" : [ {
+          "project" : {
+            "target" : [ [ {
+              "column" : 1
+            }, "VARCHAR(10)" ], [ {
+              "column" : 3
+            }, "RecordType:peek(INTEGER EMPNO, VARCHAR(10) ENAME, RecordType(RecordType(VARCHAR(10) TYPE, VARCHAR(20) DESC, RecordType(VARCHAR(10) A, VARCHAR(10) B) OTHERS) ARRAY SKILLS) DETAIL) ARRAY" ] ],
+            "source" : {
+              "scan" : 0
+            }
+          }
+        }, {
+          "project" : {
+            "target" : [ [ {
+              "column" : 3
+            }, "VARCHAR(10)" ] ],
+            "source" : {
+              "error" : "Not implemented: Uncollect"
+            }
+          }
+        } ]
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(NAME=[$1], ENAME=[$5])\r\n  LogicalCorrelate(correlation=[$cor0], joinType=[inner], requiredColumns=[{3}])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT_NESTED]])\r\n    Uncollect\r\n      LogicalProject(EMPLOYEES=[$cor0.EMPLOYEES])\r\n        LogicalValues(tuples=[[{ 0 }]])\r\n", "LogicalProject(NAME=[$0], ENAME=[$2])\r\n  LogicalCorrelate(correlation=[$cor1], joinType=[inner], requiredColumns=[{1}])\r\n    LogicalProject(NAME=[$1], EMPLOYEES=[$3])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT_NESTED]])\r\n    LogicalProject(ENAME=[$1])\r\n      Uncollect\r\n        LogicalProject(EMPLOYEES=[$cor1.EMPLOYEES])\r\n          LogicalValues(tuples=[[{ 0 }]])\r\n" ]
+}
