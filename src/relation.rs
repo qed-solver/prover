@@ -62,6 +62,7 @@ pub enum Relation {
 	Union(Box<Relation>, Box<Relation>),
 	Except(Box<Relation>, Box<Relation>),
 	Distinct(Box<Relation>),
+	#[serde(alias = "value")]
 	Values {
 		schema: Vec<DataType>,
 		content: Vec<Vec<Expr>>,

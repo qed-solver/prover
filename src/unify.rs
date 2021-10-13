@@ -34,29 +34,34 @@ fn trans_expr<'a>(
 				if op == "CAST" {
 					return trans_expr(ctx, args[0].clone(), env, aggs);
 				}
-				let args: Vec<_> = args
+				let args = args
 					.into_iter()
-					.map(|arg| trans_expr(ctx, arg, env, aggs).as_int().unwrap())
-					.collect();
+					.map(|arg| trans_expr(ctx, arg, env, aggs))
+					.collect_vec();
 				match op.as_str() {
-					"+" => Int::add(ctx, args.iter().collect::<Vec<_>>().as_slice()),
-					"-" => Int::sub(ctx, args.iter().collect::<Vec<_>>().as_slice()),
-					"*" => Int::mul(ctx, args.iter().collect::<Vec<_>>().as_slice()),
-					"/" => args[0].div(&args[1]),
-					"%" => args[0].modulo(&args[1]),
+					num_op @ ("+" | "-" | "*" | "/" | "%") => {
+						let args = args.into_iter().map(|arg| arg.as_int().unwrap()).collect_vec();
+						match num_op {
+							"+" => Int::add(ctx, args.iter().collect::<Vec<_>>().as_slice()),
+							"-" => Int::sub(ctx, args.iter().collect::<Vec<_>>().as_slice()),
+							"*" => Int::mul(ctx, args.iter().collect::<Vec<_>>().as_slice()),
+							"/" => args[0].div(&args[1]),
+							"%" => args[0].modulo(&args[1]),
+							_ => unreachable!()
+						}.into()
+					},
 					op => {
-						let domain: Vec<_> = args.iter().map(|_| Sort::int(ctx)).collect();
-						let args: Vec<_> = args.iter().map(|int| int as &dyn Ast).collect();
+						let domain: Vec<_> = args.iter().map(|arg| arg.get_sort()).collect();
+						let args: Vec<_> = args.iter().map(|arg| arg as &dyn Ast).collect();
 						let f = FuncDecl::new(
 							ctx,
 							op,
 							domain.iter().collect::<Vec<_>>().as_slice(),
-							&Sort::int(ctx),
+							&Sort::bool(ctx),
 						);
-						f.apply(&args).as_int().unwrap()
+						f.apply(&args)
 					},
 				}
-				.into()
 			}
 		},
 		Expr::Agg(f, arg) => {
@@ -89,20 +94,22 @@ fn trans_pred<'a>(
 			trans_expr(ctx, e1, env, aggs)._eq(&trans_expr(ctx, e2, env, aggs))
 		},
 		Predicate::Pred(pred, args) => {
-			if pred == "=" {
-				let args: Vec<_> =
-					args.into_iter().map(|arg| trans_expr(ctx, arg, env, aggs)).collect();
-				return args[0]._eq(&args[1]);
-			}
-			let args: Vec<_> = args
+			let args = args
 				.into_iter()
-				.map(|arg| trans_expr(ctx, arg, env, aggs).as_int().unwrap())
-				.collect();
+				.map(|arg| trans_expr(ctx, arg, env, aggs))
+				.collect_vec();
 			match pred.as_str() {
-				">" => args[0].gt(&args[1]),
-				"<" => args[0].lt(&args[1]),
-				">=" => args[0].ge(&args[1]),
-				"<=" => args[0].le(&args[1]),
+				cmp @ (">" | "<" | ">=" | "<=") => {
+					let args = args.into_iter().map(|arg| arg.as_int().unwrap()).collect_vec();
+					match cmp {
+						">" => args[0].gt(&args[1]),
+						"<" => args[0].lt(&args[1]),
+						">=" => args[0].ge(&args[1]),
+						"<=" => args[0].le(&args[1]),
+						_ => unreachable!()
+					}
+				}
+				"=" => args[0]._eq(&args[1]),
 				pred => {
 					let domain: Vec<_> = args.iter().map(|_| Sort::int(ctx)).collect();
 					let args: Vec<_> = args.iter().map(|int| int as &dyn Ast).collect();
@@ -116,7 +123,13 @@ fn trans_pred<'a>(
 				},
 			}
 		},
-		_ => Bool::from_bool(ctx, true),
+		Predicate::Null(expr) => {
+			// TODO: Proper NULL handling
+			let expr = &trans_expr(ctx, expr, env, aggs);
+			let f = FuncDecl::new(ctx, "null", &[&expr.get_sort()], &Sort::bool(ctx));
+			f.apply(&[expr]).as_bool().unwrap()
+		}
+		_ => panic!("Unhandled predicate translation"),
 	}
 }
 
@@ -204,6 +217,24 @@ fn trans_squashed<'a>(
 	Bool::or(ctx, &terms.iter().collect_vec())
 }
 
+fn trans_logic<'a>(
+	ctx: &'a Context,
+	term: &stable::Term,
+	env: &Env<Dynamic<'a>>,
+	aggs: &mut HashMap<(Agg, Env<Dynamic<'a>>), Dynamic<'a>>,
+) -> Bool<'a> {
+	let preds = trans_preds(ctx, &term.preds, env, aggs);
+	let squash = term
+		.squash
+		.as_ref()
+		.map_or(Bool::from_bool(ctx, true), |sq| trans_squashed(ctx, sq, env, aggs));
+	let not = term
+		.not
+		.as_ref()
+		.map_or(Bool::from_bool(ctx, true), |n| trans_squashed(ctx, n, env, aggs).not());
+	Bool::and(ctx, &[&preds, &squash, &not])
+}
+
 pub fn unify(rel1: &stable::Relation, rel2: &stable::Relation, env: &Env<Entry>) -> bool {
 	let cfg = Config::new();
 	let ctx = &Context::new(&cfg);
@@ -233,6 +264,16 @@ fn unify_rel<'a>(
 	}
 }
 
+fn check_trivial<'a>(solver: &Solver<'a>, term: &stable::Term, env: &Env<Dynamic<'a>>) -> bool {
+	solver.push();
+	defer!(solver.pop(1));
+	let ctx = solver.get_context();
+	let vars = term.scopes.iter().map(|ty| typed_var(ctx, ty.clone())).collect_vec();
+	let aggs = &mut HashMap::new();
+	let logic = trans_logic(ctx, term, &env.append(vars), aggs);
+	solver.check_assumptions(&[logic]) == SatResult::Unsat
+}
+
 fn unify_uexpr<'a>(
 	solver: &Solver<'a>,
 	exp1: &stable::UExpr,
@@ -240,12 +281,13 @@ fn unify_uexpr<'a>(
 	env1: &Env<Dynamic<'a>>,
 	env2: &Env<Dynamic<'a>>,
 ) -> bool {
-	let terms1 = exp1.0.clone();
+	let mut terms1 = exp1.0.clone();
 	let mut terms2 = exp2.0.clone();
+	terms1.retain(|t| !check_trivial(solver, t, env1));
+	terms2.retain(|t| !check_trivial(solver, t, env2));
 	let paired = terms1.iter().all(|t1| {
 		(0..terms2.len()).any(|i| {
-			let t2 = &terms2[i];
-			let unifies = unify_term(solver, t1, t2, env1, env2);
+			let unifies = unify_term(solver, t1, &terms2[i], env1, env2);
 			if unifies {
 				terms2.remove(i);
 			}
@@ -327,29 +369,11 @@ fn unify_term<'a>(
 		log::info!("Permutation: {:?}", vars2);
 		let aggs = &mut HashMap::new();
 		let env2 = &env2.append(vars2);
-		let preds1 = trans_preds(ctx, &t1.preds, env1, aggs);
-		let preds2 = trans_preds(ctx, &t2.preds, env2, aggs);
+		let logic1 = trans_logic(ctx, &t1, env1, aggs);
+		let logic2 = trans_logic(ctx, &t2, env2, aggs);
 		let apps1 = trans_apps(ctx, &t1.apps, env1);
 		let apps2 = trans_apps(ctx, &t2.apps, env2);
 		let apps_equiv = apps1._eq(&apps2);
-		let squash1 = t1
-			.squash
-			.as_ref()
-			.map_or(Bool::from_bool(ctx, true), |sq| trans_squashed(ctx, sq, env1, aggs));
-		let squash2 = t2
-			.squash
-			.as_ref()
-			.map_or(Bool::from_bool(ctx, true), |sq| trans_squashed(ctx, sq, env2, aggs));
-		let not1 = t1
-			.not
-			.as_ref()
-			.map_or(Bool::from_bool(ctx, true), |n| trans_squashed(ctx, n, env1, aggs).not());
-		let not2 = t2
-			.not
-			.as_ref()
-			.map_or(Bool::from_bool(ctx, true), |n| trans_squashed(ctx, n, env2, aggs).not());
-		let logic1 = Bool::and(ctx, &[&preds1, &squash1, &not1]);
-		let logic2 = Bool::and(ctx, &[&preds2, &squash2, &not2]);
 		let equiv = Bool::and(ctx, &[&logic1.iff(&logic2), &apps_equiv]);
 		log::info!("{}", equiv);
 		solver.push();
