@@ -1,7 +1,9 @@
 {
   "schemas" : [ {
-    "types" : [ "SMALLINT", "VARCHAR(10)", "VARCHAR(9)", "SMALLINT", "DATE", "DECIMAL(7, 2)", "DECIMAL(7, 2)", "TINYINT" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ]
+    "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
+    "key" : [ [ 0 ], [ 1 ] ],
+    "foreign" : [ ]
   } ],
   "queries" : [ {
     "project" : {
@@ -11,11 +13,14 @@
           "condition" : {
             "operator" : "=",
             "operand" : [ {
-              "column" : 7
+              "column" : 7,
+              "type" : "TINYINT"
             }, {
               "operator" : "20",
-              "operand" : [ ]
-            } ]
+              "operand" : [ ],
+              "type" : "INTEGER"
+            } ],
+            "type" : "BOOLEAN"
           },
           "source" : {
             "scan" : 0
@@ -31,17 +36,21 @@
           "condition" : {
             "operator" : "=",
             "operand" : [ {
-              "column" : 0
+              "column" : 0,
+              "type" : "TINYINT"
             }, {
               "operator" : "20",
-              "operand" : [ ]
-            } ]
+              "operand" : [ ],
+              "type" : "INTEGER"
+            } ],
+            "type" : "BOOLEAN"
           },
           "source" : {
             "project" : {
-              "target" : [ [ {
-                "column" : 7
-              }, "TINYINT" ] ],
+              "target" : [ {
+                "column" : 7,
+                "type" : "TINYINT"
+              } ],
               "source" : {
                 "scan" : 0
               }

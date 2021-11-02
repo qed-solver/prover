@@ -1,44 +1,59 @@
 {
   "schemas" : [ {
     "types" : [ "INTEGER" ],
-    "strategy" : [ "NOT_NULLABLE" ]
+    "strategy" : [ "NOT_NULLABLE" ],
+    "key" : [ ],
+    "foreign" : [ ]
   }, {
     "types" : [ "INTEGER" ],
-    "strategy" : [ "NOT_NULLABLE" ]
+    "strategy" : [ "NOT_NULLABLE" ],
+    "key" : [ ],
+    "foreign" : [ ]
   }, {
     "types" : [ "INTEGER" ],
-    "strategy" : [ "NOT_NULLABLE" ]
+    "strategy" : [ "NOT_NULLABLE" ],
+    "key" : [ ],
+    "foreign" : [ ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ [ {
-        "column" : 0
-      }, "INTEGER" ], [ {
-        "column" : 1
-      }, "INTEGER" ], [ {
-        "column" : 2
-      }, "INTEGER" ] ],
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "INTEGER"
+      }, {
+        "column" : 2,
+        "type" : "INTEGER"
+      } ],
       "source" : {
         "join" : {
-          "type" : "INNER",
+          "kind" : "INNER",
           "condition" : {
             "operator" : "=",
             "operand" : [ {
-              "column" : 1
+              "column" : 1,
+              "type" : "INTEGER"
             }, {
-              "column" : 2
-            } ]
+              "column" : 2,
+              "type" : "INTEGER"
+            } ],
+            "type" : "BOOLEAN"
           },
           "left" : {
             "join" : {
-              "type" : "RIGHT",
+              "kind" : "RIGHT",
               "condition" : {
                 "operator" : "=",
                 "operand" : [ {
-                  "column" : 0
+                  "column" : 0,
+                  "type" : "INTEGER"
                 }, {
-                  "column" : 1
-                } ]
+                  "column" : 1,
+                  "type" : "INTEGER"
+                } ],
+                "type" : "BOOLEAN"
               },
               "left" : {
                 "scan" : 0

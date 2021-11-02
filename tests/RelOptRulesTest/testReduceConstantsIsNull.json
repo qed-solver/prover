@@ -1,13 +1,16 @@
 {
   "schemas" : [ {
-    "types" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ]
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ [ {
-        "column" : 0
-      }, "INTEGER" ] ],
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      } ],
       "source" : {
         "filter" : {
           "condition" : {
@@ -15,17 +18,23 @@
             "operand" : [ {
               "operator" : "=",
               "operand" : [ {
-                "column" : 0
+                "column" : 0,
+                "type" : "INTEGER"
               }, {
                 "operator" : "10",
-                "operand" : [ ]
-              } ]
+                "operand" : [ ],
+                "type" : "INTEGER"
+              } ],
+              "type" : "BOOLEAN"
             }, {
               "operator" : "IS NULL",
               "operand" : [ {
-                "column" : 0
-              } ]
-            } ]
+                "column" : 0,
+                "type" : "INTEGER"
+              } ],
+              "type" : "BOOLEAN"
+            } ],
+            "type" : "BOOLEAN"
           },
           "source" : {
             "scan" : 0
@@ -35,12 +44,13 @@
     }
   }, {
     "project" : {
-      "target" : [ [ {
-        "column" : 0
-      }, "INTEGER" ] ],
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      } ],
       "source" : {
-        "value" : {
-          "schema" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+        "values" : {
+          "schema" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
           "content" : [ ]
         }
       }

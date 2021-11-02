@@ -177,7 +177,7 @@ fn chase(app: &Application, term: &mut nom::Term, env: &Env<Entry>) {
 		let types = vec![DataType::Any; dest_schema.types.len()];
 		let level = env.size() + term.scopes.len();
 		let vars: Vector<_> = (0..dest_schema.types.len()).map(|i| VL(level + i)).collect();
-		term.preds.push_back(Predicate::Eq(Expr::Var(app.args[col]), Expr::Var(vars[primary_col])));
+		term.preds.push_back(Predicate::Eq(Expr::Var(app.args[col], env.get(app.args[col]).ty()), Expr::Var(vars[primary_col], env.get(vars[primary_col]).ty())));
 		let new_app = Application::new(tab, vars);
 		term.apps.push_back(new_app.clone());
 		term.scopes.extend(types);
@@ -193,13 +193,13 @@ fn merge_keys(term: &mut nom::Term, equiv: &mut EquivClass, env: &Env<Entry>) {
 			squashed.extend(apps.clone());
 			let groups = apps
 				.into_iter()
-				.filter_map(|app| equiv.get(&Var(app.args[col])).map(|root| (root, app.args)))
+				.filter_map(|app| equiv.get(&Var(app.args[col], env.get(app.args[col]).ty())).map(|root| (root, app.args)))
 				.into_group_map();
 			for (_, vars) in groups {
 				let mut vars = vars.into_iter();
 				let args = vars.next().unwrap();
 				vars.flat_map(|v| v.into_iter().zip(args.clone()))
-					.for_each(|(v1, v2)| equiv.equate(Var(v1), Var(v2)));
+					.for_each(|(v1, v2)| equiv.equate(Var(v1, env.get(v1).ty()), Var(v2, env.get(v2).ty())));
 			}
 		} else {
 			term_apps.extend(apps);
@@ -222,8 +222,9 @@ fn merge_scopes(
 	let mut env = env.clone();
 	let mut free = env.level;
 	for (i, ty) in scopes.iter().enumerate() {
-		let var = Expr::Var(VL(level + i));
-		let entry = if let Some(Expr::Var(v)) = equiv.get(&var) {
+		let var = Expr::Var(VL(level + i), ty.clone());
+		let entry = if let Some(Expr::Var(v, root_ty)) = equiv.get(&var) {
+			assert_eq!(ty.clone(), root_ty);
 			if v.0 >= level {
 				mapping
 					.entry(v)

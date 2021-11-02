@@ -2,18 +2,20 @@
   "schemas" : [ ],
   "queries" : [ {
     "project" : {
-      "target" : [ [ {
-        "column" : 1
-      }, "INTEGER" ] ],
+      "target" : [ {
+        "column" : 1,
+        "type" : "INTEGER"
+      } ],
       "source" : {
         "distinct" : {
           "correlate" : [ {
             "project" : {
-              "target" : [ [ {
-                "column" : 0
-              }, "INTEGER" ] ],
+              "target" : [ {
+                "column" : 0,
+                "type" : "INTEGER"
+              } ],
               "source" : {
-                "value" : {
+                "values" : {
                   "schema" : [ "INTEGER", "INTEGER" ],
                   "content" : [ ]
                 }
@@ -21,30 +23,37 @@
             }
           }, {
             "aggregate" : {
-              "function" : [ [ {
+              "function" : [ {
                 "operator" : "SUM",
                 "operand" : [ {
-                  "column" : 2
-                } ]
-              }, "INTEGER" ] ],
+                  "column" : 2,
+                  "type" : "INTEGER"
+                } ],
+                "type" : "INTEGER"
+              } ],
               "source" : {
                 "filter" : {
                   "condition" : {
                     "operator" : "AND",
                     "operand" : [ {
                       "operator" : "TRUE",
-                      "operand" : [ ]
+                      "operand" : [ ],
+                      "type" : "BOOLEAN"
                     }, {
                       "operator" : "=",
                       "operand" : [ {
-                        "column" : 0
+                        "column" : 0,
+                        "type" : "INTEGER"
                       }, {
-                        "column" : 1
-                      } ]
-                    } ]
+                        "column" : 1,
+                        "type" : "INTEGER"
+                      } ],
+                      "type" : "BOOLEAN"
+                    } ],
+                    "type" : "BOOLEAN"
                   },
                   "source" : {
-                    "value" : {
+                    "values" : {
                       "schema" : [ "INTEGER", "INTEGER" ],
                       "content" : [ ]
                     }
@@ -57,7 +66,7 @@
       }
     }
   }, {
-    "value" : {
+    "values" : {
       "schema" : [ "INTEGER" ],
       "content" : [ ]
     }

@@ -1,7 +1,9 @@
 {
   "schemas" : [ {
-    "types" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ]
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ]
   } ],
   "queries" : [ {
     "distinct" : {
@@ -10,25 +12,30 @@
           "target" : [ ],
           "source" : {
             "join" : {
-              "type" : "INNER",
+              "kind" : "INNER",
               "condition" : {
                 "operator" : "=",
                 "operand" : [ {
-                  "column" : 1
+                  "column" : 1,
+                  "type" : "VARCHAR"
                 }, {
-                  "column" : 2
-                } ]
+                  "column" : 2,
+                  "type" : "VARCHAR"
+                } ],
+                "type" : "BOOLEAN"
               },
               "left" : {
                 "project" : {
-                  "target" : [ [ {
-                    "column" : 5
-                  }, "INTEGER" ], [ {
-                    "column" : 1
-                  }, "VARCHAR(20)" ] ],
+                  "target" : [ {
+                    "column" : 5,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 1,
+                    "type" : "VARCHAR"
+                  } ],
                   "source" : {
-                    "value" : {
-                      "schema" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+                    "values" : {
+                      "schema" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
                       "content" : [ ]
                     }
                   }
@@ -36,9 +43,10 @@
               },
               "right" : {
                 "project" : {
-                  "target" : [ [ {
-                    "column" : 1
-                  }, "VARCHAR(20)" ] ],
+                  "target" : [ {
+                    "column" : 1,
+                    "type" : "VARCHAR"
+                  } ],
                   "source" : {
                     "scan" : 0
                   }
@@ -49,42 +57,51 @@
         }
       }, {
         "aggregate" : {
-          "function" : [ [ {
+          "function" : [ {
             "operator" : "COUNT",
-            "operand" : [ ]
-          }, "BIGINT" ], [ {
+            "operand" : [ ],
+            "type" : "BIGINT"
+          }, {
             "operator" : "SUM",
             "operand" : [ {
-              "column" : 0
-            } ]
-          }, "INTEGER" ] ],
+              "column" : 0,
+              "type" : "INTEGER"
+            } ],
+            "type" : "INTEGER"
+          } ],
           "source" : {
             "filter" : {
               "condition" : {
                 "operator" : "TRUE",
-                "operand" : [ ]
+                "operand" : [ ],
+                "type" : "BOOLEAN"
               },
               "source" : {
                 "join" : {
-                  "type" : "INNER",
+                  "kind" : "INNER",
                   "condition" : {
                     "operator" : "=",
                     "operand" : [ {
-                      "column" : 1
+                      "column" : 1,
+                      "type" : "VARCHAR"
                     }, {
-                      "column" : 2
-                    } ]
+                      "column" : 2,
+                      "type" : "VARCHAR"
+                    } ],
+                    "type" : "BOOLEAN"
                   },
                   "left" : {
                     "project" : {
-                      "target" : [ [ {
-                        "column" : 5
-                      }, "INTEGER" ], [ {
-                        "column" : 1
-                      }, "VARCHAR(20)" ] ],
+                      "target" : [ {
+                        "column" : 5,
+                        "type" : "INTEGER"
+                      }, {
+                        "column" : 1,
+                        "type" : "VARCHAR"
+                      } ],
                       "source" : {
-                        "value" : {
-                          "schema" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+                        "values" : {
+                          "schema" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
                           "content" : [ ]
                         }
                       }
@@ -92,9 +109,10 @@
                   },
                   "right" : {
                     "project" : {
-                      "target" : [ [ {
-                        "column" : 1
-                      }, "VARCHAR(20)" ] ],
+                      "target" : [ {
+                        "column" : 1,
+                        "type" : "VARCHAR"
+                      } ],
                       "source" : {
                         "scan" : 0
                       }
@@ -114,47 +132,59 @@
           "target" : [ ],
           "source" : {
             "project" : {
-              "target" : [ [ {
-                "column" : 3
-              }, "BIGINT" ], [ {
+              "target" : [ {
+                "column" : 3,
+                "type" : "BIGINT"
+              }, {
                 "operator" : "CAST",
                 "operand" : [ {
                   "operator" : "*",
                   "operand" : [ {
-                    "column" : 1
+                    "column" : 1,
+                    "type" : "INTEGER"
                   }, {
-                    "column" : 3
-                  } ]
-                } ]
-              }, "INTEGER" ] ],
+                    "column" : 3,
+                    "type" : "BIGINT"
+                  } ],
+                  "type" : "BIGINT"
+                } ],
+                "type" : "INTEGER"
+              } ],
               "source" : {
                 "join" : {
-                  "type" : "INNER",
+                  "kind" : "INNER",
                   "condition" : {
                     "operator" : "=",
                     "operand" : [ {
-                      "column" : 0
+                      "column" : 0,
+                      "type" : "VARCHAR"
                     }, {
-                      "column" : 2
-                    } ]
+                      "column" : 2,
+                      "type" : "VARCHAR"
+                    } ],
+                    "type" : "BOOLEAN"
                   },
                   "left" : {
                     "project" : {
-                      "target" : [ [ {
-                        "column" : 1
-                      }, "VARCHAR(20)" ], [ {
-                        "column" : 0
-                      }, "INTEGER" ] ],
+                      "target" : [ {
+                        "column" : 1,
+                        "type" : "VARCHAR"
+                      }, {
+                        "column" : 0,
+                        "type" : "INTEGER"
+                      } ],
                       "source" : {
                         "project" : {
-                          "target" : [ [ {
-                            "column" : 5
-                          }, "INTEGER" ], [ {
-                            "column" : 1
-                          }, "VARCHAR(20)" ] ],
+                          "target" : [ {
+                            "column" : 5,
+                            "type" : "INTEGER"
+                          }, {
+                            "column" : 1,
+                            "type" : "VARCHAR"
+                          } ],
                           "source" : {
-                            "value" : {
-                              "schema" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+                            "values" : {
+                              "schema" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
                               "content" : [ ]
                             }
                           }
@@ -166,14 +196,16 @@
                     "distinct" : {
                       "correlate" : [ {
                         "project" : {
-                          "target" : [ [ {
-                            "column" : 0
-                          }, "VARCHAR(20)" ] ],
+                          "target" : [ {
+                            "column" : 0,
+                            "type" : "VARCHAR"
+                          } ],
                           "source" : {
                             "project" : {
-                              "target" : [ [ {
-                                "column" : 1
-                              }, "VARCHAR(20)" ] ],
+                              "target" : [ {
+                                "column" : 1,
+                                "type" : "VARCHAR"
+                              } ],
                               "source" : {
                                 "scan" : 0
                               }
@@ -182,31 +214,38 @@
                         }
                       }, {
                         "aggregate" : {
-                          "function" : [ [ {
+                          "function" : [ {
                             "operator" : "COUNT",
-                            "operand" : [ ]
-                          }, "BIGINT" ] ],
+                            "operand" : [ ],
+                            "type" : "BIGINT"
+                          } ],
                           "source" : {
                             "filter" : {
                               "condition" : {
                                 "operator" : "AND",
                                 "operand" : [ {
                                   "operator" : "TRUE",
-                                  "operand" : [ ]
+                                  "operand" : [ ],
+                                  "type" : "BOOLEAN"
                                 }, {
                                   "operator" : "=",
                                   "operand" : [ {
-                                    "column" : 0
+                                    "column" : 0,
+                                    "type" : "VARCHAR"
                                   }, {
-                                    "column" : 1
-                                  } ]
-                                } ]
+                                    "column" : 1,
+                                    "type" : "VARCHAR"
+                                  } ],
+                                  "type" : "BOOLEAN"
+                                } ],
+                                "type" : "BOOLEAN"
                               },
                               "source" : {
                                 "project" : {
-                                  "target" : [ [ {
-                                    "column" : 2
-                                  }, "VARCHAR(20)" ] ],
+                                  "target" : [ {
+                                    "column" : 2,
+                                    "type" : "VARCHAR"
+                                  } ],
                                   "source" : {
                                     "scan" : 0
                                   }
@@ -225,66 +264,83 @@
         }
       }, {
         "aggregate" : {
-          "function" : [ [ {
+          "function" : [ {
             "operator" : "$SUM0",
             "operand" : [ {
-              "column" : 0
-            } ]
-          }, "BIGINT" ], [ {
+              "column" : 0,
+              "type" : "BIGINT"
+            } ],
+            "type" : "BIGINT"
+          }, {
             "operator" : "SUM",
             "operand" : [ {
-              "column" : 1
-            } ]
-          }, "INTEGER" ] ],
+              "column" : 1,
+              "type" : "INTEGER"
+            } ],
+            "type" : "INTEGER"
+          } ],
           "source" : {
             "filter" : {
               "condition" : {
                 "operator" : "TRUE",
-                "operand" : [ ]
+                "operand" : [ ],
+                "type" : "BOOLEAN"
               },
               "source" : {
                 "project" : {
-                  "target" : [ [ {
-                    "column" : 3
-                  }, "BIGINT" ], [ {
+                  "target" : [ {
+                    "column" : 3,
+                    "type" : "BIGINT"
+                  }, {
                     "operator" : "CAST",
                     "operand" : [ {
                       "operator" : "*",
                       "operand" : [ {
-                        "column" : 1
+                        "column" : 1,
+                        "type" : "INTEGER"
                       }, {
-                        "column" : 3
-                      } ]
-                    } ]
-                  }, "INTEGER" ] ],
+                        "column" : 3,
+                        "type" : "BIGINT"
+                      } ],
+                      "type" : "BIGINT"
+                    } ],
+                    "type" : "INTEGER"
+                  } ],
                   "source" : {
                     "join" : {
-                      "type" : "INNER",
+                      "kind" : "INNER",
                       "condition" : {
                         "operator" : "=",
                         "operand" : [ {
-                          "column" : 0
+                          "column" : 0,
+                          "type" : "VARCHAR"
                         }, {
-                          "column" : 2
-                        } ]
+                          "column" : 2,
+                          "type" : "VARCHAR"
+                        } ],
+                        "type" : "BOOLEAN"
                       },
                       "left" : {
                         "project" : {
-                          "target" : [ [ {
-                            "column" : 1
-                          }, "VARCHAR(20)" ], [ {
-                            "column" : 0
-                          }, "INTEGER" ] ],
+                          "target" : [ {
+                            "column" : 1,
+                            "type" : "VARCHAR"
+                          }, {
+                            "column" : 0,
+                            "type" : "INTEGER"
+                          } ],
                           "source" : {
                             "project" : {
-                              "target" : [ [ {
-                                "column" : 5
-                              }, "INTEGER" ], [ {
-                                "column" : 1
-                              }, "VARCHAR(20)" ] ],
+                              "target" : [ {
+                                "column" : 5,
+                                "type" : "INTEGER"
+                              }, {
+                                "column" : 1,
+                                "type" : "VARCHAR"
+                              } ],
                               "source" : {
-                                "value" : {
-                                  "schema" : [ "INTEGER", "VARCHAR(20)", "VARCHAR(10)", "INTEGER", "TIMESTAMP(0)", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+                                "values" : {
+                                  "schema" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
                                   "content" : [ ]
                                 }
                               }
@@ -296,14 +352,16 @@
                         "distinct" : {
                           "correlate" : [ {
                             "project" : {
-                              "target" : [ [ {
-                                "column" : 0
-                              }, "VARCHAR(20)" ] ],
+                              "target" : [ {
+                                "column" : 0,
+                                "type" : "VARCHAR"
+                              } ],
                               "source" : {
                                 "project" : {
-                                  "target" : [ [ {
-                                    "column" : 1
-                                  }, "VARCHAR(20)" ] ],
+                                  "target" : [ {
+                                    "column" : 1,
+                                    "type" : "VARCHAR"
+                                  } ],
                                   "source" : {
                                     "scan" : 0
                                   }
@@ -312,31 +370,38 @@
                             }
                           }, {
                             "aggregate" : {
-                              "function" : [ [ {
+                              "function" : [ {
                                 "operator" : "COUNT",
-                                "operand" : [ ]
-                              }, "BIGINT" ] ],
+                                "operand" : [ ],
+                                "type" : "BIGINT"
+                              } ],
                               "source" : {
                                 "filter" : {
                                   "condition" : {
                                     "operator" : "AND",
                                     "operand" : [ {
                                       "operator" : "TRUE",
-                                      "operand" : [ ]
+                                      "operand" : [ ],
+                                      "type" : "BOOLEAN"
                                     }, {
                                       "operator" : "=",
                                       "operand" : [ {
-                                        "column" : 0
+                                        "column" : 0,
+                                        "type" : "VARCHAR"
                                       }, {
-                                        "column" : 1
-                                      } ]
-                                    } ]
+                                        "column" : 1,
+                                        "type" : "VARCHAR"
+                                      } ],
+                                      "type" : "BOOLEAN"
+                                    } ],
+                                    "type" : "BOOLEAN"
                                   },
                                   "source" : {
                                     "project" : {
-                                      "target" : [ [ {
-                                        "column" : 2
-                                      }, "VARCHAR(20)" ] ],
+                                      "target" : [ {
+                                        "column" : 2,
+                                        "type" : "VARCHAR"
+                                      } ],
                                       "source" : {
                                         "scan" : 0
                                       }

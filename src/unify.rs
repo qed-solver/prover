@@ -20,24 +20,19 @@ fn trans_expr<'a>(
 	aggs: &mut HashMap<(Agg, Env<Dynamic<'a>>), Dynamic<'a>>,
 ) -> Dynamic<'a> {
 	match expr {
-		Expr::Var(v) => env.get(v).clone(),
-		Expr::Op(op, args) => {
+		Expr::Var(v, _) => env.get(v).clone(),
+		Expr::Op(op, args, ty) => {
 			if args.is_empty() {
-				if let Ok(num) = op.parse() {
-					Int::from_i64(ctx, num).into()
-				} else if let Ok(bool) = op.to_lowercase().parse() {
-					Bool::from_bool(ctx, bool).into()
-				} else {
-					Str::from_str(ctx, op.as_str()).unwrap().into()
+				use DataType::*;
+				match ty {
+					Integer => ast::Int::from_i64(ctx, op.parse().expect(format!("cannot parse {}", op).as_str())).into(),
+					Boolean => Bool::from_bool(ctx, op.to_lowercase().parse().unwrap()).into(),
+					String => Str::from_str(ctx, op.as_str()).unwrap().into(),
+					_ => panic!("unsupported type {:?} for constant {}", ty, op),
 				}
 			} else {
-				if op == "CAST" {
-					return trans_expr(ctx, args[0].clone(), env, aggs);
-				}
-				let args = args
-					.into_iter()
-					.map(|arg| trans_expr(ctx, arg, env, aggs))
-					.collect_vec();
+				let args =
+					args.into_iter().map(|arg| trans_expr(ctx, arg, env, aggs)).collect_vec();
 				match op.as_str() {
 					num_op @ ("+" | "-" | "*" | "/" | "%") => {
 						let args = args.into_iter().map(|arg| arg.as_int().unwrap()).collect_vec();
@@ -47,8 +42,9 @@ fn trans_expr<'a>(
 							"*" => Int::mul(ctx, args.iter().collect::<Vec<_>>().as_slice()),
 							"/" => args[0].div(&args[1]),
 							"%" => args[0].modulo(&args[1]),
-							_ => unreachable!()
-						}.into()
+							_ => unreachable!(),
+						}
+						.into()
 					},
 					op => {
 						let domain: Vec<_> = args.iter().map(|arg| arg.get_sort()).collect();
@@ -57,27 +53,16 @@ fn trans_expr<'a>(
 							ctx,
 							op,
 							domain.iter().collect::<Vec<_>>().as_slice(),
-							&Sort::bool(ctx),
+							&sort(ctx, ty),
 						);
 						f.apply(&args)
 					},
 				}
 			}
 		},
-		Expr::Agg(f, arg) => {
-			// TODO: Correct type of fresh var
+		Expr::Agg(f, arg, ty) => {
 			aggs.entry(((f.clone(), *arg.clone()), env.clone()))
-				.or_insert_with(|| {
-					if f != "COUNT" {
-						if let Relation::Lam(types, _) = *arg {
-							typed_var(ctx, types[0].clone())
-						} else {
-							Int::fresh_const(ctx, "v").into()
-						}
-					} else {
-						Int::fresh_const(ctx, "v").into()
-					}
-				})
+				.or_insert_with(|| typed_var(ctx, ty))
 				.clone()
 		},
 	}
@@ -94,10 +79,7 @@ fn trans_pred<'a>(
 			trans_expr(ctx, e1, env, aggs)._eq(&trans_expr(ctx, e2, env, aggs))
 		},
 		Predicate::Pred(pred, args) => {
-			let args = args
-				.into_iter()
-				.map(|arg| trans_expr(ctx, arg, env, aggs))
-				.collect_vec();
+			let args = args.into_iter().map(|arg| trans_expr(ctx, arg, env, aggs)).collect_vec();
 			match pred.as_str() {
 				cmp @ (">" | "<" | ">=" | "<=") => {
 					let args = args.into_iter().map(|arg| arg.as_int().unwrap()).collect_vec();
@@ -106,9 +88,9 @@ fn trans_pred<'a>(
 						"<" => args[0].lt(&args[1]),
 						">=" => args[0].ge(&args[1]),
 						"<=" => args[0].le(&args[1]),
-						_ => unreachable!()
+						_ => unreachable!(),
 					}
-				}
+				},
 				"=" => args[0]._eq(&args[1]),
 				pred => {
 					let domain: Vec<_> = args.iter().map(|_| Sort::int(ctx)).collect();
@@ -128,7 +110,7 @@ fn trans_pred<'a>(
 			let expr = &trans_expr(ctx, expr, env, aggs);
 			let f = FuncDecl::new(ctx, "null", &[&expr.get_sort()], &Sort::bool(ctx));
 			f.apply(&[expr]).as_bool().unwrap()
-		}
+		},
 		_ => panic!("Unhandled predicate translation"),
 	}
 }
@@ -343,8 +325,19 @@ fn typed_var(ctx: &Context, ty: DataType) -> Dynamic {
 	use DataType::*;
 	match ty {
 		Boolean => Bool::fresh_const(ctx, "v").into(),
-		Text | String | Any => z3::ast::String::fresh_const(ctx, "v").into(),
-		_ => z3::ast::Int::fresh_const(ctx, "v").into(),
+		String => ast::String::fresh_const(ctx, "v").into(),
+		Integer | Timestamp => ast::Int::fresh_const(ctx, "v").into(),
+		_ => panic!("unsupported type {:?}", ty),
+	}
+}
+
+fn sort(ctx: &Context, ty: DataType) -> Sort {
+	use DataType::*;
+	match ty {
+		Boolean => Sort::bool(ctx),
+		String => Sort::string(ctx),
+		Integer | Timestamp => Sort::int(ctx),
+		_ => panic!("unsupported type {:?}", ty),
 	}
 }
 

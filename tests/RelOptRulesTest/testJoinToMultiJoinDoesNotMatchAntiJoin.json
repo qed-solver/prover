@@ -1,35 +1,47 @@
 {
   "schemas" : [ {
-    "types" : [ "SMALLINT", "VARCHAR(10)", "VARCHAR(9)", "SMALLINT", "DATE", "DECIMAL(7, 2)", "DECIMAL(7, 2)", "TINYINT" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ]
+    "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
+    "key" : [ [ 0 ], [ 1 ] ],
+    "foreign" : [ ]
   }, {
-    "types" : [ "TINYINT", "VARCHAR(14)", "VARCHAR(13)" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE" ]
+    "types" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE" ],
+    "key" : [ [ 0 ], [ 1 ], [ 2 ] ],
+    "foreign" : [ ]
   }, {
-    "types" : [ "VARCHAR(10)", "VARCHAR(9)", "DECIMAL(7, 2)", "DECIMAL(7, 2)" ],
-    "strategy" : [ "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ]
+    "types" : [ "VARCHAR", "VARCHAR", "DECIMAL", "DECIMAL" ],
+    "strategy" : [ "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
+    "key" : [ [ 0 ], [ 1 ], [ 2 ], [ 3 ] ],
+    "foreign" : [ ]
   } ],
   "queries" : [ {
     "join" : {
-      "type" : "ANTI",
+      "kind" : "ANTI",
       "condition" : {
         "operator" : "=",
         "operand" : [ {
-          "column" : 2
+          "column" : 2,
+          "type" : "VARCHAR"
         }, {
-          "column" : 12
-        } ]
+          "column" : 12,
+          "type" : "VARCHAR"
+        } ],
+        "type" : "BOOLEAN"
       },
       "left" : {
         "join" : {
-          "type" : "INNER",
+          "kind" : "INNER",
           "condition" : {
             "operator" : "=",
             "operand" : [ {
-              "column" : 7
+              "column" : 7,
+              "type" : "TINYINT"
             }, {
-              "column" : 8
-            } ]
+              "column" : 8,
+              "type" : "TINYINT"
+            } ],
+            "type" : "BOOLEAN"
           },
           "left" : {
             "scan" : 0
@@ -45,14 +57,17 @@
     }
   }, {
     "join" : {
-      "type" : "ANTI",
+      "kind" : "ANTI",
       "condition" : {
         "operator" : "=",
         "operand" : [ {
-          "column" : 2
+          "column" : 2,
+          "type" : "VARCHAR"
         }, {
-          "column" : 12
-        } ]
+          "column" : 12,
+          "type" : "VARCHAR"
+        } ],
+        "type" : "BOOLEAN"
       },
       "left" : {
         "error" : "Not implemented: MultiJoin"

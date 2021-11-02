@@ -1,42 +1,55 @@
 {
   "schemas" : [ {
-    "types" : [ "INTEGER", "VARCHAR(10)" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ]
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ [ {
-        "column" : 0
-      }, "INTEGER" ], [ {
-        "column" : 1
-      }, "VARCHAR(10)" ], [ {
-        "column" : 3
-      }, "BIGINT" ], [ {
-        "column" : 4
-      }, "INTEGER" ] ],
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 3,
+        "type" : "BIGINT"
+      }, {
+        "column" : 4,
+        "type" : "INTEGER"
+      } ],
       "source" : {
         "join" : {
-          "type" : "INNER",
+          "kind" : "INNER",
           "condition" : {
             "operator" : "=",
             "operand" : [ {
-              "column" : 2
+              "column" : 2,
+              "type" : "BIGINT"
             }, {
-              "column" : 3
-            } ]
+              "column" : 3,
+              "type" : "BIGINT"
+            } ],
+            "type" : "BOOLEAN"
           },
           "left" : {
             "project" : {
-              "target" : [ [ {
-                "column" : 0
-              }, "INTEGER" ], [ {
-                "column" : 1
-              }, "VARCHAR(10)" ], [ {
+              "target" : [ {
+                "column" : 0,
+                "type" : "INTEGER"
+              }, {
+                "column" : 1,
+                "type" : "VARCHAR"
+              }, {
                 "operator" : "CAST",
                 "operand" : [ {
-                  "column" : 1
-                } ]
-              }, "BIGINT" ] ],
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                } ],
+                "type" : "BIGINT"
+              } ],
               "source" : {
                 "scan" : 0
               }
@@ -44,18 +57,21 @@
           },
           "right" : {
             "project" : {
-              "target" : [ [ {
+              "target" : [ {
                 "error" : "Not implemented: RANK"
-              }, "BIGINT" ], [ {
+              }, {
                 "operator" : "+",
                 "operand" : [ {
                   "operator" : "1",
-                  "operand" : [ ]
+                  "operand" : [ ],
+                  "type" : "INTEGER"
                 }, {
                   "operator" : "1",
-                  "operand" : [ ]
-                } ]
-              }, "INTEGER" ] ],
+                  "operand" : [ ],
+                  "type" : "INTEGER"
+                } ],
+                "type" : "INTEGER"
+              } ],
               "source" : {
                 "scan" : 0
               }
@@ -66,62 +82,79 @@
     }
   }, {
     "project" : {
-      "target" : [ [ {
-        "column" : 0
-      }, "INTEGER" ], [ {
-        "column" : 1
-      }, "VARCHAR(10)" ], [ {
-        "column" : 3
-      }, "BIGINT" ], [ {
-        "column" : 4
-      }, "INTEGER" ] ],
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 3,
+        "type" : "BIGINT"
+      }, {
+        "column" : 4,
+        "type" : "INTEGER"
+      } ],
       "source" : {
         "project" : {
-          "target" : [ [ {
-            "column" : 0
-          }, "INTEGER" ], [ {
-            "column" : 1
-          }, "VARCHAR(10)" ], [ {
+          "target" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "column" : 1,
+            "type" : "VARCHAR"
+          }, {
             "operator" : "CAST",
             "operand" : [ {
-              "column" : 1
-            } ]
-          }, "BIGINT" ], [ {
-            "column" : 2
-          }, "BIGINT" ], [ {
-            "column" : 3
-          }, "INTEGER" ] ],
+              "column" : 1,
+              "type" : "VARCHAR"
+            } ],
+            "type" : "BIGINT"
+          }, {
+            "column" : 2,
+            "type" : "BIGINT"
+          }, {
+            "column" : 3,
+            "type" : "INTEGER"
+          } ],
           "source" : {
             "join" : {
-              "type" : "INNER",
+              "kind" : "INNER",
               "condition" : {
                 "operator" : "=",
                 "operand" : [ {
                   "operator" : "CAST",
                   "operand" : [ {
-                    "column" : 1
-                  } ]
+                    "column" : 1,
+                    "type" : "VARCHAR"
+                  } ],
+                  "type" : "BIGINT"
                 }, {
-                  "column" : 2
-                } ]
+                  "column" : 2,
+                  "type" : "BIGINT"
+                } ],
+                "type" : "BOOLEAN"
               },
               "left" : {
                 "scan" : 0
               },
               "right" : {
                 "project" : {
-                  "target" : [ [ {
+                  "target" : [ {
                     "error" : "Not implemented: RANK"
-                  }, "BIGINT" ], [ {
+                  }, {
                     "operator" : "+",
                     "operand" : [ {
                       "operator" : "1",
-                      "operand" : [ ]
+                      "operand" : [ ],
+                      "type" : "INTEGER"
                     }, {
                       "operator" : "1",
-                      "operand" : [ ]
-                    } ]
-                  }, "INTEGER" ] ],
+                      "operand" : [ ],
+                      "type" : "INTEGER"
+                    } ],
+                    "type" : "INTEGER"
+                  } ],
                   "source" : {
                     "scan" : 0
                   }

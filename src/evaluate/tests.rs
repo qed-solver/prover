@@ -9,22 +9,22 @@ fn test_syntax_to_normal() {
 		use DataType::*;
 		use Expr::*;
 		use Predicate::*;
-		UExpr::sum(vec![Int], UExpr::One)
+		UExpr::sum(vec![Integer], UExpr::One)
 			* UExpr::sum(
-				vec![Int],
-				UExpr::squash(
+            vec![Integer],
+            UExpr::squash(
 					UExpr::sum(
-						vec![Int],
-						UExpr::Pred(Null(Var(VL(0)))) * UExpr::Pred(Null(Var(VL(1)))),
+                        vec![Integer],
+                        UExpr::Pred(Null(Var(VL(0)))) * UExpr::Pred(Null(Var(VL(1)))),
 					) * UExpr::Pred(Null(Expr::Agg(
 						"SUM".to_string(),
 						Box::new(syn::Relation::lam(
-							vec![Int],
-							UExpr::Pred(Eq(Var(VL(0)), Var(VL(1)))),
+                            vec![Integer],
+                            UExpr::Pred(Eq(Var(VL(0)), Var(VL(1)))),
 						)),
 					))),
 				),
-			) * UExpr::sum(vec![Int], UExpr::One)
+			) * UExpr::sum(vec![Integer], UExpr::One)
 	};
 	println!("{}", syn);
 	// let nom = nom::UExpr(vec![nom::Term::default(); 4]);

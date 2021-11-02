@@ -1,15 +1,17 @@
 {
   "schemas" : [ {
-    "types" : [ "INTEGER", "VARCHAR(10)", "RecordType(VARCHAR(10) TYPE, VARCHAR(20) DESC, RecordType(VARCHAR(10) A, VARCHAR(10) B) OTHERS)", "RecordType:peek(INTEGER EMPNO, VARCHAR(10) ENAME, RecordType(RecordType(VARCHAR(10) TYPE, VARCHAR(20) DESC, RecordType(VARCHAR(10) A, VARCHAR(10) B) OTHERS) ARRAY SKILLS) DETAIL) ARRAY" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ]
+    "types" : [ "INTEGER", "VARCHAR", "ROW", "ARRAY" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ [ {
+      "target" : [ {
         "error" : "Not implemented: SUM"
-      }, "INTEGER" ], [ {
+      }, {
         "error" : "Not implemented: COUNT"
-      }, "BIGINT" ] ],
+      } ],
       "source" : {
         "correlate" : [ {
           "scan" : 0
@@ -20,36 +22,42 @@
     }
   }, {
     "project" : {
-      "target" : [ [ {
+      "target" : [ {
         "error" : "Not implemented: SUM"
-      }, "INTEGER" ], [ {
+      }, {
         "error" : "Not implemented: COUNT"
-      }, "BIGINT" ] ],
+      } ],
       "source" : {
         "correlate" : [ {
           "project" : {
-            "target" : [ [ {
-              "column" : 1
-            }, "VARCHAR(10)" ], [ {
-              "column" : 3
-            }, "RecordType:peek(INTEGER EMPNO, VARCHAR(10) ENAME, RecordType(RecordType(VARCHAR(10) TYPE, VARCHAR(20) DESC, RecordType(VARCHAR(10) A, VARCHAR(10) B) OTHERS) ARRAY SKILLS) DETAIL) ARRAY" ], [ {
+            "target" : [ {
+              "column" : 1,
+              "type" : "VARCHAR"
+            }, {
+              "column" : 3,
+              "type" : "ARRAY"
+            }, {
               "operator" : "+",
               "operand" : [ {
-                "column" : 0
+                "column" : 0,
+                "type" : "INTEGER"
               }, {
                 "operator" : "1",
-                "operand" : [ ]
-              } ]
-            }, "INTEGER" ] ],
+                "operand" : [ ],
+                "type" : "INTEGER"
+              } ],
+              "type" : "INTEGER"
+            } ],
             "source" : {
               "scan" : 0
             }
           }
         }, {
           "project" : {
-            "target" : [ [ {
-              "column" : 3
-            }, "INTEGER" ] ],
+            "target" : [ {
+              "column" : 3,
+              "type" : "INTEGER"
+            } ],
             "source" : {
               "error" : "Not implemented: Uncollect"
             }

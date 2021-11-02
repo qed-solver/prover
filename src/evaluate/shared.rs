@@ -120,20 +120,20 @@ impl Env<Entry> {
 
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum Expr<R> {
-	Var(VL),
-	Op(String, Vec<Expr<R>>),
-	Agg(String, Box<R>),
+	Var(VL, DataType),
+	Op(String, Vec<Expr<R>>, DataType),
+	Agg(String, Box<R>, DataType),
 }
 
 impl<U: Display> Display for Expr<U> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
-			Expr::Var(v) => write!(f, "{}", v),
-			Expr::Op(op, args) if args.is_empty() => write!(f, "\"{}\"", op),
-			Expr::Op(op, args) => {
+			Expr::Var(v, _) => write!(f, "{}", v),
+			Expr::Op(op, args, _) if args.is_empty() => write!(f, "\"{}\"", op),
+			Expr::Op(op, args, _) => {
 				write!(f, "{}({})", op, args.iter().map(|arg| format!("{}", arg)).join(", "))
 			},
-			Expr::Agg(op, arg) => write!(f, "{}{}", op, arg),
+			Expr::Agg(op, arg, _) => write!(f, "{}{}", op, arg),
 		}
 	}
 }
@@ -193,9 +193,9 @@ impl<T, R: Eval<T>> Eval<Expr<T>> for Expr<R> {
 	fn eval(self, env: &Env<Entry>) -> Expr<T> {
 		use Expr::*;
 		match self {
-			Var(l) => Var(env.get_var(l)),
-			Op(f, args) => Op(f, args.into_iter().map(|v| v.eval(env)).collect()),
-			Agg(f, arg) => Agg(f, Box::new(arg.eval(env))),
+			Var(l, ty) => Var(env.get_var(l), ty),
+			Op(f, args, ty) => Op(f, args.into_iter().map(|v| v.eval(env)).collect(), ty),
+			Agg(f, arg, ty) => Agg(f, Box::new(arg.eval(env)), ty),
 		}
 	}
 }
@@ -246,10 +246,6 @@ impl<U: Display> Display for Relation<U> {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum DataType {
-	/// Fixed-length character type e.g. CHAR(10)
-	Char(Option<u64>),
-	/// Variable-length character type e.g. VARCHAR(10)
-	Varchar(Option<u64>),
 	/// Uuid type
 	Uuid,
 	/// Large character object e.g. CLOB(1000)
@@ -264,13 +260,9 @@ pub enum DataType {
 	Decimal(Option<u64>, Option<u64>),
 	/// Floating point with optional precision e.g. FLOAT(8)
 	Float(Option<u64>),
-	/// Small integer
-	SmallInt,
 	/// Integer
-	#[serde(alias = "INTEGER")]
-	Int,
-	/// Big integer
-	BigInt,
+	#[serde(alias = "INT", alias = "SMALLINT", alias = "BIGINT")]
+	Integer,
 	/// Floating point e.g. REAL
 	Real,
 	/// Double e.g. DOUBLE PRECISION
@@ -287,10 +279,8 @@ pub enum DataType {
 	Interval,
 	/// Regclass used in postgresql serial
 	Regclass,
-	/// Text
-	Text,
 	/// String
-	#[serde(alias = "VARCHAR", alias = "CHAR")]
+	#[serde(alias = "VARCHAR", alias = "CHAR", alias = "TEXT")]
 	String,
 	/// Bytea
 	Bytea,

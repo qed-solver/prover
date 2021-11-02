@@ -1,9 +1,94 @@
 {
-  "schemas" : [ ],
-  "queries" : [ {
-    "error" : "Not implemented: LogicalSort"
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ]
   }, {
-    "error" : "Not implemented: LogicalSort"
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ]
+  } ],
+  "queries" : [ {
+    "sort" : {
+      "collation" : [ [ 0, "INTEGER", "ASC" ] ],
+      "offset" : "null",
+      "limit" : "null",
+      "source" : {
+        "join" : {
+          "kind" : "SEMI",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            }, {
+              "column" : 2,
+              "type" : "INTEGER"
+            } ],
+            "type" : "BOOLEAN"
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "project" : {
+              "target" : [ {
+                "column" : 7,
+                "type" : "INTEGER"
+              } ],
+              "source" : {
+                "scan" : 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "sort" : {
+      "collation" : [ [ 0, "INTEGER", "ASC" ] ],
+      "offset" : "null",
+      "limit" : "null",
+      "source" : {
+        "join" : {
+          "kind" : "SEMI",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            }, {
+              "column" : 2,
+              "type" : "INTEGER"
+            } ],
+            "type" : "BOOLEAN"
+          },
+          "left" : {
+            "sort" : {
+              "collation" : [ [ 0, "INTEGER", "ASC" ] ],
+              "offset" : "null",
+              "limit" : "null",
+              "source" : {
+                "scan" : 0
+              }
+            }
+          },
+          "right" : {
+            "project" : {
+              "target" : [ {
+                "column" : 7,
+                "type" : "INTEGER"
+              } ],
+              "source" : {
+                "scan" : 1
+              }
+            }
+          }
+        }
+      }
+    }
   } ],
   "help" : [ "LogicalSort(sort0=[$0], dir0=[ASC])\r\n  LogicalJoin(condition=[=($0, $2)], joinType=[semi])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalProject(DEPTNO=[$7])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalSort(sort0=[$0], dir0=[ASC])\r\n  LogicalJoin(condition=[=($0, $2)], joinType=[semi])\r\n    LogicalSort(sort0=[$0], dir0=[ASC])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalProject(DEPTNO=[$7])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
 }

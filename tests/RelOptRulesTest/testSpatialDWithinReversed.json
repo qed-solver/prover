@@ -1,21 +1,28 @@
 {
   "schemas" : [ {
-    "types" : [ "VARCHAR(20)", "INTEGER", "INTEGER", "VARCHAR(10)", "BIGINT" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ]
+    "types" : [ "VARCHAR", "INTEGER", "INTEGER", "VARCHAR", "BIGINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ [ {
-        "column" : 0
-      }, "VARCHAR(20)" ], [ {
-        "column" : 1
-      }, "INTEGER" ], [ {
-        "column" : 2
-      }, "INTEGER" ], [ {
-        "column" : 3
-      }, "VARCHAR(10)" ], [ {
-        "column" : 4
-      }, "BIGINT" ] ],
+      "target" : [ {
+        "column" : 0,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 1,
+        "type" : "INTEGER"
+      }, {
+        "column" : 2,
+        "type" : "INTEGER"
+      }, {
+        "column" : 3,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 4,
+        "type" : "BIGINT"
+      } ],
       "source" : {
         "filter" : {
           "condition" : {
@@ -23,23 +30,31 @@
             "operand" : [ {
               "operator" : "ST_POINT",
               "operand" : [ {
-                "column" : 2
+                "column" : 2,
+                "type" : "INTEGER"
               }, {
-                "column" : 1
-              } ]
+                "column" : 1,
+                "type" : "INTEGER"
+              } ],
+              "type" : "GEOMETRY"
             }, {
               "operator" : "ST_POINT",
               "operand" : [ {
-                "operator" : "10.0:DECIMAL(3, 1)",
-                "operand" : [ ]
+                "operator" : "10.0",
+                "operand" : [ ],
+                "type" : "DECIMAL"
               }, {
-                "operator" : "20.0:DECIMAL(3, 1)",
-                "operand" : [ ]
-              } ]
+                "operator" : "20.0",
+                "operand" : [ ],
+                "type" : "DECIMAL"
+              } ],
+              "type" : "GEOMETRY"
             }, {
               "operator" : "6",
-              "operand" : [ ]
-            } ]
+              "operand" : [ ],
+              "type" : "INTEGER"
+            } ],
+            "type" : "BOOLEAN"
           },
           "source" : {
             "scan" : 0
@@ -49,17 +64,22 @@
     }
   }, {
     "project" : {
-      "target" : [ [ {
-        "column" : 0
-      }, "VARCHAR(20)" ], [ {
-        "column" : 1
-      }, "INTEGER" ], [ {
-        "column" : 2
-      }, "INTEGER" ], [ {
-        "column" : 3
-      }, "VARCHAR(10)" ], [ {
-        "column" : 4
-      }, "BIGINT" ] ],
+      "target" : [ {
+        "column" : 0,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 1,
+        "type" : "INTEGER"
+      }, {
+        "column" : 2,
+        "type" : "INTEGER"
+      }, {
+        "column" : 3,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 4,
+        "type" : "BIGINT"
+      } ],
       "source" : {
         "filter" : {
           "condition" : {
@@ -67,28 +87,38 @@
             "operand" : [ {
               "operator" : "SEARCH",
               "operand" : [ {
-                "column" : 4
+                "column" : 4,
+                "type" : "BIGINT"
               }, {
                 "operator" : "SARG[[33033..33035], [33050..33053], [33055..33080], [33092..33100], [33112..33156], [33164..33176], [33236..33244], [33252..33254], [36456..36464], [36496..36520]]",
-                "operand" : [ ]
-              } ]
+                "operand" : [ ],
+                "type" : "INTEGER"
+              } ],
+              "type" : "BOOLEAN"
             }, {
               "operator" : "ST_DWITHIN",
               "operand" : [ {
                 "operator" : "ST_POINT",
                 "operand" : [ {
-                  "column" : 2
+                  "column" : 2,
+                  "type" : "INTEGER"
                 }, {
-                  "column" : 1
-                } ]
+                  "column" : 1,
+                  "type" : "INTEGER"
+                } ],
+                "type" : "GEOMETRY"
               }, {
-                "operator" : "POINT (10 20):GEOMETRY",
-                "operand" : [ ]
+                "operator" : "{\"X\":10,\"Y\":20}",
+                "operand" : [ ],
+                "type" : "GEOMETRY"
               }, {
                 "operator" : "6",
-                "operand" : [ ]
-              } ]
-            } ]
+                "operand" : [ ],
+                "type" : "INTEGER"
+              } ],
+              "type" : "BOOLEAN"
+            } ],
+            "type" : "BOOLEAN"
           },
           "source" : {
             "scan" : 0

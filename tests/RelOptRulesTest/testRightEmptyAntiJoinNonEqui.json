@@ -1,41 +1,51 @@
 {
   "schemas" : [ {
-    "types" : [ "SMALLINT", "VARCHAR(10)", "VARCHAR(9)", "SMALLINT", "DATE", "DECIMAL(7, 2)", "DECIMAL(7, 2)", "TINYINT" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ]
+    "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
+    "key" : [ [ 0 ], [ 1 ] ],
+    "foreign" : [ ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ [ {
-        "column" : 0
-      }, "SMALLINT" ] ],
+      "target" : [ {
+        "column" : 0,
+        "type" : "SMALLINT"
+      } ],
       "source" : {
         "join" : {
-          "type" : "ANTI",
+          "kind" : "ANTI",
           "condition" : {
             "operator" : "AND",
             "operand" : [ {
               "operator" : "=",
               "operand" : [ {
-                "column" : 7
+                "column" : 7,
+                "type" : "TINYINT"
               }, {
-                "column" : 8
-              } ]
+                "column" : 8,
+                "type" : "TINYINT"
+              } ],
+              "type" : "BOOLEAN"
             }, {
               "operator" : "=",
               "operand" : [ {
-                "column" : 5
+                "column" : 5,
+                "type" : "DECIMAL"
               }, {
                 "operator" : "2000",
-                "operand" : [ ]
-              } ]
-            } ]
+                "operand" : [ ],
+                "type" : "INTEGER"
+              } ],
+              "type" : "BOOLEAN"
+            } ],
+            "type" : "BOOLEAN"
           },
           "left" : {
             "scan" : 0
           },
           "right" : {
-            "value" : {
-              "schema" : [ "TINYINT", "VARCHAR(14)", "VARCHAR(13)" ],
+            "values" : {
+              "schema" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
               "content" : [ ]
             }
           }
@@ -44,9 +54,10 @@
     }
   }, {
     "project" : {
-      "target" : [ [ {
-        "column" : 0
-      }, "SMALLINT" ] ],
+      "target" : [ {
+        "column" : 0,
+        "type" : "SMALLINT"
+      } ],
       "source" : {
         "scan" : 0
       }

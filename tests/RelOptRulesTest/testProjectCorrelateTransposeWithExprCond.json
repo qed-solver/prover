@@ -1,15 +1,19 @@
 {
   "schemas" : [ {
-    "types" : [ "INTEGER", "VARCHAR(10)", "RecordType(VARCHAR(10) TYPE, VARCHAR(20) DESC, RecordType(VARCHAR(10) A, VARCHAR(10) B) OTHERS)", "RecordType:peek(INTEGER EMPNO, VARCHAR(10) ENAME, RecordType(RecordType(VARCHAR(10) TYPE, VARCHAR(20) DESC, RecordType(VARCHAR(10) A, VARCHAR(10) B) OTHERS) ARRAY SKILLS) DETAIL) ARRAY" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ]
+    "types" : [ "INTEGER", "VARCHAR", "ROW", "ARRAY" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ [ {
-        "column" : 1
-      }, "VARCHAR(10)" ], [ {
-        "column" : 5
-      }, "VARCHAR(10)" ] ],
+      "target" : [ {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 5,
+        "type" : "VARCHAR"
+      } ],
       "source" : {
         "correlate" : [ {
           "scan" : 0
@@ -20,28 +24,33 @@
     }
   }, {
     "project" : {
-      "target" : [ [ {
-        "column" : 0
-      }, "VARCHAR(10)" ], [ {
-        "column" : 2
-      }, "VARCHAR(10)" ] ],
+      "target" : [ {
+        "column" : 0,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 2,
+        "type" : "VARCHAR"
+      } ],
       "source" : {
         "correlate" : [ {
           "project" : {
-            "target" : [ [ {
-              "column" : 1
-            }, "VARCHAR(10)" ], [ {
-              "column" : 3
-            }, "RecordType:peek(INTEGER EMPNO, VARCHAR(10) ENAME, RecordType(RecordType(VARCHAR(10) TYPE, VARCHAR(20) DESC, RecordType(VARCHAR(10) A, VARCHAR(10) B) OTHERS) ARRAY SKILLS) DETAIL) ARRAY" ] ],
+            "target" : [ {
+              "column" : 1,
+              "type" : "VARCHAR"
+            }, {
+              "column" : 3,
+              "type" : "ARRAY"
+            } ],
             "source" : {
               "scan" : 0
             }
           }
         }, {
           "project" : {
-            "target" : [ [ {
-              "column" : 3
-            }, "VARCHAR(10)" ] ],
+            "target" : [ {
+              "column" : 3,
+              "type" : "VARCHAR"
+            } ],
             "source" : {
               "error" : "Not implemented: Uncollect"
             }

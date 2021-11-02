@@ -1,37 +1,49 @@
 {
   "schemas" : [ {
-    "types" : [ "TINYINT", "VARCHAR(14)", "VARCHAR(13)" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE" ]
+    "types" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE" ],
+    "key" : [ [ 0 ], [ 1 ], [ 2 ] ],
+    "foreign" : [ ]
   }, {
-    "types" : [ "SMALLINT", "VARCHAR(10)", "VARCHAR(9)", "SMALLINT", "DATE", "DECIMAL(7, 2)", "DECIMAL(7, 2)", "TINYINT" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ]
+    "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
+    "key" : [ [ 0 ], [ 1 ] ],
+    "foreign" : [ ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ [ {
-        "column" : 1
-      }, "VARCHAR(14)" ] ],
+      "target" : [ {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ],
       "source" : {
         "join" : {
-          "type" : "SEMI",
+          "kind" : "SEMI",
           "condition" : {
             "operator" : "AND",
             "operand" : [ {
               "operator" : "=",
               "operand" : [ {
-                "column" : 0
+                "column" : 0,
+                "type" : "TINYINT"
               }, {
-                "column" : 10
-              } ]
+                "column" : 10,
+                "type" : "TINYINT"
+              } ],
+              "type" : "BOOLEAN"
             }, {
               "operator" : "=",
               "operand" : [ {
-                "column" : 8
+                "column" : 8,
+                "type" : "DECIMAL"
               }, {
                 "operator" : "100",
-                "operand" : [ ]
-              } ]
-            } ]
+                "operand" : [ ],
+                "type" : "INTEGER"
+              } ],
+              "type" : "BOOLEAN"
+            } ],
+            "type" : "BOOLEAN"
           },
           "left" : {
             "scan" : 0
@@ -44,19 +56,23 @@
     }
   }, {
     "project" : {
-      "target" : [ [ {
-        "column" : 1
-      }, "VARCHAR(14)" ] ],
+      "target" : [ {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ],
       "source" : {
         "join" : {
-          "type" : "SEMI",
+          "kind" : "SEMI",
           "condition" : {
             "operator" : "=",
             "operand" : [ {
-              "column" : 0
+              "column" : 0,
+              "type" : "TINYINT"
             }, {
-              "column" : 10
-            } ]
+              "column" : 10,
+              "type" : "TINYINT"
+            } ],
+            "type" : "BOOLEAN"
           },
           "left" : {
             "scan" : 0
@@ -66,11 +82,14 @@
               "condition" : {
                 "operator" : "=",
                 "operand" : [ {
-                  "column" : 5
+                  "column" : 5,
+                  "type" : "DECIMAL"
                 }, {
                   "operator" : "100",
-                  "operand" : [ ]
-                } ]
+                  "operand" : [ ],
+                  "type" : "INTEGER"
+                } ],
+                "type" : "BOOLEAN"
               },
               "source" : {
                 "scan" : 1

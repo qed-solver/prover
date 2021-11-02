@@ -2,6 +2,8 @@ use std::fs::File;
 use std::io::{BufReader, Read, Write};
 use std::path::Path;
 use std::{fs, io};
+use std::any::Any;
+use std::collections::HashMap;
 
 use env_logger::{Builder, Env, Target};
 
@@ -13,7 +15,7 @@ mod relation;
 mod solver;
 mod unify;
 
-fn visit<P: AsRef<Path>>(dir: P, cb: &dyn Fn(&Path)) -> io::Result<()> {
+fn visit<P: AsRef<Path>>(dir: P, mut cb: impl FnMut(&Path)) -> io::Result<()> {
 	let path = dir.as_ref();
 	if path.is_dir() {
 		for entry in fs::read_dir(path)? {
@@ -29,16 +31,27 @@ fn visit<P: AsRef<Path>>(dir: P, cb: &dyn Fn(&Path)) -> io::Result<()> {
 	Ok(())
 }
 
+#[derive(Debug)]
+enum CosetteResult {
+	Provable,
+	NotProvable,
+	ParseErr(serde_json::Error),
+	Panic(Box<dyn Any + Send>),
+}
+
 fn main() -> io::Result<()> {
 	Builder::from_env(Env::default().default_filter_or("off"))
 		.format(|buf, record| writeln!(buf, "{}", record.args()))
 		.target(Target::Stdout)
 		.init();
+	let mut stats = HashMap::new();
 	for arg in std::env::args() {
-		visit(arg, &|path| {
+		visit(arg, |path| {
+			use CosetteResult::*;
 			let file = File::open(&path).unwrap();
 			let mut buf_reader = BufReader::new(file);
 			let mut contents = String::new();
+			let name = path.file_name().unwrap().to_str().unwrap().to_owned();
 			println!("\n{}", path.to_str().unwrap());
 			buf_reader.read_to_string(&mut contents).unwrap();
 			let result =
@@ -50,15 +63,26 @@ fn main() -> io::Result<()> {
 							if payload.check() { "" } else { "not " },
 							path.file_name().unwrap().to_str().unwrap()
 						);
+						Provable
 					},
 					Err(e) => {
 						log::error!("Not successfully parsed.\n{}", e);
+						ParseErr(e)
 					},
 				});
-			if let Err(r) = result {
-				log::error!("{:?}", r);
-			}
+			let result = match result {
+				Ok(res) => res,
+				Err(e) => {
+					log::error!("{:?}", e);
+					Panic(e)
+				}
+			};
+			stats.insert(name, result);
 		})?;
+	}
+	println!("\n\nSTATISTICS");
+	for (name, result) in stats {
+		println!("{}\t{:?}", name, result);
 	}
 	Ok(())
 }
