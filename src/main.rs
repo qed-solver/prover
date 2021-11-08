@@ -1,19 +1,19 @@
+#![feature(type_changing_struct_update)]
+#![feature(type_ascription)]
+use std::any::Any;
+use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
 use std::path::Path;
 use std::{fs, io};
-use std::any::Any;
-use std::collections::HashMap;
 
 use env_logger::{Builder, Env, Target};
 
-use crate::relation::Input;
+use crate::pipeline::relation::Input;
 use crate::solver::Payload;
 
-mod evaluate;
-mod relation;
+mod pipeline;
 mod solver;
-mod unify;
 
 fn visit<P: AsRef<Path>>(dir: P, mut cb: impl FnMut(&Path)) -> io::Result<()> {
 	let path = dir.as_ref();
@@ -44,7 +44,7 @@ fn main() -> io::Result<()> {
 		.format(|buf, record| writeln!(buf, "{}", record.args()))
 		.target(Target::Stdout)
 		.init();
-	let mut stats = HashMap::new();
+	let mut stats = BTreeMap::new();
 	for arg in std::env::args() {
 		visit(arg, |path| {
 			use CosetteResult::*;
@@ -58,12 +58,17 @@ fn main() -> io::Result<()> {
 				std::panic::catch_unwind(|| match serde_json::from_str::<Input>(&contents) {
 					Ok(rel) => {
 						let payload = Payload::from(rel);
+						let provable = payload.check();
 						println!(
 							"Equivalence is {}provable for {}",
-							if payload.check() { "" } else { "not " },
+							if provable { "" } else { "not " },
 							path.file_name().unwrap().to_str().unwrap()
 						);
-						Provable
+						if provable {
+							Provable
+						} else {
+							NotProvable
+						}
 					},
 					Err(e) => {
 						log::error!("Not successfully parsed.\n{}", e);
@@ -75,7 +80,7 @@ fn main() -> io::Result<()> {
 				Err(e) => {
 					log::error!("{:?}", e);
 					Panic(e)
-				}
+				},
 			};
 			stats.insert(name, result);
 		})?;
