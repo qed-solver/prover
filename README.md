@@ -29,4 +29,4 @@ You may try out running these inputs by
 cargo run --release -- tests/RelOptRulesTest/
 ```
 WARNING: many test cases in this folder contain features that we haven't support yet.
-Only ~70 out of all ~400 cases are actually provable for now.
+Only ~110 out of all ~400 cases are actually provable for now.

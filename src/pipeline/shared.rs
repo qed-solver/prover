@@ -10,7 +10,9 @@ use indenter::indented;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use z3::ast::{Ast, Dynamic};
-use z3::{Context, FuncDecl, Sort};
+use z3::{ast, Context, FuncDecl, Solver, Sort};
+
+use crate::pipeline::null::Nullable;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
@@ -133,12 +135,25 @@ where E: Eval<Expr<S>, Expr<T>> + Clone
 	}
 }
 
+impl<E, S: Clone, T: Clone> Eval<AppHead<S>, AppHead<T>> for E
+where E: Eval<Vec<Expr<S>>, Vec<Expr<T>>> + Eval<Box<S>, Box<T>> + Clone
+{
+	fn eval(self, source: AppHead<S>) -> AppHead<T> {
+		use AppHead::*;
+		match source {
+			Var(v) => Var(v),
+			HOp(op, args, rel) => HOp(op, self.clone().eval(args), self.eval(rel)),
+		}
+	}
+}
+
 impl<E, S: Clone, T: Clone> Eval<Application<S>, Application<T>> for E
-where E: Eval<Expr<S>, Expr<T>> + Clone
+where E: Eval<AppHead<S>, AppHead<T>> + Eval<Vector<Expr<S>>, Vector<Expr<T>>> + Clone
 {
 	fn eval(self, source: Application<S>) -> Application<T> {
-		let args = source.args.into_iter().map(|a| self.clone().eval(a)).collect();
-		Application { args, ..source }
+		let head = self.clone().eval(source.head);
+		let args = self.eval(source.args);
+		Application { head, args }
 	}
 }
 
@@ -194,6 +209,7 @@ where E: Eval<S, T> + Clone
 pub enum Relation<U> {
 	Var(VL),
 	Lam(Vector<DataType>, Box<U>),
+	HOp(String, Vec<Expr<Relation<U>>>, Box<Relation<U>>),
 }
 
 impl<U> Relation<U> {
@@ -205,6 +221,7 @@ impl<U> Relation<U> {
 		match self {
 			Relation::Var(table) => schemas[table.0].types.clone().into(),
 			Relation::Lam(scopes, _) => scopes.clone(),
+			Relation::HOp(_, _, rel) => rel.scopes(schemas),
 		}
 	}
 }
@@ -217,30 +234,45 @@ impl<U: Display> Display for Relation<U> {
 				writeln!(f, "λ {:?}", scopes)?;
 				writeln!(indented(f).with_str("\t"), "{}", body)
 			},
+			Relation::HOp(op, args, rel) => {
+				writeln!(
+					f,
+					"{}({}, {})",
+					op,
+					args.iter().map(|arg| format!("{}", arg)).join(", "),
+					rel
+				)
+			},
 		}
 	}
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct Application<R> {
-	pub table: VL,
-	pub args: Vector<Expr<R>>,
+pub enum AppHead<R> {
+	Var(VL),
+	HOp(String, Vec<Expr<R>>, Box<R>),
 }
 
-impl<R> Application<R> {
-	pub fn new(table: VL, args: Vector<Expr<R>>) -> Self {
-		Application { table, args }
-	}
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct Application<R> {
+	pub head: AppHead<R>,
+	pub args: Vector<Expr<R>>,
 }
 
 impl<R: Display> Display for Application<R> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		write!(
-			f,
-			"#{}({})",
-			self.table.0,
-			self.args.iter().map(|arg| format!("{}", arg)).join(", ")
-		)
+		let args = self.args.iter().map(|arg| format!("{}", arg)).join(", ");
+		match &self.head {
+			AppHead::Var(VL(l)) => write!(f, "#{}({})", l, args),
+			AppHead::HOp(op, op_args, rel) => writeln!(
+				f,
+				"{}({}, {})({})",
+				op,
+				op_args.iter().map(|arg| format!("{}", arg)).join(", "),
+				rel,
+				args
+			)
+		}
 	}
 }
 
@@ -250,25 +282,12 @@ impl<R: Display> Display for Application<R> {
 pub enum DataType {
 	/// Uuid type
 	Uuid,
-	/// Large character object e.g. CLOB(1000)
-	Clob(u64),
-	/// Fixed-length binary type e.g. BINARY(10)
-	Binary(u64),
-	/// Variable-length binary type e.g. VARBINARY(10)
-	Varbinary(u64),
-	/// Large binary object e.g. BLOB(1000)
-	Blob(u64),
-	/// Decimal type with optional precision and scale e.g. DECIMAL(10,2)
-	Decimal(Option<u64>, Option<u64>),
-	/// Floating point with optional precision e.g. FLOAT(8)
-	Float(Option<u64>),
 	/// Integer
 	#[serde(alias = "INT", alias = "SMALLINT", alias = "BIGINT")]
 	Integer,
-	/// Floating point e.g. REAL
+	/// Real number
+	#[serde(alias = "FLOAT", alias = "DOUBLE", alias = "DECIMAL")]
 	Real,
-	/// Double e.g. DOUBLE PRECISION
-	Double,
 	/// Boolean
 	Boolean,
 	/// Date
@@ -284,8 +303,6 @@ pub enum DataType {
 	/// String
 	#[serde(alias = "VARCHAR", alias = "CHAR", alias = "TEXT")]
 	String,
-	/// Bytea
-	Bytea,
 	/// Custom type such as enums
 	Custom(String),
 	/// Arrays
@@ -383,12 +400,13 @@ impl<T: Display> Display for Terms<T> {
 }
 
 pub fn var<'c>(ctx: &'c Context, ty: DataType, prefix: &str) -> Dynamic<'c> {
-	use z3::ast::{Bool, Int, String as Str};
+	use z3::ast::{Bool, Int, Real as Re, String as Str};
 	use DataType::*;
 	match ty {
-		Boolean => Bool::fresh_const(ctx, "v").into(),
-		String => Str::fresh_const(ctx, "v").into(),
+		Boolean => Bool::fresh_const(ctx, prefix).into(),
+		String => Str::fresh_const(ctx, prefix).into(),
 		Integer | Timestamp => Int::fresh_const(ctx, prefix).into(),
+		Real => Re::fresh_const(ctx, prefix).into(),
 		_ => panic!("unsupported type {:?}", ty),
 	}
 }
@@ -399,6 +417,7 @@ fn sort(ctx: &Context, ty: DataType) -> Sort {
 		Boolean => Sort::bool(ctx),
 		String => Sort::string(ctx),
 		Integer | Timestamp => Sort::int(ctx),
+		Real => Sort::real(ctx),
 		_ => panic!("unsupported type {:?}", ty),
 	}
 }
@@ -413,4 +432,22 @@ pub fn func_app<'c>(
 	let args = args.iter().map(|arg| arg as &dyn Ast).collect_vec();
 	let f = FuncDecl::new(ctx, name, &domain.iter().collect_vec(), &sort(ctx, range));
 	f.apply(&args)
+}
+
+pub struct Ctx<'c> {
+	context: &'c Context,
+	null_int: Nullable<'c, ast::Int<'c>>,
+	null_real: Nullable<'c, ast::Real<'c>>,
+	null_bool: Nullable<'c, ast::Bool<'c>>,
+	null_str: Nullable<'c, ast::String<'c>>,
+}
+
+impl<'c> Ctx<'c> {
+	pub fn new(solver: &Solver<'c>) -> Self {
+		let null_int = Nullable::<ast::Int>::setup(solver);
+		let null_real = Nullable::<ast::Real>::setup(solver);
+		let null_bool = Nullable::<ast::Bool>::setup(solver);
+		let null_str = Nullable::<ast::String>::setup(solver);
+		Ctx { context: solver.get_context(), null_int, null_real, null_bool, null_str }
+	}
 }

@@ -41,6 +41,9 @@ impl<'e, 'c> Unify<&Relation> for UnifyEnv<'e, 'c> {
 				let subst2 = subst2 + &vars;
 				UnifyEnv(solver, &subst1, &subst2).unify(uexpr1.as_ref(), uexpr2.as_ref())
 			},
+			(Relation::HOp(op1, args1, rel1), Relation::HOp(op2, args2, rel2)) => {
+				op1 == op2 && self.unify(args1, args2) && self.unify(rel1.as_ref(), rel2.as_ref())
+			}
 			_ => false,
 		}
 	}
@@ -66,8 +69,9 @@ impl<'e, 'c> Unify<&Expr> for UnifyEnv<'e, 'c> {
 	fn unify(self, t1: &Expr, t2: &Expr) -> bool {
 		let UnifyEnv(solver, subst1, subst2) = self;
 		let h_ops = &RefCell::new(HashMap::new());
-		let env1 = Z3Env::new(solver, subst1, h_ops);
-		let env2 = Z3Env::new(solver, subst2, h_ops);
+		let rel_h_ops = &RefCell::new(HashMap::new());
+		let env1 = Z3Env::new(solver, subst1, h_ops, rel_h_ops);
+		let env2 = Z3Env::new(solver, subst2, h_ops, rel_h_ops);
 		let e1 = env1.eval(t1);
 		let e2 = env2.eval(t2);
 		let h_ops_equiv = extract_equiv(solver, h_ops.borrow().deref());
@@ -147,12 +151,13 @@ impl<'e, 'c> Unify<&Scoped<Inner>> for UnifyEnv<'e, 'c> {
 		let vars1 = t1.scopes.iter().map(|ty| var(ctx, ty.clone(), "v")).collect_vec();
 		let vars = perm1.apply_slice(vars1.as_slice());
 		let subst1 = subst1 + &vars1.into();
-		perms(&t2.scopes, vars).take(20).any(|vars2| {
+		perms(&t2.scopes, vars).take(50).any(|vars2| {
 			log::info!("Permutation: {:?}", vars2);
 			let subst2 = subst2 + &vars2.into();
 			let h_ops = &RefCell::new(HashMap::new());
-			let env1 = Z3Env::new(solver, &subst1, h_ops);
-			let env2 = Z3Env::new(solver, &subst2, h_ops);
+			let rel_h_ops = &RefCell::new(HashMap::new());
+			let env1 = Z3Env::new(solver, &subst1, h_ops, rel_h_ops);
+			let env2 = Z3Env::new(solver, &subst2, h_ops, rel_h_ops);
 			let (logic1, apps1) = env1.eval(&t1.inner);
 			let (logic2, apps2) = env2.eval(&t2.inner);
 			let apps_equiv = apps1._eq(&apps2);
@@ -164,7 +169,7 @@ impl<'e, 'c> Unify<&Scoped<Inner>> for UnifyEnv<'e, 'c> {
 			solver.pop(1);
 			log::info!("{}", equiv);
 			log::info!("{}", h_ops_equiv);
-			solver.check_assumptions(&[h_ops_equiv, equiv.not()]) == SatResult::Unsat
+			dbg!(solver.check_assumptions(&[h_ops_equiv, equiv.not()])) == SatResult::Unsat
 		})
 	}
 }

@@ -11,7 +11,7 @@ use z3::ast::{exists_const, Ast, Bool, Dynamic, Int, String as Str};
 use z3::{FuncDecl, SatResult, Solver, Sort};
 
 use crate::pipeline::partial::{Closure, Summation};
-use crate::pipeline::shared::{func_app, DataType, Eval, Schema, Terms, VL};
+use crate::pipeline::shared::{func_app, AppHead, DataType, Eval, Schema, Terms, VL};
 use crate::pipeline::{partial, shared};
 
 pub(crate) type Relation = shared::Relation<UExpr>;
@@ -117,14 +117,17 @@ impl Eval<partial::UExpr, UExpr> for (usize, &[Schema]) {
 						(&summand.env.append(entries)).eval(summand.body);
 					shared::Terms::under(scopes, (level, schemas).eval(sum_body * t))
 				} else {
-					let (apps, prims) = t.apps.clone().into_iter().partition_map(|app| {
-						let schema = &schemas[app.table.0];
-						if schema.primary.is_empty() {
-							Either::Left(app)
-						} else {
-							Either::Right(app)
-						}
-					});
+					let (apps, prims) =
+						t.apps.clone().into_iter().partition_map(|app| match &app.head {
+							AppHead::Var(VL(l)) => {
+								if schemas[*l].primary.is_empty() {
+									Either::Left(app)
+								} else {
+									Either::Right(app)
+								}
+							},
+							AppHead::HOp(_, _, _) => Either::Left(app),
+						});
 					let sq = partial::SUExpr::term(partial::STerm {
 						apps: prims,
 						..partial::STerm::default()
@@ -183,6 +186,7 @@ impl Eval<partial::Relation, Relation> for (usize, &[Schema]) {
 				let level = lvl + vars.len();
 				Relation::lam(scopes, (level, schemas).eval((&env.append(vars)).eval(body)))
 			},
+			HOp(op, args, rel) => HOp(op, self.eval(args), self.eval(rel)),
 		}
 	}
 }
@@ -192,20 +196,28 @@ pub struct StbEnv<'e, 'c>(pub &'e Vector<Expr>, pub usize, Z3Env<'e, 'c>);
 
 pub type HOpMap<'c> = HashMap<(String, Vec<Expr>, Relation, Vector<Dynamic<'c>>), Dynamic<'c>>;
 
+pub type RelHOpMap<'c> = HashMap<(String, Vec<Expr>, Relation, Vector<Dynamic<'c>>), usize>;
+
 #[derive(Copy, Clone)]
-pub struct Z3Env<'e, 'c>(&'e Solver<'c>, &'e Vector<Dynamic<'c>>, &'e RefCell<HOpMap<'c>>);
+pub struct Z3Env<'e, 'c>(
+	&'e Solver<'c>,
+	&'e Vector<Dynamic<'c>>,
+	&'e RefCell<HOpMap<'c>>,
+	&'e RefCell<RelHOpMap<'c>>,
+);
 
 impl<'e, 'c> Z3Env<'e, 'c> {
 	pub fn new(
 		solver: &'e Solver<'c>,
 		subst: &'e Vector<Dynamic<'c>>,
 		h_ops: &'e RefCell<HOpMap<'c>>,
+		rel_h_ops: &'e RefCell<RelHOpMap<'c>>,
 	) -> Self {
-		Z3Env(solver, subst, h_ops)
+		Z3Env(solver, subst, h_ops, rel_h_ops)
 	}
 
 	fn update(self, subst: &'e Vector<Dynamic<'c>>) -> Self {
-		Z3Env(self.0, subst, self.2)
+		Z3Env(self.0, subst, self.2, self.3)
 	}
 
 	fn extend(self, scopes: Vector<DataType>) -> Vector<Dynamic<'c>> {
@@ -222,8 +234,9 @@ impl<'e, 'c> StbEnv<'e, 'c> {
 		solver: &'e Solver<'c>,
 		z3_subst: &'e Vector<Dynamic<'c>>,
 		h_ops: &'e RefCell<HOpMap<'c>>,
+		rel_h_ops: &'e RefCell<RelHOpMap<'c>>,
 	) -> Self {
-		StbEnv(subst, level, Z3Env::new(solver, z3_subst, h_ops))
+		StbEnv(subst, level, Z3Env::new(solver, z3_subst, h_ops, rel_h_ops))
 	}
 
 	fn update(self, subst: &'e Vector<Expr>, level: usize, z3_env: Z3Env<'e, 'c>) -> Self {
@@ -332,6 +345,7 @@ impl<'e, 'c: 'e> Eval<Relation, Relation> for StbEnv<'e, 'c> {
 					Box::new(self.update(subst, level, z3_env.update(z3_subst)).eval(*body)),
 				)
 			},
+			HOp(op, args, rel) => HOp(op, self.eval(args), self.eval(rel)),
 		}
 	}
 }
@@ -398,24 +412,35 @@ impl<'e, 'c: 'e> Eval<&Inner, Bool<'c>> for Z3Env<'e, 'c> {
 	}
 }
 
+fn table_name(head: &AppHead<Relation>, env: Z3Env) -> String {
+	let Z3Env(_, subst, _, map) = env;
+	match head {
+		AppHead::Var(VL(l)) => "r!".to_string() + &l.to_string(),
+		AppHead::HOp(op, args, rel) => {
+			let len = map.borrow().len();
+			"rh!".to_string()
+				+ &map
+					.borrow_mut()
+					.entry((op.clone(), args.clone(), *rel.clone(), subst.clone()))
+					.or_insert(len)
+					.to_string()
+		},
+	}
+}
+
 impl<'e, 'c: 'e> Eval<&Application, Bool<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &Application) -> Bool<'c> {
 		let args = source.args.iter().map(|v| self.eval(v)).collect_vec();
-		func_app(
-			self.0.get_context(),
-			"r!".to_owned() + &source.table.0.to_string(),
-			args,
-			DataType::Boolean,
-		)
-		.as_bool()
-		.unwrap()
+		func_app(self.0.get_context(), table_name(&source.head, self), args, DataType::Boolean)
+			.as_bool()
+			.unwrap()
 	}
 }
 
 impl<'e, 'c: 'e> Eval<&Application, Int<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &Application) -> Int<'c> {
 		let args = source.args.iter().map(|v| self.eval(v)).collect_vec();
-		func_app(self.0.get_context(), source.table.0.to_string(), args, DataType::Integer)
+		func_app(self.0.get_context(), table_name(&source.head, self), args, DataType::Integer)
 			.as_int()
 			.unwrap()
 	}
@@ -423,7 +448,7 @@ impl<'e, 'c: 'e> Eval<&Application, Int<'c>> for Z3Env<'e, 'c> {
 
 impl<'e, 'c: 'e> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &Expr) -> Dynamic<'c> {
-		let Z3Env(solver, subst, h_ops) = self;
+		let Z3Env(solver, subst, h_ops, _) = self;
 		let ctx = solver.get_context();
 		match source {
 			Expr::Var(v, _) => subst[v.0].clone(),

@@ -66,6 +66,12 @@ pub enum Relation {
 		columns: Vec<Expr>,
 		source: Box<Relation>,
 	},
+	Sort {
+		collation: Vec<(usize, DataType, String)>,
+		offset: Option<Expr>,
+		limit: Option<Expr>,
+		source: Box<Relation>,
+	}
 }
 
 impl Relation {
@@ -85,6 +91,7 @@ impl Relation {
 			Union(rel1, _) | Except(rel1, _) => rel1.scopes(schemas),
 			Distinct(rel) => rel.scopes(schemas),
 			Values { schema, .. } => schema.clone().into(),
+			Sort { source, .. } => source.scopes(schemas),
 		}
 	}
 }
@@ -255,6 +262,9 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 					.fold(UExpr::One, UExpr::mul);
 				Rel::lam(scopes, new_body)
 			},
+			Sort { collation, offset, limit, source } => {
+				unimplemented!()
+			}
 		}
 	}
 }

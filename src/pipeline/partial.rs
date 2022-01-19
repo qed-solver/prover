@@ -2,7 +2,7 @@ use std::ops::Mul;
 
 use imbl::{vector, Vector};
 
-use crate::pipeline::shared::{DataType, Eval, Terms, VL};
+use crate::pipeline::shared::{AppHead, DataType, Eval, Terms, VL};
 use crate::pipeline::{shared, syntax};
 
 pub(crate) type Relation = shared::Relation<Closure>;
@@ -45,9 +45,14 @@ impl UExpr {
 	pub fn apply(rel: Relation, args: Vector<Expr>) -> Self {
 		match rel {
 			Relation::Var(table) => {
-				UExpr::term(Term { apps: vector![Application { table, args }], ..Term::default() })
+				let head = AppHead::Var(table);
+				UExpr::term(Term { apps: vector![Application { head, args }], ..Term::default() })
 			},
 			Relation::Lam(scopes, closure) => (&closure.env.append(args)).eval(closure.body),
+			Relation::HOp(op, op_args, rel) => {
+				let head = AppHead::HOp(op, op_args, rel);
+				UExpr::term(Term { apps: vector![Application { head, args }], ..Term::default() })
+			}
 		}
 	}
 }
@@ -104,11 +109,21 @@ impl SUExpr {
 
 	pub fn apply(rel: Relation, args: Vector<Expr>) -> Self {
 		match rel {
-			Relation::Var(table) => SUExpr::term(STerm {
-				apps: vector![Application { table, args }],
-				..STerm::default()
-			}),
+			Relation::Var(table) => {
+				let head = AppHead::Var(table);
+				SUExpr::term(STerm {
+					apps: vector![Application { head, args }],
+					..STerm::default()
+				})
+			},
 			Relation::Lam(scopes, closure) => (&closure.env.append(args)).eval(closure.body),
+			Relation::HOp(op, op_args, rel) => {
+				let head = AppHead::HOp(op, op_args, rel);
+				SUExpr::term(STerm {
+					apps: vector![Application { head, args }],
+					..STerm::default()
+				})
+			},
 		}
 	}
 }
@@ -200,6 +215,7 @@ impl<'e> Eval<syntax::Relation, Relation> for &'e Env {
 		match source {
 			Var(l) => Var(l),
 			Lam(scopes, body) => Relation::lam(scopes, Closure::new(*body, self.clone())),
+			HOp(op, args, rel) => HOp(op, self.eval(args), self.eval(rel)),
 		}
 	}
 }

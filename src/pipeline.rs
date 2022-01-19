@@ -30,7 +30,8 @@ pub fn evaluate(rel: syn::Relation, schemas: &[Schema]) -> nom::Relation {
 	let uexpr_subst = &vector![];
 	let z3_subst = &vector![];
 	let h_ops = &RefCell::new(HashMap::new());
-	let env = StbEnv::new(uexpr_subst, 0, solver, z3_subst, h_ops);
+	let rel_h_ops = &RefCell::new(HashMap::new());
+	let env = StbEnv::new(uexpr_subst, 0, solver, z3_subst, h_ops, rel_h_ops);
 	let stb = env.eval(nom);
 	log::info!("Stable:\n{}", stb);
 	stb
