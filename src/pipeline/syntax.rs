@@ -1,12 +1,12 @@
 use std::fmt::{Debug, Display, Formatter, Write};
 use std::ops::{Add, AddAssign, Mul, MulAssign, Not};
 
-use im::Vector;
+use imbl::Vector;
 use indenter::indented;
 use itertools::Itertools;
 
-use crate::evaluate::shared;
-use crate::evaluate::shared::{DataType, VL};
+use crate::pipeline::shared;
+use crate::pipeline::shared::DataType;
 
 /// A relation in the U-semiring formalism is a function that maps a tuple to a U-semiring value.
 /// It can be represented as a variable for an unknown relation, or encoded as a lambda function
@@ -16,6 +16,12 @@ use crate::evaluate::shared::{DataType, VL};
 pub type Relation = shared::Relation<UExpr>;
 pub type Predicate = shared::Predicate<Relation>;
 pub type Expr = shared::Expr<Relation>;
+
+impl Relation {
+	pub fn app(self, args: impl Into<Vector<Expr>>) -> UExpr {
+		UExpr::App(self, args.into())
+	}
+}
 
 /// An expression that evaluates to a U-semiring value.
 /// This include all constants and operation defined over the U-semiring,
@@ -38,12 +44,12 @@ pub enum UExpr {
 	Pred(Predicate),
 	// Application of a relation with arguments.
 	// Here each argument are required to be a single variable.
-	App(Relation, Vector<VL>),
+	App(Relation, Vector<Expr>),
 }
 
 impl UExpr {
-	pub fn sum(types: impl Into<Vector<DataType>>, body: impl Into<Box<UExpr>>) -> Self {
-		UExpr::Sum(types.into(), body.into())
+	pub fn sum(scopes: impl Into<Vector<DataType>>, body: impl Into<Box<UExpr>>) -> Self {
+		UExpr::Sum(scopes.into(), body.into())
 	}
 
 	pub fn squash(body: impl Into<Box<UExpr>>) -> Self {
@@ -60,8 +66,8 @@ impl Display for UExpr {
 			UExpr::Mul(u1, u2) => write!(f, "({} × {})", u1, u2),
 			UExpr::Squash(u) => write!(f, "‖{}‖", u),
 			UExpr::Not(u) => write!(f, "¬({})", u),
-			UExpr::Sum(types, body) => {
-				writeln!(f, "∑ {:?} {{", types)?;
+			UExpr::Sum(scopes, body) => {
+				writeln!(f, "∑ {:?} {{", scopes)?;
 				writeln!(indented(f).with_str("\t"), "{}", body)?;
 				write!(f, "}}")
 			},

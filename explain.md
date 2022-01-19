@@ -6,8 +6,7 @@ The purpose of this program is to check the equivalence between SQL queries base
 That is, we translate two SQL queries into two U-semiring expression and normalize them.
 If the normalized forms agree, we know that the two SQL queries have the same semantics.
 
-We follow the main idea of [normalization by evaluation](https://en.wikipedia.org/wiki/Normalisation_by_evaluation) (
-NBE) in order to normalize efficiently. When normalizing terms, we are picking a canonical term among an equivalence
+We follow the main idea of [normalization by evaluation](https://en.wikipedia.org/wiki/Normalisation_by_evaluation) (NBE) in order to normalize efficiently. When normalizing terms, we are picking a canonical term among an equivalence
 class of syntactic terms that are considered to have the same "meaning", or semantics.
 In other words, we define several rewrite rules that are intent to preserve semantics of terms and call terms to be
 equivalent when there are a sequence of rewrites that relates them.
