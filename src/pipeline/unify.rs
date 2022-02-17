@@ -43,7 +43,7 @@ impl<'e, 'c> Unify<&Relation> for UnifyEnv<'e, 'c> {
 			},
 			(Relation::HOp(op1, args1, rel1), Relation::HOp(op2, args2, rel2)) => {
 				op1 == op2 && self.unify(args1, args2) && self.unify(rel1.as_ref(), rel2.as_ref())
-			}
+			},
 			_ => false,
 		}
 	}

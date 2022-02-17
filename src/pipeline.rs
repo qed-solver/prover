@@ -24,8 +24,9 @@ pub fn evaluate(rel: syn::Relation, schemas: &[Schema]) -> nom::Relation {
 	let prt = (&partial::Env::default()).eval(rel);
 	let nom = (0, schemas).eval(prt);
 	log::info!("Normal:\n{}", nom);
-	let config = &Config::new();
-	let ctx = &Context::new(config);
+	let mut config = Config::new();
+	config.set_timeout_msec(2000);
+	let ctx = &Context::new(&config);
 	let solver = &Solver::new(ctx);
 	let uexpr_subst = &vector![];
 	let z3_subst = &vector![];

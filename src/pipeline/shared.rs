@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display, Formatter, Write};
 use std::hash::Hash;
 use std::iter::FromIterator;
@@ -97,7 +97,7 @@ impl<R: Display> Display for Predicate<R> {
 pub struct Schema {
 	pub types: Vec<DataType>,
 	#[serde(rename = "key")]
-	pub primary: Vec<Vec<usize>>,
+	pub primary: Vec<HashSet<usize>>,
 	#[serde(skip)]
 	#[serde(rename = "foreign_key")]
 	pub foreign: HashMap<usize, VL>,
@@ -271,7 +271,7 @@ impl<R: Display> Display for Application<R> {
 				op_args.iter().map(|arg| format!("{}", arg)).join(", "),
 				rel,
 				args
-			)
+			),
 		}
 	}
 }

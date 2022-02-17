@@ -71,7 +71,7 @@ pub enum Relation {
 		offset: Option<Expr>,
 		limit: Option<Expr>,
 		source: Box<Relation>,
-	}
+	},
 }
 
 impl Relation {
@@ -263,8 +263,37 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 				Rel::lam(scopes, new_body)
 			},
 			Sort { collation, offset, limit, source } => {
-				unimplemented!()
-			}
+				// TODO: Support sorting multiple columns
+				assert!(collation.len() <= 1);
+				let offset = offset.map(|n| self.eval(n)).unwrap_or(syn::Expr::Op(
+					1.to_string(),
+					vec![],
+					DataType::Integer,
+				));
+				let source = self.eval(source);
+				match collation.first() {
+					Some((col, _, ord)) => {
+						let col = syn::Expr::Op(col.to_string(), vec![], DataType::Integer);
+						let ord = syn::Expr::Op(ord.clone(), vec![], DataType::String);
+						if let Some(count) = limit {
+							Rel::HOp(
+								"sort-limit".to_string(),
+								vec![col, ord, self.eval(count), offset],
+								source,
+							)
+						} else {
+							Rel::HOp("sort".to_string(), vec![col, ord, offset], source)
+						}
+					},
+					None => {
+						if let Some(count) = limit {
+							Rel::HOp("limit".to_string(), vec![self.eval(count), offset], source)
+						} else {
+							Rel::HOp("offset".to_string(), vec![offset], source)
+						}
+					},
+				}
+			},
 		}
 	}
 }

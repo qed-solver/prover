@@ -3,14 +3,15 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter, Write};
 use std::iter::once;
 
+use anyhow::{bail, Error};
 use imbl::{vector, Vector};
 use indenter::indented;
 use itertools::{Either, Itertools};
 use scopeguard::defer;
 use z3::ast::{exists_const, Ast, Bool, Dynamic, Int, String as Str};
-use z3::{FuncDecl, SatResult, Solver, Sort};
+use z3::{Context, FuncDecl, SatResult, Solver, Sort};
 
-use crate::pipeline::partial::{Closure, Summation};
+use crate::pipeline::partial::{key_constraint, Closure, Summation};
 use crate::pipeline::shared::{func_app, AppHead, DataType, Eval, Schema, Terms, VL};
 use crate::pipeline::{partial, shared};
 
@@ -84,7 +85,7 @@ impl Display for Inner {
 			.iter()
 			.map(|pred| format!("⟦{}⟧", pred))
 			.chain(once(format!("¬({})", self.not)))
-			.chain(once(format!("¬({})", self.squash)))
+			.chain(once(format!("‖{}‖", self.squash)))
 			.chain(self.apps.iter().map(|app| format!("{}", app)))
 			.format(" × ");
 		write!(f, "{}", exps)
@@ -117,24 +118,20 @@ impl Eval<partial::UExpr, UExpr> for (usize, &[Schema]) {
 						(&summand.env.append(entries)).eval(summand.body);
 					shared::Terms::under(scopes, (level, schemas).eval(sum_body * t))
 				} else {
-					let (apps, prims) =
+					let (apps, preds): (_, Vector<_>) =
 						t.apps.clone().into_iter().partition_map(|app| match &app.head {
-							AppHead::Var(VL(l)) => {
-								if schemas[*l].primary.is_empty() {
-									Either::Left(app)
-								} else {
-									Either::Right(app)
+							&AppHead::Var(VL(l)) => {
+								let schema = &schemas[l];
+								match schema.primary.first() {
+									None => Either::Left(app),
+									Some(cols) => Either::Right(key_constraint(l, cols, app.args)),
 								}
 							},
 							AppHead::HOp(_, _, _) => Either::Left(app),
 						});
-					let sq = partial::SUExpr::term(partial::STerm {
-						apps: prims,
-						..partial::STerm::default()
-					});
 					UExpr::inner(Inner {
-						preds: self.eval(t.preds),
-						squash: self.eval(t.squash * sq),
+						preds: self.eval(t.preds + preds.into_iter().flatten().collect()),
+						squash: self.eval(t.squash),
 						not: self.eval(t.not),
 						apps: self.eval(apps),
 					})
@@ -263,7 +260,7 @@ impl<'e, 'c: 'e> Eval<Scoped<Inner>, Option<Scoped<Inner>>> for StbEnv<'e, 'c> {
 		solver.assert(&constraint);
 		let asts = z3_subst.iter().map(|v| v as &dyn Ast).collect_vec();
 		let (ids, res) = solver.get_implied_equalities(asts.as_slice());
-		match res {
+		match dbg!(res) {
 			SatResult::Unsat => None,
 			SatResult::Unknown => {
 				let (ref subst, level) = self.extend(source.scopes.clone());
@@ -450,28 +447,18 @@ impl<'e, 'c: 'e> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &Expr) -> Dynamic<'c> {
 		let Z3Env(solver, subst, h_ops, _) = self;
 		let ctx = solver.get_context();
+		let parse = |ctx, input: &str, ty| {
+			use DataType::*;
+			Ok(match ty {
+				&Integer => Int::from_i64(ctx, input.parse()?).into(),
+				&Boolean => Bool::from_bool(ctx, input.to_lowercase().parse()?).into(),
+				&String => Str::from_str(ctx, input).unwrap().into(),
+				_ => bail!("unsupported type {:?} for constant {}", ty, input),
+			})
+		};
 		match source {
 			Expr::Var(v, _) => subst[v.0].clone(),
-			Expr::Op(op, args, ty) if args.is_empty() => {
-				use DataType::*;
-				match ty {
-					Integer => Int::from_i64(
-						ctx,
-						op.parse().expect(&format!("Cannot parse {} as int", op)),
-					)
-					.into(),
-					Boolean => Bool::from_bool(
-						ctx,
-						op.to_lowercase().parse().expect(&format!("Cannot parse {} as bool", op)),
-					)
-					.into(),
-					String => Str::from_str(ctx, op.as_str()).unwrap().into(),
-					_ => panic!("unsupported type {:?} for constant {}", ty, op),
-				}
-			},
-			Expr::Op(op, args, DataType::Boolean) => {
-				self.eval(&Predicate::Pred(op.clone(), args.clone())).into()
-			},
+			Expr::Op(op, args, ty) if args.is_empty() => parse(ctx, op, ty).unwrap(),
 			Expr::Op(op, args, ty) => {
 				let args = args.iter().map(|arg| self.eval(arg)).collect_vec();
 				match op.as_str() {
@@ -487,6 +474,18 @@ impl<'e, 'c: 'e> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 						}
 						.into()
 					},
+					cmp @ (">" | "<" | ">=" | "<=") => {
+						let args = args.into_iter().map(|arg| arg.as_int().unwrap()).collect_vec();
+						match cmp {
+							">" => args[0].gt(&args[1]),
+							"<" => args[0].lt(&args[1]),
+							">=" => args[0].ge(&args[1]),
+							"<=" => args[0].le(&args[1]),
+							_ => unreachable!(),
+						}
+						.into()
+					},
+					"=" => args[0]._eq(&args[1]).into(),
 					"CASE" if args.len() == 3 => args[0].as_bool().unwrap().ite(&args[1], &args[2]),
 					op => {
 						shared::func_app(ctx, "f!".to_owned() + &op.to_string(), args, ty.clone())
@@ -507,38 +506,10 @@ impl<'e, 'c: 'e> Eval<&Predicate, Bool<'c>> for Z3Env<'e, 'c> {
 		let ctx = self.0.get_context();
 		match source {
 			Predicate::Eq(e1, e2) => self.eval(e1)._eq(&self.eval(e2)),
-			Predicate::Pred(op, args) if args.is_empty() => Bool::from_bool(
-				ctx,
-				op.to_lowercase().parse().expect(&format!("Cannot parse {} as bool", op)),
-			),
-			Predicate::Pred(pred, args) => {
-				let args = args.iter().map(|arg| self.eval(arg)).collect_vec();
-				match pred.as_str() {
-					cmp @ (">" | "<" | ">=" | "<=") => {
-						let args = args.into_iter().map(|arg| arg.as_int().unwrap()).collect_vec();
-						match cmp {
-							">" => args[0].gt(&args[1]),
-							"<" => args[0].lt(&args[1]),
-							">=" => args[0].ge(&args[1]),
-							"<=" => args[0].le(&args[1]),
-							_ => unreachable!(),
-						}
-					},
-					"=" => args[0]._eq(&args[1]),
-					"CASE" if args.len() == 3 => args[0]
-						.as_bool()
-						.unwrap()
-						.ite(&args[1].as_bool().unwrap(), &args[2].as_bool().unwrap()),
-					pred => shared::func_app(
-						ctx,
-						"f!".to_owned() + &pred.to_string(),
-						args,
-						DataType::Boolean,
-					)
-					.as_bool()
-					.unwrap(),
-				}
-			},
+			Predicate::Pred(pred, args) => self
+				.eval(&Expr::Op(pred.clone(), args.clone(), DataType::Boolean))
+				.as_bool()
+				.unwrap(),
 			Predicate::Null(expr) => {
 				// TODO: Proper NULL handling
 				let expr = &self.eval(expr);

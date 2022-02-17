@@ -1,13 +1,16 @@
+use std::collections::HashSet;
+use std::iter::once;
 use std::ops::Mul;
 
 use imbl::{vector, Vector};
+use itertools::{Either, Itertools};
 
 use crate::pipeline::shared::{AppHead, DataType, Eval, Terms, VL};
 use crate::pipeline::{shared, syntax};
 
 pub(crate) type Relation = shared::Relation<Closure>;
-type Predicate = shared::Predicate<Relation>;
-type Expr = shared::Expr<Relation>;
+pub(crate) type Predicate = shared::Predicate<Relation>;
+pub(crate) type Expr = shared::Expr<Relation>;
 type Application = shared::Application<Relation>;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -52,7 +55,7 @@ impl UExpr {
 			Relation::HOp(op, op_args, rel) => {
 				let head = AppHead::HOp(op, op_args, rel);
 				UExpr::term(Term { apps: vector![Application { head, args }], ..Term::default() })
-			}
+			},
 		}
 	}
 }
@@ -218,4 +221,36 @@ impl<'e> Eval<syntax::Relation, Relation> for &'e Env {
 			HOp(op, args, rel) => HOp(op, self.eval(args), self.eval(rel)),
 		}
 	}
+}
+
+pub(crate) fn key_constraint(
+	table: usize,
+	keys: &HashSet<usize>,
+	args: Vector<Expr>,
+) -> Vector<Predicate> {
+	let (keys, args): (Vec<_>, Vec<_>) = args.into_iter().enumerate().partition_map(|(i, arg)| {
+		if keys.contains(&i) {
+			Either::Left(arg)
+		} else {
+			Either::Right(arg)
+		}
+	});
+	use shared::Expr::*;
+	use shared::Predicate::*;
+	let pk = Pred("rpk!".to_string() + &table.to_string(), keys.clone());
+	args.into_iter()
+		.enumerate()
+		.map(|(i, arg)| {
+			let ty = arg.ty();
+			Eq(
+				arg,
+				Op(
+					"rpn!".to_string() + &table.to_string() + "_" + &i.to_string(),
+					keys.clone(),
+					ty,
+				),
+			)
+		})
+		.chain(once(pk))
+		.collect()
 }

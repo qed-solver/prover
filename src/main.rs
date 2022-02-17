@@ -1,4 +1,3 @@
-#![feature(type_changing_struct_update)]
 #![feature(type_ascription)]
 use std::any::Any;
 use std::collections::BTreeMap;
