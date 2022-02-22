@@ -5,12 +5,12 @@ use std::ops::Mul;
 use imbl::{vector, Vector};
 use itertools::{Either, Itertools};
 
-use crate::pipeline::shared::{AppHead, DataType, Eval, Terms, VL};
+use crate::pipeline::shared::{AppHead, DataType, Eval, Schema, Terms, VL};
 use crate::pipeline::{shared, syntax};
 
 pub(crate) type Relation = shared::Relation<Closure>;
-pub(crate) type Predicate = shared::Predicate<Relation>;
-pub(crate) type Expr = shared::Expr<Relation>;
+type Predicate = shared::Predicate<Relation>;
+type Expr = shared::Expr<Relation>;
 type Application = shared::Application<Relation>;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -223,34 +223,45 @@ impl<'e> Eval<syntax::Relation, Relation> for &'e Env {
 	}
 }
 
-pub(crate) fn key_constraint(
-	table: usize,
-	keys: &HashSet<usize>,
-	args: Vector<Expr>,
-) -> Vector<Predicate> {
-	let (keys, args): (Vec<_>, Vec<_>) = args.into_iter().enumerate().partition_map(|(i, arg)| {
-		if keys.contains(&i) {
-			Either::Left(arg)
-		} else {
-			Either::Right(arg)
-		}
-	});
-	use shared::Expr::*;
-	use shared::Predicate::*;
-	let pk = Pred("rpk!".to_string() + &table.to_string(), keys.clone());
-	args.into_iter()
-		.enumerate()
-		.map(|(i, arg)| {
-			let ty = arg.ty();
-			Eq(
-				arg,
-				Op(
-					"rpn!".to_string() + &table.to_string() + "_" + &i.to_string(),
-					keys.clone(),
-					ty,
-				),
-			)
-		})
-		.chain(once(pk))
-		.collect()
+pub(crate) fn partition_apps(
+	apps: Vector<Application>,
+	schemas: &[Schema],
+) -> (Vector<Application>, Vec<Vec<Predicate>>) {
+	apps.clone().into_iter().partition_map(|app| match &app.head {
+		&AppHead::Var(VL(l)) => {
+			let schema = &schemas[l];
+			let preds = schema
+				.primary
+				.iter()
+				.enumerate()
+				.flat_map(|(j, cols)| {
+					let (keys, args): (Vec<_>, Vec<_>) =
+						app.args.iter().cloned().enumerate().partition_map(|(i, arg)| {
+							if cols.contains(&i) {
+								Either::Left(arg)
+							} else {
+								Either::Right(arg)
+							}
+						});
+					let pk = Predicate::Pred(format!("rpk!{}-{}", l, j), keys.clone());
+					args.into_iter()
+						.enumerate()
+						.map(move |(i, arg)| {
+							let ty = arg.ty();
+							Predicate::Eq(
+								arg,
+								Expr::Op(format!("rpn!{}-{}-{}", l, i, j), keys.clone(), ty),
+							)
+						})
+						.chain(once(pk))
+				})
+				.collect_vec();
+			if preds.is_empty() {
+				Either::Left(app)
+			} else {
+				Either::Right(preds)
+			}
+		},
+		AppHead::HOp(_, _, _) => Either::Left(app),
+	})
 }

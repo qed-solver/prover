@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display, Formatter, Write};
 use std::hash::Hash;
-use std::iter::FromIterator;
+use std::iter::{once, FromIterator};
 use std::ops::{Add, Mul};
 
 use imbl::vector::{ConsumingIter, Iter};
@@ -283,7 +283,7 @@ pub enum DataType {
 	/// Uuid type
 	Uuid,
 	/// Integer
-	#[serde(alias = "INT", alias = "SMALLINT", alias = "BIGINT")]
+	#[serde(alias = "INT", alias = "SMALLINT", alias = "BIGINT", alias = "TINYINT")]
 	Integer,
 	/// Real number
 	#[serde(alias = "FLOAT", alias = "DOUBLE", alias = "DECIMAL")]
@@ -405,7 +405,7 @@ pub fn var<'c>(ctx: &'c Context, ty: DataType, prefix: &str) -> Dynamic<'c> {
 	match ty {
 		Boolean => Bool::fresh_const(ctx, prefix).into(),
 		String => Str::fresh_const(ctx, prefix).into(),
-		Integer | Timestamp => Int::fresh_const(ctx, prefix).into(),
+		Integer | Timestamp | Date => Int::fresh_const(ctx, prefix).into(),
 		Real => Re::fresh_const(ctx, prefix).into(),
 		_ => panic!("unsupported type {:?}", ty),
 	}
@@ -416,7 +416,7 @@ fn sort(ctx: &Context, ty: DataType) -> Sort {
 	match ty {
 		Boolean => Sort::bool(ctx),
 		String => Sort::string(ctx),
-		Integer | Timestamp => Sort::int(ctx),
+		Integer | Timestamp | Date => Sort::int(ctx),
 		Real => Sort::real(ctx),
 		_ => panic!("unsupported type {:?}", ty),
 	}

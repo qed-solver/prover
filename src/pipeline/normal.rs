@@ -8,10 +8,11 @@ use imbl::{vector, Vector};
 use indenter::indented;
 use itertools::{Either, Itertools};
 use scopeguard::defer;
-use z3::ast::{exists_const, Ast, Bool, Dynamic, Int, String as Str};
+use z3::ast::{exists_const, Ast, Bool, Dynamic, Int, Real as Re, String as Str};
+use z3::SortKind::Real;
 use z3::{Context, FuncDecl, SatResult, Solver, Sort};
 
-use crate::pipeline::partial::{key_constraint, Closure, Summation};
+use crate::pipeline::partial::{partition_apps, Closure, Summation};
 use crate::pipeline::shared::{func_app, AppHead, DataType, Eval, Schema, Terms, VL};
 use crate::pipeline::{partial, shared};
 
@@ -20,88 +21,33 @@ type Predicate = shared::Predicate<Relation>;
 pub(crate) type Expr = shared::Expr<Relation>;
 type Application = shared::Application<Relation>;
 
-pub type UExpr = Terms<Scoped<Inner>>;
+pub type UExpr = Terms<BiScoped<Inner>>;
 
 pub type SUExpr = Terms<Scoped<SInner>>;
 
-#[derive(Clone, Debug, Default, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub struct Scoped<I> {
-	pub scopes: Vector<DataType>,
-	pub inner: I,
-}
-
-impl<I: Clone> Terms<Scoped<I>> {
-	pub fn inner(inner: I) -> Self {
-		Terms(vector![Scoped { scopes: vector![], inner }])
+impl UExpr {
+	pub fn inner(inner: Inner) -> Self {
+		Terms(vector![BiScoped { keys: vector![], deps: vector![], inner }])
 	}
 
-	pub fn under(scopes: Vector<DataType>, terms: Terms<Scoped<I>>) -> Self {
+	pub fn under(scopes: Vector<DataType>, terms: UExpr) -> Self {
 		terms
 			.into_iter()
-			.map(|term| Scoped { scopes: scopes.clone() + term.scopes, inner: term.inner })
+			.map(|term| BiScoped { keys: scopes.clone() + term.keys, ..term })
 			.collect()
 	}
 }
 
-#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub struct Inner {
-	pub preds: Vector<Predicate>,
-	pub squash: SUExpr,
-	pub not: SUExpr,
-	pub apps: Vector<Application>,
-}
-
-impl Default for Inner {
-	fn default() -> Self {
-		Inner { preds: vector![], squash: SUExpr::one(), not: SUExpr::zero(), apps: vector![] }
+impl SUExpr {
+	pub fn inner(inner: SInner) -> Self {
+		Terms(vector![Scoped { scopes: vector![], inner }])
 	}
-}
 
-#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub struct SInner {
-	pub preds: Vector<Predicate>,
-	pub not: SUExpr,
-	pub apps: Vector<Application>,
-}
-
-impl Default for SInner {
-	fn default() -> Self {
-		SInner { preds: vector![], not: SUExpr::zero(), apps: vector![] }
-	}
-}
-
-impl<I: Display> Display for Scoped<I> {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		writeln!(f, "∑ {:?} {{", self.scopes)?;
-		writeln!(indented(f).with_str("\t"), "{}", self.inner)?;
-		write!(f, "}}")
-	}
-}
-
-impl Display for Inner {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		let exps = self
-			.preds
-			.iter()
-			.map(|pred| format!("⟦{}⟧", pred))
-			.chain(once(format!("¬({})", self.not)))
-			.chain(once(format!("‖{}‖", self.squash)))
-			.chain(self.apps.iter().map(|app| format!("{}", app)))
-			.format(" × ");
-		write!(f, "{}", exps)
-	}
-}
-
-impl Display for SInner {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		let exps = self
-			.preds
-			.iter()
-			.map(|pred| format!("⟦{}⟧", pred))
-			.chain(once(format!("¬({})", self.not)))
-			.chain(self.apps.iter().map(|app| format!("{}", app)))
-			.format(" × ");
-		write!(f, "{}", exps)
+	pub fn under(scopes: Vector<DataType>, terms: SUExpr) -> Self {
+		terms
+			.into_iter()
+			.map(|term| Scoped { scopes: scopes.clone() + term.scopes, inner: term.inner })
+			.collect()
 	}
 }
 
@@ -116,19 +62,9 @@ impl Eval<partial::UExpr, UExpr> for (usize, &[Schema]) {
 					let level = lvl + entries.len();
 					let sum_body: partial::UExpr =
 						(&summand.env.append(entries)).eval(summand.body);
-					shared::Terms::under(scopes, (level, schemas).eval(sum_body * t))
+					UExpr::under(scopes, (level, schemas).eval(sum_body * t))
 				} else {
-					let (apps, preds): (_, Vector<_>) =
-						t.apps.clone().into_iter().partition_map(|app| match &app.head {
-							&AppHead::Var(VL(l)) => {
-								let schema = &schemas[l];
-								match schema.primary.first() {
-									None => Either::Left(app),
-									Some(cols) => Either::Right(key_constraint(l, cols, app.args)),
-								}
-							},
-							AppHead::HOp(_, _, _) => Either::Left(app),
-						});
+					let (apps, preds) = partition_apps(t.apps, schemas);
 					UExpr::inner(Inner {
 						preds: self.eval(t.preds + preds.into_iter().flatten().collect()),
 						squash: self.eval(t.squash),
@@ -152,12 +88,13 @@ impl Eval<partial::SUExpr, SUExpr> for (usize, &[Schema]) {
 					let level = lvl + entries.len();
 					let sum_body: partial::SUExpr =
 						(&summand.env.append(entries)).eval(summand.body);
-					shared::Terms::under(scopes, (level, schemas).eval(sum_body * t))
+					SUExpr::under(scopes, (level, schemas).eval(sum_body * t))
 				} else {
+					let (apps, preds) = partition_apps(t.apps, schemas);
 					SUExpr::inner(SInner {
-						preds: self.eval(t.preds),
+						preds: self.eval(t.preds + preds.into_iter().flatten().collect()),
 						not: self.eval(t.not),
-						apps: self.eval(t.apps),
+						apps: self.eval(apps),
 					})
 				}
 			})
@@ -213,147 +150,31 @@ impl<'e, 'c> Z3Env<'e, 'c> {
 		Z3Env(solver, subst, h_ops, rel_h_ops)
 	}
 
-	fn update(self, subst: &'e Vector<Dynamic<'c>>) -> Self {
+	pub fn substs(self) -> &'e Vector<Dynamic<'c>> {
+		self.1
+	}
+
+	pub fn solver(self) -> &'e Solver<'c> {
+		self.0
+	}
+
+	pub fn update(self, subst: &'e Vector<Dynamic<'c>>) -> Self {
 		Z3Env(self.0, subst, self.2, self.3)
 	}
 
-	fn extend(self, scopes: Vector<DataType>) -> Vector<Dynamic<'c>> {
+	pub fn append(self, scopes: Vector<DataType>) -> Vector<Dynamic<'c>> {
 		let ctx = self.0.get_context();
 		let vars = scopes.into_iter().map(|ty| shared::var(ctx, ty, "v")).collect();
 		self.1.clone() + vars
 	}
-}
 
-impl<'e, 'c> StbEnv<'e, 'c> {
-	pub fn new(
-		subst: &'e Vector<Expr>,
-		level: usize,
-		solver: &'e Solver<'c>,
-		z3_subst: &'e Vector<Dynamic<'c>>,
-		h_ops: &'e RefCell<HOpMap<'c>>,
-		rel_h_ops: &'e RefCell<RelHOpMap<'c>>,
-	) -> Self {
-		StbEnv(subst, level, Z3Env::new(solver, z3_subst, h_ops, rel_h_ops))
-	}
-
-	fn update(self, subst: &'e Vector<Expr>, level: usize, z3_env: Z3Env<'e, 'c>) -> Self {
-		StbEnv(subst, level, z3_env)
-	}
-
-	fn extend(self, scopes: Vector<DataType>) -> (Vector<Expr>, usize) {
-		let level = self.1 + scopes.len();
-		let uexpr_vars =
-			scopes.into_iter().enumerate().map(|(l, ty)| Expr::Var(VL(self.1 + l), ty)).collect();
-		(self.0 + &uexpr_vars, level)
+	pub fn extend(self, scopes: Vector<DataType>) -> Vector<Dynamic<'c>> {
+		let ctx = self.0.get_context();
+		scopes.into_iter().map(|ty| shared::var(ctx, ty, "v")).collect()
 	}
 }
 
-impl<'e, 'c: 'e> Eval<Scoped<Inner>, Option<Scoped<Inner>>> for StbEnv<'e, 'c> {
-	fn eval(self, source: Scoped<Inner>) -> Option<Scoped<Inner>> {
-		let StbEnv(subst, level, z3_env) = self;
-		let solver = z3_env.0;
-		solver.push();
-		defer!(solver.pop(1));
-		let z3_subst = &z3_env.extend(source.scopes.clone());
-		let z3_env = z3_env.update(z3_subst);
-		let constraint = z3_env.eval(&source.inner);
-		solver.assert(&constraint);
-		let asts = z3_subst.iter().map(|v| v as &dyn Ast).collect_vec();
-		let (ids, res) = solver.get_implied_equalities(asts.as_slice());
-		match dbg!(res) {
-			SatResult::Unsat => None,
-			SatResult::Unknown => {
-				let (ref subst, level) = self.extend(source.scopes.clone());
-				let inner = self.update(subst, level, z3_env).eval(source.inner);
-				Some(Scoped { inner, ..source })
-			},
-			SatResult::Sat => {
-				let mut scopes = vector![];
-				let groups = ids.iter().enumerate().map(|(l, &g)| (g, VL(l))).collect_vec();
-				let buckets: HashMap<_, _> = groups.into_iter().rev().collect();
-				let mut new_subst = subst.clone();
-				for l in 0..source.scopes.len() {
-					let vl = l + subst.len();
-					let &VL(rep) = buckets.get(&ids[vl]).unwrap();
-					let target = new_subst.get(rep).cloned().unwrap_or_else(|| {
-						let ty = source.scopes[l].clone();
-						scopes.push_back(ty.clone());
-						Expr::Var(VL(level + scopes.len() - 1), ty)
-					});
-					new_subst.push_back(target);
-				}
-				let inner =
-					self.update(&new_subst, level + scopes.len(), z3_env).eval(source.inner);
-				Some(Scoped { inner, scopes })
-			},
-		}
-	}
-}
-
-impl<'e, 'c: 'e> Eval<Scoped<SInner>, Scoped<SInner>> for StbEnv<'e, 'c> {
-	fn eval(self, source: Scoped<SInner>) -> Scoped<SInner> {
-		let z3_env = self.2;
-		let (ref subst, level) = self.extend(source.scopes.clone());
-		let z3_subst = &z3_env.extend(source.scopes.clone());
-		Scoped {
-			inner: self.update(subst, level, z3_env.update(z3_subst)).eval(source.inner),
-			..source
-		}
-	}
-}
-
-impl<'e, 'c: 'e> Eval<Inner, Inner> for StbEnv<'e, 'c> {
-	fn eval(self, source: Inner) -> Inner {
-		let preds = self.eval(source.preds);
-		let squash = self.eval(source.squash);
-		let not = self.eval(source.not);
-		let apps = self.eval(source.apps);
-		Inner { preds, squash, not, apps }
-	}
-}
-
-impl<'e, 'c: 'e> Eval<SInner, SInner> for StbEnv<'e, 'c> {
-	fn eval(self, source: SInner) -> SInner {
-		let preds = self.eval(source.preds);
-		let not = self.eval(source.not);
-		let apps = self.eval(source.apps);
-		SInner { preds, not, apps }
-	}
-}
-
-impl<'e, 'c: 'e> Eval<(VL, DataType), Expr> for StbEnv<'e, 'c> {
-	fn eval(self, (VL(l), ty): (VL, DataType)) -> Expr {
-		assert_eq!(self.0[l].ty(), ty, "wrong type for {}", VL(l));
-		self.0[l].clone()
-	}
-}
-
-impl<'e, 'c: 'e> Eval<Relation, Relation> for StbEnv<'e, 'c> {
-	fn eval(self, source: Relation) -> Relation {
-		let z3_env = self.2;
-		use shared::Relation::*;
-		match source {
-			Var(l) => Var(l),
-			Lam(scopes, body) => {
-				let z3_subst = &z3_env.extend(scopes.clone());
-				let (ref subst, level) = self.extend(scopes.clone());
-				Lam(
-					scopes,
-					Box::new(self.update(subst, level, z3_env.update(z3_subst)).eval(*body)),
-				)
-			},
-			HOp(op, args, rel) => HOp(op, self.eval(args), self.eval(rel)),
-		}
-	}
-}
-
-impl<'e, 'c: 'e> Eval<UExpr, UExpr> for StbEnv<'e, 'c> {
-	fn eval(self, source: UExpr) -> UExpr {
-		source.0.into_iter().filter_map(|term| self.eval(term)).collect()
-	}
-}
-
-impl<'e, 'c: 'e> Eval<&SUExpr, Bool<'c>> for Z3Env<'e, 'c> {
+impl<'e, 'c> Eval<&SUExpr, Bool<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &SUExpr) -> Bool<'c> {
 		let ctx = self.0.get_context();
 		let bools = source.into_iter().map(|term| self.eval(term)).collect_vec();
@@ -361,12 +182,12 @@ impl<'e, 'c: 'e> Eval<&SUExpr, Bool<'c>> for Z3Env<'e, 'c> {
 	}
 }
 
-impl<'e, 'c: 'e> Eval<&Scoped<SInner>, Bool<'c>> for Z3Env<'e, 'c> {
+impl<'e, 'c> Eval<&Scoped<SInner>, Bool<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &Scoped<SInner>) -> Bool<'c> {
 		let ctx = self.0.get_context();
 		let inner = &source.inner;
 		let level = self.1.len();
-		let subst = &self.extend(source.scopes.clone());
+		let subst = &self.append(source.scopes.clone());
 		let env = self.update(subst);
 		let bools = inner
 			.preds
@@ -396,7 +217,7 @@ impl<'e, 'c> Eval<&Inner, (Bool<'c>, Int<'c>)> for Z3Env<'e, 'c> {
 	}
 }
 
-impl<'e, 'c: 'e> Eval<&Inner, Bool<'c>> for Z3Env<'e, 'c> {
+impl<'e, 'c> Eval<&Inner, Bool<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &Inner) -> Bool<'c> {
 		let ctx = self.0.get_context();
 		let bools = self
@@ -425,16 +246,21 @@ fn table_name(head: &AppHead<Relation>, env: Z3Env) -> String {
 	}
 }
 
-impl<'e, 'c: 'e> Eval<&Application, Bool<'c>> for Z3Env<'e, 'c> {
+impl<'e, 'c> Eval<&Application, Bool<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &Application) -> Bool<'c> {
 		let args = source.args.iter().map(|v| self.eval(v)).collect_vec();
-		func_app(self.0.get_context(), table_name(&source.head, self), args, DataType::Boolean)
-			.as_bool()
-			.unwrap()
+		func_app(
+			self.0.get_context(),
+			table_name(&source.head, self) + "p",
+			args,
+			DataType::Boolean,
+		)
+		.as_bool()
+		.unwrap()
 	}
 }
 
-impl<'e, 'c: 'e> Eval<&Application, Int<'c>> for Z3Env<'e, 'c> {
+impl<'e, 'c> Eval<&Application, Int<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &Application) -> Int<'c> {
 		let args = source.args.iter().map(|v| self.eval(v)).collect_vec();
 		func_app(self.0.get_context(), table_name(&source.head, self), args, DataType::Integer)
@@ -443,7 +269,7 @@ impl<'e, 'c: 'e> Eval<&Application, Int<'c>> for Z3Env<'e, 'c> {
 	}
 }
 
-impl<'e, 'c: 'e> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
+impl<'e, 'c> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &Expr) -> Dynamic<'c> {
 		let Z3Env(solver, subst, h_ops, _) = self;
 		let ctx = solver.get_context();
@@ -501,7 +327,7 @@ impl<'e, 'c: 'e> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 	}
 }
 
-impl<'e, 'c: 'e> Eval<&Predicate, Bool<'c>> for Z3Env<'e, 'c> {
+impl<'e, 'c> Eval<&Predicate, Bool<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &Predicate) -> Bool<'c> {
 		let ctx = self.0.get_context();
 		match source {
@@ -519,5 +345,88 @@ impl<'e, 'c: 'e> Eval<&Predicate, Bool<'c>> for Z3Env<'e, 'c> {
 			Predicate::Bool(expr) => self.eval(expr).as_bool().unwrap(),
 			p => panic!("Unhandled predicate translation for {:?}", p),
 		}
+	}
+}
+
+#[derive(Clone, Debug, Default, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub struct BiScoped<I> {
+	pub keys: Vector<DataType>,
+	pub deps: Vector<DataType>,
+	pub inner: I,
+}
+
+#[derive(Clone, Debug, Default, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub struct Scoped<I> {
+	pub scopes: Vector<DataType>,
+	pub inner: I,
+}
+
+#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub struct Inner {
+	pub preds: Vector<Predicate>,
+	pub squash: SUExpr,
+	pub not: SUExpr,
+	pub apps: Vector<Application>,
+}
+
+impl Default for Inner {
+	fn default() -> Self {
+		Inner { preds: vector![], squash: SUExpr::one(), not: SUExpr::zero(), apps: vector![] }
+	}
+}
+
+#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub struct SInner {
+	pub preds: Vector<Predicate>,
+	pub not: SUExpr,
+	pub apps: Vector<Application>,
+}
+
+impl Default for SInner {
+	fn default() -> Self {
+		SInner { preds: vector![], not: SUExpr::zero(), apps: vector![] }
+	}
+}
+
+impl<I: Display> Display for Scoped<I> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		writeln!(f, "∑ {:?} {{", self.scopes)?;
+		writeln!(indented(f).with_str("\t"), "{}", self.inner)?;
+		write!(f, "}}")
+	}
+}
+
+impl<I: Display> Display for BiScoped<I> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		writeln!(f, "∑ {:?} {:?} {{", self.keys, self.deps)?;
+		writeln!(indented(f).with_str("\t"), "{}", self.inner)?;
+		write!(f, "}}")
+	}
+}
+
+impl Display for Inner {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		let exps = self
+			.preds
+			.iter()
+			.map(|pred| format!("⟦{}⟧", pred))
+			.chain(once(format!("¬({})", self.not)))
+			.chain(once(format!("‖{}‖", self.squash)))
+			.chain(self.apps.iter().map(|app| format!("{}", app)))
+			.format(" × ");
+		write!(f, "{}", exps)
+	}
+}
+
+impl Display for SInner {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		let exps = self
+			.preds
+			.iter()
+			.map(|pred| format!("⟦{}⟧", pred))
+			.chain(once(format!("¬({})", self.not)))
+			.chain(self.apps.iter().map(|app| format!("{}", app)))
+			.format(" × ");
+		write!(f, "{}", exps)
 	}
 }

@@ -1,15 +1,17 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::Debug;
+use std::fs::File;
+use std::io::Write;
 use std::ops::Deref;
+use std::process::Command;
 
 use imbl::Vector;
 use itertools::{Either, Itertools};
-use z3::ast::{Ast, Bool, Dynamic};
-use z3::{SatResult, Solver};
+use z3::ast::{exists_const, forall_const, Ast, Bool, Dynamic};
+use z3::{Context, SatResult, Solver};
 
-use crate::pipeline::nom::{Expr, Z3Env};
-use crate::pipeline::normal::{HOpMap, Inner, Relation, Scoped, UExpr};
+use crate::pipeline::normal::{BiScoped, Expr, HOpMap, Inner, Relation, Scoped, UExpr, Z3Env};
 use crate::pipeline::shared::{var, Eval};
 
 pub trait Unify<T> {
@@ -139,37 +141,85 @@ where
 		})
 }
 
-impl<'e, 'c> Unify<&Scoped<Inner>> for UnifyEnv<'e, 'c> {
-	fn unify(self, t1: &Scoped<Inner>, t2: &Scoped<Inner>) -> bool {
-		if !perm_equiv(&t1.scopes, &t2.scopes) {
+impl<'e, 'c> Unify<&BiScoped<Inner>> for UnifyEnv<'e, 'c> {
+	fn unify(self, t1: &BiScoped<Inner>, t2: &BiScoped<Inner>) -> bool {
+		if !perm_equiv(&t1.keys, &t2.keys) {
 			return false;
 		}
 		log::info!("Unifying\n{}\n{}", t1, t2);
 		let UnifyEnv(solver, subst1, subst2) = self;
 		let ctx = solver.get_context();
-		let perm1 = permutation::sort(t1.scopes.clone().into_iter().collect_vec());
-		let vars1 = t1.scopes.iter().map(|ty| var(ctx, ty.clone(), "v")).collect_vec();
-		let vars = perm1.apply_slice(vars1.as_slice());
-		let subst1 = subst1 + &vars1.into();
-		perms(&t2.scopes, vars).take(50).any(|vars2| {
-			log::info!("Permutation: {:?}", vars2);
-			let subst2 = subst2 + &vars2.into();
+		let perm1 = permutation::sort(t1.keys.clone().into_iter().collect_vec());
+		let keys1 = t1.keys.iter().map(|ty| var(ctx, ty.clone(), "v")).collect_vec();
+		let keys = perm1.apply_slice(keys1.as_slice());
+		let deps1: Vector<_> = t1.deps.iter().map(|ty| var(ctx, ty.clone(), "v")).collect();
+		let deps_inner1: Vector<_> = t1.deps.iter().map(|ty| var(ctx, ty.clone(), "v")).collect();
+		let deps2: Vector<_> = t2.deps.iter().map(|ty| var(ctx, ty.clone(), "v")).collect();
+		let deps_inner2: Vector<_> = t2.deps.iter().map(|ty| var(ctx, ty.clone(), "v")).collect();
+		let body_subst1 = subst1 + &keys1.clone().into() + deps1.clone();
+		perms(&t2.keys, keys).take(50).any(|keys2| {
+			log::info!("Permutation: {:?}", keys2);
+			let body_subst2 = subst2 + &keys2.clone().into() + deps2.clone();
 			let h_ops = &RefCell::new(HashMap::new());
 			let rel_h_ops = &RefCell::new(HashMap::new());
-			let env1 = Z3Env::new(solver, &subst1, h_ops, rel_h_ops);
-			let env2 = Z3Env::new(solver, &subst2, h_ops, rel_h_ops);
+			let env1 = Z3Env::new(solver, &body_subst1, h_ops, rel_h_ops);
+			let env2 = Z3Env::new(solver, &body_subst2, h_ops, rel_h_ops);
 			let (logic1, apps1) = env1.eval(&t1.inner);
 			let (logic2, apps2) = env2.eval(&t2.inner);
 			let apps_equiv = apps1._eq(&apps2);
-			let equiv = Bool::and(ctx, &[&logic1.iff(&logic2), &apps_equiv]);
+			let inner_subst1 = subst1 + &keys1.clone().into() + deps_inner1.clone();
+			let inner_env1 = Z3Env::new(solver, &inner_subst1, h_ops, rel_h_ops);
+			let inner_logic1: Bool = inner_env1.eval(&t1.inner);
+			let inner_eqs1 = deps1.iter().zip(&deps_inner1).map(|(e, v)| e._eq(v)).collect_vec();
+			let inner_eqs1 = Bool::and(ctx, &inner_eqs1.iter().collect_vec());
+			let inner1 = forall_const(
+				ctx,
+				&deps_inner1.iter().map(|v| v as &dyn Ast).collect_vec(),
+				&[],
+				&inner_logic1.implies(&inner_eqs1),
+			);
+			let inner_subst2 = subst2 + &keys2.clone().into() + deps_inner2.clone();
+			let inner_env2 = Z3Env::new(solver, &inner_subst2, h_ops, rel_h_ops);
+			let inner_logic2: Bool = inner_env2.eval(&t2.inner);
+			let inner_eqs2 = deps2.iter().zip(&deps_inner2).map(|(e, v)| e._eq(v)).collect_vec();
+			let inner_eqs2 = Bool::and(ctx, &inner_eqs2.iter().collect_vec());
+			let inner2 = forall_const(
+				ctx,
+				&deps_inner2.iter().map(|v| v as &dyn Ast).collect_vec(),
+				&[],
+				&inner_logic2.implies(&inner_eqs2),
+			);
+			let equiv = Bool::and(ctx, &[&logic1.iff(&logic2), &apps_equiv, &inner1, &inner2]);
+			let equiv =
+				exists_const(ctx, &deps1.iter().map(|v| v as &dyn Ast).collect_vec(), &[], &equiv);
+			let equiv =
+				exists_const(ctx, &deps2.iter().map(|v| v as &dyn Ast).collect_vec(), &[], &equiv);
+			let equiv =
+				forall_const(ctx, &keys2.iter().map(|v| v as &dyn Ast).collect_vec(), &[], &equiv);
 			solver.push();
-			solver.assert(&logic1);
-			solver.assert(&logic2);
+			// solver.assert(&logic1);
+			// solver.assert(&logic2);
 			let h_ops_equiv = extract_equiv(solver, h_ops.borrow().deref());
 			solver.pop(1);
 			log::info!("{}", equiv);
 			log::info!("{}", h_ops_equiv);
-			dbg!(solver.check_assumptions(&[h_ops_equiv, equiv.not()])) == SatResult::Unsat
+			cvc5(ctx, h_ops_equiv.implies(&equiv))
 		})
 	}
+}
+
+pub(crate) fn cvc5<'c>(ctx: &'c Context, pred: Bool<'c>) -> bool {
+	let smt = ctx
+		.dump_smtlib(pred.not())
+		.replace(" and", " true")
+		.replace(" or", " false")
+		.replace("(* ", "(* 1 ")
+		.replace("(+ ", "(+ 1 ");
+	let smt = smt.strip_prefix("; \n(set-info :status )").unwrap_or(smt.as_str());
+	let mut file = File::create("tmp.smt2").unwrap();
+	file.write_all("(set-logic HO_ALL)\n(set-option :full-saturate-quant true)".as_bytes());
+	file.write_all(smt.as_bytes());
+	let output = Command::new("./cvc5").args(["tmp.smt2", "--tlimit=1000"]).output().unwrap();
+	let result = String::from_utf8(output.stdout).unwrap();
+	dbg!(result).ends_with("unsat\n")
 }

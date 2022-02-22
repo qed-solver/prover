@@ -264,7 +264,7 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 			},
 			Sort { collation, offset, limit, source } => {
 				// TODO: Support sorting multiple columns
-				assert!(collation.len() <= 1);
+				// assert!(collation.len() <= 1);
 				let offset = offset.map(|n| self.eval(n)).unwrap_or(syn::Expr::Op(
 					1.to_string(),
 					vec![],
