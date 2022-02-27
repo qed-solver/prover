@@ -12,6 +12,7 @@ use z3::ast::{exists_const, forall_const, Ast, Bool, Dynamic};
 use z3::{Context, SatResult, Solver};
 
 use crate::pipeline::normal::{BiScoped, Expr, HOpMap, Inner, Relation, Scoped, UExpr, Z3Env};
+use crate::pipeline::shared;
 use crate::pipeline::shared::{var, Eval};
 
 pub trait Unify<T> {
@@ -33,37 +34,32 @@ impl<'e, 'c> UnifyEnv<'e, 'c> {
 
 impl<'e, 'c> Unify<&Relation> for UnifyEnv<'e, 'c> {
 	fn unify(self, rel1: &Relation, rel2: &Relation) -> bool {
-		match (rel1, rel2) {
-			(Relation::Var(r1), Relation::Var(r2)) => r1 == r2,
-			(Relation::Lam(tys1, uexpr1), Relation::Lam(tys2, uexpr2)) if tys1 == tys2 => {
-				let UnifyEnv(solver, subst1, subst2) = self;
-				let ctx = solver.get_context();
-				let vars = tys1.iter().map(|ty| var(ctx, ty.clone(), "v")).collect();
-				let subst1 = subst1 + &vars;
-				let subst2 = subst2 + &vars;
-				UnifyEnv(solver, &subst1, &subst2).unify(uexpr1.as_ref(), uexpr2.as_ref())
-			},
-			(Relation::HOp(op1, args1, rel1), Relation::HOp(op2, args2, rel2)) => {
-				op1 == op2 && self.unify(args1, args2) && self.unify(rel1.as_ref(), rel2.as_ref())
-			},
-			_ => false,
+		let (shared::Relation(tys1, uexpr1), shared::Relation(tys2, uexpr2)) = (rel1, rel2);
+		if tys1 != tys2 {
+			return false;
 		}
+		let UnifyEnv(solver, subst1, subst2) = self;
+		let ctx = solver.get_context();
+		let vars = tys1.iter().map(|ty| var(ctx, ty.clone(), "v")).collect();
+		let subst1 = subst1 + &vars;
+		let subst2 = subst2 + &vars;
+		UnifyEnv(solver, &subst1, &subst2).unify(uexpr1.as_ref(), uexpr2.as_ref())
 	}
 }
 
 impl<'e, 'c> Unify<&UExpr> for UnifyEnv<'e, 'c> {
 	fn unify(self, u1: &UExpr, u2: &UExpr) -> bool {
 		let mut terms2 = u2.0.clone();
-		let paired = u1.iter().all(|t1| {
-			(0..terms2.len()).any(|i| {
-				let unifies = self.unify(t1, &terms2[i]);
-				if unifies {
-					terms2.remove(i);
-				}
-				unifies
+		u1.0.len() == u2.0.len()
+			&& u1.iter().all(|t1| {
+				(0..terms2.len()).any(|i| {
+					let unifies = self.unify(t1, &terms2[i]);
+					if unifies {
+						terms2.remove(i);
+					}
+					unifies
+				})
 			})
-		});
-		paired && terms2.is_empty()
 	}
 }
 
@@ -77,7 +73,7 @@ impl<'e, 'c> Unify<&Expr> for UnifyEnv<'e, 'c> {
 		let e1 = env1.eval(t1);
 		let e2 = env2.eval(t2);
 		let h_ops_equiv = extract_equiv(solver, h_ops.borrow().deref());
-		solver.check_assumptions(&[h_ops_equiv, e1._eq(&e2).not()]) == SatResult::Unsat
+		cvc5(solver.get_context(), h_ops_equiv.implies(&e1._eq(&e2)))
 	}
 }
 
@@ -209,17 +205,18 @@ impl<'e, 'c> Unify<&BiScoped<Inner>> for UnifyEnv<'e, 'c> {
 }
 
 pub(crate) fn cvc5<'c>(ctx: &'c Context, pred: Bool<'c>) -> bool {
+	let tmp = "tmp.smt2";
 	let smt = ctx
 		.dump_smtlib(pred.not())
 		.replace(" and", " true")
 		.replace(" or", " false")
 		.replace("(* ", "(* 1 ")
-		.replace("(+ ", "(+ 1 ");
+		.replace("(+ ", "(+ 0 ");
 	let smt = smt.strip_prefix("; \n(set-info :status )").unwrap_or(smt.as_str());
-	let mut file = File::create("tmp.smt2").unwrap();
+	let mut file = File::create(tmp).unwrap();
 	file.write_all("(set-logic HO_ALL)\n(set-option :full-saturate-quant true)".as_bytes());
 	file.write_all(smt.as_bytes());
-	let output = Command::new("./cvc5").args(["tmp.smt2", "--tlimit=1000"]).output().unwrap();
+	let output = Command::new("./cvc5").args([tmp, "--tlimit=1000"]).output().unwrap();
 	let result = String::from_utf8(output.stdout).unwrap();
-	dbg!(result).ends_with("unsat\n")
+	result.ends_with("unsat\n")
 }

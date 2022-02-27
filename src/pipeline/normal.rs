@@ -7,13 +7,15 @@ use anyhow::{bail, Error};
 use imbl::{vector, Vector};
 use indenter::indented;
 use itertools::{Either, Itertools};
+use num::ToPrimitive;
 use scopeguard::defer;
 use z3::ast::{exists_const, Ast, Bool, Dynamic, Int, Real as Re, String as Str};
-use z3::SortKind::Real;
 use z3::{Context, FuncDecl, SatResult, Solver, Sort};
 
-use crate::pipeline::partial::{partition_apps, Closure, Summation};
+use crate::pipeline::partial::{partition_apps, Closure, STerm, Summation, Term};
+use crate::pipeline::shared::DataType::{Integer, Real};
 use crate::pipeline::shared::{func_app, AppHead, DataType, Eval, Schema, Terms, VL};
+use crate::pipeline::unify::Unify;
 use crate::pipeline::{partial, shared};
 
 pub(crate) type Relation = shared::Relation<UExpr>;
@@ -51,77 +53,140 @@ impl SUExpr {
 	}
 }
 
-impl Eval<partial::UExpr, UExpr> for (usize, &[Schema]) {
+#[derive(Copy, Clone)]
+pub struct Env<'e>(pub &'e Vector<DataType>, pub &'e [Schema]);
+
+impl<'e> Env<'e> {
+	pub fn new(context: &'e Vector<DataType>, schemas: &'e [Schema]) -> Self {
+		Env(context, schemas)
+	}
+}
+
+impl<'e> Eval<partial::UExpr, UExpr> for Env<'e> {
 	fn eval(self, source: partial::UExpr) -> UExpr {
-		let (lvl, schemas) = self;
-		source
-			.into_iter()
-			.flat_map(|mut t| {
-				if let Some(Summation { scopes, summand }) = t.sums.pop_front() {
-					let entries = shared::Expr::vars(lvl, scopes.clone());
-					let level = lvl + entries.len();
-					let sum_body: partial::UExpr =
-						(&summand.env.append(entries)).eval(summand.body);
-					UExpr::under(scopes, (level, schemas).eval(sum_body * t))
-				} else {
-					let (apps, preds) = partition_apps(t.apps, schemas);
-					UExpr::inner(Inner {
-						preds: self.eval(t.preds + preds.into_iter().flatten().collect()),
-						squash: self.eval(t.squash),
-						not: self.eval(t.not),
-						apps: self.eval(apps),
-					})
-				}
-			})
-			.collect()
+		source.into_iter().flat_map(|t| self.eval(t)).collect()
 	}
 }
 
-impl Eval<partial::SUExpr, SUExpr> for (usize, &[Schema]) {
+impl<'e> Eval<partial::Term, UExpr> for Env<'e> {
+	fn eval(self, mut source: Term) -> UExpr {
+		let Env(context, schemas) = self;
+		let lvl = context.len();
+		if let Some(Summation { scopes, summand }) = source.sums.pop_front() {
+			let entries = shared::Expr::vars(lvl, scopes.clone());
+			let sum_body: partial::UExpr = (&summand.env.append(entries)).eval(summand.body);
+			let context = context + &scopes;
+			UExpr::under(scopes, Env(&context, schemas).eval(sum_body * source))
+		} else if let Some(app) = source.apps.pop_front() {
+			match &app.head {
+				AppHead::Var(_) => {
+					source.stable_apps.push_back(app);
+					self.eval(source)
+				},
+				AppHead::HOp(op, args, rel) => {
+					if op == "limit"
+						&& &args[0]
+							== &partial::Expr::Op("1".to_string(), vec![], DataType::Integer)
+					{
+						let shared::Relation(scopes, clos) = *rel.clone();
+						use partial::{SUExpr, UExpr};
+						let count = UExpr::sum(scopes.clone(), *clos.clone());
+						let exist = UExpr::squash(SUExpr::sum(scopes.clone(), *clos.clone()));
+						if self.unify(count, exist) {
+							let body: UExpr = (&clos.env.append(app.args)).eval(clos.body);
+							self.eval(body * source)
+						} else {
+							source.stable_apps.push_back(app);
+							self.eval(source)
+						}
+					} else {
+						source.stable_apps.push_back(app);
+						self.eval(source)
+					}
+				},
+			}
+		} else {
+			let (apps, preds) = partition_apps(source.stable_apps, schemas);
+			UExpr::inner(Inner {
+				preds: self.eval(source.preds + preds.into_iter().flatten().collect()),
+				squash: self.eval(source.squash),
+				not: self.eval(source.not),
+				apps: self.eval(apps),
+			})
+		}
+	}
+}
+
+impl<'e> Eval<partial::SUExpr, SUExpr> for Env<'e> {
 	fn eval(self, source: partial::SUExpr) -> SUExpr {
-		let (lvl, schemas) = self;
-		source
-			.into_iter()
-			.flat_map(|mut t| {
-				if let Some(Summation { scopes, summand }) = t.sums.pop_front() {
-					let entries = shared::Expr::vars(lvl, scopes.clone());
-					let level = lvl + entries.len();
-					let sum_body: partial::SUExpr =
-						(&summand.env.append(entries)).eval(summand.body);
-					SUExpr::under(scopes, (level, schemas).eval(sum_body * t))
-				} else {
-					let (apps, preds) = partition_apps(t.apps, schemas);
-					SUExpr::inner(SInner {
-						preds: self.eval(t.preds + preds.into_iter().flatten().collect()),
-						not: self.eval(t.not),
-						apps: self.eval(apps),
-					})
-				}
-			})
-			.collect()
+		source.into_iter().flat_map(|mut t| self.eval(t)).collect()
 	}
 }
 
-impl Eval<(VL, DataType), Expr> for (usize, &[Schema]) {
+impl<'e> Eval<partial::STerm, SUExpr> for Env<'e> {
+	fn eval(self, mut source: STerm) -> SUExpr {
+		let Env(context, schemas) = self;
+		let lvl = context.len();
+		if let Some(Summation { scopes, summand }) = source.sums.pop_front() {
+			let entries = shared::Expr::vars(lvl, scopes.clone());
+			let sum_body: partial::SUExpr = (&summand.env.append(entries)).eval(summand.body);
+			let context = context + &scopes;
+			SUExpr::under(scopes, Env(&context, schemas).eval(sum_body * source))
+		} else if let Some(app) = source.apps.pop_front() {
+			match &app.head {
+				AppHead::Var(_) => {
+					source.stable_apps.push_back(app);
+					self.eval(source)
+				},
+				AppHead::HOp(op, args, rel) => {
+					if op == "limit"
+						&& &args[0]
+							== &partial::Expr::Op("1".to_string(), vec![], DataType::Integer)
+					{
+						let shared::Relation(scopes, clos) = *rel.clone();
+						use partial::{SUExpr, UExpr};
+						let count = UExpr::sum(scopes.clone(), *clos.clone());
+						let exist = UExpr::squash(SUExpr::sum(scopes.clone(), *clos.clone()));
+						if self.unify(count, exist) {
+							let body: SUExpr = (&clos.env.append(app.args)).eval(clos.body);
+							self.eval(body * source)
+						} else {
+							source.stable_apps.push_back(app);
+							self.eval(source)
+						}
+					} else {
+						source.stable_apps.push_back(app);
+						self.eval(source)
+					}
+				},
+			}
+		} else {
+			let (apps, preds) = partition_apps(source.stable_apps, schemas);
+			SUExpr::inner(SInner {
+				preds: self.eval(source.preds + preds.into_iter().flatten().collect()),
+				not: self.eval(source.not),
+				apps: self.eval(apps),
+			})
+		}
+	}
+}
+
+impl<'e> Eval<(VL, DataType), Expr> for Env<'e> {
 	fn eval(self, source: (VL, DataType)) -> Expr {
 		Expr::Var(source.0, source.1)
 	}
 }
 
-impl Eval<partial::Relation, Relation> for (usize, &[Schema]) {
+impl<'e> Eval<partial::Relation, Relation> for Env<'e> {
 	fn eval(self, source: partial::Relation) -> Relation {
-		use shared::Relation::*;
-		let (lvl, schemas) = self;
-		match source {
-			Var(l) => Var(l),
-			Lam(scopes, closure) => {
-				let Closure { env, body } = *closure;
-				let vars = shared::Expr::vars(lvl, scopes.clone());
-				let level = lvl + vars.len();
-				Relation::lam(scopes, (level, schemas).eval((&env.append(vars)).eval(body)))
-			},
-			HOp(op, args, rel) => HOp(op, self.eval(args), self.eval(rel)),
-		}
+		let Env(context, schemas) = self;
+		let lvl = context.len();
+		let shared::Relation(scopes, clos) = source;
+		let Closure { env, body } = *clos;
+		let vars = shared::Expr::vars(lvl, scopes.clone());
+		let context = context + &scopes;
+		let body: partial::UExpr = (&env.append(vars)).eval(body);
+		Relation::new(scopes, Env(&context, schemas).eval(body))
 	}
 }
 
@@ -277,6 +342,12 @@ impl<'e, 'c> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 			use DataType::*;
 			Ok(match ty {
 				&Integer => Int::from_i64(ctx, input.parse()?).into(),
+				&Real => {
+					let r: f64 = input.parse()?;
+					let r = num::rational::Ratio::from_float(r).unwrap();
+					Re::from_real(ctx, r.numer().to_i32().unwrap(), r.denom().to_i32().unwrap())
+						.into()
+				},
 				&Boolean => Bool::from_bool(ctx, input.to_lowercase().parse()?).into(),
 				&String => Str::from_str(ctx, input).unwrap().into(),
 				_ => bail!("unsupported type {:?} for constant {}", ty, input),
@@ -288,7 +359,7 @@ impl<'e, 'c> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 			Expr::Op(op, args, ty) => {
 				let args = args.iter().map(|arg| self.eval(arg)).collect_vec();
 				match op.as_str() {
-					num_op @ ("+" | "-" | "*" | "/" | "%") => {
+					num_op @ ("+" | "-" | "*" | "/" | "%" | "POWER") if ty == &Integer => {
 						let args = args.into_iter().map(|arg| arg.as_int().unwrap()).collect_vec();
 						match num_op {
 							"+" => Int::add(ctx, &args.iter().collect_vec()),
@@ -296,11 +367,24 @@ impl<'e, 'c> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 							"*" => Int::mul(ctx, &args.iter().collect_vec()),
 							"/" => args[0].div(&args[1]),
 							"%" => args[0].modulo(&args[1]),
+							"POWER" => args[0].power(&args[1]),
 							_ => unreachable!(),
 						}
 						.into()
 					},
-					cmp @ (">" | "<" | ">=" | "<=") => {
+					num_op @ ("+" | "-" | "*" | "/" | "POWER") if ty == &Real => {
+						let args = args.into_iter().map(|arg| arg.as_real().unwrap()).collect_vec();
+						match num_op {
+							"+" => Re::add(ctx, &args.iter().collect_vec()),
+							"-" => Re::sub(ctx, &args.iter().collect_vec()),
+							"*" => Re::mul(ctx, &args.iter().collect_vec()),
+							"/" => args[0].div(&args[1]),
+							"POWER" => args[0].power(&args[1]),
+							_ => unreachable!(),
+						}
+						.into()
+					},
+					cmp @ (">" | "<" | ">=" | "<=") if matches!(args[0].as_int(), Some(_)) => {
 						let args = args.into_iter().map(|arg| arg.as_int().unwrap()).collect_vec();
 						match cmp {
 							">" => args[0].gt(&args[1]),
@@ -311,7 +395,19 @@ impl<'e, 'c> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 						}
 						.into()
 					},
+					cmp @ (">" | "<" | ">=" | "<=") if matches!(args[0].as_real(), Some(_)) => {
+						let args = args.into_iter().map(|arg| arg.as_real().unwrap()).collect_vec();
+						match cmp {
+							">" => args[0].gt(&args[1]),
+							"<" => args[0].lt(&args[1]),
+							">=" => args[0].ge(&args[1]),
+							"<=" => args[0].le(&args[1]),
+							_ => unreachable!(),
+						}
+						.into()
+					},
 					"=" => args[0]._eq(&args[1]).into(),
+					"<>" => args[0]._eq(&args[1]).not().into(),
 					"CASE" if args.len() == 3 => args[0].as_bool().unwrap().ite(&args[1], &args[2]),
 					op => {
 						shared::func_app(ctx, "f!".to_owned() + &op.to_string(), args, ty.clone())

@@ -6,7 +6,7 @@ use indenter::indented;
 use itertools::Itertools;
 
 use crate::pipeline::shared;
-use crate::pipeline::shared::DataType;
+use crate::pipeline::shared::{DataType, VL};
 
 /// A relation in the U-semiring formalism is a function that maps a tuple to a U-semiring value.
 /// It can be represented as a variable for an unknown relation, or encoded as a lambda function
@@ -19,7 +19,29 @@ pub type Expr = shared::Expr<Relation>;
 
 impl Relation {
 	pub fn app(self, args: impl Into<Vector<Expr>>) -> UExpr {
-		UExpr::App(self, args.into())
+		UExpr::app(self, args.into())
+	}
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub enum AppHead {
+	Var(VL),
+	Lam(Vector<DataType>, Box<UExpr>),
+	HOp(String, Vec<Expr>, Box<Relation>),
+}
+
+impl Display for AppHead {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		match self {
+			AppHead::Var(table) => write!(f, "#{}", table.0),
+			AppHead::Lam(scopes, body) => {
+				writeln!(f, "(λ {:?}", scopes)?;
+				writeln!(indented(f).with_str("\t"), "{})", body)
+			},
+			AppHead::HOp(op, args, rel) => {
+				writeln!(f, "{}({}, {})", op, args.iter().join(", "), rel)
+			},
+		}
 	}
 }
 
@@ -44,7 +66,7 @@ pub enum UExpr {
 	Pred(Predicate),
 	// Application of a relation with arguments.
 	// Here each argument are required to be a single variable.
-	App(Relation, Vector<Expr>),
+	App(AppHead, Vector<Expr>),
 }
 
 impl UExpr {
@@ -54,6 +76,11 @@ impl UExpr {
 
 	pub fn squash(body: impl Into<Box<UExpr>>) -> Self {
 		UExpr::Squash(body.into())
+	}
+
+	pub fn app(rel: Relation, args: Vector<Expr>) -> Self {
+		let head = AppHead::Lam(rel.0, rel.1);
+		UExpr::App(head, args)
 	}
 }
 
@@ -73,7 +100,7 @@ impl Display for UExpr {
 			},
 			UExpr::Pred(pred) => write!(f, "⟦{}⟧", pred),
 			UExpr::App(rel, args) => {
-				write!(f, "{}({})", rel, args.iter().map(|arg| format!("{}", arg)).join(", "))
+				write!(f, "{}({})", rel, args.iter().join(", "))
 			},
 		}
 	}

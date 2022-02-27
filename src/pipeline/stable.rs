@@ -64,7 +64,7 @@ impl Eval<BiScoped<Inner>, Option<BiScoped<Inner>>> for Env<'_, '_> {
 		let (mut vars, mut z3_vars) = self.extend(scopes);
 		let z3_subst = z3_env.substs() + &z3_vars;
 		let logical: Bool = z3_env.update(&z3_subst).eval(&source.inner);
-		if let SatResult::Unsat = solver.check_assumptions(&[logical.clone()]) {
+		if cvc5(ctx, logical.not()) {
 			return None;
 		}
 		let (mut key_vars, mut dep_vars) = (vec![], vec![]);
@@ -83,10 +83,7 @@ impl Eval<BiScoped<Inner>, Option<BiScoped<Inner>>> for Env<'_, '_> {
 				forall_const(ctx, &key_vars.iter().map(|v| v as &dyn Ast).collect_vec(), &[], &p);
 			let (dep, key) = (deps.len(), keys.len());
 			let (grp_vars, grp, expr) = match cvc5(solver.get_context(), p) {
-				true => {
-					println!("{} is eliminated", l);
-					(&mut dep_vars, &mut deps, Either::Right((VL(lvl + dep), ty.clone())))
-				},
+				true => (&mut dep_vars, &mut deps, Either::Right((VL(lvl + dep), ty.clone()))),
 				false => (&mut key_vars, &mut keys, Either::Left((VL(lvl + key), ty.clone()))),
 			};
 			grp_vars.push(z3_var);
@@ -143,15 +140,9 @@ impl<'e, 'c> Eval<(VL, DataType), Expr> for Env<'e, 'c> {
 
 impl<'e, 'c> Eval<Relation, Relation> for Env<'e, 'c> {
 	fn eval(self, source: Relation) -> Relation {
-		use shared::Relation::*;
-		match source {
-			Var(l) => Var(l),
-			Lam(scopes, body) => {
-				let (ref subst, ref z3_subst) = self.append(scopes.clone());
-				Lam(scopes, Box::new(self.update(subst, z3_subst).eval(*body)))
-			},
-			HOp(op, args, rel) => HOp(op, self.eval(args), self.eval(rel)),
-		}
+		let shared::Relation(scopes, body) = source;
+		let (ref subst, ref z3_subst) = self.append(scopes.clone());
+		Relation::new(scopes, self.update(subst, z3_subst).eval(*body))
 	}
 }
 

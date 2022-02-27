@@ -54,15 +54,9 @@ impl<U: Display> Display for Expr<U> {
 			Expr::Var(v, _) => write!(f, "{}", v),
 			Expr::Op(op, args, _) if args.is_empty() => write!(f, "\"{}\"", op),
 			Expr::Op(op, args, _) => {
-				write!(f, "{}({})", op, args.iter().map(|arg| format!("{}", arg)).join(", "))
+				write!(f, "{}({})", op, args.iter().join(", "))
 			},
-			Expr::HOp(op, args, rel, _) => write!(
-				f,
-				"{}({}, {})",
-				op,
-				args.iter().map(|arg| format!("{}", arg)).join(", "),
-				rel
-			),
+			Expr::HOp(op, args, rel, _) => write!(f, "{}({}, {})", op, args.iter().join(", "), rel),
 		}
 	}
 }
@@ -83,7 +77,7 @@ impl<R: Display> Display for Predicate<R> {
 			Predicate::Pred(p, args) => match p.as_str() {
 				"<" | ">" | "<=" | ">=" => write!(f, "{} {} {}", args[0], p, args[1]),
 				_ => {
-					write!(f, "{}({})", p, args.iter().map(|arg| format!("{}", arg)).join(", "))
+					write!(f, "{}({})", p, args.iter().join(", "))
 				},
 			},
 			Predicate::Like(e, pat) => write!(f, "Like({}, {})", e, pat),
@@ -206,44 +200,18 @@ where E: Eval<S, T> + Clone
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub enum Relation<U> {
-	Var(VL),
-	Lam(Vector<DataType>, Box<U>),
-	HOp(String, Vec<Expr<Relation<U>>>, Box<Relation<U>>),
-}
+pub struct Relation<U>(pub Vector<DataType>, pub Box<U>);
 
 impl<U> Relation<U> {
-	pub fn lam(scopes: impl IntoIterator<Item = DataType>, body: U) -> Self {
-		Relation::Lam(scopes.into_iter().collect(), Box::new(body))
-	}
-
-	pub fn scopes(&self, schemas: &Vector<Schema>) -> Vector<DataType> {
-		match self {
-			Relation::Var(table) => schemas[table.0].types.clone().into(),
-			Relation::Lam(scopes, _) => scopes.clone(),
-			Relation::HOp(_, _, rel) => rel.scopes(schemas),
-		}
+	pub fn new(scopes: Vector<DataType>, body: U) -> Self {
+		Relation(scopes, Box::new(body))
 	}
 }
 
 impl<U: Display> Display for Relation<U> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		match self {
-			Relation::Var(table) => write!(f, "#{}", table.0),
-			Relation::Lam(scopes, body) => {
-				writeln!(f, "λ {:?}", scopes)?;
-				writeln!(indented(f).with_str("\t"), "{}", body)
-			},
-			Relation::HOp(op, args, rel) => {
-				writeln!(
-					f,
-					"{}({}, {})",
-					op,
-					args.iter().map(|arg| format!("{}", arg)).join(", "),
-					rel
-				)
-			},
-		}
+		writeln!(f, "λ {:?}", self.0)?;
+		writeln!(indented(f).with_str("\t"), "{}", self.1)
 	}
 }
 
@@ -261,17 +229,12 @@ pub struct Application<R> {
 
 impl<R: Display> Display for Application<R> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		let args = self.args.iter().map(|arg| format!("{}", arg)).join(", ");
+		let args = self.args.iter().join(", ");
 		match &self.head {
 			AppHead::Var(VL(l)) => write!(f, "#{}({})", l, args),
-			AppHead::HOp(op, op_args, rel) => writeln!(
-				f,
-				"{}({}, {})({})",
-				op,
-				op_args.iter().map(|arg| format!("{}", arg)).join(", "),
-				rel,
-				args
-			),
+			AppHead::HOp(op, op_args, rel) => {
+				writeln!(f, "{}({}, {})({})", op, op_args.iter().join(", "), rel, args)
+			},
 		}
 	}
 }
@@ -395,7 +358,7 @@ where T::Output: Clone
 
 impl<T: Display> Display for Terms<T> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{}", self.iter().map(|term| format!("{}", term)).join("\n+ "))
+		write!(f, "{}", self.iter().join("\n+ "))
 	}
 }
 

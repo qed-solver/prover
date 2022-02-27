@@ -21,8 +21,8 @@ pub mod unify;
 
 pub fn evaluate(rel: syntax::Relation, schemas: &[Schema]) -> normal::Relation {
 	log::info!("Syntax:\n{}", rel);
-	let prt = (&partial::Env::default()).eval(rel);
-	let nom = (0, schemas).eval(prt);
+	let prt = (&partial::Env::new(vector![], schemas.into())).eval(rel);
+	let nom = normal::Env::new(&vector![], schemas).eval(prt);
 	log::info!("Normal:\n{}", nom);
 	let mut config = Config::new();
 	config.set_timeout_msec(2000);
