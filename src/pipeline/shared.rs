@@ -54,16 +54,28 @@ impl<U: Display> Display for Expr<U> {
 			Expr::Var(v, _) => write!(f, "{}", v),
 			Expr::Op(op, args, _) if args.is_empty() => write!(f, "\"{}\"", op),
 			Expr::Op(op, args, _) => {
-				write!(f, "{}({})", op, args.iter().map(|arg| format!("{}", arg)).join(", "))
+				write!(f, "{}({})", op, args.iter().join(", "))
 			},
-			Expr::HOp(op, args, rel, _) => write!(
-				f,
-				"{}({}, {})",
-				op,
-				args.iter().map(|arg| format!("{}", arg)).join(", "),
-				rel
-			),
+			Expr::HOp(op, args, rel, _) => write!(f, "{}({}, {})", op, args.iter().join(", "), rel),
 		}
+	}
+}
+
+impl<U> Into<Expr<U>> for u32 {
+    fn into(self) -> Expr<U> {
+        Expr::Op(self.to_string(), vec![], DataType::Integer)
+    }
+}
+
+impl<U> Into<Expr<U>> for usize {
+    fn into(self) -> Expr<U> {
+        Expr::Op(self.to_string(), vec![], DataType::Integer)
+    }
+}
+
+impl<U> Into<Expr<U>> for String {
+	fn into(self) -> Expr<U> {
+		Expr::Op(self.to_string(), vec![], DataType::String)
 	}
 }
 
@@ -72,8 +84,14 @@ pub enum Predicate<R> {
 	Eq(Expr<R>, Expr<R>),
 	Pred(String, Vec<Expr<R>>),
 	Like(Expr<R>, String),
-	Null(Expr<R>),
 	Bool(Expr<R>),
+}
+
+impl<R> Predicate<R> {
+	pub fn null(expr: Expr<R>) -> Self {
+		let ty = expr.ty();
+		Self::Eq(expr, Expr::Op("NULL".to_string(), vec![], ty))
+	}
 }
 
 impl<R: Display> Display for Predicate<R> {
@@ -83,11 +101,10 @@ impl<R: Display> Display for Predicate<R> {
 			Predicate::Pred(p, args) => match p.as_str() {
 				"<" | ">" | "<=" | ">=" => write!(f, "{} {} {}", args[0], p, args[1]),
 				_ => {
-					write!(f, "{}({})", p, args.iter().map(|arg| format!("{}", arg)).join(", "))
+					write!(f, "{}({})", p, args.iter().join(", "))
 				},
 			},
 			Predicate::Like(e, pat) => write!(f, "Like({}, {})", e, pat),
-			Predicate::Null(e) => write!(f, "Null({})", e),
 			Predicate::Bool(e) => write!(f, "{}", e),
 		}
 	}
@@ -101,6 +118,18 @@ pub struct Schema {
 	#[serde(skip)]
 	#[serde(rename = "foreign_key")]
 	pub foreign: HashMap<usize, VL>,
+	#[serde(rename = "strategy")]
+	#[serde(default)]
+	pub constraints: Vec<Constraint>,
+}
+
+#[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Constraint {
+	NotNullable,
+	#[default]
+	#[serde(other)]
+	Nullable,
 }
 
 pub trait Eval<S, T> {
@@ -129,7 +158,6 @@ where E: Eval<Expr<S>, Expr<T>> + Clone
 			Eq(v1, v2) => Eq(self.clone().eval(v1), self.eval(v2)),
 			Pred(r, args) => Pred(r, args.into_iter().map(|v| self.clone().eval(v)).collect()),
 			Like(v, s) => Like(self.eval(v), s),
-			Null(v) => Null(self.eval(v)),
 			Bool(v) => Bool(self.eval(v)),
 		}
 	}
@@ -206,44 +234,18 @@ where E: Eval<S, T> + Clone
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub enum Relation<U> {
-	Var(VL),
-	Lam(Vector<DataType>, Box<U>),
-	HOp(String, Vec<Expr<Relation<U>>>, Box<Relation<U>>),
-}
+pub struct Relation<U>(pub Vector<DataType>, pub Box<U>);
 
 impl<U> Relation<U> {
-	pub fn lam(scopes: impl IntoIterator<Item = DataType>, body: U) -> Self {
-		Relation::Lam(scopes.into_iter().collect(), Box::new(body))
-	}
-
-	pub fn scopes(&self, schemas: &Vector<Schema>) -> Vector<DataType> {
-		match self {
-			Relation::Var(table) => schemas[table.0].types.clone().into(),
-			Relation::Lam(scopes, _) => scopes.clone(),
-			Relation::HOp(_, _, rel) => rel.scopes(schemas),
-		}
+	pub fn new(scopes: Vector<DataType>, body: U) -> Self {
+		Relation(scopes, Box::new(body))
 	}
 }
 
 impl<U: Display> Display for Relation<U> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		match self {
-			Relation::Var(table) => write!(f, "#{}", table.0),
-			Relation::Lam(scopes, body) => {
-				writeln!(f, "λ {:?}", scopes)?;
-				writeln!(indented(f).with_str("\t"), "{}", body)
-			},
-			Relation::HOp(op, args, rel) => {
-				writeln!(
-					f,
-					"{}({}, {})",
-					op,
-					args.iter().map(|arg| format!("{}", arg)).join(", "),
-					rel
-				)
-			},
-		}
+		writeln!(f, "λ {:?}", self.0)?;
+		writeln!(indented(f).with_str("\t"), "{}", self.1)
 	}
 }
 
@@ -261,17 +263,12 @@ pub struct Application<R> {
 
 impl<R: Display> Display for Application<R> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		let args = self.args.iter().map(|arg| format!("{}", arg)).join(", ");
+		let args = self.args.iter().join(", ");
 		match &self.head {
 			AppHead::Var(VL(l)) => write!(f, "#{}({})", l, args),
-			AppHead::HOp(op, op_args, rel) => writeln!(
-				f,
-				"{}({}, {})({})",
-				op,
-				op_args.iter().map(|arg| format!("{}", arg)).join(", "),
-				rel,
-				args
-			),
+			AppHead::HOp(op, op_args, rel) => {
+				writeln!(f, "{}({}, {})({})", op, op_args.iter().join(", "), rel, args)
+			},
 		}
 	}
 }
@@ -283,7 +280,7 @@ pub enum DataType {
 	/// Uuid type
 	Uuid,
 	/// Integer
-	#[serde(alias = "INT", alias = "SMALLINT", alias = "BIGINT")]
+	#[serde(alias = "INT", alias = "SMALLINT", alias = "BIGINT", alias = "TINYINT")]
 	Integer,
 	/// Real number
 	#[serde(alias = "FLOAT", alias = "DOUBLE", alias = "DECIMAL")]
@@ -395,7 +392,7 @@ where T::Output: Clone
 
 impl<T: Display> Display for Terms<T> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{}", self.iter().map(|term| format!("{}", term)).join("\n+ "))
+		write!(f, "{}", self.iter().join("\n+ "))
 	}
 }
 
@@ -405,7 +402,7 @@ pub fn var<'c>(ctx: &'c Context, ty: DataType, prefix: &str) -> Dynamic<'c> {
 	match ty {
 		Boolean => Bool::fresh_const(ctx, prefix).into(),
 		String => Str::fresh_const(ctx, prefix).into(),
-		Integer | Timestamp => Int::fresh_const(ctx, prefix).into(),
+		Integer | Timestamp | Date => Int::fresh_const(ctx, prefix).into(),
 		Real => Re::fresh_const(ctx, prefix).into(),
 		_ => panic!("unsupported type {:?}", ty),
 	}
@@ -416,13 +413,13 @@ fn sort(ctx: &Context, ty: DataType) -> Sort {
 	match ty {
 		Boolean => Sort::bool(ctx),
 		String => Sort::string(ctx),
-		Integer | Timestamp => Sort::int(ctx),
+		Integer | Timestamp | Date => Sort::int(ctx),
 		Real => Sort::real(ctx),
 		_ => panic!("unsupported type {:?}", ty),
 	}
 }
 
-pub fn func_app<'c>(
+pub fn z3_app<'c>(
 	ctx: &'c Context,
 	name: String,
 	args: Vec<Dynamic<'c>>,
@@ -432,6 +429,10 @@ pub fn func_app<'c>(
 	let args = args.iter().map(|arg| arg as &dyn Ast).collect_vec();
 	let f = FuncDecl::new(ctx, name, &domain.iter().collect_vec(), &sort(ctx, range));
 	f.apply(&args)
+}
+
+pub fn z3_const<'c>(ctx: &'c Context, name: String, ty: DataType) -> Dynamic<'c> {
+	z3_app(ctx, name, vec![], ty)
 }
 
 pub struct Ctx<'c> {

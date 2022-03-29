@@ -1,18 +1,22 @@
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fmt::{Display, Formatter, Write};
 use std::iter::once;
+use std::ops::Range;
+use std::time::Duration;
 
-use anyhow::{bail, Error};
+use anyhow::bail;
 use imbl::{vector, Vector};
 use indenter::indented;
-use itertools::{Either, Itertools};
-use scopeguard::defer;
-use z3::ast::{exists_const, Ast, Bool, Dynamic, Int, String as Str};
-use z3::{Context, FuncDecl, SatResult, Solver, Sort};
+use itertools::Itertools;
+use num::ToPrimitive;
+use z3::ast::{exists_const, Ast, Bool, Dynamic, Int, Real as Re, String as Str};
+use z3::{SatResult, Solver};
 
-use crate::pipeline::partial::{key_constraint, Closure, Summation};
-use crate::pipeline::shared::{func_app, AppHead, DataType, Eval, Schema, Terms, VL};
+use super::partial::partition_apps;
+use super::shared::z3_const;
+use crate::pipeline::partial::{Closure, Summation};
+use crate::pipeline::shared::{z3_app, AppHead, DataType, Eval, Schema, Terms, VL};
 use crate::pipeline::{partial, shared};
 
 pub(crate) type Relation = shared::Relation<UExpr>;
@@ -105,86 +109,112 @@ impl Display for SInner {
 	}
 }
 
-impl Eval<partial::UExpr, UExpr> for (usize, &[Schema]) {
+#[derive(Copy, Clone)]
+pub struct Env<'e>(pub &'e Vector<DataType>, pub &'e [Schema]);
+
+impl Eval<partial::UExpr, UExpr> for Env<'_> {
 	fn eval(self, source: partial::UExpr) -> UExpr {
-		let (lvl, schemas) = self;
-		source
-			.into_iter()
-			.flat_map(|mut t| {
-				if let Some(Summation { scopes, summand }) = t.sums.pop_front() {
-					let entries = shared::Expr::vars(lvl, scopes.clone());
-					let level = lvl + entries.len();
-					let sum_body: partial::UExpr =
-						(&summand.env.append(entries)).eval(summand.body);
-					shared::Terms::under(scopes, (level, schemas).eval(sum_body * t))
-				} else {
-					let (apps, preds): (_, Vector<_>) =
-						t.apps.clone().into_iter().partition_map(|app| match &app.head {
-							&AppHead::Var(VL(l)) => {
-								let schema = &schemas[l];
-								match schema.primary.first() {
-									None => Either::Left(app),
-									Some(cols) => Either::Right(key_constraint(l, cols, app.args)),
-								}
-							},
-							AppHead::HOp(_, _, _) => Either::Left(app),
-						});
-					UExpr::inner(Inner {
-						preds: self.eval(t.preds + preds.into_iter().flatten().collect()),
-						squash: self.eval(t.squash),
-						not: self.eval(t.not),
-						apps: self.eval(apps),
-					})
-				}
-			})
-			.collect()
+		source.into_iter().flat_map(|t| self.eval(t)).collect()
 	}
 }
 
-impl Eval<partial::SUExpr, SUExpr> for (usize, &[Schema]) {
+impl Eval<partial::Term, UExpr> for Env<'_> {
+	fn eval(self, mut source: partial::Term) -> UExpr {
+		let Env(context, schemas) = self;
+		let lvl = context.len();
+		if let Some(Summation { scopes, summand }) = source.sums.pop_front() {
+			let entries = shared::Expr::vars(lvl, scopes.clone());
+			let sum_body: partial::UExpr = (&summand.env.append(entries)).eval(summand.body);
+			let context = context + &scopes;
+			UExpr::under(scopes, Env(&context, schemas).eval(sum_body * source))
+		} else if let Some(app) = source.apps.pop_front() {
+			match &app.head {
+				AppHead::HOp(op, args, _) if op == "limit" && &args[0] == &0u32.into() => {
+					UExpr::zero()
+				},
+				AppHead::HOp(op, args, rel)
+					if op == "limit" && &args[0] == &1u32.into() && self.degen(*rel.clone()) =>
+				{
+					let shared::Relation(scopes, clos) = *rel.clone();
+					let body: partial::UExpr = (&clos.env.append(app.args)).eval(clos.body);
+					self.eval(body * source)
+				},
+				_ => {
+					source.stable_apps.push_back(app);
+					self.eval(source)
+				},
+			}
+		} else {
+			let (apps, preds) = partition_apps(source.stable_apps, schemas);
+			UExpr::inner(Inner {
+				preds: self.eval(source.preds + preds.into_iter().flatten().collect()),
+				squash: self.eval(source.squash),
+				not: self.eval(source.not),
+				apps: self.eval(apps),
+			})
+		}
+	}
+}
+
+impl<'e> Eval<partial::SUExpr, SUExpr> for Env<'e> {
 	fn eval(self, source: partial::SUExpr) -> SUExpr {
-		let (lvl, schemas) = self;
-		source
-			.into_iter()
-			.flat_map(|mut t| {
-				if let Some(Summation { scopes, summand }) = t.sums.pop_front() {
-					let entries = shared::Expr::vars(lvl, scopes.clone());
-					let level = lvl + entries.len();
-					let sum_body: partial::SUExpr =
-						(&summand.env.append(entries)).eval(summand.body);
-					shared::Terms::under(scopes, (level, schemas).eval(sum_body * t))
-				} else {
-					SUExpr::inner(SInner {
-						preds: self.eval(t.preds),
-						not: self.eval(t.not),
-						apps: self.eval(t.apps),
-					})
-				}
-			})
-			.collect()
+		source.into_iter().flat_map(|t| self.eval(t)).collect()
 	}
 }
 
-impl Eval<(VL, DataType), Expr> for (usize, &[Schema]) {
+impl Eval<partial::STerm, SUExpr> for Env<'_> {
+	fn eval(self, mut source: partial::STerm) -> SUExpr {
+		let Env(context, schemas) = self;
+		let lvl = context.len();
+		if let Some(Summation { scopes, summand }) = source.sums.pop_front() {
+			let entries = shared::Expr::vars(lvl, scopes.clone());
+			let sum_body: partial::SUExpr = (&summand.env.append(entries)).eval(summand.body);
+			let context = context + &scopes;
+			shared::Terms::under(scopes, Env(&context, schemas).eval(sum_body * source))
+		} else if let Some(app) = source.apps.pop_front() {
+			match &app.head {
+				AppHead::HOp(op, args, _) if op == "limit" && &args[0] == &0u32.into() => {
+					SUExpr::zero()
+				},
+				AppHead::HOp(op, args, rel)
+					if op == "limit" && &args[0] == &1u32.into() && self.degen(*rel.clone()) =>
+				{
+					let shared::Relation(scopes, clos) = *rel.clone();
+					let body: partial::SUExpr = (&clos.env.append(app.args)).eval(clos.body);
+					self.eval(body * source)
+				},
+				_ => {
+					source.stable_apps.push_back(app);
+					self.eval(source)
+				},
+			}
+		} else {
+			let (apps, preds) = partition_apps(source.stable_apps, schemas);
+			SUExpr::inner(SInner {
+				preds: self.eval(source.preds + preds.into_iter().flatten().collect()),
+				not: self.eval(source.not),
+				apps: self.eval(apps),
+			})
+		}
+	}
+}
+
+impl Eval<(VL, DataType), Expr> for Env<'_> {
 	fn eval(self, source: (VL, DataType)) -> Expr {
 		Expr::Var(source.0, source.1)
 	}
 }
 
-impl Eval<partial::Relation, Relation> for (usize, &[Schema]) {
+impl Eval<partial::Relation, Relation> for Env<'_> {
 	fn eval(self, source: partial::Relation) -> Relation {
-		use shared::Relation::*;
-		let (lvl, schemas) = self;
-		match source {
-			Var(l) => Var(l),
-			Lam(scopes, closure) => {
-				let Closure { env, body } = *closure;
-				let vars = shared::Expr::vars(lvl, scopes.clone());
-				let level = lvl + vars.len();
-				Relation::lam(scopes, (level, schemas).eval((&env.append(vars)).eval(body)))
-			},
-			HOp(op, args, rel) => HOp(op, self.eval(args), self.eval(rel)),
-		}
+		let Env(context, schemas) = self;
+		let lvl = context.len();
+		let shared::Relation(scopes, clos) = source;
+		let Closure { env, body } = *clos;
+		let vars = shared::Expr::vars(lvl, scopes.clone());
+		let context = context + &scopes;
+		let body: partial::UExpr = (&env.append(vars)).eval(body);
+		Relation::new(scopes, Env(&context, schemas).eval(body))
 	}
 }
 
@@ -248,43 +278,156 @@ impl<'e, 'c> StbEnv<'e, 'c> {
 	}
 }
 
-impl<'e, 'c: 'e> Eval<Scoped<Inner>, Option<Scoped<Inner>>> for StbEnv<'e, 'c> {
-	fn eval(self, source: Scoped<Inner>) -> Option<Scoped<Inner>> {
+impl Expr {
+	fn deps(&self, vars: Range<usize>) -> Option<HashSet<VL>> {
+		match self {
+			Expr::Var(v, _) if vars.contains(&v.0) => Some(once(v.clone()).collect()),
+			Expr::Var(_, _) => Some(HashSet::new()),
+			Expr::Op(_, args, _) => args.iter().map(|expr| expr.deps(vars.clone())).fold_options(
+				HashSet::new(),
+				|mut s1, s2| {
+					s1.extend(s2);
+					s1
+				},
+			),
+			Expr::HOp(_, _, _, _) => None,
+		}
+	}
+}
+
+fn var_elim(
+	env: StbEnv,
+	vars: &[(u32, &Expr)],
+	cong: &[(u32, &Expr)],
+) -> (Vector<Expr>, Vector<DataType>) {
+	log::info!(
+		"Eliminating {}, {}",
+		vars.iter().map(|(g, e)| format!("[{}, {}]", g, e)).join(", "),
+		cong.iter().map(|(g, e)| format!("[{}, {}]", g, e)).join(", ")
+	);
+	let StbEnv(subst, level, _) = env;
+	let groups = vars.iter().chain(cong).map(|&g| g).into_group_map();
+	let vars = vars
+		.iter()
+		.map(|&(g, e)| match e {
+			&Expr::Var(v, ref ty) => (g, v, ty.clone()),
+			_ => panic!(),
+		})
+		.collect_vec();
+
+	fn saturate_deps(vars: &HashSet<VL>, mappings: &BTreeMap<VL, HashSet<VL>>) -> HashSet<VL> {
+		let saturate = |var, mappings: &BTreeMap<_, _>| {
+			mappings
+				.get(&var)
+				.map_or_else(|| once(var).collect(), |vars| saturate_deps(vars, mappings))
+		};
+		vars.into_iter().flat_map(|&v| saturate(v, mappings)).collect()
+	}
+
+	let bound = subst.len()..subst.len() + vars.len();
+	let mut scopes = Vector::new();
+	let mut keys: HashSet<_> = vars.iter().map(|&(_, v, _)| v).collect();
+	let mut dep_maps = BTreeMap::new();
+	let mut var_subst = vars
+		.into_iter()
+		.map(|(g, var, ty)| {
+			let group = groups.get(&g).unwrap();
+			keys.remove(&var);
+			if let Some((deps, expr)) = group.iter().find_map(|&expr| {
+				expr.deps(bound.clone())
+					.map(|deps| (deps, expr))
+					.filter(|(deps, _)| saturate_deps(deps, &dep_maps).is_subset(&keys))
+			}) {
+				log::info!("[dep] {} -> {}", var, expr);
+				dep_maps.insert(var, deps);
+				expr.clone()
+			} else {
+				keys.insert(var);
+				let expr = Expr::Var(VL(level + scopes.len()), ty.clone());
+				log::info!("[key] {} -> {}", var, expr);
+				scopes.push_back(ty);
+				expr
+			}
+		})
+		.collect();
+
+	fn prune(
+		v: VL,
+		keys: &HashSet<VL>,
+		dep_maps: &mut BTreeMap<VL, HashSet<VL>>,
+		var_subst: &mut Vector<Expr>,
+		env: StbEnv,
+	) {
+		let StbEnv(subst, level, z3_env) = env;
+		if let Some((v, deps)) = dep_maps.remove_entry(&v) {
+			deps.into_iter().for_each(|w| prune(w, keys, dep_maps, var_subst, env));
+			let i = v.0 - subst.len();
+			var_subst[i] =
+				StbEnv(&(subst + var_subst), level + keys.len(), z3_env).eval(var_subst[i].clone());
+			log::info!("{} ~> {}", v, var_subst[i]);
+		};
+	}
+
+	while let Some((&v, _)) = dep_maps.first_key_value() {
+		prune(v, &keys, &mut dep_maps, &mut var_subst, env);
+	}
+
+	(var_subst, scopes)
+}
+
+impl<'e, 'c> Eval<Scoped<Inner>, Option<Scoped<Inner>>> for StbEnv<'e, 'c> {
+	fn eval(self, Scoped { inner, scopes }: Scoped<Inner>) -> Option<Scoped<Inner>> {
 		let StbEnv(subst, level, z3_env) = self;
 		let solver = z3_env.0;
-		solver.push();
-		defer!(solver.pop(1));
-		let z3_subst = &z3_env.extend(source.scopes.clone());
+		let z3_subst = &z3_env.extend(scopes.clone());
 		let z3_env = z3_env.update(z3_subst);
-		let constraint = z3_env.eval(&source.inner);
+		let constraint = z3_env.eval(&inner);
+		let vars = Expr::vars(subst.len(), scopes.clone());
+		let exprs = vars
+			.iter()
+			.chain(inner.preds.iter().flat_map(|pred| match pred {
+				Predicate::Eq(e1, e2) => vec![e1, e2],
+				_ => vec![],
+			}))
+			.collect_vec();
+		let z3_asts = exprs.iter().map(|&e| z3_env.eval(e)).collect_vec();
+		let z3_asts = z3_asts.iter().map(|e| e as &dyn Ast).collect_vec();
+		solver.reset();
 		solver.assert(&constraint);
-		let asts = z3_subst.iter().map(|v| v as &dyn Ast).collect_vec();
-		let (ids, res) = solver.get_implied_equalities(asts.as_slice());
-		match dbg!(res) {
+		let handle = solver.get_context().handle();
+		let checked = crossbeam::atomic::AtomicCell::new(false);
+		let (ids, res) = crossbeam::thread::scope(|s| {
+			let checked = &checked;
+			let p = crossbeam::sync::Parker::new();
+			let u = p.unparker().clone();
+			s.spawn(move |_| {
+				p.park_timeout(Duration::from_secs(2));
+				if !checked.load() {
+					handle.interrupt();
+				}
+			});
+			let (ids, res) = solver.get_implied_equalities(z3_asts.as_slice());
+			checked.store(true);
+			u.unpark();
+			(ids, res)
+		})
+		.unwrap();
+		solver.reset();
+		match res {
 			SatResult::Unsat => None,
 			SatResult::Unknown => {
-				let (ref subst, level) = self.extend(source.scopes.clone());
-				let inner = self.update(subst, level, z3_env).eval(source.inner);
-				Some(Scoped { inner, ..source })
+				let (ref subst, level) = self.extend(scopes.clone());
+				let inner = self.update(subst, level, z3_env).eval(inner);
+				Some(Scoped { scopes, inner })
 			},
 			SatResult::Sat => {
-				let mut scopes = vector![];
-				let groups = ids.iter().enumerate().map(|(l, &g)| (g, VL(l))).collect_vec();
-				let buckets: HashMap<_, _> = groups.into_iter().rev().collect();
-				let mut new_subst = subst.clone();
-				for l in 0..source.scopes.len() {
-					let vl = l + subst.len();
-					let &VL(rep) = buckets.get(&ids[vl]).unwrap();
-					let target = new_subst.get(rep).cloned().unwrap_or_else(|| {
-						let ty = source.scopes[l].clone();
-						scopes.push_back(ty.clone());
-						Expr::Var(VL(level + scopes.len() - 1), ty)
-					});
-					new_subst.push_back(target);
-				}
-				let inner =
-					self.update(&new_subst, level + scopes.len(), z3_env).eval(source.inner);
-				Some(Scoped { inner, scopes })
+				let groups = ids.into_iter().zip(exprs).collect_vec();
+				let (vars, cong) = groups.split_at(scopes.len());
+				let (new_subst, new_scopes) = var_elim(self, vars, cong);
+				let inner = self
+					.update(&(subst + &new_subst), level + new_scopes.len(), z3_env)
+					.eval(inner);
+				Some(Scoped { inner, scopes: new_scopes })
 			},
 		}
 	}
@@ -304,7 +447,11 @@ impl<'e, 'c: 'e> Eval<Scoped<SInner>, Scoped<SInner>> for StbEnv<'e, 'c> {
 
 impl<'e, 'c: 'e> Eval<Inner, Inner> for StbEnv<'e, 'c> {
 	fn eval(self, source: Inner) -> Inner {
-		let preds = self.eval(source.preds);
+		let preds = self
+			.eval(source.preds)
+			.into_iter()
+			.filter(|p| !matches!(p, Predicate::Eq(e1, e2) if e1 == e2))
+			.collect();
 		let squash = self.eval(source.squash);
 		let not = self.eval(source.not);
 		let apps = self.eval(source.apps);
@@ -314,7 +461,11 @@ impl<'e, 'c: 'e> Eval<Inner, Inner> for StbEnv<'e, 'c> {
 
 impl<'e, 'c: 'e> Eval<SInner, SInner> for StbEnv<'e, 'c> {
 	fn eval(self, source: SInner) -> SInner {
-		let preds = self.eval(source.preds);
+		let preds = self
+			.eval(source.preds)
+			.into_iter()
+			.filter(|p| !matches!(p, Predicate::Eq(e1, e2) if e1 == e2))
+			.collect();
 		let not = self.eval(source.not);
 		let apps = self.eval(source.apps);
 		SInner { preds, not, apps }
@@ -331,19 +482,13 @@ impl<'e, 'c: 'e> Eval<(VL, DataType), Expr> for StbEnv<'e, 'c> {
 impl<'e, 'c: 'e> Eval<Relation, Relation> for StbEnv<'e, 'c> {
 	fn eval(self, source: Relation) -> Relation {
 		let z3_env = self.2;
-		use shared::Relation::*;
-		match source {
-			Var(l) => Var(l),
-			Lam(scopes, body) => {
-				let z3_subst = &z3_env.extend(scopes.clone());
-				let (ref subst, level) = self.extend(scopes.clone());
-				Lam(
-					scopes,
-					Box::new(self.update(subst, level, z3_env.update(z3_subst)).eval(*body)),
-				)
-			},
-			HOp(op, args, rel) => HOp(op, self.eval(args), self.eval(rel)),
-		}
+		let shared::Relation(scopes, body) = source;
+		let z3_subst = &z3_env.extend(scopes.clone());
+		let (ref subst, level) = self.extend(scopes.clone());
+		shared::Relation(
+			scopes,
+			Box::new(self.update(subst, level, z3_env.update(z3_subst)).eval(*body)),
+		)
 	}
 }
 
@@ -361,7 +506,7 @@ impl<'e, 'c: 'e> Eval<&SUExpr, Bool<'c>> for Z3Env<'e, 'c> {
 	}
 }
 
-impl<'e, 'c: 'e> Eval<&Scoped<SInner>, Bool<'c>> for Z3Env<'e, 'c> {
+impl<'e, 'c> Eval<&Scoped<SInner>, Bool<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &Scoped<SInner>) -> Bool<'c> {
 		let ctx = self.0.get_context();
 		let inner = &source.inner;
@@ -412,15 +557,14 @@ impl<'e, 'c: 'e> Eval<&Inner, Bool<'c>> for Z3Env<'e, 'c> {
 fn table_name(head: &AppHead<Relation>, env: Z3Env) -> String {
 	let Z3Env(_, subst, _, map) = env;
 	match head {
-		AppHead::Var(VL(l)) => "r!".to_string() + &l.to_string(),
+		AppHead::Var(VL(l)) => format!("r!{}", l),
 		AppHead::HOp(op, args, rel) => {
 			let len = map.borrow().len();
-			"rh!".to_string()
-				+ &map
-					.borrow_mut()
-					.entry((op.clone(), args.clone(), *rel.clone(), subst.clone()))
-					.or_insert(len)
-					.to_string()
+			let id = *map
+				.borrow_mut()
+				.entry((op.clone(), args.clone(), *rel.clone(), subst.clone()))
+				.or_insert(len);
+			format!("rh!{}", id)
 		},
 	}
 }
@@ -428,7 +572,7 @@ fn table_name(head: &AppHead<Relation>, env: Z3Env) -> String {
 impl<'e, 'c: 'e> Eval<&Application, Bool<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &Application) -> Bool<'c> {
 		let args = source.args.iter().map(|v| self.eval(v)).collect_vec();
-		func_app(self.0.get_context(), table_name(&source.head, self), args, DataType::Boolean)
+		z3_app(self.0.get_context(), table_name(&source.head, self) + "p", args, DataType::Boolean)
 			.as_bool()
 			.unwrap()
 	}
@@ -437,7 +581,7 @@ impl<'e, 'c: 'e> Eval<&Application, Bool<'c>> for Z3Env<'e, 'c> {
 impl<'e, 'c: 'e> Eval<&Application, Int<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &Application) -> Int<'c> {
 		let args = source.args.iter().map(|v| self.eval(v)).collect_vec();
-		func_app(self.0.get_context(), table_name(&source.head, self), args, DataType::Integer)
+		z3_app(self.0.get_context(), table_name(&source.head, self), args, DataType::Integer)
 			.as_int()
 			.unwrap()
 	}
@@ -445,12 +589,21 @@ impl<'e, 'c: 'e> Eval<&Application, Int<'c>> for Z3Env<'e, 'c> {
 
 impl<'e, 'c: 'e> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 	fn eval(self, source: &Expr) -> Dynamic<'c> {
+		use DataType::*;
 		let Z3Env(solver, subst, h_ops, _) = self;
 		let ctx = solver.get_context();
-		let parse = |ctx, input: &str, ty| {
-			use DataType::*;
+		let parse = |ctx, input: &str, ty: &DataType| {
+			if input.to_lowercase() == "null" {
+				return Ok(z3_app(ctx, format!("null-{:?}", ty), vec![], ty.clone()));
+			}
 			Ok(match ty {
 				&Integer => Int::from_i64(ctx, input.parse()?).into(),
+				&Real => {
+					let r: f64 = input.parse()?;
+					let r = num::rational::Ratio::from_float(r).unwrap();
+					Re::from_real(ctx, r.numer().to_i32().unwrap(), r.denom().to_i32().unwrap())
+						.into()
+				},
 				&Boolean => Bool::from_bool(ctx, input.to_lowercase().parse()?).into(),
 				&String => Str::from_str(ctx, input).unwrap().into(),
 				_ => bail!("unsupported type {:?} for constant {}", ty, input),
@@ -462,7 +615,7 @@ impl<'e, 'c: 'e> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 			Expr::Op(op, args, ty) => {
 				let args = args.iter().map(|arg| self.eval(arg)).collect_vec();
 				match op.as_str() {
-					num_op @ ("+" | "-" | "*" | "/" | "%") => {
+					num_op @ ("+" | "-" | "*" | "/" | "%" | "POWER") if ty == &Integer => {
 						let args = args.into_iter().map(|arg| arg.as_int().unwrap()).collect_vec();
 						match num_op {
 							"+" => Int::add(ctx, &args.iter().collect_vec()),
@@ -470,11 +623,24 @@ impl<'e, 'c: 'e> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 							"*" => Int::mul(ctx, &args.iter().collect_vec()),
 							"/" => args[0].div(&args[1]),
 							"%" => args[0].modulo(&args[1]),
+							"POWER" => args[0].power(&args[1]),
 							_ => unreachable!(),
 						}
 						.into()
 					},
-					cmp @ (">" | "<" | ">=" | "<=") => {
+					num_op @ ("+" | "-" | "*" | "/" | "POWER") if ty == &Real => {
+						let args = args.into_iter().map(|arg| arg.as_real().unwrap()).collect_vec();
+						match num_op {
+							"+" => Re::add(ctx, &args.iter().collect_vec()),
+							"-" => Re::sub(ctx, &args.iter().collect_vec()),
+							"*" => Re::mul(ctx, &args.iter().collect_vec()),
+							"/" => args[0].div(&args[1]),
+							"POWER" => args[0].power(&args[1]),
+							_ => unreachable!(),
+						}
+						.into()
+					},
+					cmp @ (">" | "<" | ">=" | "<=") if matches!(args[0].as_int(), Some(_)) => {
 						let args = args.into_iter().map(|arg| arg.as_int().unwrap()).collect_vec();
 						match cmp {
 							">" => args[0].gt(&args[1]),
@@ -485,11 +651,21 @@ impl<'e, 'c: 'e> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 						}
 						.into()
 					},
-					"=" => args[0]._eq(&args[1]).into(),
-					"CASE" if args.len() == 3 => args[0].as_bool().unwrap().ite(&args[1], &args[2]),
-					op => {
-						shared::func_app(ctx, "f!".to_owned() + &op.to_string(), args, ty.clone())
+					cmp @ (">" | "<" | ">=" | "<=") if matches!(args[0].as_real(), Some(_)) => {
+						let args = args.into_iter().map(|arg| arg.as_real().unwrap()).collect_vec();
+						match cmp {
+							">" => args[0].gt(&args[1]),
+							"<" => args[0].lt(&args[1]),
+							">=" => args[0].ge(&args[1]),
+							"<=" => args[0].le(&args[1]),
+							_ => unreachable!(),
+						}
+						.into()
 					},
+					"=" => args[0]._eq(&args[1]).into(),
+					"<>" => args[0]._eq(&args[1]).not().into(),
+					"CASE" if args.len() == 3 => args[0].as_bool().unwrap().ite(&args[1], &args[2]),
+					op => shared::z3_app(ctx, "f!".to_owned() + &op.to_string(), args, ty.clone()),
 				}
 			},
 			Expr::HOp(f, args, rel, ty) => h_ops
@@ -510,14 +686,10 @@ impl<'e, 'c: 'e> Eval<&Predicate, Bool<'c>> for Z3Env<'e, 'c> {
 				.eval(&Expr::Op(pred.clone(), args.clone(), DataType::Boolean))
 				.as_bool()
 				.unwrap(),
-			Predicate::Null(expr) => {
-				// TODO: Proper NULL handling
-				let expr = &self.eval(expr);
-				let f = FuncDecl::new(ctx, "null", &[&expr.get_sort()], &Sort::bool(ctx));
-				f.apply(&[expr]).as_bool().unwrap()
-			},
 			Predicate::Bool(expr) => self.eval(expr).as_bool().unwrap(),
-			p => panic!("Unhandled predicate translation for {:?}", p),
+			Predicate::Like(expr, pat) => {
+				self.eval(expr)._eq(&z3_const(ctx, pat.clone(), DataType::String))
+			},
 		}
 	}
 }

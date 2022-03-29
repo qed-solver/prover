@@ -22,7 +22,7 @@ pub mod unify;
 pub fn evaluate(rel: syn::Relation, schemas: &[Schema]) -> nom::Relation {
 	log::info!("Syntax:\n{}", rel);
 	let prt = (&partial::Env::default()).eval(rel);
-	let nom = (0, schemas).eval(prt);
+	let nom = normal::Env(&vector![], schemas).eval(prt);
 	log::info!("Normal:\n{}", nom);
 	let mut config = Config::new();
 	config.set_timeout_msec(2000);
@@ -40,7 +40,7 @@ pub fn evaluate(rel: syn::Relation, schemas: &[Schema]) -> nom::Relation {
 
 pub fn unify(rel1: nom::Relation, rel2: nom::Relation) -> bool {
 	let mut config = Config::new();
-	config.set_timeout_msec(5000);
+	config.set_timeout_msec(2000);
 	let ctx = &Context::new(&config);
 	let solver = &Solver::new(ctx);
 	let subst1 = &vector![];

@@ -3,8 +3,8 @@ use std::ops::{Add, Mul, Not};
 use imbl::{vector, Vector};
 use serde::{Deserialize, Serialize};
 
-use crate::pipeline::shared::{DataType, Eval, Schema, VL};
-use crate::pipeline::syntax::UExpr;
+use crate::pipeline::shared::{Constraint, DataType, Eval, Schema, VL};
+use crate::pipeline::syntax::{AppHead, UExpr};
 use crate::pipeline::{shared, syntax as syn};
 use crate::solver::Payload;
 
@@ -84,7 +84,7 @@ impl Relation {
 			Project { columns, .. } | Aggregate { columns, .. } => {
 				columns.iter().map(|expr| expr.ty()).collect()
 			},
-			Join { left, kind: JoinKind::Semi, .. } => left.scopes(schemas),
+			Join { left, kind: JoinKind::Semi | JoinKind::Anti, .. } => left.scopes(schemas),
 			Join { left, right, .. } | Correlate(left, right) => {
 				left.scopes(schemas) + right.scopes(schemas)
 			},
@@ -104,8 +104,24 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 		let Env(schemas, subst, lvl) = self;
 		let scopes = source.scopes(schemas);
 		match source {
-			Singleton => Rel::lam(vector![], UExpr::One),
-			Scan(table) => Rel::Var(table),
+			Singleton => Rel::new(vector![], UExpr::One),
+			Scan(table) => {
+				let head = AppHead::Var(table);
+				let vars = vars(lvl, scopes.clone());
+				let body = schemas[table.0]
+					.constraints
+					.iter()
+					.zip(vars.clone())
+					.filter_map(|(constr, v)| match constr {
+						Constraint::NotNullable => {
+							Some(UExpr::Not(UExpr::Pred(shared::Predicate::null(v)).into()))
+						},
+						_ => None,
+					})
+					.fold(UExpr::App(head, vars), UExpr::mul);
+				Rel::new(scopes, body)
+				// Rel::new(scopes, UExpr::App(head, vars))
+			},
 			// Filter R(x, y) by P[x, y]
 			// λ x, y. [P[x, y]] × R(x, y)
 			Filter { condition, source } => {
@@ -114,7 +130,7 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 				let cond_subst = subst + &vars;
 				let condition = Env(schemas, &cond_subst, body_lvl).eval(condition.to_pred());
 				let source = Env(schemas, subst, body_lvl).eval(*source);
-				Rel::lam(scopes, condition * source.app(vars))
+				Rel::new(scopes, condition * source.app(vars))
 			},
 			// Project f[x, y] from R(x, y)
 			// λ a. ∑ x, y. [a = f[x, y]] × R(x, y)
@@ -131,7 +147,7 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 					.zip(columns)
 					.map(|(var, col)| UExpr::Pred(Eq(var, cols_env.eval(col))))
 					.fold(source.app(inner_vars), UExpr::mul);
-				Rel::lam(scopes, UExpr::sum(inner_scopes, body))
+				Rel::new(scopes, UExpr::sum(inner_scopes, body))
 			},
 			// R(x) semi join S(y) on P[x, y]
 			// λ x. R(x) × ‖∑ y. [P[x, y]] × S(y)‖
@@ -150,7 +166,7 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 					JoinKind::Anti => UExpr::not,
 					_ => unreachable!(),
 				};
-				Rel::lam(scopes, left_body * wrapper(UExpr::sum(inner_scopes, cond * right_body)))
+				Rel::new(scopes, left_body * wrapper(UExpr::sum(inner_scopes, cond * right_body)))
 			},
 			// R(x) inner join S(y) on P[x, y]
 			// λ x, y. [P[x, y]] × R(x) × S(y)
@@ -185,14 +201,14 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 					let other_body = if miss_left { right_body.clone() } else { left_body.clone() };
 					if miss_left { left_vars } else { right_vars }
 						.iter()
-						.map(|v| UExpr::Pred(Null(v.clone())))
+						.map(|v| UExpr::Pred(shared::Predicate::null(v.clone())))
 						.fold(other_body * !UExpr::sum(inner_scopes, inner_body), UExpr::mul)
 				};
 				match kind {
-					JoinKind::Inner => Rel::lam(scopes, matching),
-					JoinKind::Left => Rel::lam(scopes, matching + miss(false)),
-					JoinKind::Right => Rel::lam(scopes, matching + miss(true)),
-					JoinKind::Full => Rel::lam(scopes, matching + miss(true) + miss(false)),
+					JoinKind::Inner => Rel::new(scopes, matching),
+					JoinKind::Left => Rel::new(scopes, matching + miss(false)),
+					JoinKind::Right => Rel::new(scopes, matching + miss(true)),
+					JoinKind::Full => Rel::new(scopes, matching + miss(true) + miss(false)),
 					_ => unreachable!(),
 				}
 			},
@@ -207,7 +223,7 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 				let left = Env(schemas, subst, body_lvl).eval(*left);
 				let right_subst = subst + &left_vars;
 				let right = Env(schemas, &right_subst, body_lvl).eval(*right);
-				Rel::lam(scopes, left.app(left_vars) * right.app(right_vars))
+				Rel::new(scopes, left.app(left_vars) * right.app(right_vars))
 			},
 			// R(x) union S(y)
 			// λx. R(x) + S(x)
@@ -216,7 +232,7 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 				let vars = vars(lvl, scopes.clone());
 				let left = Env(schemas, subst, body_lvl).eval(*left);
 				let right = Env(schemas, subst, body_lvl).eval(*right);
-				Rel::lam(scopes, left.app(vars.clone()) + right.app(vars))
+				Rel::new(scopes, left.app(vars.clone()) + right.app(vars))
 			},
 			// R(x) except S(y)
 			// λx. R(x) × ¬S(x)
@@ -225,13 +241,13 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 				let vars = vars(lvl, scopes.clone());
 				let left = Env(schemas, subst, body_lvl).eval(*left);
 				let right = Env(schemas, subst, body_lvl).eval(*right);
-				Rel::lam(scopes, left.app(vars.clone()) * !right.app(vars))
+				Rel::new(scopes, left.app(vars.clone()) * !right.app(vars))
 			},
 			// Distinct R(x)
 			// λx. ‖R(x)‖
 			Distinct(source) => {
 				let source = Env(schemas, subst, lvl + scopes.len()).eval(source);
-				Rel::lam(scopes.clone(), UExpr::squash(source.app(vars(lvl, scopes))))
+				Rel::new(scopes.clone(), UExpr::squash(source.app(vars(lvl, scopes))))
 			},
 			// Values ((a1, b1), (a2, b2), (a3, b3))
 			// λx, y. [x = a1] × [y = b1] + [x = a2] × [y = b2] + [x = a3] × [y = b3]
@@ -247,7 +263,7 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 							.fold(UExpr::One, UExpr::mul)
 					})
 					.fold(UExpr::Zero, UExpr::add);
-				Rel::lam(scopes, body)
+				Rel::new(scopes, body)
 			},
 			// Agg1(f[x, y]), Agg2(g[x, y]) on R(x, y)
 			// λa, b. [a = Agg1(λc. ∑x, y. [c = f[x, y]] × R(x, y))]
@@ -260,39 +276,30 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 					.zip(columns)
 					.map(|(v, agg)| UExpr::Pred(Eq(v, agg.eval_agg(&source, env))))
 					.fold(UExpr::One, UExpr::mul);
-				Rel::lam(scopes, new_body)
+				Rel::new(scopes, new_body)
 			},
-			Sort { collation, offset, limit, source } => {
-				// TODO: Support sorting multiple columns
-				assert!(collation.len() <= 1);
-				let offset = offset.map(|n| self.eval(n)).unwrap_or(syn::Expr::Op(
-					1.to_string(),
-					vec![],
-					DataType::Integer,
-				));
-				let source = self.eval(source);
-				match collation.first() {
-					Some((col, _, ord)) => {
-						let col = syn::Expr::Op(col.to_string(), vec![], DataType::Integer);
-						let ord = syn::Expr::Op(ord.clone(), vec![], DataType::String);
-						if let Some(count) = limit {
-							Rel::HOp(
-								"sort-limit".to_string(),
-								vec![col, ord, self.eval(count), offset],
-								source,
-							)
-						} else {
-							Rel::HOp("sort".to_string(), vec![col, ord, offset], source)
-						}
-					},
-					None => {
-						if let Some(count) = limit {
-							Rel::HOp("limit".to_string(), vec![self.eval(count), offset], source)
-						} else {
-							Rel::HOp("offset".to_string(), vec![offset], source)
-						}
-					},
-				}
+			Sort { mut collation, offset, limit, source } => {
+				// TODO: Better way to handle multiple sort columns.
+				let env = Env(schemas, subst, lvl + scopes.len());
+				let head = if let Some((col, _, ord)) = collation.pop() {
+					let col = col.into();
+					let ord = ord.into();
+					AppHead::HOp(
+						"sort".to_string(),
+						vec![col, ord],
+						env.eval(Sort { collation, offset, limit, source }.into()),
+					)
+				} else {
+					let source = env.eval(source);
+					let offset = offset.map(|n| env.eval(n)).unwrap_or(0u32.into());
+					if let Some(count) = limit {
+						AppHead::HOp("limit".to_string(), vec![env.eval(count), offset], source)
+					} else {
+						AppHead::HOp("offset".to_string(), vec![offset], source)
+					}
+				};
+				let vars = vars(lvl, scopes.clone());
+				Rel::new(scopes, UExpr::App(head, vars))
 			},
 		}
 	}
@@ -368,6 +375,7 @@ impl Expr {
 				"TRUE" => True,
 				"FALSE" => False,
 				"=" => Eq(args[0].clone(), args[1].clone()),
+				"<>" => Not(Box::new(Eq(args[0].clone(), args[1].clone()))),
 				"AND" => And(args.iter().map(|arg| arg.to_pred()).collect()),
 				"OR" => Or(args.iter().map(|arg| arg.to_pred()).collect()),
 				"NOT" => Not(Box::new(args[0].to_pred())),
@@ -417,20 +425,20 @@ impl<'e> Eval<Predicate, UExpr> for Env<'e> {
 	fn eval(self, source: Predicate) -> UExpr {
 		use shared::Predicate as Pred;
 		use Predicate::*;
-		let Env(schemas, _, lvl) = self;
+		let Env(schemas, subst, lvl) = self;
 		match source {
 			True => UExpr::One,
 			False => UExpr::Zero,
-			Null(e) => UExpr::Pred(Pred::Null(self.eval(e))),
+			Null(e) => UExpr::Pred(Pred::null(self.eval(e))),
 			Bool(e) => UExpr::Pred(Pred::Bool(self.eval(e))),
 			Eq(e1, e2) => UExpr::Pred(Pred::Eq(self.eval(e1), self.eval(e2))),
 			Like(e, pat) => UExpr::Pred(Pred::Like(self.eval(e), pat)),
 			Exists(rel) => {
 				let scopes = rel.scopes(schemas);
-				let rel = self.eval(*rel);
-				UExpr::squash(UExpr::sum(scopes.clone(), UExpr::App(rel, vars(lvl, scopes))))
+				let rel = Env(schemas, subst, lvl + scopes.len()).eval(*rel);
+				UExpr::squash(UExpr::sum(scopes.clone(), UExpr::app(rel, vars(lvl, scopes))))
 			},
-			In(vals, rel) => UExpr::squash(UExpr::App(self.eval(*rel), self.eval(vals).into())),
+			In(vals, rel) => UExpr::squash(UExpr::app(self.eval(*rel), self.eval(vals).into())),
 			Pred(p, es) => UExpr::Pred(Pred::Pred(p, self.eval(es))),
 			And(ps) => ps.into_iter().map(|p| self.eval(p)).fold(UExpr::One, UExpr::mul),
 			Or(ps) => {

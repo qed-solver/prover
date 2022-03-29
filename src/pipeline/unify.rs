@@ -8,6 +8,7 @@ use itertools::{Either, Itertools};
 use z3::ast::{Ast, Bool, Dynamic};
 use z3::{SatResult, Solver};
 
+use super::shared;
 use crate::pipeline::nom::{Expr, Z3Env};
 use crate::pipeline::normal::{HOpMap, Inner, Relation, Scoped, UExpr};
 use crate::pipeline::shared::{var, Eval};
@@ -31,37 +32,32 @@ impl<'e, 'c> UnifyEnv<'e, 'c> {
 
 impl<'e, 'c> Unify<&Relation> for UnifyEnv<'e, 'c> {
 	fn unify(self, rel1: &Relation, rel2: &Relation) -> bool {
-		match (rel1, rel2) {
-			(Relation::Var(r1), Relation::Var(r2)) => r1 == r2,
-			(Relation::Lam(tys1, uexpr1), Relation::Lam(tys2, uexpr2)) if tys1 == tys2 => {
-				let UnifyEnv(solver, subst1, subst2) = self;
-				let ctx = solver.get_context();
-				let vars = tys1.iter().map(|ty| var(ctx, ty.clone(), "v")).collect();
-				let subst1 = subst1 + &vars;
-				let subst2 = subst2 + &vars;
-				UnifyEnv(solver, &subst1, &subst2).unify(uexpr1.as_ref(), uexpr2.as_ref())
-			},
-			(Relation::HOp(op1, args1, rel1), Relation::HOp(op2, args2, rel2)) => {
-				op1 == op2 && self.unify(args1, args2) && self.unify(rel1.as_ref(), rel2.as_ref())
-			},
-			_ => false,
+		let (shared::Relation(tys1, uexpr1), shared::Relation(tys2, uexpr2)) = (rel1, rel2);
+		if tys1 != tys2 {
+			return false;
 		}
+		let UnifyEnv(solver, subst1, subst2) = self;
+		let ctx = solver.get_context();
+		let vars = tys1.iter().map(|ty| var(ctx, ty.clone(), "v")).collect();
+		let subst1 = subst1 + &vars;
+		let subst2 = subst2 + &vars;
+		UnifyEnv(solver, &subst1, &subst2).unify(uexpr1.as_ref(), uexpr2.as_ref())
 	}
 }
 
 impl<'e, 'c> Unify<&UExpr> for UnifyEnv<'e, 'c> {
 	fn unify(self, u1: &UExpr, u2: &UExpr) -> bool {
 		let mut terms2 = u2.0.clone();
-		let paired = u1.iter().all(|t1| {
-			(0..terms2.len()).any(|i| {
-				let unifies = self.unify(t1, &terms2[i]);
-				if unifies {
-					terms2.remove(i);
-				}
-				unifies
+		u1.0.len() == u2.0.len()
+			&& u1.iter().all(|t1| {
+				(0..terms2.len()).any(|i| {
+					let unifies = self.unify(t1, &terms2[i]);
+					if unifies {
+						terms2.remove(i);
+					}
+					unifies
+				})
 			})
-		});
-		paired && terms2.is_empty()
 	}
 }
 
@@ -112,8 +108,6 @@ where
 	T: Ord + PartialEq + Clone + Debug,
 	V: Clone + Debug,
 {
-	log::info!("{:?}", types);
-	log::info!("{:?}", vars);
 	let types = types.clone().into_iter().collect_vec();
 	let sort_perm = permutation::sort(types.as_slice());
 	let sorted_scopes = sort_perm.apply_slice(types.as_slice());
