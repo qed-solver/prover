@@ -9,10 +9,8 @@ use imbl::{vector, Vector};
 use indenter::indented;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use z3::ast::{Ast, Dynamic};
+use z3::ast::{Ast, Bool, Datatype, Dynamic};
 use z3::{ast, Context, FuncDecl, Solver, Sort};
-
-use crate::pipeline::null::Nullable;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
@@ -62,15 +60,15 @@ impl<U: Display> Display for Expr<U> {
 }
 
 impl<U> Into<Expr<U>> for u32 {
-    fn into(self) -> Expr<U> {
-        Expr::Op(self.to_string(), vec![], DataType::Integer)
-    }
+	fn into(self) -> Expr<U> {
+		Expr::Op(self.to_string(), vec![], DataType::Integer)
+	}
 }
 
 impl<U> Into<Expr<U>> for usize {
-    fn into(self) -> Expr<U> {
-        Expr::Op(self.to_string(), vec![], DataType::Integer)
-    }
+	fn into(self) -> Expr<U> {
+		Expr::Op(self.to_string(), vec![], DataType::Integer)
+	}
 }
 
 impl<U> Into<Expr<U>> for String {
@@ -121,6 +119,8 @@ pub struct Schema {
 	#[serde(rename = "strategy")]
 	#[serde(default)]
 	pub constraints: Vec<Constraint>,
+	#[serde(default)]
+	pub guaranteed: Vec<super::relation::Expr>,
 }
 
 #[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize)]
@@ -396,59 +396,53 @@ impl<T: Display> Display for Terms<T> {
 	}
 }
 
-pub fn var<'c>(ctx: &'c Context, ty: DataType, prefix: &str) -> Dynamic<'c> {
-	use z3::ast::{Bool, Int, Real as Re, String as Str};
-	use DataType::*;
-	match ty {
-		Boolean => Bool::fresh_const(ctx, prefix).into(),
-		String => Str::fresh_const(ctx, prefix).into(),
-		Integer | Timestamp | Date => Int::fresh_const(ctx, prefix).into(),
-		Real => Re::fresh_const(ctx, prefix).into(),
-		_ => panic!("unsupported type {:?}", ty),
-	}
-}
-
-fn sort(ctx: &Context, ty: DataType) -> Sort {
-	use DataType::*;
-	match ty {
-		Boolean => Sort::bool(ctx),
-		String => Sort::string(ctx),
-		Integer | Timestamp | Date => Sort::int(ctx),
-		Real => Sort::real(ctx),
-		_ => panic!("unsupported type {:?}", ty),
-	}
-}
-
-pub fn z3_app<'c>(
-	ctx: &'c Context,
-	name: String,
-	args: Vec<Dynamic<'c>>,
-	range: DataType,
-) -> Dynamic<'c> {
-	let domain = args.iter().map(|arg| arg.get_sort()).collect_vec();
-	let args = args.iter().map(|arg| arg as &dyn Ast).collect_vec();
-	let f = FuncDecl::new(ctx, name, &domain.iter().collect_vec(), &sort(ctx, range));
-	f.apply(&args)
-}
-
-pub fn z3_const<'c>(ctx: &'c Context, name: String, ty: DataType) -> Dynamic<'c> {
-	z3_app(ctx, name, vec![], ty)
-}
-
-pub struct Ctx<'c> {
-	context: &'c Context,
-	null_int: Nullable<'c, ast::Int<'c>>,
-	null_real: Nullable<'c, ast::Real<'c>>,
-	null_bool: Nullable<'c, ast::Bool<'c>>,
-	null_str: Nullable<'c, ast::String<'c>>,
-}
+pub use super::null::Ctx;
 
 impl<'c> Ctx<'c> {
-	pub fn new(solver: &Solver<'c>) -> Self {
-		let null_int = Nullable::<ast::Int>::setup(solver);
-		let null_real = Nullable::<ast::Real>::setup(solver);
-		let null_bool = Nullable::<ast::Bool>::setup(solver);
-		let null_str = Nullable::<ast::String>::setup(solver);
-		Ctx { context: solver.get_context(), null_int, null_real, null_bool, null_str }
+	pub fn z3_ctx(&self) -> &'c Context {
+		self.solver.get_context()
+	}
+
+	pub fn sort(&self, ty: &DataType) -> Sort<'c> {
+		use DataType::*;
+		match ty {
+			Boolean => &self.bool.sort,
+			String => &self.string.sort,
+			Integer | Timestamp | Date => &self.int.sort,
+			Real => &self.real.sort,
+			_ => panic!("unsupported type {:?}", ty),
+		}
+		.clone()
+	}
+
+	pub fn strict_sort(&self, ty: &DataType) -> Sort<'c> {
+		let z3_ctx = self.z3_ctx();
+		use DataType::*;
+		match ty {
+			Boolean => Sort::bool(z3_ctx),
+			String => Sort::string(z3_ctx),
+			Integer | Timestamp | Date => Sort::int(z3_ctx),
+			Real => Sort::real(z3_ctx),
+			_ => panic!("unsupported type {:?}", ty),
+		}
+	}
+
+	pub fn var(&self, ty: &DataType, prefix: &str) -> Dynamic<'c> {
+		Datatype::fresh_const(self.solver.get_context(), prefix, &self.sort(ty)).into()
+	}
+
+	pub fn app(
+		&self,
+		name: String,
+		args: &[&Dynamic<'c>],
+		range: &DataType,
+		nullable: bool,
+	) -> Dynamic<'c> {
+		let ctx = self.solver.get_context();
+		let domain = args.iter().map(|arg| arg.get_sort()).collect_vec();
+		let args = args.iter().map(|&arg| arg as &dyn Ast).collect_vec();
+		let range = if nullable { self.sort(range) } else { self.strict_sort(range) };
+		let f = FuncDecl::new(ctx, name, &domain.iter().collect_vec(), &range);
+		f.apply(&args)
 	}
 }

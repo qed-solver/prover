@@ -1,143 +1,204 @@
-use std::marker::PhantomData;
-
 use paste::paste;
 use z3::ast::{forall_const, Ast, Bool, Datatype, Dynamic, Int, Real, String};
-use z3::{
-	Context, DatatypeAccessor, DatatypeBuilder, DatatypeSort, DatatypeVariant, FuncDecl, Pattern,
-	Solver, Sort,
-};
+use z3::{DatatypeAccessor, DatatypeBuilder, DatatypeSort, FuncDecl, Pattern, Solver, Sort};
 
-pub struct Nullable<'ctx, T> {
-	ctx: &'ctx Context,
-	datatype: DatatypeSort<'ctx>,
-	_v: PhantomData<T>,
-}
-
-impl<'ctx, T: Into<Dynamic<'ctx>>> Nullable<'ctx, T> {
-	fn new(ctx: &'ctx Context, datatype: DatatypeSort<'ctx>) -> Self {
-		Nullable { ctx, datatype, _v: PhantomData }
-	}
-
-	pub fn some(&self, val: T) -> Dynamic {
-		self.datatype.variants[1].constructor.apply(&[&val.into()])
-	}
-
-	pub fn null(&self) -> Dynamic {
-		self.datatype.variants[0].constructor.apply(&[])
-	}
+macro_rules! repeat_with {
+	($_t:tt $sub:expr) => {
+		$sub
+	};
 }
 
 macro_rules! optional_op {
-	($($env:tt),*; $name:ident ($($v:ident),*)) => {
+    ($($env:tt),*; $name:ident ($($v:ident),*)) => {
 		optional_op!($($env)*; fix $name $($v)*)
 	};
-	($($env:tt),*; $name:ident [$($v:ident),*]) => {
+    ($($env:tt),*; $name:ident [$($v:ident),*]) => {
 		optional_op!($($env)*; var $name $($v)*)
 	};
-	($solver:ident $sort:tt $osort:ident $some:ident $none:ident; $mode:ident $name:ident $($v:ident)*) => {
+	($solver:ident $sort:ident $ilsort:ident $olsort:ident; $mode:ident $name:ident $($v:ident)*) => {
+		let input_sort = &$ilsort.sort;
+		let output_sort = &$olsort.sort;
 		let ctx = $solver.get_context();
-		let func =
-			FuncDecl::new(ctx, format!("n-{}", stringify!($name)), &[$osort], $osort);
-		$(let $v = &Datatype::fresh_const(ctx, "v", $osort) as &dyn Ast;)*
+		let func = FuncDecl::new(
+			ctx,
+			format!("n-{}-{}", stringify!($ilsort), stringify!($name)),
+			&[$(repeat_with!($v input_sort)),*],
+			output_sort
+		);
+		$(let $v = &Datatype::fresh_const(ctx, "v", input_sort) as &dyn Ast;)*
 		let vars = &[$($v),*];
 		let f_vs = &func.apply(vars);
-		let body = f_vs._eq(optional_op!(ctx $sort $some $none; $mode ($($v)*) ($name $($v)*)));
+		let input_none = &$ilsort.variants[0];
+		let input_some = &$ilsort.variants[1];
+		let output_none = &$olsort.variants[0];
+		let output_some = &$olsort.variants[1];
+		let body = f_vs._eq(optional_op!(ctx $sort input_none input_some output_none output_some; $mode ($($v)*) ($name $($v)*)));
 		let p = Pattern::new(ctx, &[f_vs]);
 		let f_def = forall_const(ctx, vars, &[&p], &body);
 		$solver.assert(&f_def);
 	};
-    ($ctx:ident $sort:tt $some:ident $none:ident; $mode:ident ($v:ident $($tail:ident)*) ($name:ident $($vs:ident)*)) => {
-		&$none.tester.apply(&[$v]).as_bool().unwrap().ite(
-			&$none.constructor.apply(&[]),
-			optional_op!($ctx $sort $some $none; $mode ( $($tail)* ) ($name $($vs)*))
+	($ctx:ident $sort:ident $inone:ident $isome:ident $onone:ident $osome:ident; $mode:ident ($v:ident $($tail:ident)*) ($name:ident $($vs:ident)*)) => {
+		&$inone.tester.apply(&[$v]).as_bool().unwrap().ite(
+			&$onone.constructor.apply(&[]),
+			optional_op!($ctx $sort $inone $isome $onone $osome; $mode ($($tail)*) ($name $($vs)*))
 		)
 	};
-	($ctx:ident $sort:tt $some:ident $none:ident; fix () ($name:ident $($v:ident)*)) => {
+	($ctx:ident $sort:ident $inone:ident $isome:ident $onone:ident $osome:ident; fix () ($name:ident $($v:ident)*)) => {
 		{
-			paste!($(let $v = &$some.accessors[0].apply(&[$v]).[<as_ $sort:snake>]().unwrap();)*);
-			&$some.constructor.apply(&[&$sort::$name($(&$v),*)])
+			paste!($(let $v = &$isome.accessors[0].apply(&[$v]).[<as_$sort:snake>]().unwrap();)*);
+			&$osome.constructor.apply(&[&$sort::$name($(&$v),*)])
 		}
 	};
-	($ctx:ident $sort:tt $some:ident $none:ident; var () ($name:ident $($v:ident)*)) => {
+	($ctx:ident $sort:ident $inone:ident $isome:ident $onone:ident $osome:ident; var () ($name:ident $($v:ident)*)) => {
 		{
-			paste!($(let $v = &$some.accessors[0].apply(&[$v]).[<as_ $sort:snake>]().unwrap();)*);
-			&$some.constructor.apply(&[&$sort::$name($ctx, &[$($v),*])])
+			paste!($(let $v = &$isome.accessors[0].apply(&[$v]).[<as_$sort:snake>]().unwrap();)*);
+			&$osome.constructor.apply(&[&$sort::$name($ctx, &[$(&$v),*])])
 		}
-	};
+	}
 }
 
 macro_rules! optional_fn {
-	($name:ident ($($v:ident),* $(,)*)) => {
-		fn $name(&self, $($v: &Dynamic<'ctx>),*) -> Dynamic<'ctx> {
-			let sort = &self.datatype.sort;
-			let func = FuncDecl::new(self.ctx, format!("n-{}", stringify!($name)), &[sort], sort);
-			func.apply(&[$($v),*])
-		}
-	};
-	($name:ident [$($v:ident),* $(,)*]) => {
-		optional_fn!($name ($($v),*));
-	};
+    ($ilsort:ident $olsort:ident $name:ident ($($v:ident),* $(,)*)) => {
+        paste!(pub fn [<$ilsort _ $name>] (&self, $($v: &Dynamic<'c>),*) -> Dynamic<'c> {
+            let input_sort = &self.$ilsort.sort;
+			let output_sort = &self.$olsort.sort;
+            let func = FuncDecl::new(
+				self.solver.get_context(),
+				format!("n-{}-{}", stringify!($ilsort), stringify!($name)),
+				&[$(repeat_with!($v input_sort)),*],
+				output_sort
+			);
+            func.apply(&[$($v),*])
+        });
+    };
+    ($ilsort:ident $olsort:ident $name:ident [$($v:ident),* $(,)*]) => {
+        optional_fn!($ilsort $olsort $name ($($v),*));
+    };
 }
 
-macro_rules! nullable {
-	($sort:tt {$($def:ident $args:tt);* $(;)*}) => {
-		paste!(nullable!($sort [<$sort:snake>] $($def $args),*););
-	};
-	($sort:tt $lsort:ident $($def:ident $args:tt),*) => {
-		impl<'ctx> Nullable<'ctx, $sort<'ctx>> {
-			pub fn setup(solver: &Solver<'ctx>) -> Self {
-				let ctx = solver.get_context();
-				let optional = DatatypeBuilder::new(ctx, format!("Option{}", stringify!($sort)))
-					.variant("none", vec![])
-					.variant("some", vec![("val", DatatypeAccessor::Sort(Sort::$lsort(ctx)))])
-					.finish();
-				let none = &optional.variants[0];
-				let some = &optional.variants[1];
-				let optional_sort = &optional.sort;
-				$(optional_op!(solver, $sort, optional_sort, some, none; $def $args);)*
-				Nullable::new(ctx, optional)
+macro_rules! ctx_impl {
+    ($($sort:ident {$($def:ident $args:tt -> $ret:ident);* $(;)*});* $(;)*) => {
+        paste!(ctx_impl!($($sort [<$sort:snake>] $($def $args [<$ret:snake>]),*);*););
+    };
+    ($($sort:ident $lsort:ident $($def:ident $args:tt $olsort:ident),*);*) => {
+		pub struct Ctx<'c> {
+			pub solver: Solver<'c>,
+			$(pub $lsort: DatatypeSort<'c>),*
+		}
+
+        impl<'c> Ctx<'c> {
+            pub fn new(solver: Solver<'c>) -> Self {
+                let ctx = solver.get_context();
+                $(let $lsort = DatatypeBuilder::new(ctx, format!("Option<{}>", stringify!($sort)))
+                    .variant("none", vec![])
+                    .variant("some", vec![("val", DatatypeAccessor::Sort(Sort::$lsort(ctx)))])
+                    .finish();)*
+				$($(optional_op!(solver, $sort, $lsort, $olsort; $def $args));*);*;
+                Self { solver, $($lsort),* }
+            }
+            $($(optional_fn!($lsort $olsort $def $args);)*)*
+			paste!($(
+			pub fn [<$lsort _none>](&self) -> Dynamic<'c> {
+				self.$lsort.variants[0].constructor.apply(&[])
 			}
-
-			$(optional_fn!($def $args);)*
-		}
-	};
+			pub fn [<$lsort _some>](&self, val: $sort<'c>) -> Dynamic<'c> {
+				self.$lsort.variants[1].constructor.apply(&[&val])
+			}
+			)*);
+        }
+    }
 }
 
-nullable!(Real {
-	add[x, y];
-	sub[x, y];
-	mul[x, y];
-	unary_minus(x);
-	div(x, y);
-	power(x, y);
-	lt(x, y);
-	le(x, y);
-	gt(x, y);
-	ge(x, y);
-});
+ctx_impl!(
+	Real {
+		add[a, b] -> Real;
+		sub[a, b] -> Real;
+		mul[x, y] -> Real;
+		unary_minus(x) -> Real;
+		div(x, y) -> Real;
+		power(x, y) -> Real;
+		lt(x, y) -> Bool;
+		le(x, y) -> Bool;
+		gt(x, y) -> Bool;
+		ge(x, y) -> Bool;
+	};
+	Int {
+		add[a, b] -> Int;
+		sub[x, y] -> Int;
+		mul[x, y] -> Int;
+		unary_minus(x) -> Int;
+		div(x, y) -> Int;
+		rem(x, y) -> Int;
+		modulo(x, y) -> Int;
+		power(x, y) -> Int;
+		lt(x, y) -> Bool;
+		le(x, y) -> Bool;
+		gt(x, y) -> Bool;
+		ge(x, y) -> Bool;
+	};
+	Bool {
+		not(x) -> Bool;
+		and[x, y] -> Bool;
+		or[x, y] -> Bool;
+	};
+	String {
+		concat[x, y] -> String;
+		contains(x, y) -> Bool;
+		prefix(x, y) -> Bool;
+		suffix(x, y) -> Bool;
+	};
+);
 
-nullable!(Int {
-	add[x, y];
-	sub[x, y];
-	mul[x, y];
-	unary_minus(x);
-	div(x, y);
-	rem(x, y);
-	modulo(x, y);
-	power(x, y);
-	lt(x, y);
-	le(x, y);
-	gt(x, y);
-	ge(x, y);
-});
+impl<'c> Ctx<'c> {
+	pub fn int_add_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
+		args.iter().fold(self.int_some(Int::from_i64(self.solver.get_context(), 0)), |a, b| {
+			self.int_add(&a, &b)
+		})
+	}
 
-nullable!(Bool {
-	not(x);
-});
+	pub fn int_sub_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
+		match args {
+			[] => self.int_some(Int::from_i64(self.solver.get_context(), 0)),
+			&[arg] => arg.clone(),
+			&[arg, ..] => args.iter().fold(arg.clone(), |a, b| self.int_sub(&a, &b)),
+		}
+	}
 
-nullable!(String {
-	concat[x, y];
-	contains(x, y);
-	prefix(x, y);
-	suffix(x, y);
-});
+	pub fn int_mul_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
+		args.iter().fold(self.int_some(Int::from_i64(self.solver.get_context(), 1)), |a, b| {
+			self.int_mul(&a, &b)
+		})
+	}
+
+	pub fn real_add_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
+		args.iter()
+			.fold(self.real_some(Real::from_real(self.solver.get_context(), 0, 1)), |a, b| {
+				self.real_add(&a, &b)
+			})
+	}
+
+	pub fn real_sub_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
+		match args {
+			[] => self.real_some(Real::from_real(self.solver.get_context(), 0, 1)),
+			&[arg] => arg.clone(),
+			&[arg, ..] => args.iter().fold(arg.clone(), |a, b| self.real_sub(&a, &b)),
+		}
+	}
+
+	pub fn real_mul_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
+		args.iter()
+			.fold(self.real_some(Real::from_real(self.solver.get_context(), 1, 1)), |a, b| {
+				self.real_mul(&a, &b)
+			})
+	}
+
+	pub fn bool_is_true(&self, expr: &Dynamic<'c>) -> Bool<'c> {
+		let ctx = self.solver.get_context();
+		self.bool.variants[0].tester.apply(&[expr]).as_bool().unwrap().ite(
+			&Bool::from_bool(ctx, false),
+			&self.bool.variants[1].accessors[0]
+				.apply(&[expr])
+				._eq(&Bool::from_bool(ctx, true).into()),
+		)
+	}
+}

@@ -33,7 +33,7 @@ fn vars(level: usize, types: Vector<DataType>) -> Vector<syn::Expr> {
 	types.into_iter().enumerate().map(|(i, ty)| syn::Expr::Var(VL(level + i), ty)).collect()
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Relation {
 	Singleton,
@@ -108,6 +108,9 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 			Scan(table) => {
 				let head = AppHead::Var(table);
 				let vars = vars(lvl, scopes.clone());
+				let conds = schemas[table.0].guaranteed.iter().map(|cond| {
+					Env(schemas, &vars, lvl + scopes.len()).eval(cond.to_pred())
+				});
 				let body = schemas[table.0]
 					.constraints
 					.iter()
@@ -118,9 +121,9 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 						},
 						_ => None,
 					})
-					.fold(UExpr::App(head, vars), UExpr::mul);
+					.chain(conds)
+					.fold(UExpr::App(head, vars.clone()), UExpr::mul);
 				Rel::new(scopes, body)
-				// Rel::new(scopes, UExpr::App(head, vars))
 			},
 			// Filter R(x, y) by P[x, y]
 			// λ x, y. [P[x, y]] × R(x, y)
@@ -305,7 +308,7 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 	}
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum JoinKind {
 	Inner,
@@ -316,7 +319,7 @@ pub enum JoinKind {
 	Anti,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[serde(untagged)]
 pub enum Expr {

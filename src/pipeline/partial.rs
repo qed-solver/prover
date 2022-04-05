@@ -7,7 +7,7 @@ use imbl::{vector, Vector};
 use itertools::{Either, Itertools};
 use z3::{Config, Context, Solver};
 
-use super::shared::Schema;
+use super::shared::{Ctx, Schema};
 use super::unify::{Unify, UnifyEnv};
 use crate::pipeline::shared::{AppHead, DataType, Eval, Terms, VL};
 use crate::pipeline::{normal, shared, syntax};
@@ -241,17 +241,16 @@ impl<'e> Unify<UExpr> for normal::Env<'e> {
 		let t2: normal::UExpr = self.eval(t2);
 		let mut config = Config::new();
 		config.set_timeout_msec(2000);
-		let ctx = &Context::new(&config);
-		let solver = &Solver::new(ctx);
+		let z3_ctx = &Context::new(&config);
+		let ctx = &Ctx::new(Solver::new(z3_ctx));
 		let uexpr_subst = &shared::Expr::vars(0, context.clone());
-		let z3_subst = &context.iter().map(|ty| shared::var(ctx, ty.clone(), "v")).collect();
+		let z3_subst = &context.iter().map(|ty| ctx.var(ty, "v")).collect();
 		let h_ops = &RefCell::new(HashMap::new());
 		let rel_h_ops = &RefCell::new(HashMap::new());
-		let env =
-			normal::StbEnv::new(uexpr_subst, context.len(), solver, z3_subst, h_ops, rel_h_ops);
+		let env = normal::StbEnv::new(uexpr_subst, context.len(), ctx, z3_subst, h_ops, rel_h_ops);
 		let t1: normal::UExpr = env.eval(t1);
 		let t2: normal::UExpr = env.eval(t2);
-		UnifyEnv::new(solver, z3_subst, z3_subst).unify(&t1, &t2)
+		UnifyEnv::new(ctx, z3_subst, z3_subst).unify(&t1, &t2)
 	}
 }
 
