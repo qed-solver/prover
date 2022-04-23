@@ -40,7 +40,7 @@ pub fn evaluate(rel: syn::Relation, schemas: &[Schema]) -> nom::Relation {
 
 pub fn unify(rel1: nom::Relation, rel2: nom::Relation) -> bool {
 	let mut config = Config::new();
-	config.set_timeout_msec(2000);
+	config.set_timeout_msec(4000);
 	let z3_ctx = &Context::new(&config);
 	let ctx = &Ctx::new(Solver::new(z3_ctx));
 	let subst1 = &vector![];

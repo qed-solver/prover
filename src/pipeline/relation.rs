@@ -108,9 +108,10 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 			Scan(table) => {
 				let head = AppHead::Var(table);
 				let vars = vars(lvl, scopes.clone());
-				let conds = schemas[table.0].guaranteed.iter().map(|cond| {
-					Env(schemas, &vars, lvl + scopes.len()).eval(cond.to_pred())
-				});
+				let conds = schemas[table.0]
+					.guaranteed
+					.iter()
+					.map(|cond| Env(schemas, &vars, lvl + scopes.len()).eval(cond.to_pred()));
 				let body = schemas[table.0]
 					.constraints
 					.iter()
@@ -402,6 +403,14 @@ impl<'e> Eval<Expr, syn::Expr> for Env<'e> {
 		use shared::Expr::*;
 		match source {
 			Expr::Col { column, ty } => self.1[column.0].clone(),
+			Expr::Op { op, args, ty } if op == "CAST" && args.len() == 1 => {
+				let args = self.eval(args);
+				if args[0].ty() == ty {
+					args[0].clone()
+				} else {
+					Op(op, args, ty)
+				}
+			},
 			Expr::Op { op, args, ty } => Op(op, self.eval(args), ty),
 			Expr::HOp { op, args, rel, ty } => HOp(op, self.eval(args), self.eval(rel), ty),
 		}
@@ -442,7 +451,9 @@ impl<'e> Eval<Predicate, UExpr> for Env<'e> {
 				UExpr::squash(UExpr::sum(scopes.clone(), UExpr::app(rel, vars(lvl, scopes))))
 			},
 			In(vals, rel) => UExpr::squash(UExpr::app(self.eval(*rel), self.eval(vals).into())),
-			Pred(p, es) => UExpr::Pred(Pred::Pred(p, self.eval(es))),
+			Pred(op, args) => {
+				UExpr::Pred(Pred::Bool(self.eval(Expr::Op { op, args, ty: DataType::Boolean })))
+			},
 			And(ps) => ps.into_iter().map(|p| self.eval(p)).fold(UExpr::One, UExpr::mul),
 			Or(ps) => {
 				UExpr::squash(ps.into_iter().map(|p| self.eval(p)).fold(UExpr::Zero, UExpr::add))

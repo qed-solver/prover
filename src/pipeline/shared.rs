@@ -4,6 +4,7 @@ use std::hash::Hash;
 use std::iter::FromIterator;
 use std::ops::{Add, Mul};
 
+use anyhow::bail;
 use imbl::vector::{ConsumingIter, Iter};
 use imbl::{vector, Vector};
 use indenter::indented;
@@ -96,11 +97,8 @@ impl<R: Display> Display for Predicate<R> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
 			Predicate::Eq(e1, e2) => write!(f, "{} = {}", e1, e2),
-			Predicate::Pred(p, args) => match p.as_str() {
-				"<" | ">" | "<=" | ">=" => write!(f, "{} {} {}", args[0], p, args[1]),
-				_ => {
-					write!(f, "{}({})", p, args.iter().join(", "))
-				},
+			Predicate::Pred(p, args) => {
+				write!(f, "{}({})", p, args.iter().join(", "))
 			},
 			Predicate::Like(e, pat) => write!(f, "Like({}, {})", e, pat),
 			Predicate::Bool(e) => write!(f, "{}", e),
@@ -281,18 +279,13 @@ pub enum DataType {
 	Uuid,
 	/// Integer
 	#[serde(alias = "INT", alias = "SMALLINT", alias = "BIGINT", alias = "TINYINT")]
+	#[serde(alias = "TIMESTAMP", alias = "DATE", alias = "TIME")]
 	Integer,
 	/// Real number
 	#[serde(alias = "FLOAT", alias = "DOUBLE", alias = "DECIMAL")]
 	Real,
 	/// Boolean
 	Boolean,
-	/// Date
-	Date,
-	/// Time
-	Time,
-	/// Timestamp
-	Timestamp,
 	/// Interval
 	Interval,
 	/// Regclass used in postgresql serial
@@ -403,12 +396,23 @@ impl<'c> Ctx<'c> {
 		self.solver.get_context()
 	}
 
+	pub fn none(&self, ty: &DataType) -> anyhow::Result<Dynamic<'c>> {
+		use DataType::*;
+		Ok(match ty {
+			&Integer => self.int_none(),
+			&Real => self.real_none(),
+			&Boolean => self.bool_none(),
+			&String => self.string_none(),
+			_ => bail!("unsupported type {:?} for null", ty),
+		})
+	}
+
 	pub fn sort(&self, ty: &DataType) -> Sort<'c> {
 		use DataType::*;
 		match ty {
 			Boolean => &self.bool.sort,
 			String => &self.string.sort,
-			Integer | Timestamp | Date => &self.int.sort,
+			Integer => &self.int.sort,
 			Real => &self.real.sort,
 			_ => panic!("unsupported type {:?}", ty),
 		}
@@ -421,7 +425,7 @@ impl<'c> Ctx<'c> {
 		match ty {
 			Boolean => Sort::bool(z3_ctx),
 			String => Sort::string(z3_ctx),
-			Integer | Timestamp | Date => Sort::int(z3_ctx),
+			Integer => Sort::int(z3_ctx),
 			Real => Sort::real(z3_ctx),
 			_ => panic!("unsupported type {:?}", ty),
 		}
@@ -433,7 +437,7 @@ impl<'c> Ctx<'c> {
 
 	pub fn app(
 		&self,
-		name: String,
+		name: &str,
 		args: &[&Dynamic<'c>],
 		range: &DataType,
 		nullable: bool,

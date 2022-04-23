@@ -90,8 +90,8 @@ macro_rules! ctx_impl {
             pub fn new(solver: Solver<'c>) -> Self {
                 let ctx = solver.get_context();
                 $(let $lsort = DatatypeBuilder::new(ctx, format!("Option<{}>", stringify!($sort)))
-                    .variant("none", vec![])
-                    .variant("some", vec![("val", DatatypeAccessor::Sort(Sort::$lsort(ctx)))])
+                    .variant(&format!("None{}", stringify!($sort)), vec![])
+                    .variant("Some", vec![("val", DatatypeAccessor::Sort(Sort::$lsort(ctx)))])
                     .finish();)*
 				$($(optional_op!(solver, $sort, $lsort, $olsort; $def $args));*);*;
                 Self { solver, $($lsort),* }
@@ -116,7 +116,7 @@ ctx_impl!(
 		mul[x, y] -> Real;
 		unary_minus(x) -> Real;
 		div(x, y) -> Real;
-		power(x, y) -> Real;
+		// power(x, y) -> Real;
 		lt(x, y) -> Bool;
 		le(x, y) -> Bool;
 		gt(x, y) -> Bool;
@@ -128,9 +128,9 @@ ctx_impl!(
 		mul[x, y] -> Int;
 		unary_minus(x) -> Int;
 		div(x, y) -> Int;
-		rem(x, y) -> Int;
+		// rem(x, y) -> Int;
 		modulo(x, y) -> Int;
-		power(x, y) -> Int;
+		// power(x, y) -> Int;
 		lt(x, y) -> Bool;
 		le(x, y) -> Bool;
 		gt(x, y) -> Bool;
@@ -158,9 +158,9 @@ impl<'c> Ctx<'c> {
 
 	pub fn int_sub_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
 		match args {
-			[] => self.int_some(Int::from_i64(self.solver.get_context(), 0)),
+			&[] => self.int_some(Int::from_i64(self.solver.get_context(), 0)),
 			&[arg] => arg.clone(),
-			&[arg, ..] => args.iter().fold(arg.clone(), |a, b| self.int_sub(&a, &b)),
+			&[arg, ref args @ ..] => args.iter().fold(arg.clone(), |a, b| self.int_sub(&a, &b)),
 		}
 	}
 
@@ -179,9 +179,9 @@ impl<'c> Ctx<'c> {
 
 	pub fn real_sub_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
 		match args {
-			[] => self.real_some(Real::from_real(self.solver.get_context(), 0, 1)),
+			&[] => self.real_some(Real::from_real(self.solver.get_context(), 0, 1)),
 			&[arg] => arg.clone(),
-			&[arg, ..] => args.iter().fold(arg.clone(), |a, b| self.real_sub(&a, &b)),
+			&[arg, ref args @ ..] => args.iter().fold(arg.clone(), |a, b| self.real_sub(&a, &b)),
 		}
 	}
 

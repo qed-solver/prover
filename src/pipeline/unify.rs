@@ -1,7 +1,10 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::Debug;
+use std::fs::File;
+use std::io::Write;
 use std::ops::Deref;
+use std::process::{Command, Stdio};
 
 use imbl::Vector;
 use isoperm::wrapper::Isoperm;
@@ -107,8 +110,8 @@ fn extract_equiv<'c>(ctx: &Ctx<'c>, h_ops: &HOpMap<'c>, rel_h_ops: &RelHOpMap<'c
 					let vars = dom1.iter().map(|ty| ctx.var(ty, "t")).collect_vec();
 					let vars = vars.iter().collect_vec();
 					let target = if *sq1 { DataType::Boolean } else { DataType::Integer };
-					let l = &ctx.app(n1.clone(), &vars, &target, false);
-					let r = &ctx.app(n2.clone(), &vars, &target, false);
+					let l = &ctx.app(&n1, &vars, &target, false);
+					let r = &ctx.app(&n2, &vars, &target, false);
 					let vars = vars.iter().map(|&v| v as &dyn Ast).collect_vec();
 					z3::ast::forall_const(ctx.z3_ctx(), &vars, &[], &l._eq(r))
 				})
@@ -126,36 +129,6 @@ fn perm_equiv<T: Ord + Clone>(v1: &Vector<T>, v2: &Vector<T>) -> bool {
 		v2.sort();
 		v1 == v2
 	}
-}
-
-fn perms<T, V>(types: &Vector<T>, vars: Vec<V>) -> impl Iterator<Item = Vec<V>>
-where
-	T: Ord + PartialEq + Clone + Debug,
-	V: Clone + Debug,
-{
-	let types = types.clone().into_iter().collect_vec();
-	let sort_perm = permutation::sort(types.as_slice());
-	let sorted_scopes = sort_perm.apply_slice(types.as_slice());
-	let groups = sorted_scopes.iter().group_by(|a| *a);
-	let group_lengths = if types.is_empty() {
-		Either::Left(std::iter::once(0))
-	} else {
-		Either::Right(groups.into_iter().map(|(_, group)| group.count()))
-	};
-	let mut level = 0;
-	let inv_sort_perm = sort_perm.inverse();
-	group_lengths
-		.map(|length| {
-			let perms = (level..level + length).permutations(length);
-			level += length;
-			perms
-		})
-		.multi_cartesian_product()
-		.map(move |perms| {
-			let perm_vec = perms.into_iter().flatten().collect_vec();
-			let permute = &inv_sort_perm * &permutation::Permutation::from_vec(perm_vec);
-			permute.apply_slice(vars.as_slice())
-		})
 }
 
 impl<'e, 'c> Unify<&Scoped<Inner>> for UnifyEnv<'e, 'c> {
@@ -238,7 +211,37 @@ impl<'e, 'c> Unify<&Scoped<Inner>> for UnifyEnv<'e, 'c> {
 				solver.pop(1);
 				log::info!("{}", equiv);
 				log::info!("{}", h_ops_equiv);
-				dbg!(solver.check_assumptions(&[h_ops_equiv, equiv.not()])) == SatResult::Unsat
+				// dbg!(solver.check_assumptions(&[h_ops_equiv, equiv.not()])) == SatResult::Unsat
+				dbg!(smt(solver, h_ops_equiv.implies(&equiv)))
 			})
 	}
+}
+
+pub(crate) fn smt<'c>(solver: &'c z3::Solver, pred: Bool<'c>) -> bool {
+	let smt: String = solver
+		.dump_smtlib(pred.not())
+		.replace(" and", " true")
+		.replace(" or", " false")
+		.replace("(* ", "(* 1 ")
+		.replace("(+ ", "(+ 0 ");
+	let smt = smt.strip_prefix("; \n(set-info :status )").unwrap_or(smt.as_str());
+	// let mut child = Command::new("cvc5")
+	// 	.args(["--tlimit=2000", "--strings-exp"])
+	// 	.stdin(Stdio::piped())
+	// 	.stdout(Stdio::piped())
+	// 	.spawn()
+	// 	.expect("Failed to spawn child process");
+	let mut child = Command::new("z3")
+		.args(["-t:2000", "-in"])
+		.stdin(Stdio::piped())
+		.stdout(Stdio::piped())
+		.spawn()
+		.expect("Failed to spawn child process");
+	let mut stdin = child.stdin.take().expect("Failed to open stdin");
+	stdin.write_all("(set-logic ALL)\n".as_bytes()).unwrap();
+	stdin.write_all(smt.as_bytes()).unwrap();
+	drop(stdin);
+	let output = child.wait_with_output().expect("Failed to read stdout");
+	let result = String::from_utf8(output.stdout).unwrap();
+	result.ends_with("unsat\n")
 }
