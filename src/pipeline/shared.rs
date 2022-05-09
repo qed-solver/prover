@@ -10,8 +10,8 @@ use imbl::{vector, Vector};
 use indenter::indented;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use z3::ast::{Ast, Bool, Datatype, Dynamic};
-use z3::{ast, Context, FuncDecl, Solver, Sort};
+use z3::ast::{Ast, Datatype, Dynamic};
+use z3::{Context, FuncDecl, Sort};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
@@ -60,21 +60,21 @@ impl<U: Display> Display for Expr<U> {
 	}
 }
 
-impl<U> Into<Expr<U>> for u32 {
-	fn into(self) -> Expr<U> {
-		Expr::Op(self.to_string(), vec![], DataType::Integer)
+impl<U> From<u32> for Expr<U> {
+	fn from(n: u32) -> Self {
+		Expr::Op(n.to_string(), vec![], DataType::Integer)
 	}
 }
 
-impl<U> Into<Expr<U>> for usize {
-	fn into(self) -> Expr<U> {
-		Expr::Op(self.to_string(), vec![], DataType::Integer)
+impl<U> From<usize> for Expr<U> {
+	fn from(n: usize) -> Self {
+		Expr::Op(n.to_string(), vec![], DataType::Integer)
 	}
 }
 
-impl<U> Into<Expr<U>> for String {
-	fn into(self) -> Expr<U> {
-		Expr::Op(self.to_string(), vec![], DataType::String)
+impl<U> From<String> for Expr<U> {
+	fn from(s: String) -> Self {
+		Expr::Op(s, vec![], DataType::String)
 	}
 }
 
@@ -399,10 +399,10 @@ impl<'c> Ctx<'c> {
 	pub fn none(&self, ty: &DataType) -> anyhow::Result<Dynamic<'c>> {
 		use DataType::*;
 		Ok(match ty {
-			&Integer => self.int_none(),
-			&Real => self.real_none(),
-			&Boolean => self.bool_none(),
-			&String => self.string_none(),
+			Integer => self.int_none(),
+			Real => self.real_none(),
+			Boolean => self.bool_none(),
+			String => self.string_none(),
 			_ => bail!("unsupported type {:?} for null", ty),
 		})
 	}

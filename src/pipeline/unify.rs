@@ -1,14 +1,12 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::fmt::Debug;
-use std::fs::File;
 use std::io::Write;
 use std::ops::Deref;
 use std::process::{Command, Stdio};
 
 use imbl::Vector;
 use isoperm::wrapper::Isoperm;
-use itertools::{Either, Itertools};
+use itertools::Itertools;
 use z3::ast::{Ast, Bool, Dynamic};
 use z3::SatResult;
 
@@ -53,13 +51,8 @@ impl<'e, 'c> Unify<&UExpr> for UnifyEnv<'e, 'c> {
 		let mut terms2 = u2.0.clone();
 		u1.0.len() == u2.0.len()
 			&& u1.iter().all(|t1| {
-				(0..terms2.len()).any(|i| {
-					let unifies = self.unify(t1, &terms2[i]);
-					if unifies {
-						terms2.remove(i);
-					}
-					unifies
-				})
+				(0..terms2.len())
+					.any(|i| self.unify(t1, &terms2[i]).then(|| terms2.remove(i)).is_some())
 			})
 	}
 }
@@ -110,8 +103,8 @@ fn extract_equiv<'c>(ctx: &Ctx<'c>, h_ops: &HOpMap<'c>, rel_h_ops: &RelHOpMap<'c
 					let vars = dom1.iter().map(|ty| ctx.var(ty, "t")).collect_vec();
 					let vars = vars.iter().collect_vec();
 					let target = if *sq1 { DataType::Boolean } else { DataType::Integer };
-					let l = &ctx.app(&n1, &vars, &target, false);
-					let r = &ctx.app(&n2, &vars, &target, false);
+					let l = &ctx.app(n1, &vars, &target, false);
+					let r = &ctx.app(n2, &vars, &target, false);
 					let vars = vars.iter().map(|&v| v as &dyn Ast).collect_vec();
 					z3::ast::forall_const(ctx.z3_ctx(), &vars, &[], &l._eq(r))
 				})
@@ -145,7 +138,7 @@ impl<'e, 'c> Unify<&Scoped<Inner>> for UnifyEnv<'e, 'c> {
 		) -> (Vec<(usize, Vec<Var<'v, 'c>>)>, HashMap<Var<'v, 'c>, DataType>) {
 			let scope = subst.len()..subst.len() + t.scopes.len();
 			let mut args: HashMap<_, _> =
-				scope.clone().map(|l| Var::Local(l)).zip(t.scopes.clone()).collect();
+				scope.clone().map(Var::Local).zip(t.scopes.clone()).collect();
 			let constraints = t
 				.inner
 				.apps
@@ -211,7 +204,6 @@ impl<'e, 'c> Unify<&Scoped<Inner>> for UnifyEnv<'e, 'c> {
 				solver.pop(1);
 				log::info!("{}", equiv);
 				log::info!("{}", h_ops_equiv);
-				// dbg!(solver.check_assumptions(&[h_ops_equiv, equiv.not()])) == SatResult::Unsat
 				dbg!(smt(solver, h_ops_equiv.implies(&equiv)))
 			})
 	}

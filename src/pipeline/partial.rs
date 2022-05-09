@@ -258,7 +258,7 @@ impl normal::Env<'_> {
 	pub(crate) fn degen(self, rel: Relation) -> bool {
 		let shared::Relation(scopes, clos) = rel;
 		let count = UExpr::sum(scopes.clone(), *clos.clone());
-		let exists = UExpr::squash(SUExpr::sum(scopes.clone(), *clos.clone()));
+		let exists = UExpr::squash(SUExpr::sum(scopes, *clos));
 		self.unify(count, exists)
 	}
 }

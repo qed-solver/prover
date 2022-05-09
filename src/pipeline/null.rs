@@ -152,43 +152,43 @@ ctx_impl!(
 impl<'c> Ctx<'c> {
 	pub fn int_add_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
 		args.iter().fold(self.int_some(Int::from_i64(self.solver.get_context(), 0)), |a, b| {
-			self.int_add(&a, &b)
+			self.int_add(&a, b)
 		})
 	}
 
 	pub fn int_sub_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
-		match args {
-			&[] => self.int_some(Int::from_i64(self.solver.get_context(), 0)),
-			&[arg] => arg.clone(),
-			&[arg, ref args @ ..] => args.iter().fold(arg.clone(), |a, b| self.int_sub(&a, &b)),
+		match *args {
+			[] => self.int_some(Int::from_i64(self.solver.get_context(), 0)),
+			[arg] => arg.clone(),
+			[arg, ref args @ ..] => args.iter().fold(arg.clone(), |a, b| self.int_sub(&a, b)),
 		}
 	}
 
 	pub fn int_mul_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
 		args.iter().fold(self.int_some(Int::from_i64(self.solver.get_context(), 1)), |a, b| {
-			self.int_mul(&a, &b)
+			self.int_mul(&a, b)
 		})
 	}
 
 	pub fn real_add_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
 		args.iter()
 			.fold(self.real_some(Real::from_real(self.solver.get_context(), 0, 1)), |a, b| {
-				self.real_add(&a, &b)
+				self.real_add(&a, b)
 			})
 	}
 
 	pub fn real_sub_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
-		match args {
-			&[] => self.real_some(Real::from_real(self.solver.get_context(), 0, 1)),
-			&[arg] => arg.clone(),
-			&[arg, ref args @ ..] => args.iter().fold(arg.clone(), |a, b| self.real_sub(&a, &b)),
+		match *args {
+			[] => self.real_some(Real::from_real(self.solver.get_context(), 0, 1)),
+			[arg] => arg.clone(),
+			[arg, ref args @ ..] => args.iter().fold(arg.clone(), |a, b| self.real_sub(&a, b)),
 		}
 	}
 
 	pub fn real_mul_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
 		args.iter()
 			.fold(self.real_some(Real::from_real(self.solver.get_context(), 1, 1)), |a, b| {
-				self.real_mul(&a, &b)
+				self.real_mul(&a, b)
 			})
 	}
 

@@ -129,13 +129,12 @@ impl Eval<partial::Term, UExpr> for Env<'_> {
 			UExpr::under(scopes, Env(&context, schemas).eval(sum_body * source))
 		} else if let Some(app) = source.apps.pop_front() {
 			match &app.head {
-				AppHead::HOp(op, args, _) if op == "limit" && &args[0] == &0u32.into() => {
+				AppHead::HOp(op, args, _) if op == "limit" && args[0] == 0u32.into() => {
 					UExpr::zero()
 				},
 				AppHead::HOp(op, args, rel)
-					if ((op == "sort" || op == "limit" && &args[0] == &1u32.into())
-						&& self.degen(*rel.clone()))
-						|| (op == "offset" && &args[0] == &0u32.into()) =>
+					if ((op == "limit" && args[0] == 1u32.into()) && self.degen(*rel.clone()))
+						|| (op == "offset" && args[0] == 0u32.into()) =>
 				{
 					let shared::Relation(scopes, clos) = *rel.clone();
 					let body: partial::UExpr = (&clos.env.append(app.args)).eval(clos.body);
@@ -175,13 +174,12 @@ impl Eval<partial::STerm, SUExpr> for Env<'_> {
 			shared::Terms::under(scopes, Env(&context, schemas).eval(sum_body * source))
 		} else if let Some(app) = source.apps.pop_front() {
 			match &app.head {
-				AppHead::HOp(op, args, _) if op == "limit" && &args[0] == &0u32.into() => {
+				AppHead::HOp(op, args, _) if op == "limit" && args[0] == 0u32.into() => {
 					SUExpr::zero()
 				},
 				AppHead::HOp(op, args, rel)
-					if ((op == "sort" || op == "limit" && &args[0] == &1u32.into())
-						&& self.degen(*rel.clone()))
-						|| (op == "offset" && &args[0] == &0u32.into()) =>
+					if ((op == "limit" && args[0] == 1u32.into()) && self.degen(*rel.clone()))
+						|| (op == "offset" && args[0] == 0u32.into()) =>
 				{
 					let shared::Relation(scopes, clos) = *rel.clone();
 					let body: partial::SUExpr = (&clos.env.append(app.args)).eval(clos.body);
@@ -285,7 +283,7 @@ impl<'e, 'c> StbEnv<'e, 'c> {
 impl Expr {
 	fn deps(&self, vars: Range<usize>) -> Option<HashSet<VL>> {
 		match self {
-			Expr::Var(v, _) if vars.contains(&v.0) => Some(once(v.clone()).collect()),
+			Expr::Var(v, _) if vars.contains(&v.0) => Some(once(*v).collect()),
 			Expr::Var(_, _) => Some(HashSet::new()),
 			Expr::Op(_, args, _) => args.iter().map(|expr| expr.deps(vars.clone())).fold_options(
 				HashSet::new(),
@@ -318,7 +316,7 @@ fn var_elim(
 		cong.iter().map(|(g, e)| format!("[{}, {}]", g, e)).join(", ")
 	);
 	let StbEnv(subst, level, _) = env;
-	let groups = vars.iter().chain(cong).map(|&g| g).into_group_map();
+	let groups = vars.iter().chain(cong).copied().into_group_map();
 	let vars = vars
 		.iter()
 		.map(|&(g, e)| match e {
@@ -333,7 +331,7 @@ fn var_elim(
 				.get(&var)
 				.map_or_else(|| once(var).collect(), |vars| saturate_deps(vars, mappings))
 		};
-		vars.into_iter().flat_map(|&v| saturate(v, mappings)).collect()
+		vars.iter().flat_map(|&v| saturate(v, mappings)).collect()
 	}
 
 	let bound = subst.len()..subst.len() + vars.len();
@@ -604,7 +602,7 @@ fn table_name(
 			let name = format!("rh{}!{}", if squashed { "p" } else { "" }, len);
 			map.borrow_mut()
 				.entry((op.clone(), args.clone(), *rel.clone(), subst.clone(), squashed))
-				.or_insert((name.clone(), domain))
+				.or_insert((name, domain))
 				.0
 				.clone()
 		},
@@ -647,18 +645,18 @@ impl<'e, 'c> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 		let parse = |ctx: &Ctx<'c>, input: &str, ty: &DataType| -> anyhow::Result<Dynamic<'c>> {
 			if input.to_lowercase() == "null" {
 				let null = match ty {
-					&Integer => ctx.int_none(),
-					&Real => ctx.real_none(),
-					&Boolean => ctx.bool_none(),
-					&String => ctx.string_none(),
+					Integer => ctx.int_none(),
+					Real => ctx.real_none(),
+					Boolean => ctx.bool_none(),
+					String => ctx.string_none(),
 					_ => bail!("unsupported type {:?} for null", ty),
 				};
 				return Ok(null);
 			}
 			let z3_ctx = ctx.z3_ctx();
 			Ok(match ty {
-				&Integer => ctx.int_some(Int::from_i64(z3_ctx, input.parse()?)),
-				&Real => {
+				Integer => ctx.int_some(Int::from_i64(z3_ctx, input.parse()?)),
+				Real => {
 					let r: f32 = input.parse()?;
 					let r = num::rational::Ratio::from_float(r).unwrap();
 					ctx.real_some(Re::from_real(
@@ -667,8 +665,8 @@ impl<'e, 'c> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 						r.denom().to_i32().unwrap(),
 					))
 				},
-				&Boolean => ctx.bool_some(Bool::from_bool(z3_ctx, input.to_lowercase().parse()?)),
-				&String => ctx.string_some(Str::from_str(z3_ctx, input).unwrap()),
+				Boolean => ctx.bool_some(Bool::from_bool(z3_ctx, input.to_lowercase().parse()?)),
+				String => ctx.string_some(Str::from_str(z3_ctx, input).unwrap()),
 				_ => bail!("unsupported type {:?} for constant {}", ty, input),
 			})
 		};
@@ -721,10 +719,10 @@ impl<'e, 'c> Eval<&Expr, Dynamic<'c>> for Z3Env<'e, 'c> {
 						})
 					},
 					"IS NULL" => {
-						ctx.bool_some(ctx.none(&expr_args[0].ty()).unwrap()._eq(&args[0]))
+						ctx.bool_some(ctx.none(&expr_args[0].ty()).unwrap()._eq(args[0]))
 					},
 					"IS NOT NULL" => {
-						ctx.bool_some(ctx.none(&expr_args[0].ty()).unwrap()._eq(&args[0]).not())
+						ctx.bool_some(ctx.none(&expr_args[0].ty()).unwrap()._eq(args[0]).not())
 					},
 					op => ctx.app(&format!("f!{}", op), &args, ty, true),
 				}
@@ -746,7 +744,7 @@ impl<'e, 'c: 'e> Eval<&Predicate, Bool<'c>> for Z3Env<'e, 'c> {
 				let args = args.iter().map(|arg| self.eval(arg)).collect_vec();
 				let args = args.iter().collect_vec();
 				self.0.app(pred, &args, &DataType::Boolean, false).as_bool().unwrap()
-			}
+			},
 			Predicate::Bool(expr) => self.0.bool_is_true(&self.eval(expr)),
 			Predicate::Like(expr, pat) => {
 				self.eval(expr)._eq(&self.0.app(pat, &[], &DataType::String, true))
