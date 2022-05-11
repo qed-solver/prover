@@ -217,14 +217,8 @@ pub(crate) fn smt<'c>(solver: &'c z3::Solver, pred: Bool<'c>) -> bool {
 		.replace("(* ", "(* 1 ")
 		.replace("(+ ", "(+ 0 ");
 	let smt = smt.strip_prefix("; \n(set-info :status )").unwrap_or(smt.as_str());
-	// let mut child = Command::new("cvc5")
-	// 	.args(["--tlimit=2000", "--strings-exp"])
-	// 	.stdin(Stdio::piped())
-	// 	.stdout(Stdio::piped())
-	// 	.spawn()
-	// 	.expect("Failed to spawn child process");
-	let mut child = Command::new("z3")
-		.args(["-t:2000", "-in"])
+	let mut child = Command::new("cvc5")
+		.args(["--tlimit=2000", "--strings-exp"])
 		.stdin(Stdio::piped())
 		.stdout(Stdio::piped())
 		.spawn()

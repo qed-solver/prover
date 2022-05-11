@@ -10,14 +10,16 @@ After downloading the source, build the source with
 ```sh
 cargo build --release
 ```
-The current setup of the solver has the Z3 solver as a runtime dependency,
-so you need to have the `z3` executable in the `PATH` when running Cosette.
-The build should produce an executable, or you can use `cargo` to run:
+Currently the build-time dependency are `libclang` and header files for `z3`.
+Also, a nightly Rust compiler toolchain is required.
+The build should produce an executable in `target/release/`, or you can use `cargo` to run:
 ```sh
 cargo run --release -- <inputs>
 ```
 where the `<inputs>` are paths to input files or directories containing the files.
-The results will be simply printed out currently, with the name of each file and their result (provable/not provable).
+The current setup of the solver has the Z3 *and* CVC5 solver as a runtime dependency,
+so you need to have both the `z3` *and* `cvc5` executable in the `PATH` when running Cosette.
+The results will be simply printed out, with the name of each file and their result (provable/not provable).
 You can set the environment variable to `RUST_LOG=info` when running and get a (very) verbose output.
 This is useful for debugging as it prints out how expressions are simplified in the solver at various stages.
 
@@ -29,4 +31,27 @@ You may try out running these inputs by
 cargo run --release -- tests/RelOptRulesTest/
 ```
 WARNING: many test cases in this folder contain features that we haven't support yet.
-Only ~170 out of all ~380 cases are actually provable for now.
+Now ~200 out of all ~380 cases are actually provable.
+
+## Reproducible environment
+
+If fortunately you can use the Guix package manager with `direnv`, we provide all the necessary files to ensure maximal reproducibility of the exact development environment.
+All the development dependencies are declared in `manifest.scm`, with packages drawn from `channels.scm`.
+The `channels.lock` file is then derived from `channels.scm` to pin down channels to their exact Git commit hashes.
+Finally, one can use `direnv` to automatically reproduce the declared environment after entering the project directory.
+
+To run with this setup, add the following to `~/.config/direnv/direnvrc`.
+```bash
+use_guix-shell() {
+	local profile=./.profile
+	local channels=./channels.lock
+	[ -L $profile ] && rm $profile
+	if [ -f $channels ]; then
+		eval "$(guix time-machine -C "$channels" -- shell -r "$profile" "$@" --search-paths)"
+	else
+		eval "$(guix shell -r "$profile" "$@" --search-paths)"
+	fi
+}
+```
+Now simply `cd` into the project directory, and `direnv` will try to build the development environment.
+(NOTICE: For first-time use, you need to inspect and trust the `.envrc` file, and execute `direnv allow .` to proceed with the build)
