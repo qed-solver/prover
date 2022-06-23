@@ -33,6 +33,29 @@ cargo run --release -- tests/RelOptRulesTest/
 WARNING: many test cases in this folder contain features that we haven't support yet.
 Now ~200 out of all ~380 cases are actually provable.
 
+## Feature coverage
+
+### Supported features
+- Basic `SELECT-FROM-WHERE` queries
+- Set operations (`UNION`, `UNION ALL`, `EXCEPT`, and `EXCEPT ALL`)
+- Joins (`INNER JOIN`, `LEFT`/`RIGHT`/`FULL` `OUTER JOIN`, `SEMI`/`ANTI` `JOIN`, and correlated join)
+- `DISTINCT`
+- `VALUES`
+- Aggretation (as uninterpreted functions)
+- `ORDER BY` and `LIMIT` (as uninterpreted operators)
+- Value operations with subquery (`IN` and `EXISTS`)
+- Unique key constraint
+- Arbitrary `CHECK` constraints
+
+### Planned features
+- Foreign key constraint
+- Law of excluded middle ($A + \neg A = 1$)
+- `INTERSECT` (but not `INTERSECT ALL`)
+
+### Unsupported features
+- Semantics of aggretations, such as understanding them as algebras over a monad
+- Semantics of `ORDER BY` and `LIMIT` (requires temporarily modelling a table as list?)
+
 ## Reproducible environment
 
 If fortunately you can use the Guix package manager with `direnv`, we provide all the necessary files to ensure maximal reproducibility of the exact development environment.
