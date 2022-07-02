@@ -1,7 +1,7 @@
-# The Cosette Solver (Backend)
+# The Cosette Prover
 
-This is a reimplementation of the Cosette solver in Rust aiming for high performance and better SQL feature coverage.
-The theory behind the solver is described in [this paper](https://www.vldb.org/pvldb/vol11/p1482-chu.pdf).
+This is a reimplementation of the Cosette prover in Rust aiming for high performance and better SQL feature coverage.
+The theory behind the prover is described in [this paper](https://www.vldb.org/pvldb/vol11/p1482-chu.pdf).
 It currently expect input generated from [this parser](https://github.com/cosette-solver/cosette-parser).
 
 ## Usage
