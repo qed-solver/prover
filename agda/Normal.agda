@@ -8,23 +8,23 @@ open import Shared
 import Syntax
 import Partial
 
-data Rel (Γ S : Ctx) : Type₁
 record Term (Γ : Ctx) : Type₁
-
-Exp = Expr Rel
-Exps = Exprs Rel
 
 UExp : Ctx → Type₁
 UExp Γ = List (Term Γ)
 
-data Rel Γ S where
-  var : ℕ → Rel Γ S
-  hop : ∀ {A} → ℕ → Exps Γ A → Rel Γ S → Rel Γ S
-  ƛ : UExp (Γ ++ S) → Rel Γ S
+Rel = Lam UExp
+
+Exp = Expr Rel
+Exps = Exprs Rel
 
 Hd = Head Rel
 App = Appl Rel
-Log = Logi Rel
+
+Log : Ctx → Type₁
+data LRel (Γ S : Ctx) : Type₁ where
+  lam : Lam Log Γ S → LRel Γ S
+Log = Logi Rel LRel
 
 record Term Γ where
   inductive

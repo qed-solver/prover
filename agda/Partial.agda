@@ -20,14 +20,16 @@ Exps = Exprs Rel
 data Rel Γ S where
   var : ℕ → Rel Γ S
   hop : ∀ {A} → ℕ → Exps Γ A → Rel Γ S → Rel Γ S
-  _⦊_ : ∀ {Γ'} → Exps Γ Γ' → Syntax.UExp (Γ' ++ S) → Rel Γ S
+  clos : Clos Rel Syntax.UExp Γ S → Rel Γ S
 
 Rel' = λ Γ → Σ[ S ∈ Ctx ] Rel Γ S
 Hd = Head Rel
 App = Appl Rel
-Log = Logi Rel
+LRel = Clos Rel Syntax.UExp
+Log = Logi Rel LRel
 
 record Term (Γ : Ctx) : Type₁ where
+  inductive
   constructor _⊗_⊗_
   field
     logic : Log Γ
@@ -50,22 +52,24 @@ instance
   open Lift ⦃ ... ⦄
   open Term
   open Rel
+  open Clos
+  uexp-lift : Lift UExp
+  term-lift : Lift Term
   {-# TERMINATING #-}
   rel-lift : ∀ {S} → Lift (λ Γ → Rel Γ S)
+  rel'-lift : Lift Rel'
+
   rel-lift .↑ Δ (var x) = var x
   rel-lift .↑ Δ (hop name args rel) = hop name (↑ Δ args) (↑ Δ rel)
-  rel-lift .↑ Δ (env ⦊ body) = ↑ Δ env ⦊ body
+  rel-lift .↑ Δ (clos (env ⦊ body)) = clos (↑ Δ env ⦊ body)
 
-  rel'-lift : Lift Rel'
-  rel'-lift .↑ Δ (S , rel) = S , ↑ Δ rel
+  uexp-lift .↑ {Γ} Δ uexp = map (↑ Δ) uexp
 
-  term-lift : Lift Term
   term-lift .↑ Δ term .logic = ↑ Δ (term .logic)
   term-lift .↑ Δ term .apps = map (↑ Δ) (term .apps)
   term-lift .↑ Δ term .sums = map (↑ Δ) (term .sums)
 
-  uexp-lift : Lift UExp
-  uexp-lift .↑ {Γ} Δ uexp = map (↑ Δ) uexp
+  rel'-lift .↑ Δ (S , rel) = S , ↑ Δ rel
 
 instance
   open RawMonoid ⦃ ... ⦄

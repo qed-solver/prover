@@ -26,5 +26,5 @@ data UExp Γ where
 
 data Rel Γ S where
   var : ℕ → Rel Γ S
-  ƛ : UExp (Γ ++ S) → Rel Γ S
   hop : ∀ {A} → ℕ → Exprs Rel Γ A → Rel Γ S → Rel Γ S
+  lam : Lam UExp Γ S → Rel Γ S

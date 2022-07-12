@@ -20,6 +20,14 @@ data Expr R Γ where
   op : ∀ {T A} → ℕ → Exprs R Γ A → Expr R Γ T
   hop : ∀ {T S A} → ℕ → Exprs R Γ A → R Γ S → Expr R Γ T
 
+record Lam (U : Ctx → Type₁) (Γ S : Ctx) : Type₁ where
+  constructor ƛ
+  field
+    body : U (Γ ++ S)
+
+data Clos (R : Ctx → Ctx → Type₁) (U : Ctx → Type₁) (Γ S : Ctx) : Type₁ where
+  _⦊_ : ∀ {Γ'} → Exprs R Γ Γ' → U (Γ' ++ S) → Clos R U Γ S
+
 data Head (R : Ctx → Ctx → Type₁) (Γ S : Ctx) : Type₁ where
   var : ℕ → Head R Γ S
   hop : ∀ {A} → ℕ → Exprs R Γ A → R Γ S → Head R Γ S
@@ -31,15 +39,15 @@ record Appl (R : Ctx → Ctx → Type₁) (Γ : Ctx) : Type₁ where
     head : Head R Γ S
     args : Exprs R Γ S
 
-data Logi (R : Ctx → Ctx → Type₁) (Γ : Ctx) : Type₁ where
-  tt : Logi R Γ
-  ff : Logi R Γ
-  ¬ : Logi R Γ → Logi R Γ
-  _∧_ : Logi R Γ → Logi R Γ → Logi R Γ
-  _∨_ : Logi R Γ → Logi R Γ → Logi R Γ
-  ⟦_⟧ : Expr R Γ Bool → Logi R Γ
-  neu : Appl R Γ → Logi R Γ
-  ∃ : ∀ {S} → R Γ S → Logi R Γ
+data Logi (R L : Ctx → Ctx → Type₁) (Γ : Ctx) : Type₁ where
+  tt : Logi R L Γ
+  ff : Logi R L Γ
+  ¬ : Logi R L Γ → Logi R L Γ
+  _∧_ : Logi R L Γ → Logi R L Γ → Logi R L Γ
+  _∨_ : Logi R L Γ → Logi R L Γ → Logi R L Γ
+  ⟦_⟧ : Expr R Γ Bool → Logi R L Γ
+  neu : Appl R Γ → Logi R L Γ
+  ∃ : ∀ {S} → L Γ S → Logi R L Γ
 
 lookup-exps : ∀ {R Γ Δ} → Exprs R Γ Δ → ∀ l → Expr R Γ (lookup Δ l)
 lookup-exps (e ∷ es) zero = e
@@ -86,7 +94,14 @@ instance
   appl-lift : ∀ {R} → ⦃ ∀ {S} → Lift (λ Γ → R Γ S) ⦄ → Lift (λ Γ → Appl R Γ)
   appl-lift .↑ Δ (head ∘ args) = ↑ Δ head ∘ ↑ Δ args
 
-  logi-lift : ∀ {R} → ⦃ ∀ {S} → Lift (λ Γ → R Γ S) ⦄ → Lift (λ Γ → Logi R Γ)
+  {-# TERMINATING #-}
+  clos-lift : ∀ {R U S} → ⦃ ∀ {S} → Lift (λ Γ → R Γ S) ⦄ → Lift (λ Γ → Clos R U Γ S)
+  clos-lift .↑ Δ (env ⦊ body) = (↑ Δ env) ⦊ body
+
+  logi-lift : ∀ {R L}
+              → ⦃ ∀ {S} → Lift (λ Γ → R Γ S) ⦄
+              → ⦃ ∀ {S} → Lift (λ Γ → L Γ S) ⦄
+              → Lift (Logi R L)
   logi-lift .↑ Δ tt = tt
   logi-lift .↑ Δ ff = ff
   logi-lift .↑ Δ (¬ l) = ¬ (↑ Δ l)
@@ -94,26 +109,37 @@ instance
   logi-lift .↑ Δ (l₁ ∨ l₂) = (↑ Δ l₁) ∨ (↑ Δ l₂)
   logi-lift .↑ Δ ⟦ b ⟧ = ⟦ ↑ Δ b ⟧
   logi-lift .↑ Δ (neu app) = neu (↑ Δ app)
-  logi-lift .↑ Δ (∃ rel) = ∃ (↑ Δ rel)
+  logi-lift .↑ Δ (∃ pred) = ∃ (↑ Δ pred)
 
 instance
   open Eval ⦃ ... ⦄
-  expr-eval : ∀ {Γ Δ R R' A} → ⦃ ∀ {S} → Eval (Exprs R' Δ Γ) (R Γ S) (R' Δ S) ⦄ → Eval (Exprs R' Δ Γ) (Expr R Γ A) (Expr R' Δ A)
-  exprs-eval : ∀ {Γ Δ R R' A} → ⦃ ∀ {S} → Eval (Exprs R' Δ Γ) (R Γ S) (R' Δ S) ⦄ → Eval (Exprs R' Δ Γ) (Exprs R Γ A) (Exprs R' Δ A)
+  expr-eval : ∀ {Γ Δ R R' A}
+              → ⦃ ∀ {S} → Eval (Exprs R' Δ Γ) (R Γ S) (R' Δ S) ⦄
+              → Eval (Exprs R' Δ Γ) (Expr R Γ A) (Expr R' Δ A)
+  exprs-eval : ∀ {Γ Δ R R' A}
+               → ⦃ ∀ {S} → Eval (Exprs R' Δ Γ) (R Γ S) (R' Δ S) ⦄
+               → Eval (Exprs R' Δ Γ) (Exprs R Γ A) (Exprs R' Δ A)
   expr-eval .eval env (var l) = lookup-exps env l
   expr-eval .eval env (op name args) = op name (eval env args)
   expr-eval .eval env (hop name args rel) = hop name (eval env args) (eval env rel)
   exprs-eval .eval env [] = []
   exprs-eval .eval env (e ∷ es) = eval env e ∷ eval env es
 
-  head-eval : ∀ {Γ Δ R R' A} → ⦃ ∀ {S} → Eval (Exprs R' Δ Γ) (R Γ S) (R' Δ S) ⦄ → Eval (Exprs R' Δ Γ) (Head R Γ A) (Head R' Δ A)
+  head-eval : ∀ {Γ Δ R R' A}
+              → ⦃ ∀ {S} → Eval (Exprs R' Δ Γ) (R Γ S) (R' Δ S) ⦄
+              → Eval (Exprs R' Δ Γ) (Head R Γ A) (Head R' Δ A)
   head-eval .eval env (var x) = var x
   head-eval .eval env (hop name args rel) = hop name (eval env args) (eval env rel)
 
-  appl-eval : ∀ {Γ Δ R R'} → ⦃ ∀ {S} → Eval (Exprs R' Δ Γ) (R Γ S) (R' Δ S) ⦄ → Eval (Exprs R' Δ Γ) (Appl R Γ) (Appl R' Δ)
+  appl-eval : ∀ {Γ Δ R R'}
+              → ⦃ ∀ {S} → Eval (Exprs R' Δ Γ) (R Γ S) (R' Δ S) ⦄
+              → Eval (Exprs R' Δ Γ) (Appl R Γ) (Appl R' Δ)
   appl-eval .eval env (head ∘ args) = eval env head ∘ eval env args
 
-  logi-eval : ∀ {Γ Δ R R'} → ⦃ ∀ {S} → Eval (Exprs R' Δ Γ) (R Γ S) (R' Δ S) ⦄ → Eval (Exprs R' Δ Γ) (Logi R Γ) (Logi R' Δ)
+  logi-eval : ∀ {Γ Δ R R' L L'}
+              → ⦃ ∀ {S} → Eval (Exprs R' Δ Γ) (R Γ S) (R' Δ S) ⦄
+              → ⦃ ∀ {S} → Eval (Exprs R' Δ Γ) (L Γ S) (L' Δ S) ⦄
+              → Eval (Exprs R' Δ Γ) (Logi R L Γ) (Logi R' L' Δ)
   logi-eval .eval env tt = tt
   logi-eval .eval env ff = ff
   logi-eval .eval env (¬ l) = ¬ (eval env l)
@@ -121,10 +147,10 @@ instance
   logi-eval .eval env (l₁ ∨ l₂) = eval env l₁ ∨ eval env l₂
   logi-eval .eval env ⟦ b ⟧ = ⟦ eval env b ⟧
   logi-eval .eval env (neu app) = neu (eval env app)
-  logi-eval .eval env (∃ rel) = ∃ (eval env rel)
+  logi-eval .eval env (∃ pred) = ∃ (eval env pred)
 
 instance
-  open import Data.Unit.Polymorphic renaming (tt to ⊤-tt)
+  open import Data.Unit.Polymorphic using (⊤)
   expr-read : ∀ {Γ R R' A} → ⦃ ∀ {S} → Eval ⊤ (R Γ S) (R' Γ S) ⦄ → Eval ⊤ (Expr R Γ A) (Expr R' Γ A)
   exprs-read : ∀ {Γ R R' A} → ⦃ ∀ {S} → Eval ⊤ (R Γ S) (R' Γ S) ⦄ → Eval ⊤ (Exprs R Γ A) (Exprs R' Γ A)
   expr-read .eval env (var l) = var l
@@ -140,7 +166,10 @@ instance
   appl-read : ∀ {Γ R R'} → ⦃ ∀ {S} → Eval ⊤ (R Γ S) (R' Γ S) ⦄ → Eval ⊤ (Appl R Γ) (Appl R' Γ)
   appl-read .eval env (head ∘ args) = eval env head ∘ eval env args
 
-  logi-read : ∀ {Γ R R'} → ⦃ ∀ {S} → Eval ⊤ (R Γ S) (R' Γ S) ⦄ → Eval ⊤ (Logi R Γ) (Logi R' Γ)
+  logi-read : ∀ {Γ R R' L L'}
+              → ⦃ ∀ {S} → Eval ⊤ (R Γ S) (R' Γ S) ⦄
+              → ⦃ ∀ {S} → Eval ⊤ (L Γ S) (L' Γ S) ⦄
+              → Eval ⊤ (Logi R L Γ) (Logi R' L' Γ)
   logi-read .eval env tt = tt
   logi-read .eval env ff = ff
   logi-read .eval env (¬ l) = ¬ (eval env l)

@@ -1,13 +1,8 @@
 module Main where
 
 open import Agda.Primitive renaming (Set to Type)
-open import Agda.Builtin.Equality
-open import Level hiding (Lift)
-open import Data.List hiding (head)
-open import Data.Fin hiding (_+_)
-open import Data.Nat hiding (_+_; _*_)
+open import Data.List
 open import Data.Product hiding (∃; map)
-open import Data.Bool hiding (_∧_; _∨_)
 open import Data.Unit.Polymorphic renaming (tt to ⊤-tt)
 open import Algebra.Bundles
 
@@ -32,7 +27,7 @@ instance
   syn⇒par-rel : ∀ {Γ Δ S} → Eval (Partial.Exps Δ Γ) (Syntax.Rel Γ S) (Partial.Rel Δ S)
   syn⇒par-rel .eval env (var x) = var x
   syn⇒par-rel .eval env (hop name args rel) = hop name (eval env args) (eval env rel)
-  syn⇒par-rel .eval env (ƛ f) = env ⦊ f
+  syn⇒par-rel .eval env (lam (ƛ f)) = clos (env ⦊ f)
 
   syn⇒par-log : ∀ {Γ Δ} → Eval (Partial.Exps Δ Γ) (Syntax.UExp Γ) (Partial.Log Δ)
   syn⇒par-log .eval env 𝟘 = ff
@@ -46,7 +41,7 @@ instance
   syn⇒par-log .eval env (var x ∘ args) = neu (var x ∘ eval env args)
   syn⇒par-log .eval env (hop name h-args rel ∘ args) =
     neu (hop name (eval env h-args) (eval env rel) ∘ (eval env args))
-  syn⇒par-log .eval env (ƛ f ∘ args) = eval (concat-exps env (eval env args)) f
+  syn⇒par-log .eval env (lam (ƛ f) ∘ args) = eval (concat-exps env (eval env args)) f
 
   syn⇒par-uexp : ∀ {Γ Δ} → Eval (Partial.Exps Δ Γ) (Syntax.UExp Γ) (Partial.UExp Δ)
   syn⇒par-uexp .eval env 𝟘 = 0#
@@ -55,12 +50,12 @@ instance
   syn⇒par-uexp .eval env (u₁ ⊗ u₂) = eval env u₁ * eval env u₂
   syn⇒par-uexp .eval env ∥ u ∥ = [ log-uexp (eval env u) ]
   syn⇒par-uexp .eval env (¬ u) = [ log-uexp (¬ (eval env u)) ]
-  syn⇒par-uexp .eval env (∑ u) = [ sum-uexp (env ⦊ u) ]
+  syn⇒par-uexp .eval env (∑ u) = [ sum-uexp (clos (env ⦊ u)) ]
   syn⇒par-uexp .eval env ⟦ x ⟧ = [ log-uexp ⟦ eval env x ⟧ ]
   syn⇒par-uexp .eval env (var x ∘ args) =  [ app-uexp (var x ∘ (eval env args)) ]
   syn⇒par-uexp .eval env (hop name h-args rel ∘ args) =
     [ app-uexp (hop name (eval env h-args) (eval env rel) ∘ (eval env args)) ]
-  syn⇒par-uexp .eval env (ƛ f ∘ args) = eval (concat-exps env (eval env args)) f
+  syn⇒par-uexp .eval env (lam (ƛ f) ∘ args) = eval (concat-exps env (eval env args)) f
 
 instance
   open Normal
@@ -72,10 +67,20 @@ instance
   par⇒nom-rel : ∀ {Γ S} → Eval ⊤ (Partial.Rel Γ S) (Normal.Rel Γ S)
   par⇒nom-uexp : ∀ {Γ} → Eval ⊤ (Partial.UExp Γ) (Normal.UExp Γ)
 
-  par⇒nom-rel .eval env (var x) = var x
-  par⇒nom-rel .eval env (hop name args rel) = hop name (eval env args) (eval env rel)
-  par⇒nom-rel {Γ} {S} .eval e (env ⦊ body) =
+  par⇒nom-rel {Γ} {S} .eval env (var x) = ƛ [ [] ⊢ tt ⊗ [ app ] ]
+    where
+    app = subst Normal.App (sym (++-identityʳ _)) (var x ∘ vars Γ S)
+  par⇒nom-rel {Γ} {S} .eval env (hop name args rel) = ƛ [ [] ⊢ tt ⊗ [ app ] ]
+    where
+    args' = eval env (↑ S args)
+    rel' = eval env (↑ S rel)
+    app = subst Normal.App (sym (++-identityʳ _)) (hop name args' rel' ∘ vars Γ S)
+  par⇒nom-rel {Γ} {S} .eval e (clos (env ⦊ body)) =
     ƛ (eval e (eval (concat-exps (↑ S env) (vars Γ S)) body))
+
+  par⇒nom-lrel : ∀ {Γ S} → Eval ⊤ (Partial.LRel Γ S) (Normal.LRel Γ S)
+  par⇒nom-lrel {Γ} {S} .eval e (env ⦊ body) =
+    lam (ƛ (eval e (eval (concat-exps (↑ S env) (vars Γ S)) body)))
 
   {-# TERMINATING #-}
   par⇒nom-term : ∀ {Γ} → Eval ⊤ (Partial.Term Γ) (Normal.UExp Γ)
@@ -90,7 +95,7 @@ instance
     unwrap {Γ} {S} (var x) = [ tt ⊗ [ (var x) ∘ (vars Γ S) ] ⊗ [] ]
     unwrap {Γ} {S} (hop name args rel) =
       [ tt ⊗ [ hop name (↑ S args) (↑ S rel) ∘ (vars Γ S) ] ⊗ [] ]
-    unwrap {Γ} {S} (env ⦊ body) = eval (concat-exps (↑ S env) (vars Γ S)) body
+    unwrap {Γ} {S} (clos (env ⦊ body)) = eval (concat-exps (↑ S env) (vars Γ S)) body
     wrap : ∀ {Γ} S → Normal.UExp (Γ ++ S) → Normal.UExp Γ
     wrap S uexp = map wrap-term uexp
       where
@@ -107,9 +112,10 @@ instance
   open Stable
   {-# TERMINATING #-}
   nom⇒stb-rel : ∀ {Γ Δ S} → Eval (Stable.Exps Δ Γ) (Normal.Rel Γ S) (Stable.Rel Δ S)
-  nom⇒stb-rel .eval env (var x) = var x
-  nom⇒stb-rel .eval env (hop name args rel) = hop name (eval env args) (eval env rel)
-  nom⇒stb-rel .eval env (ƛ f) = env ⦊ f
+  nom⇒stb-rel .eval env (ƛ f) = clos (env ⦊ f)
+
+  nom⇒stb-lrel : ∀ {Γ Δ S} → Eval (Stable.Exps Δ Γ) (Normal.LRel Γ S) (Stable.LRel Δ S)
+  nom⇒stb-lrel .eval env (lam (ƛ body)) = env ⦊ body
 
   nom⇒stb-term : ∀ {Γ Δ} → Eval (Stable.Exps Δ Γ) (Normal.Term Γ) (Stable.Term Δ)
   nom⇒stb-term .eval env (Scope ⊢ logic ⊗ apps) =
@@ -123,12 +129,25 @@ instance
   {-# TERMINATING #-}
   stb⇒nom-rel : ∀ {Γ S} → Eval ⊤ (Stable.Rel Γ S) (Normal.Rel Γ S)
   stb⇒nom-uexp : ∀ {Γ} → Eval ⊤ (Stable.UExp Γ) (Normal.UExp Γ)
-  stb⇒nom-rel .eval env (var x) = var x
-  stb⇒nom-rel .eval env (hop name args rel) = hop name (eval env args) (eval env rel)
-  stb⇒nom-rel {Γ} {S} .eval e (env ⦊ body) =
+  stb⇒nom-rel {Γ} {S} .eval e (clos (env ⦊ body)) =
     ƛ (eval e (eval (concat-exps (↑ S env) (vars Γ S)) body))
 
+  stb⇒nom-lrel : ∀ {Γ S} → Eval ⊤ (Stable.LRel Γ S) (Normal.LRel Γ S)
+  stb⇒nom-lrel {Γ} {S} .eval e (env ⦊ body) = lam (ƛ (eval e body'))
+    where
+    body' : Stable.Log (Γ ++ S)
+    body' = eval (concat-exps (↑ S env) (vars Γ S)) body
+
   stb⇒nom-term : ∀ {Γ} → Eval ⊤ (Stable.Term Γ) (Normal.Term Γ)
-  stb⇒nom-term .eval env (Scope ⊢ logic ⊗ apps) = Scope ⊢ eval env logic ⊗ map (eval env) apps
+  stb⇒nom-term .eval env (Scope ⊢ logic ⊗ apps) =
+    Scope ⊢ eval env logic ⊗ map (eval env) apps
 
   stb⇒nom-uexp .eval env u = map (eval env) u
+
+evaluate : ∀ {S} → Syntax.Rel [] S → Normal.Rel [] S
+evaluate {S} syn = eval _ stb
+  where
+  par : Partial.Rel [] S
+  par = eval [] syn
+  nom = eval _ par
+  stb = eval [] nom
