@@ -8,24 +8,6 @@
  (guix licenses)
  (gnu packages maths))
 
-(define z3-latest
-  (package
-    (inherit z3)
-    (name "z3")
-    (version "4.8.17")
-    (home-page "https://github.com/Z3Prover/z3")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference (url home-page)
-                                  (commit (string-append "z3-" version))))
-              (file-name (git-file-name name version))
-              (sha256
-               (base32
-                "1vvb09q7w7zd29qc4qjysrrhyylszm1wf6azkff004ixwn026b05"))))
-    (arguments
-     (substitute-keyword-arguments (package-arguments z3)
-       ((#:strip-binaries? strip-binaries? #f) '#f)))))
-
 (define license (@ (guix licenses) license))
 
 (define cvc5
@@ -52,6 +34,6 @@
    (home-page "https://cvc5.github.io/")))
 
 (packages->manifest
- (append (map specification->package
-              '("rust-nightly" "rust-analyzer" "clang" "python"))
-         (list z3-latest cvc5)))
+ (cons* cvc5
+        (map specification->package
+              '("z3" "rust-nightly" "rust-analyzer" "clang" "python"))))
