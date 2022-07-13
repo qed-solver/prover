@@ -10,6 +10,6 @@ pub struct Payload(pub Vec<Schema>, pub Relation, pub Relation);
 impl Payload {
 	pub fn check(self) -> bool {
 		let Payload(schemas, r1, r2) = self;
-		unify(evaluate(r1, &schemas), evaluate(r2, &schemas))
+		unify(evaluate(r1, &schemas.clone().into()), evaluate(r2, &schemas.into()))
 	}
 }

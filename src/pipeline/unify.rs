@@ -3,50 +3,40 @@ use std::collections::HashMap;
 use std::io::Write;
 use std::ops::Deref;
 use std::process::{Command, Stdio};
+use std::rc::Rc;
 
 use imbl::Vector;
 use isoperm::wrapper::Isoperm;
 use itertools::Itertools;
-use z3::ast::{Ast, Bool, Dynamic};
+use z3::ast::{Ast, Bool, Dynamic, Int};
 use z3::SatResult;
 
+use super::nom::Term;
 use super::shared::{self, Ctx};
 use crate::pipeline::nom::{Expr, Z3Env};
-use crate::pipeline::normal::{HOpMap, Inner, RelHOpMap, Relation, Scoped, UExpr};
+use crate::pipeline::normal::{HOpMap, RelHOpMap, Relation, UExpr};
 use crate::pipeline::shared::{AppHead, DataType, Eval, VL};
 
 pub trait Unify<T> {
 	fn unify(self, t1: T, t2: T) -> bool;
 }
 
-#[derive(Copy, Clone)]
-pub struct UnifyEnv<'e, 'c>(&'e Ctx<'c>, &'e Vector<Dynamic<'c>>, &'e Vector<Dynamic<'c>>);
+#[derive(Clone)]
+pub struct UnifyEnv<'c>(pub Rc<Ctx<'c>>, pub Vector<Dynamic<'c>>, pub Vector<Dynamic<'c>>);
 
-impl<'e, 'c> UnifyEnv<'e, 'c> {
-	pub fn new(
-		ctx: &'e Ctx<'c>,
-		subst1: &'e Vector<Dynamic<'c>>,
-		subst2: &'e Vector<Dynamic<'c>>,
-	) -> Self {
-		UnifyEnv(ctx, subst1, subst2)
-	}
-}
-
-impl<'e, 'c> Unify<&Relation> for UnifyEnv<'e, 'c> {
+impl<'c> Unify<&Relation> for &UnifyEnv<'c> {
 	fn unify(self, rel1: &Relation, rel2: &Relation) -> bool {
-		let (shared::Relation(tys1, uexpr1), shared::Relation(tys2, uexpr2)) = (rel1, rel2);
+		let (shared::Lambda(tys1, uexpr1), shared::Lambda(tys2, uexpr2)) = (rel1, rel2);
 		if tys1 != tys2 {
 			return false;
 		}
 		let UnifyEnv(ctx, subst1, subst2) = self;
-		let vars = tys1.iter().map(|ty| ctx.var(ty, "v")).collect();
-		let subst1 = subst1 + &vars;
-		let subst2 = subst2 + &vars;
-		UnifyEnv(ctx, &subst1, &subst2).unify(uexpr1.as_ref(), uexpr2.as_ref())
+		let vars = &tys1.iter().map(|ty| ctx.var(ty, "v")).collect();
+		(&UnifyEnv(ctx.clone(), subst1 + vars, subst2 + vars)).unify(uexpr1, uexpr2)
 	}
 }
 
-impl<'e, 'c> Unify<&UExpr> for UnifyEnv<'e, 'c> {
+impl<'c> Unify<&UExpr> for &UnifyEnv<'c> {
 	fn unify(self, u1: &UExpr, u2: &UExpr) -> bool {
 		let mut terms2 = u2.0.clone();
 		u1.0.len() == u2.0.len()
@@ -57,32 +47,33 @@ impl<'e, 'c> Unify<&UExpr> for UnifyEnv<'e, 'c> {
 	}
 }
 
-impl<'e, 'c> Unify<&Expr> for UnifyEnv<'e, 'c> {
+impl<'c> Unify<&Expr> for &UnifyEnv<'c> {
 	fn unify(self, t1: &Expr, t2: &Expr) -> bool {
 		let UnifyEnv(ctx, subst1, subst2) = self;
-		let h_ops = &RefCell::new(HashMap::new());
-		let rel_h_ops = &RefCell::new(HashMap::new());
-		let env1 = Z3Env::new(ctx, subst1, h_ops, rel_h_ops);
-		let env2 = Z3Env::new(ctx, subst2, h_ops, rel_h_ops);
+		let h_ops = Rc::new(RefCell::new(HashMap::new()));
+		let rel_h_ops = Rc::new(RefCell::new(HashMap::new()));
+		let env1 = &Z3Env(ctx.clone(), subst1.clone(), h_ops.clone(), rel_h_ops.clone());
+		let env2 = &Z3Env(ctx.clone(), subst2.clone(), h_ops.clone(), rel_h_ops.clone());
 		let e1 = env1.eval(t1);
 		let e2 = env2.eval(t2);
-		let h_ops_equiv = extract_equiv(ctx, h_ops.borrow().deref(), rel_h_ops.borrow().deref());
+		let h_ops_equiv =
+			extract_equiv(ctx.clone(), h_ops.borrow().deref(), rel_h_ops.borrow().deref());
 		ctx.solver.check_assumptions(&[h_ops_equiv, e1._eq(&e2).not()]) == SatResult::Unsat
 	}
 }
 
-impl<'e, 'c> Unify<&Vec<Expr>> for UnifyEnv<'e, 'c> {
+impl<'c> Unify<&Vec<Expr>> for &UnifyEnv<'c> {
 	fn unify(self, ts1: &Vec<Expr>, ts2: &Vec<Expr>) -> bool {
 		ts1.len() == ts2.len() && ts1.iter().zip(ts2).all(|(t1, t2)| self.unify(t1, t2))
 	}
 }
 
-fn extract_equiv<'c>(ctx: &Ctx<'c>, h_ops: &HOpMap<'c>, rel_h_ops: &RelHOpMap<'c>) -> Bool<'c> {
+fn extract_equiv<'c>(ctx: Rc<Ctx<'c>>, h_ops: &HOpMap<'c>, rel_h_ops: &RelHOpMap<'c>) -> Bool<'c> {
 	let expr_eqs = h_ops
 		.iter()
 		.tuple_combinations()
 		.filter_map(|(((op1, args1, rel1, env1), v1), ((op2, args2, rel2, env2), v2))| {
-			let env = UnifyEnv(ctx, env1, env2);
+			let env = &UnifyEnv(ctx.clone(), env1.clone(), env2.clone());
 			(op1 == op2 && env.unify(args1, args2) && env.unify(rel1, rel2)).then(|| v1._eq(v2))
 		})
 		.collect_vec();
@@ -94,7 +85,7 @@ fn extract_equiv<'c>(ctx: &Ctx<'c>, h_ops: &HOpMap<'c>, rel_h_ops: &RelHOpMap<'c
 				((op1, args1, rel1, env1, sq1), (n1, dom1)),
 				((op2, args2, rel2, env2, sq2), (n2, dom2)),
 			)| {
-				let env = UnifyEnv(ctx, env1, env2);
+				let env = UnifyEnv(ctx.clone(), env1.clone(), env2.clone());
 				(op1 == op2
 					&& sq1 == sq2 && dom1 == dom2
 					&& env.unify(args1, args2)
@@ -124,23 +115,22 @@ fn perm_equiv<T: Ord + Clone>(v1: &Vector<T>, v2: &Vector<T>) -> bool {
 	}
 }
 
-impl<'e, 'c> Unify<&Scoped<Inner>> for UnifyEnv<'e, 'c> {
-	fn unify(self, t1: &Scoped<Inner>, t2: &Scoped<Inner>) -> bool {
-		if !perm_equiv(&t1.scopes, &t2.scopes) {
+impl<'c> Unify<&Term> for &UnifyEnv<'c> {
+	fn unify(self, t1: &Term, t2: &Term) -> bool {
+		if !perm_equiv(&t1.scope, &t2.scope) {
 			return false;
 		}
 		log::info!("Unifying\n{}\n{}", t1, t2);
 		let UnifyEnv(ctx, subst1, subst2) = self;
 		type Var<'e, 'c> = isoperm::wrapper::Var<usize, &'e Dynamic<'c>, &'e Expr>;
 		fn extract<'v, 'c>(
-			t: &'v Scoped<Inner>,
+			t: &'v Term,
 			subst: &'v Vector<Dynamic<'c>>,
 		) -> (Vec<(usize, Vec<Var<'v, 'c>>)>, HashMap<Var<'v, 'c>, DataType>) {
-			let scope = subst.len()..subst.len() + t.scopes.len();
+			let scope = subst.len()..subst.len() + t.scope.len();
 			let mut args: HashMap<_, _> =
-				scope.clone().map(Var::Local).zip(t.scopes.clone()).collect();
+				scope.clone().map(Var::Local).zip(t.scope.clone()).collect();
 			let constraints = t
-				.inner
 				.apps
 				.iter()
 				.filter_map(|app| {
@@ -164,10 +154,10 @@ impl<'e, 'c> Unify<&Scoped<Inner>> for UnifyEnv<'e, 'c> {
 				.collect();
 			(constraints, args)
 		}
-		let (constraints1, args1) = extract(t1, subst1);
-		let (constraints2, args2) = extract(t2, subst2);
+		let (constraints1, args1) = extract(t1, &subst1);
+		let (constraints2, args2) = extract(t2, &subst2);
 		let z3_ctx = ctx.z3_ctx();
-		let vars1 = t1.scopes.iter().map(|ty| ctx.var(ty, "v")).collect_vec();
+		let vars1 = t1.scope.iter().map(|ty| ctx.var(ty, "v")).collect_vec();
 		let subst1 = subst1 + &vars1.into();
 		Isoperm::new(constraints1, args1, constraints2, args2)
 			.unwrap()
@@ -184,15 +174,15 @@ impl<'e, 'c> Unify<&Scoped<Inner>> for UnifyEnv<'e, 'c> {
 			})
 			.take(24)
 			.any(|vars2| {
-				assert_eq!(vars2.len(), t2.scopes.len());
+				assert_eq!(vars2.len(), t2.scope.len());
 				log::info!("Permutation: {:?}", vars2);
 				let subst2 = subst2 + &vars2.into();
-				let h_ops = &RefCell::new(HashMap::new());
-				let rel_h_ops = &RefCell::new(HashMap::new());
-				let env1 = Z3Env::new(ctx, &subst1, h_ops, rel_h_ops);
-				let env2 = Z3Env::new(ctx, &subst2, h_ops, rel_h_ops);
-				let (logic1, apps1) = env1.eval(&t1.inner);
-				let (logic2, apps2) = env2.eval(&t2.inner);
+				let h_ops = Rc::new(RefCell::new(HashMap::new()));
+				let rel_h_ops = Rc::new(RefCell::new(HashMap::new()));
+				let env1 = &Z3Env(ctx.clone(), subst1.clone(), h_ops.clone(), rel_h_ops.clone());
+				let env2 = &Z3Env(ctx.clone(), subst2.clone(), h_ops.clone(), rel_h_ops.clone());
+				let (logic1, apps1): (_, Int<'c>) = (env1.eval(&t1.logic), env2.eval(&t2.apps));
+				let (logic2, apps2) = (env2.eval(&t2.logic), env2.eval(&t2.apps));
 				let apps_equiv = apps1._eq(&apps2);
 				let equiv = Bool::and(z3_ctx, &[&logic1.iff(&logic2), &apps_equiv]);
 				let solver = &ctx.solver;
@@ -200,7 +190,7 @@ impl<'e, 'c> Unify<&Scoped<Inner>> for UnifyEnv<'e, 'c> {
 				solver.assert(&logic1);
 				solver.assert(&logic2);
 				let h_ops_equiv =
-					extract_equiv(ctx, h_ops.borrow().deref(), rel_h_ops.borrow().deref());
+					extract_equiv(ctx.clone(), h_ops.borrow().deref(), rel_h_ops.borrow().deref());
 				solver.pop(1);
 				log::info!("{}", equiv);
 				log::info!("{}", h_ops_equiv);

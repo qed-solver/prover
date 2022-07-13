@@ -30,6 +30,71 @@ pub enum Expr<R> {
 	HOp(String, Vec<Expr<R>>, Box<R>, DataType),
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct Lambda<U>(pub Vector<DataType>, pub U);
+
+impl<U: Display> Display for Lambda<U> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		writeln!(f, "(λ {:?}", self.0)?;
+		writeln!(indented(f).with_str("\t"), "{})", self.1)
+	}
+}
+
+#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub enum Logic<R, L> {
+	Neg(Box<Logic<R, L>>),
+	And(Vector<Logic<R, L>>),
+	Or(Vector<Logic<R, L>>),
+	Pred(Predicate<R>),
+	Neutral(Application<R>),
+	Exists(L),
+}
+
+impl<R, L> Logic<R, L> {
+	pub fn tt() -> Self {
+		Logic::And(vector![])
+	}
+
+	pub fn ff() -> Self {
+		Logic::Or(vector![])
+	}
+
+	pub fn neg(body: Logic<R, L>) -> Self {
+		Logic::Neg(body.into())
+	}
+}
+
+impl<R: Clone, L: Clone> Mul for Logic<R, L> {
+	type Output = Logic<R, L>;
+
+	fn mul(self, rhs: Self) -> Self::Output {
+		Logic::And(vector![self, rhs])
+	}
+}
+
+impl<R: Clone, L: Clone> Add for Logic<R, L> {
+	type Output = Logic<R, L>;
+
+	fn add(self, rhs: Self) -> Self::Output {
+		Logic::Or(vector![self, rhs])
+	}
+}
+
+impl<R: Display, L: Display> Display for Logic<R, L> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Logic::Neg(l) => write!(f, "¬{}", l),
+			Logic::And(ls) if ls.is_empty() => write!(f, "true"),
+			Logic::And(ls) => write!(f, "({})", ls.iter().format(" ∧ ")),
+			Logic::Or(ls) if ls.is_empty() => write!(f, "false"),
+			Logic::Or(ls) => write!(f, "({})", ls.iter().format(" ∨ ")),
+			Logic::Pred(p) => write!(f, "{}", p),
+			Logic::Neutral(app) => write!(f, "{}", app),
+			Logic::Exists(rel) => write!(f, "∃({})", rel),
+		}
+	}
+}
+
 impl<R> Expr<R> {
 	pub fn ty(&self) -> DataType {
 		match self {
@@ -47,11 +112,11 @@ impl<R: Clone> Expr<R> {
 	}
 }
 
-impl<U: Display> Display for Expr<U> {
+impl<R: Display> Display for Expr<R> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
 			Expr::Var(v, _) => write!(f, "{}", v),
-			Expr::Op(op, args, _) if args.is_empty() => write!(f, "\"{}\"", op),
+			Expr::Op(op, args, ty) if args.is_empty() => write!(f, "\"{}\"({:?})", op, ty),
 			Expr::Op(op, args, _) => {
 				write!(f, "{}({})", op, args.iter().join(", "))
 			},
@@ -96,7 +161,7 @@ impl<R> Predicate<R> {
 impl<R: Display> Display for Predicate<R> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
-			Predicate::Eq(e1, e2) => write!(f, "{} = {}", e1, e2),
+			Predicate::Eq(e1, e2) => write!(f, "({} = {})", e1, e2),
 			Predicate::Pred(p, args) => {
 				write!(f, "{}({})", p, args.iter().join(", "))
 			},
@@ -157,6 +222,27 @@ where E: Eval<Expr<S>, Expr<T>> + Clone
 			Pred(r, args) => Pred(r, args.into_iter().map(|v| self.clone().eval(v)).collect()),
 			Like(v, s) => Like(self.eval(v), s),
 			Bool(v) => Bool(self.eval(v)),
+		}
+	}
+}
+
+impl<E, S, T, L, M> Eval<Logic<S, L>, Logic<T, M>> for E
+where
+	E: Eval<Predicate<S>, Predicate<T>> + Eval<L, M> + Eval<Application<S>, Logic<T, M>> + Clone,
+	S: Clone,
+	T: Clone,
+	L: Clone,
+	M: Clone,
+{
+	fn eval(self, source: Logic<S, L>) -> Logic<T, M> {
+		use Logic::*;
+		match source {
+			Neg(l) => Neg(self.eval(l)),
+			And(ls) => And(self.eval(ls)),
+			Or(ls) => Or(self.eval(ls)),
+			Pred(pred) => Pred(self.eval(pred)),
+			Neutral(app) => self.eval(app),
+			Exists(rel) => Exists(self.eval(rel)),
 		}
 	}
 }
@@ -223,14 +309,6 @@ where E: Eval<S, T>
 	}
 }
 
-impl<E, S: Clone, T: Clone> Eval<Terms<S>, Terms<T>> for E
-where E: Eval<S, T> + Clone
-{
-	fn eval(self, source: Terms<S>) -> Terms<T> {
-		source.into_iter().map(|item| self.clone().eval(item)).collect()
-	}
-}
-
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Relation<U>(pub Vector<DataType>, pub Box<U>);
 
@@ -257,6 +335,12 @@ pub enum AppHead<R> {
 pub struct Application<R> {
 	pub head: AppHead<R>,
 	pub args: Vector<Expr<R>>,
+}
+
+impl<R> Application<R> {
+	pub fn new(head: AppHead<R>, args: Vector<Expr<R>>) -> Self {
+		Application { head, args }
+	}
 }
 
 impl<R: Display> Display for Application<R> {

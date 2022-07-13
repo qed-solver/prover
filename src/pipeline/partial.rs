@@ -2,30 +2,77 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::iter::once;
 use std::ops::Mul;
+use std::rc::Rc;
 
 use imbl::{vector, Vector};
 use itertools::{Either, Itertools};
 use z3::{Config, Context, Solver};
 
+use super::nom::Z3Env;
 use super::shared::{Ctx, Schema};
+use super::stable;
 use super::unify::{Unify, UnifyEnv};
 use crate::pipeline::shared::{AppHead, DataType, Eval, Terms, VL};
 use crate::pipeline::{normal, shared, syntax};
 
-pub(crate) type Relation = shared::Relation<Closure>;
-pub(crate) type Predicate = shared::Predicate<Relation>;
-pub(crate) type Expr = shared::Expr<Relation>;
-type Application = shared::Application<Relation>;
+pub type Expr = shared::Expr<Relation>;
+pub type Predicate = shared::Predicate<Relation>;
+pub type Logic = shared::Logic<Relation, LogicRel>;
+pub type Application = shared::Application<Relation>;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Closure {
-	pub body: syntax::UExpr,
-	pub env: Env,
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum Relation {
+	Var(VL),
+	HOp(String, Vec<Expr>, Box<Relation>),
+	Lam(Vector<DataType>, Env, syntax::UExpr),
 }
 
-impl Closure {
-	pub fn new(body: syntax::UExpr, env: Env) -> Self {
-		Closure { body, env }
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum LogicRel {
+	Var(VL),
+	HOp(String, Vec<Expr>, Box<Relation>),
+	Lam(Vector<DataType>, Env, syntax::UExpr),
+}
+
+impl LogicRel {
+	pub fn scope(&self, schemas: &Vector<Schema>) -> Vector<DataType> {
+		use LogicRel::*;
+		match self {
+			Var(l) => schemas[l.0].types.clone().into(),
+			HOp(_, _, rel) => rel.scope(schemas),
+			Lam(scopes, _, _) => scopes.clone(),
+		}
+	}
+}
+
+impl Relation {
+	pub fn app(self, args: Vector<Expr>) -> UExpr {
+		use Relation::*;
+		match self {
+			Var(l) => UExpr::apply(AppHead::Var(l), args),
+			HOp(op, hop_args, rel) => UExpr::apply(AppHead::HOp(op, hop_args, rel), args),
+			Lam(_, env, body) => (&env.append(args)).eval(body),
+		}
+	}
+
+	pub fn app_logic(self, args: Vector<Expr>) -> Logic {
+		use Relation::*;
+		match self {
+			Var(l) => Logic::Neutral(Application::new(AppHead::Var(l), args)),
+			HOp(op, h_args, rel) => {
+				Logic::Neutral(Application::new(AppHead::HOp(op, h_args, rel), args))
+			},
+			Lam(_, env, body) => (&env.append(args)).eval(body),
+		}
+	}
+
+	pub fn scope(&self, schemas: &Vector<Schema>) -> Vector<DataType> {
+		use Relation::*;
+		match self {
+			Var(l) => schemas[l.0].types.clone().into(),
+			HOp(_, _, rel) => rel.scope(schemas),
+			Lam(scopes, _, _) => scopes.clone(),
+		}
 	}
 }
 
@@ -33,20 +80,12 @@ impl Closure {
 pub type UExpr = Terms<Term>;
 
 impl UExpr {
-	pub fn squash(squash: SUExpr) -> Self {
-		UExpr::term(Term { squash, ..Term::default() })
+	pub fn logic(logic: Logic) -> Self {
+		UExpr::term(Term { logic, ..Term::default() })
 	}
 
-	pub fn not(not: SUExpr) -> Self {
-		UExpr::term(Term { not, ..Term::default() })
-	}
-
-	pub fn pred(pred: Predicate) -> Self {
-		UExpr::term(Term { preds: vector![pred], ..Term::default() })
-	}
-
-	pub fn sum(scopes: Vector<DataType>, summand: Closure) -> Self {
-		UExpr::term(Term { sums: vector![Summation { scopes, summand }], ..Term::default() })
+	pub fn sum(summand: Relation) -> Self {
+		UExpr::term(Term { sums: vector![summand], ..Term::default() })
 	}
 
 	pub fn apply(head: AppHead<Relation>, args: Vector<Expr>) -> Self {
@@ -56,98 +95,25 @@ impl UExpr {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Term {
-	pub preds: Vector<Predicate>,
-	pub squash: SUExpr,
-	pub not: SUExpr,
+	pub logic: Logic,
 	pub apps: Vector<Application>,
-	pub stable_apps: Vector<Application>,
-	pub sums: Vector<Summation>,
+	pub sums: Vector<Relation>,
 }
 
 impl Default for Term {
 	fn default() -> Self {
-		Term {
-			preds: vector![],
-			squash: SUExpr::one(),
-			not: SUExpr::zero(),
-			apps: vector![],
-			stable_apps: vector![],
-			sums: vector![],
-		}
+		Term { logic: Logic::tt(), apps: vector![], sums: vector![] }
 	}
-}
-
-pub type SUExpr = Terms<STerm>;
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct STerm {
-	pub preds: Vector<Predicate>,
-	pub not: SUExpr,
-	pub apps: Vector<Application>,
-	pub stable_apps: Vector<Application>,
-	pub sums: Vector<Summation>,
-}
-
-impl Default for STerm {
-	fn default() -> Self {
-		STerm {
-			preds: vector![],
-			not: SUExpr::zero(),
-			apps: vector![],
-			stable_apps: vector![],
-			sums: vector![],
-		}
-	}
-}
-
-impl SUExpr {
-	pub fn not(not: SUExpr) -> Self {
-		SUExpr::term(STerm { not, ..STerm::default() })
-	}
-
-	pub fn pred(pred: Predicate) -> Self {
-		SUExpr::term(STerm { preds: vector![pred], ..STerm::default() })
-	}
-
-	pub fn sum(scopes: Vector<DataType>, summand: Closure) -> Self {
-		SUExpr::term(STerm { sums: vector![Summation { scopes, summand }], ..STerm::default() })
-	}
-
-	pub fn apply(head: AppHead<Relation>, args: Vector<Expr>) -> Self {
-		SUExpr::term(STerm { apps: vector![Application { head, args }], ..STerm::default() })
-	}
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Summation {
-	pub scopes: Vector<DataType>,
-	pub summand: Closure,
 }
 
 impl Mul for Term {
 	type Output = Term;
 
 	fn mul(self, rhs: Self) -> Self::Output {
-		let preds = self.preds + rhs.preds;
-		let squash = self.squash * rhs.squash;
-		let not = self.not + rhs.not;
+		let logic = self.logic * rhs.logic;
 		let apps = self.apps + rhs.apps;
-		let stable_apps = self.stable_apps + rhs.stable_apps;
 		let sums = self.sums + rhs.sums;
-		Term { preds, squash, not, apps, stable_apps, sums }
-	}
-}
-
-impl Mul for STerm {
-	type Output = STerm;
-
-	fn mul(self, rhs: Self) -> Self::Output {
-		let preds = self.preds + rhs.preds;
-		let not = self.not + rhs.not;
-		let apps = self.apps + rhs.apps;
-		let stable_apps = self.stable_apps + rhs.stable_apps;
-		let sums = self.sums + rhs.sums;
-		STerm { preds, not, apps, stable_apps, sums }
+		Term { logic, apps, sums }
 	}
 }
 
@@ -159,12 +125,12 @@ impl Env {
 		Env(subst, schemas)
 	}
 
-	pub fn append(&self, vars: Vector<Expr>) -> Env {
-		Env(self.0.clone() + vars, self.1.clone())
+	pub fn append(&self, subst: Vector<Expr>) -> Env {
+		Env(self.0.clone() + subst, self.1.clone())
 	}
 }
 
-impl<'e> Eval<syntax::UExpr, UExpr> for &'e Env {
+impl Eval<syntax::UExpr, UExpr> for &Env {
 	fn eval(self, source: syntax::UExpr) -> UExpr {
 		use syntax::UExpr::*;
 		match source {
@@ -172,47 +138,36 @@ impl<'e> Eval<syntax::UExpr, UExpr> for &'e Env {
 			One => UExpr::one(),
 			Add(u1, u2) => self.eval(*u1): UExpr + self.eval(*u2),
 			Mul(u1, u2) => self.eval(*u1): UExpr * self.eval(*u2): UExpr,
-			Squash(uexpr) => UExpr::squash(self.eval(*uexpr)),
-			Not(uexpr) => UExpr::not(self.eval(*uexpr)),
-			Sum(scopes, body) => UExpr::sum(scopes, Closure::new(*body, self.clone())),
-			Pred(pred) => UExpr::pred(self.eval(pred)),
-			App(table, args) => {
-				use syntax::AppHead::*;
-				let args = self.eval(args);
-				match table {
-					Var(l) => UExpr::apply(AppHead::Var(l), args),
-					Lam(_, body) => (&self.append(args)).eval(*body),
-					HOp(op, hop_args, rel) => {
-						let head = AppHead::HOp(op, self.eval(hop_args), self.eval(rel));
-						UExpr::apply(head, args)
-					},
-				}
-			},
+			Squash(uexpr) => UExpr::logic(self.eval(*uexpr)),
+			Not(uexpr) => UExpr::logic(Logic::neg(self.eval(*uexpr))),
+			Sum(scopes, body) => UExpr::sum(Relation::Lam(scopes, self.clone(), *body)),
+			Pred(pred) => UExpr::logic(Logic::Pred(self.eval(pred))),
+			App(table, args) => self.eval(table).app(self.eval(args)),
 		}
 	}
 }
 
-impl<'e> Eval<syntax::UExpr, SUExpr> for &'e Env {
-	fn eval(self, source: syntax::UExpr) -> SUExpr {
+impl Eval<syntax::UExpr, Logic> for &Env {
+	fn eval(self, source: syntax::UExpr) -> Logic {
 		use syntax::UExpr::*;
 		match source {
-			Zero => SUExpr::zero(),
-			One => SUExpr::one(),
-			Add(u1, u2) => self.eval(*u1): SUExpr + self.eval(*u2),
-			Mul(u1, u2) => self.eval(*u1): SUExpr * self.eval(*u2): SUExpr,
+			Zero => Logic::ff(),
+			One => Logic::tt(),
+			Add(u1, u2) => self.eval(*u1): Logic + self.eval(*u2),
+			Mul(u1, u2) => self.eval(*u1): Logic * self.eval(*u2): Logic,
 			Squash(uexpr) => self.eval(*uexpr),
-			Not(uexpr) => SUExpr::not(self.eval(*uexpr)),
-			Sum(scopes, body) => SUExpr::sum(scopes, Closure::new(*body, self.clone())),
-			Pred(pred) => SUExpr::pred(self.eval(pred)),
+			Not(uexpr) => Logic::neg(self.eval(*uexpr)),
+			Sum(scopes, body) => Logic::Exists(LogicRel::Lam(scopes, self.clone(), *body)),
+			Pred(pred) => Logic::Pred(self.eval(pred)),
 			App(table, args) => {
-				use syntax::AppHead::*;
+				use syntax::Relation::*;
 				let args = self.eval(args);
 				match table {
-					Var(l) => SUExpr::apply(AppHead::Var(l), args),
+					Var(l) => Logic::Neutral(Application::new(AppHead::Var(l), args)),
 					Lam(_, body) => (&self.append(args)).eval(*body),
 					HOp(op, hop_args, rel) => {
 						let head = AppHead::HOp(op, self.eval(hop_args), self.eval(rel));
-						SUExpr::apply(head, args)
+						Logic::Neutral(Application::new(head, args))
 					},
 				}
 			},
@@ -220,54 +175,61 @@ impl<'e> Eval<syntax::UExpr, SUExpr> for &'e Env {
 	}
 }
 
-impl<'e> Eval<(VL, DataType), Expr> for &'e Env {
+impl Eval<(VL, DataType), Expr> for &Env {
 	fn eval(self, (VL(l), ty): (VL, DataType)) -> Expr {
 		assert_eq!(self.0[l].ty(), ty, "Wrong type for {}", VL(l));
 		self.0[l].clone()
 	}
 }
 
-impl<'e> Eval<syntax::Relation, Relation> for &'e Env {
+impl Eval<syntax::Relation, Relation> for &Env {
 	fn eval(self, source: syntax::Relation) -> Relation {
-		let shared::Relation(scopes, body) = source;
-		Relation::new(scopes, Closure::new(*body, self.clone()))
+		use syntax::Relation::*;
+		match source {
+			Var(t) => Relation::Var(t),
+			HOp(name, args, rel) => Relation::HOp(name, self.eval(args), self.eval(rel)),
+			Lam(scopes, body) => Relation::Lam(scopes, self.clone(), *body),
+		}
 	}
 }
 
-impl<'e> Unify<UExpr> for normal::Env<'e> {
+impl Unify<UExpr> for &normal::Env {
 	fn unify(self, t1: UExpr, t2: UExpr) -> bool {
-		let normal::Env(context, _) = self;
 		let t1: normal::UExpr = self.eval(t1);
 		let t2: normal::UExpr = self.eval(t2);
 		let mut config = Config::new();
 		config.set_timeout_msec(2000);
-		let z3_ctx = &Context::new(&config);
-		let ctx = &Ctx::new(Solver::new(z3_ctx));
-		let uexpr_subst = &shared::Expr::vars(0, context.clone());
-		let z3_subst = &context.iter().map(|ty| ctx.var(ty, "v")).collect();
-		let h_ops = &RefCell::new(HashMap::new());
-		let rel_h_ops = &RefCell::new(HashMap::new());
-		let env = normal::StbEnv::new(uexpr_subst, context.len(), ctx, z3_subst, h_ops, rel_h_ops);
-		let t1: normal::UExpr = env.eval(t1);
-		let t2: normal::UExpr = env.eval(t2);
-		UnifyEnv::new(ctx, z3_subst, z3_subst).unify(&t1, &t2)
+		let z3_ctx = Context::new(&config);
+		let ctx = Rc::new(Ctx::new(Solver::new(&z3_ctx)));
+		let h_ops = Rc::new(RefCell::new(HashMap::new()));
+		let rel_h_ops = Rc::new(RefCell::new(HashMap::new()));
+		let env = &stable::Env(vector![], 0, Z3Env(ctx.clone(), vector![], h_ops, rel_h_ops));
+		let t1 = env.eval(t1);
+		let t2 = env.eval(t2);
+		let t1: normal::UExpr = self.eval(t1);
+		let t2: normal::UExpr = self.eval(t2);
+		let uni_env = UnifyEnv(ctx, vector![], vector![]);
+		(&uni_env).unify(&t1, &t2)
 	}
 }
 
-impl normal::Env<'_> {
-	pub(crate) fn degen(self, rel: Relation) -> bool {
-		let shared::Relation(scopes, clos) = rel;
-		let count = UExpr::sum(scopes.clone(), *clos.clone());
-		let exists = UExpr::squash(SUExpr::sum(scopes, *clos));
-		self.unify(count, exists)
+impl normal::Env {
+	pub(crate) fn degen(&self, rel: Relation) -> bool {
+		use Relation::*;
+		let lrel = match rel.clone() {
+			Var(l) => LogicRel::Var(l),
+			HOp(op, args, rel) => LogicRel::HOp(op, args, rel),
+			Lam(scope, env, body) => LogicRel::Lam(scope, env, body),
+		};
+		self.unify(UExpr::sum(rel), UExpr::logic(Logic::Exists(lrel)))
 	}
 }
 
 pub(crate) fn partition_apps(
 	apps: Vector<Application>,
-	schemas: &[Schema],
-) -> (Vector<Application>, Vec<Vec<Predicate>>) {
-	apps.into_iter().partition_map(|app| match &app.head {
+	schemas: &Vector<Schema>,
+) -> (Vector<Application>, Logic) {
+	let (apps, logics) = apps.into_iter().partition_map(|app| match &app.head {
 		&AppHead::Var(VL(l)) => {
 			let schema = &schemas[l];
 			let preds = schema
@@ -294,13 +256,15 @@ pub(crate) fn partition_apps(
 						})
 						.chain(once(pk))
 				})
+				.map(Logic::Pred)
 				.collect_vec();
 			if preds.is_empty() {
 				Either::Left(app)
 			} else {
-				Either::Right(preds)
+				Either::Right(Logic::And(preds.into()))
 			}
 		},
 		AppHead::HOp(_, _, _) => Either::Left(app),
-	})
+	});
+	(apps, Logic::And(logics))
 }

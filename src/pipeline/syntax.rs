@@ -14,32 +14,31 @@ use crate::pipeline::shared::DataType;
 /// when having the explict definition.
 /// Here the lambda term uses a vector of data types to bind every components of the input tuple.
 /// That is, each component is treated as a unique variable that might appear in the function body.
-pub type Relation = shared::Relation<UExpr>;
 pub type Predicate = shared::Predicate<Relation>;
 pub type Expr = shared::Expr<Relation>;
 
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub enum Relation {
+	Var(VL),
+	HOp(String, Vec<Expr>, Box<Relation>),
+	Lam(Vector<DataType>, Box<UExpr>),
+}
+
 impl Relation {
-	pub fn app(self, args: impl Into<Vector<Expr>>) -> UExpr {
-		UExpr::app(self, args.into())
+	pub fn lam(scopes: Vector<DataType>, body: impl Into<Box<UExpr>>) -> Relation {
+		Relation::Lam(scopes, body.into())
 	}
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub enum AppHead {
-	Var(VL),
-	Lam(Vector<DataType>, Box<UExpr>),
-	HOp(String, Vec<Expr>, Box<Relation>),
-}
-
-impl Display for AppHead {
+impl Display for Relation {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
-			AppHead::Var(table) => write!(f, "#{}", table.0),
-			AppHead::Lam(scopes, body) => {
+			Relation::Var(table) => write!(f, "#{}", table.0),
+			Relation::Lam(scopes, body) => {
 				writeln!(f, "(λ {:?}", scopes)?;
 				writeln!(indented(f).with_str("\t"), "{})", body)
 			},
-			AppHead::HOp(op, args, rel) => {
+			Relation::HOp(op, args, rel) => {
 				writeln!(f, "{}({}, {})", op, args.iter().join(", "), rel)
 			},
 		}
@@ -67,7 +66,7 @@ pub enum UExpr {
 	Pred(Predicate),
 	// Application of a relation with arguments.
 	// Here each argument are required to be a single variable.
-	App(AppHead, Vector<Expr>),
+	App(Relation, Vector<Expr>),
 }
 
 impl UExpr {
@@ -77,11 +76,6 @@ impl UExpr {
 
 	pub fn squash(body: impl Into<Box<UExpr>>) -> Self {
 		UExpr::Squash(body.into())
-	}
-
-	pub fn app(rel: Relation, args: Vector<Expr>) -> Self {
-		let head = AppHead::Lam(rel.0, rel.1);
-		UExpr::App(head, args)
 	}
 }
 
