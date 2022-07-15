@@ -11,11 +11,11 @@ use itertools::Itertools;
 use z3::ast::{Ast, Bool, Dynamic, Int};
 use z3::SatResult;
 
-use super::nom::Term;
+use super::normal::Term;
 use super::shared::{self, Ctx};
-use crate::pipeline::nom::{Expr, Z3Env};
+use crate::pipeline::normal::{Expr, Z3Env};
 use crate::pipeline::normal::{HOpMap, RelHOpMap, Relation, UExpr};
-use crate::pipeline::shared::{AppHead, DataType, Eval, VL};
+use crate::pipeline::shared::{DataType, Eval, Head, VL};
 
 pub trait Unify<T> {
 	fn unify(self, t1: T, t2: T) -> bool;
@@ -32,7 +32,7 @@ impl<'c> Unify<&Relation> for &UnifyEnv<'c> {
 		}
 		let UnifyEnv(ctx, subst1, subst2) = self;
 		let vars = &tys1.iter().map(|ty| ctx.var(ty, "v")).collect();
-		(&UnifyEnv(ctx.clone(), subst1 + vars, subst2 + vars)).unify(uexpr1, uexpr2)
+		UnifyEnv(ctx.clone(), subst1 + vars, subst2 + vars).unify(uexpr1, uexpr2)
 	}
 }
 
@@ -147,15 +147,15 @@ impl<'c> Unify<&Term> for &UnifyEnv<'c> {
 						},
 					};
 					match &app.head {
-						&AppHead::Var(VL(t)) => Some((t, app.args.iter().map(translate).collect())),
-						AppHead::HOp(_, _, _) => None,
+						&Head::Var(VL(t)) => Some((t, app.args.iter().map(translate).collect())),
+						Head::HOp(_, _, _) => None,
 					}
 				})
 				.collect();
 			(constraints, args)
 		}
-		let (constraints1, args1) = extract(t1, &subst1);
-		let (constraints2, args2) = extract(t2, &subst2);
+		let (constraints1, args1) = extract(t1, subst1);
+		let (constraints2, args2) = extract(t2, subst2);
 		let z3_ctx = ctx.z3_ctx();
 		let vars1 = t1.scope.iter().map(|ty| ctx.var(ty, "v")).collect_vec();
 		let subst1 = subst1 + &vars1.into();
@@ -181,7 +181,7 @@ impl<'c> Unify<&Term> for &UnifyEnv<'c> {
 				let rel_h_ops = Rc::new(RefCell::new(HashMap::new()));
 				let env1 = &Z3Env(ctx.clone(), subst1.clone(), h_ops.clone(), rel_h_ops.clone());
 				let env2 = &Z3Env(ctx.clone(), subst2.clone(), h_ops.clone(), rel_h_ops.clone());
-				let (logic1, apps1): (_, Int<'c>) = (env1.eval(&t1.logic), env2.eval(&t2.apps));
+				let (logic1, apps1): (_, Int<'c>) = (env1.eval(&t1.logic), env1.eval(&t1.apps));
 				let (logic2, apps2) = (env2.eval(&t2.logic), env2.eval(&t2.apps));
 				let apps_equiv = apps1._eq(&apps2);
 				let equiv = Bool::and(z3_ctx, &[&logic1.iff(&logic2), &apps_equiv]);
@@ -194,7 +194,7 @@ impl<'c> Unify<&Term> for &UnifyEnv<'c> {
 				solver.pop(1);
 				log::info!("{}", equiv);
 				log::info!("{}", h_ops_equiv);
-				dbg!(smt(solver, h_ops_equiv.implies(&equiv)))
+				smt(solver, h_ops_equiv.implies(&equiv))
 			})
 	}
 }
@@ -214,10 +214,10 @@ pub(crate) fn smt<'c>(solver: &'c z3::Solver, pred: Bool<'c>) -> bool {
 		.spawn()
 		.expect("Failed to spawn child process");
 	let mut stdin = child.stdin.take().expect("Failed to open stdin");
-	stdin.write_all("(set-logic ALL)\n".as_bytes()).unwrap();
+	stdin.write_all("(set-logic ALL)".as_bytes()).unwrap();
 	stdin.write_all(smt.as_bytes()).unwrap();
 	drop(stdin);
 	let output = child.wait_with_output().expect("Failed to read stdout");
 	let result = String::from_utf8(output.stdout).unwrap();
-	result.ends_with("unsat\n")
+	dbg!(result).ends_with("unsat\n")
 }

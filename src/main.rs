@@ -1,9 +1,6 @@
-#![feature(type_ascription)]
 #![feature(derive_default_enum)]
 #![feature(map_first_last)]
 #![feature(slice_as_chunks)]
-extern crate core;
-
 use std::any::Any;
 use std::collections::BTreeMap;
 use std::fs::File;

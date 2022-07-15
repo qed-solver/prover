@@ -1,31 +1,30 @@
 use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fmt::{Display, Formatter, Write};
-use std::iter::once;
 use std::ops::Range;
 use std::rc::Rc;
 
 use anyhow::bail;
-use imbl::{vector, Vector};
+use imbl::{vector, HashSet, Vector};
 use indenter::indented;
-use itertools::Itertools;
+use itertools::{Either, Itertools};
 use num::ToPrimitive;
 use z3::ast::{exists_const, Ast, Bool, Dynamic, Int, Real as Re, String as Str};
+use z3::{Config, Context, Solver};
 
-use super::partial::partition_apps;
 use super::shared::{Ctx, Lambda};
 use super::stable;
-use crate::pipeline::shared::{AppHead, DataType, Eval, Schema, Terms, VL};
+use super::unify::{Unify, UnifyEnv};
+use crate::pipeline::shared::{DataType, Eval, Head, Schema, Terms, VL};
 use crate::pipeline::{partial, shared};
 
 pub type Relation = Lambda<UExpr>;
 
-pub type Predicate = shared::Predicate<Relation>;
 pub type Expr = shared::Expr<Relation>;
-pub type Application = shared::Application<Relation>;
+pub type Neutral = shared::Neutral<Relation>;
 #[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct LogicRel(pub Vector<DataType>, pub Box<Logic>);
-pub type Logic = shared::Logic<Relation, LogicRel>;
+pub type Logic = shared::Logic<Relation, LogicRel, Neutral>;
 
 pub type UExpr = Terms<Term>;
 
@@ -39,11 +38,11 @@ impl UExpr {
 pub struct Term {
 	pub scope: Vector<DataType>,
 	pub logic: Logic,
-	pub apps: Vector<Application>,
+	pub apps: Vector<Neutral>,
 }
 
 impl Term {
-	pub fn app(app: Application) -> Self {
+	pub fn app(app: Neutral) -> Self {
 		Term { scope: vector![], logic: Logic::And(vector![]), apps: vector![app] }
 	}
 }
@@ -70,75 +69,94 @@ impl Display for Term {
 }
 
 impl Expr {
-	pub(crate) fn deps(&self, vars: Range<usize>) -> HashSet<VL> {
+	pub(crate) fn deps(&self, vars: &Range<usize>) -> HashSet<VL> {
 		match self {
-			Expr::Var(v, _) if vars.contains(&v.0) => once(*v).collect(),
+			Expr::Var(v, _) if vars.contains(&v.0) => HashSet::unit(*v),
 			Expr::Var(_, _) => HashSet::new(),
-			Expr::Op(_, args, _) => args.iter().flat_map(|expr| expr.deps(vars.clone())).collect(),
-			Expr::HOp(_, args, rel, _) => rel
-				.deps(vars.clone())
-				.union(&args.iter().flat_map(|arg| arg.deps(vars.clone())).collect())
-				.cloned()
-				.collect(),
+			Expr::Op(_, args, _) => HashSet::unions(args.iter().map(|arg| arg.deps(vars))),
+			Expr::HOp(_, args, rel, _) => {
+				HashSet::unions(args.iter().map(|arg| arg.deps(vars))) + rel.deps(vars)
+			},
+		}
+	}
+
+	pub(crate) fn in_scope(&self, lvl: usize) -> bool {
+		match self {
+			Expr::Var(VL(l), _) => *l < lvl,
+			Expr::Op(_, args, _) => args.iter().all(|arg| arg.in_scope(lvl)),
+			Expr::HOp(_, args, rel, _) => {
+				args.iter().all(|arg| arg.in_scope(lvl)) && rel.in_scope(lvl)
+			},
 		}
 	}
 }
 
 impl Relation {
-	fn deps(&self, vars: Range<usize>) -> HashSet<VL> {
-		self.1.iter().flat_map(|t| t.deps(vars.clone())).collect()
+	fn deps(&self, vars: &Range<usize>) -> HashSet<VL> {
+		HashSet::unions(self.1.iter().map(|t| t.deps(vars)))
+	}
+
+	fn in_scope(&self, lvl: usize) -> bool {
+		let Lambda(scope, body) = self;
+		body.iter().all(|t| t.in_scope(lvl + scope.len()))
 	}
 }
 
 impl Term {
-	fn deps(&self, vars: Range<usize>) -> HashSet<VL> {
-		self.logic
-			.deps(vars.clone())
-			.union(&self.apps.iter().flat_map(|app| app.deps(vars.clone())).collect())
-			.cloned()
-			.collect()
+	fn deps(&self, vars: &Range<usize>) -> HashSet<VL> {
+		self.logic.deps(vars) + HashSet::unions(self.apps.iter().map(|app| app.deps(vars)))
+	}
+
+	fn in_scope(&self, lvl: usize) -> bool {
+		let lvl = lvl + self.scope.len();
+		self.logic.in_scope(lvl) && self.apps.iter().all(|app| app.in_scope(lvl))
 	}
 }
 
-impl Application {
-	fn deps(&self, vars: Range<usize>) -> HashSet<VL> {
-		let head_vars = match &self.head {
-			AppHead::Var(_) => HashSet::new(),
-			AppHead::HOp(_, args, rel) => rel
-				.deps(vars.clone())
-				.union(&args.iter().flat_map(|arg| arg.deps(vars.clone())).collect())
-				.cloned()
-				.collect(),
-		};
-		head_vars
-			.union(&self.args.iter().flat_map(|arg| arg.deps(vars.clone())).collect())
-			.cloned()
-			.collect()
+impl Neutral {
+	fn deps(&self, vars: &Range<usize>) -> HashSet<VL> {
+		(match &self.head {
+			Head::Var(_) => HashSet::new(),
+			Head::HOp(_, args, rel) => {
+				rel.deps(vars) + HashSet::unions(args.iter().map(|arg| arg.deps(vars)))
+			},
+		}) + HashSet::unions(self.args.iter().map(|arg| arg.deps(vars)))
 	}
-}
 
-impl Predicate {
-	fn deps(&self, vars: Range<usize>) -> HashSet<VL> {
-		use shared::Predicate::*;
-		match self {
-			Eq(e1, e2) => e1.deps(vars.clone()).union(&e2.deps(vars.clone())).cloned().collect(),
-			Pred(_, args) => args.iter().flat_map(|arg| arg.deps(vars.clone())).collect(),
-			Like(e, _) => e.deps(vars),
-			Bool(e) => e.deps(vars),
-		}
+	fn in_scope(&self, lvl: usize) -> bool {
+		(match &self.head {
+			Head::Var(_) => true,
+			Head::HOp(_, args, rel) => {
+				args.iter().all(|arg| arg.in_scope(lvl)) && rel.in_scope(lvl)
+			},
+		}) && self.args.iter().all(|arg| arg.in_scope(lvl))
 	}
 }
 
 impl Logic {
-	fn deps(&self, vars: Range<usize>) -> HashSet<VL> {
+	fn deps(&self, vars: &Range<usize>) -> HashSet<VL> {
 		use shared::Logic::*;
 		match self {
+			Bool(e) => e.deps(vars),
+			Eq(e1, e2) => e1.deps(vars) + e2.deps(vars),
+			Pred(_, args) => HashSet::unions(args.iter().map(|arg| arg.deps(vars))),
 			Neg(l) => l.deps(vars),
-			And(ls) => ls.iter().flat_map(|l| l.deps(vars.clone())).collect(),
-			Or(ls) => ls.iter().flat_map(|l| l.deps(vars.clone())).collect(),
-			Pred(p) => p.deps(vars),
-			Neutral(app) => app.deps(vars),
+			And(ls) | Or(ls) => HashSet::unions(ls.iter().map(|l| l.deps(vars))),
+			App(app) => app.deps(vars),
 			Exists(LogicRel(_, l)) => l.deps(vars),
+		}
+	}
+
+	fn in_scope(&self, lvl: usize) -> bool {
+		use shared::Logic::*;
+		match self {
+			Bool(e) => e.in_scope(lvl),
+			Eq(e1, e2) => e1.in_scope(lvl) && e2.in_scope(lvl),
+			Pred(_, args) => args.iter().all(|arg| arg.in_scope(lvl)),
+			Neg(l) => l.in_scope(lvl),
+			And(ls) | Or(ls) => ls.iter().all(|l| l.in_scope(lvl)),
+			App(app) => app.in_scope(lvl),
+			Exists(LogicRel(scope, l)) => l.in_scope(lvl + scope.len()),
 		}
 	}
 }
@@ -158,7 +176,7 @@ impl Eval<partial::UExpr, UExpr> for &Env {
 	}
 }
 
-fn helper(env: &Env, mut term: partial::Term, apps: Vector<partial::Application>) -> UExpr {
+fn helper(env: &Env, mut term: partial::Term, apps: Vector<partial::Neutral>) -> UExpr {
 	let Env(context, schemas) = env;
 	if let Some(summand) = term.sums.pop_front() {
 		let scope = summand.scope(schemas);
@@ -170,40 +188,22 @@ fn helper(env: &Env, mut term: partial::Term, apps: Vector<partial::Application>
 			.collect();
 		UExpr::under(scope, body)
 	} else if let Some(app) = term.apps.pop_front() {
-		match app.head {
-			AppHead::HOp(op, args, _) if op == "limit" && args[0] == 0u32.into() => UExpr::zero(),
-			AppHead::HOp(op, args, rel)
-				if ((op == "limit" && args[0] == 1u32.into()) && env.degen(*rel.clone()))
-					|| (op == "offset" && args[0] == 0u32.into()) =>
-			{
-				(rel.app(app.args) * term)
-					.into_iter()
-					.flat_map(|t| helper(env, t, apps.clone()))
-					.collect()
+		match app.head.app(app.args, env) {
+			Either::Left(app) => helper(env, term, apps + vector![app]),
+			Either::Right(uexpr) => {
+				(uexpr * term).into_iter().flat_map(|t| helper(env, t, apps.clone())).collect()
 			},
-			_ => helper(env, term, apps + vector![app]),
 		}
 	} else {
-		let (apps, logic) = partition_apps(apps, schemas);
-		UExpr::term(Term {
-			scope: vector![],
-			logic: env.eval(term.logic * logic),
-			apps: env.eval(apps),
-		})
+		UExpr::term(Term { scope: vector![], logic: env.eval(term.logic), apps: env.eval(apps) })
 	}
 }
 
-impl Eval<partial::Application, Logic> for &Env {
-	fn eval(self, app: partial::Application) -> Logic {
-		match app.head {
-			AppHead::HOp(op, args, _) if op == "limit" && args[0] == 0u32.into() => Logic::ff(),
-			AppHead::HOp(op, args, rel)
-				if ((op == "limit" && args[0] == 1u32.into()) && self.degen(*rel.clone()))
-					|| (op == "offset" && args[0] == 0u32.into()) =>
-			{
-				self.eval(rel.app_logic(app.args))
-			},
-			_ => Logic::Neutral(self.eval(app)),
+impl Eval<partial::Neutral, Logic> for &Env {
+	fn eval(self, app: partial::Neutral) -> Logic {
+		match app.head.app_logic(app.args, self) {
+			Either::Left(app) => Logic::App(self.eval(app)),
+			Either::Right(logic) => self.eval(logic),
 		}
 	}
 }
@@ -214,15 +214,14 @@ impl Eval<partial::LogicRel, LogicRel> for &Env {
 		let Env(context, schemas) = self;
 		let scope = source.scope(schemas);
 		let env = &self.extend(scope.clone());
-		let vars = Expr::vars(context.len(), scope.clone());
+		let vars = shared::Expr::vars(context.len(), scope.clone());
 		LogicRel(
 			scope,
 			Box::new(match source {
-				Var(l) => Logic::Neutral(Application::new(AppHead::Var(l), vars)),
-				HOp(op, args, rel) => Logic::Neutral(Application::new(
-					AppHead::HOp(op, env.eval(args), env.eval(rel)),
-					vars,
-				)),
+				Rigid(head) => match head.app_logic(vars, env) {
+					Either::Left(app) => env.eval(app),
+					Either::Right(logic) => env.eval(logic),
+				},
 				Lam(scope, clos_env, body) => {
 					let vars = shared::Expr::vars(context.len(), scope.clone());
 					let body: partial::Logic = (&clos_env.append(vars)).eval(body);
@@ -245,12 +244,11 @@ impl Eval<partial::Relation, Relation> for &Env {
 		let Env(context, schemas) = self;
 		let scope = source.scope(schemas);
 		let env = &self.extend(scope.clone());
-		let vars = Expr::vars(context.len(), scope.clone());
+		let vars = shared::Expr::vars(context.len(), scope.clone());
 		Lambda(scope, match source {
-			Var(l) => UExpr::term(Term::app(Application::new(AppHead::Var(l), vars))),
-			HOp(op, args, rel) => {
-				let app = Application::new(AppHead::HOp(op, env.eval(args), env.eval(rel)), vars);
-				UExpr::term(Term::app(app))
+			Rigid(head) => match head.app(vars, env) {
+				Either::Left(app) => UExpr::term(Term::app(env.eval(app))),
+				Either::Right(uexpr) => env.eval(uexpr),
 			},
 			Lam(scope, clos_env, body) => {
 				let vars = shared::Expr::vars(context.len(), scope.clone());
@@ -264,7 +262,6 @@ impl Eval<partial::Relation, Relation> for &Env {
 impl<'c> Eval<stable::Relation<'c>, Relation> for &Env {
 	fn eval(self, stable::Relation(scope, env, body): stable::Relation<'c>) -> Relation {
 		let lvl = self.0.len();
-		log::info!("resuming with {:?}", env.2 .1);
 		let body = (&env.extend(lvl, scope.clone())).eval(body);
 		Lambda(scope.clone(), (&self.extend(scope)).eval(body))
 	}
@@ -294,9 +291,33 @@ impl<'c> Eval<stable::LogicRel<'c>, LogicRel> for &Env {
 	}
 }
 
-impl<'c> Eval<stable::Application<'c>, Logic> for &Env {
-	fn eval(self, source: stable::Application<'c>) -> Logic {
-		Logic::Neutral(self.eval(source))
+impl<'c> Eval<stable::Neutral<'c>, Logic> for &Env {
+	fn eval(self, source: stable::Neutral<'c>) -> Logic {
+		Logic::App(self.eval(source))
+	}
+}
+
+impl Unify<partial::UExpr> for &Env {
+	fn unify(self, t1: partial::UExpr, t2: partial::UExpr) -> bool {
+		let Env(context, _) = self;
+		let t1: UExpr = self.eval(t1);
+		let t2: UExpr = self.eval(t2);
+		let mut config = Config::new();
+		config.set_timeout_msec(2000);
+		let z3_ctx = Context::new(&config);
+		let ctx = Rc::new(Ctx::new(Solver::new(&z3_ctx)));
+		let h_ops = Rc::new(RefCell::new(HashMap::new()));
+		let rel_h_ops = Rc::new(RefCell::new(HashMap::new()));
+		let uexpr_subst = shared::Expr::vars(0, context.clone()).into_iter().map(Some).collect();
+		let z3_subst: Vector<_> = context.iter().map(|ty| ctx.var(ty, "v")).collect();
+		let env =
+			&stable::Env(uexpr_subst, 0, Z3Env(ctx.clone(), z3_subst.clone(), h_ops, rel_h_ops));
+		let t1 = env.eval(t1);
+		let t2 = env.eval(t2);
+		let t1: UExpr = self.eval(t1);
+		let t2: UExpr = self.eval(t2);
+		let uni_env = UnifyEnv(ctx, z3_subst.clone(), z3_subst);
+		(&uni_env).unify(&t1, &t2)
 	}
 }
 
@@ -315,13 +336,11 @@ pub struct Z3Env<'c>(
 
 impl<'c> Z3Env<'c> {
 	pub fn extend(&self, scope: &Vector<DataType>) -> Self {
-		log::info!("Extending {:?} from {:?}", scope, self.1);
 		let vars = scope.into_iter().map(|ty| self.0.var(ty, "v")).collect();
 		Z3Env(self.0.clone(), self.1.clone() + vars, self.2.clone(), self.3.clone())
 	}
 
 	pub fn extend_vars(&self, scope: &Vector<DataType>) -> (Z3Env<'c>, Vector<Dynamic<'c>>) {
-		log::info!("Extending {:?} from {:?}", scope, self.1);
 		let vars = scope.into_iter().map(|ty| self.0.var(ty, "v")).collect();
 		(Z3Env(self.0.clone(), &self.1 + &vars, self.2.clone(), self.3.clone()), vars)
 	}
@@ -333,17 +352,17 @@ impl<'c> Eval<&Logic, Bool<'c>> for &Z3Env<'c> {
 		let Z3Env(ctx, _, _, _) = self;
 		let z3_ctx = ctx.z3_ctx();
 		match source {
+			Bool(e) => self.0.bool_is_true(&self.eval(e)),
+			Eq(e1, e2) => self.eval(e1)._eq(&self.eval(e2)),
+			Pred(p, args) => {
+				let args = args.iter().map(|arg| self.eval(arg)).collect_vec();
+				let args = args.iter().collect_vec();
+				self.0.app(p, &args, &DataType::Boolean, false).as_bool().unwrap()
+			},
 			Neg(l) => self.eval(l.as_ref()).not(),
-			And(ls) => {
-				let bools = self.eval(ls);
-				Bool::and(z3_ctx, &bools.iter().collect_vec())
-			},
-			Or(ls) => {
-				let bools = self.eval(ls);
-				Bool::or(z3_ctx, &bools.iter().collect_vec())
-			},
-			Pred(pred) => self.eval(pred),
-			Neutral(app) => self.eval(app),
+			And(ls) => z3::ast::Bool::and(z3_ctx, &self.eval(ls).iter().collect_vec()),
+			Or(ls) => z3::ast::Bool::or(z3_ctx, &self.eval(ls).iter().collect_vec()),
+			App(app) => self.eval(app),
 			Exists(LogicRel(scope, l)) => {
 				let (ref env, vars) = self.clone().extend_vars(&scope);
 				let bounds = vars.iter().map(|v| v as &dyn Ast).collect_vec();
@@ -354,8 +373,8 @@ impl<'c> Eval<&Logic, Bool<'c>> for &Z3Env<'c> {
 	}
 }
 
-impl<'c> Eval<&Vector<Application>, Int<'c>> for &Z3Env<'c> {
-	fn eval(self, source: &Vector<Application>) -> Int<'c> {
+impl<'c> Eval<&Vector<Neutral>, Int<'c>> for &Z3Env<'c> {
+	fn eval(self, source: &Vector<Neutral>) -> Int<'c> {
 		let apps: Vector<_> = self.eval(source);
 		let z3_ctx = self.0.z3_ctx();
 		if apps.is_empty() {
@@ -366,16 +385,11 @@ impl<'c> Eval<&Vector<Application>, Int<'c>> for &Z3Env<'c> {
 	}
 }
 
-fn table_name(
-	head: &AppHead<Relation>,
-	env: &Z3Env,
-	squashed: bool,
-	domain: Vec<DataType>,
-) -> String {
+fn table_name(head: &Head<Relation>, env: &Z3Env, squashed: bool, domain: Vec<DataType>) -> String {
 	let Z3Env(_, subst, _, map) = env;
 	match head {
-		AppHead::Var(VL(l)) => format!("r{}!{}", if squashed { "p" } else { "" }, l),
-		AppHead::HOp(op, args, rel) => {
+		Head::Var(VL(l)) => format!("r{}!{}", if squashed { "p" } else { "" }, l),
+		Head::HOp(op, args, rel) => {
 			let len = map.borrow().len();
 			let name = format!("rh{}!{}", if squashed { "p" } else { "" }, len);
 			map.borrow_mut()
@@ -387,8 +401,8 @@ fn table_name(
 	}
 }
 
-impl<'c> Eval<&Application, Bool<'c>> for &Z3Env<'c> {
-	fn eval(self, source: &Application) -> Bool<'c> {
+impl<'c> Eval<&Neutral, Bool<'c>> for &Z3Env<'c> {
+	fn eval(self, source: &Neutral) -> Bool<'c> {
 		let domain = source.args.iter().map(|a| a.ty()).collect();
 		let args = source.args.iter().map(|v| self.eval(v)).collect_vec();
 		let args = args.iter().collect_vec();
@@ -404,8 +418,8 @@ impl<'c> Eval<&Application, Bool<'c>> for &Z3Env<'c> {
 	}
 }
 
-impl<'c> Eval<&Application, Int<'c>> for &Z3Env<'c> {
-	fn eval(self, source: &Application) -> Int<'c> {
+impl<'c> Eval<&Neutral, Int<'c>> for &Z3Env<'c> {
+	fn eval(self, source: &Neutral) -> Int<'c> {
 		let domain = source.args.iter().map(|a| a.ty()).collect();
 		let args = source.args.iter().map(|v| self.eval(v)).collect_vec();
 		let args = args.iter().collect_vec();
@@ -510,28 +524,6 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 				.entry((f.clone(), args.clone(), *rel.clone(), subst.clone()))
 				.or_insert_with(|| self.0.var(ty, "h"))
 				.clone(),
-		}
-	}
-}
-
-impl<'c> Eval<&Predicate, Bool<'c>> for &Z3Env<'c> {
-	fn eval(self, source: &Predicate) -> Bool<'c> {
-		match source {
-			Predicate::Eq(e1, e2) => self.eval(e1)._eq(&self.eval(e2)),
-			// Predicate::Eq(e1, e2) => self.eval(e1)._safe_eq(&self.eval(e2)).unwrap_or_else(|_| {
-			// 	log::info!("Incorrect comparing {} and {}", e1, e2);
-			// 	log::info!("under context {:?}", self.1);
-			// 	panic!()
-			// }),
-			Predicate::Pred(pred, args) => {
-				let args = args.iter().map(|arg| self.eval(arg)).collect_vec();
-				let args = args.iter().collect_vec();
-				self.0.app(pred, &args, &DataType::Boolean, false).as_bool().unwrap()
-			},
-			Predicate::Bool(expr) => self.0.bool_is_true(&self.eval(expr)),
-			Predicate::Like(expr, pat) => {
-				self.eval(expr)._eq(&self.0.app(pat, &[], &DataType::String, true))
-			},
 		}
 	}
 }

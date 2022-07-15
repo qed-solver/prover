@@ -1,13 +1,12 @@
-use std::collections::{BTreeMap, HashSet};
-use std::iter::once;
+use std::collections::BTreeMap;
 use std::time::Duration;
 
-use imbl::Vector;
+use imbl::{HashSet, Vector};
 use itertools::Itertools;
 use z3::ast::Ast;
 use z3::SatResult;
 
-use super::nom::Z3Env;
+use super::normal::Z3Env;
 use super::shared::{DataType, Eval, Lambda, Terms};
 use crate::pipeline::normal;
 use crate::pipeline::shared::{self, VL};
@@ -15,8 +14,8 @@ use crate::pipeline::shared::{self, VL};
 pub type Expr<'c> = shared::Expr<Relation<'c>>;
 #[derive(Clone)]
 pub struct LogicRel<'c>(pub Vector<DataType>, pub Env<'c>, pub normal::Logic);
-pub type Logic<'c> = shared::Logic<Relation<'c>, LogicRel<'c>>;
-pub type Application<'c> = shared::Application<Relation<'c>>;
+pub type Neutral<'c> = shared::Neutral<Relation<'c>>;
+pub type Logic<'c> = shared::Logic<Relation<'c>, LogicRel<'c>, Neutral<'c>>;
 
 #[derive(Clone)]
 pub struct Relation<'c>(pub Vector<DataType>, pub Env<'c>, pub normal::UExpr);
@@ -40,21 +39,49 @@ impl<'c> Env<'c> {
 pub struct Term<'c> {
 	pub scope: Vector<DataType>,
 	pub logic: Logic<'c>,
-	pub apps: Vector<Application<'c>>,
+	pub apps: Vector<Neutral<'c>>,
+}
+
+impl<'c> Eval<(VL, DataType), Expr<'c>> for &Env<'c> {
+	fn eval(self, (VL(l), _): (VL, DataType)) -> Expr<'c> {
+		self.0[l].clone().unwrap()
+	}
+}
+
+impl<'c> Eval<normal::Relation, Relation<'c>> for &Env<'c> {
+	fn eval(self, Lambda(scope, body): normal::Relation) -> Relation<'c> {
+		Relation(scope, self.clone(), body)
+	}
+}
+
+impl<'c> Eval<normal::LogicRel, LogicRel<'c>> for &Env<'c> {
+	fn eval(self, normal::LogicRel(scope, body): normal::LogicRel) -> LogicRel<'c> {
+		LogicRel(scope, self.clone(), *body)
+	}
+}
+
+impl<'c> Eval<normal::Neutral, Logic<'c>> for &Env<'c> {
+	fn eval(self, source: normal::Neutral) -> Logic<'c> {
+		Logic::App(self.eval(source))
+	}
+}
+
+impl<'c> Eval<normal::UExpr, UExpr<'c>> for &Env<'c> {
+	fn eval(self, source: normal::UExpr) -> UExpr<'c> {
+		source.into_iter().filter_map(|term| self.eval(term)).collect()
+	}
 }
 
 fn exprs(logic: &normal::Logic) -> Vec<&normal::Expr> {
 	use shared::Logic::*;
 	match logic {
+		Bool(_) | Pred(_, _) => vec![],
+		Eq(e1, e2) => vec![e1, e2],
 		Neg(l) => exprs(l),
 		And(ls) => ls.iter().flat_map(exprs).collect(),
 		Or(ls) => ls.iter().flat_map(exprs).collect(),
-		Pred(pred) => match pred {
-			shared::Predicate::Eq(e1, e2) => vec![e1, e2],
-			_ => vec![],
-		},
-		Neutral(_) => vec![],
-		Exists(_) => vec![],
+		App(_) => vec![],
+		Exists(normal::LogicRel(_, l)) => exprs(l),
 	}
 }
 
@@ -63,11 +90,6 @@ fn var_elim<'c>(
 	vars: &[(u32, &normal::Expr)],
 	cong: &[(u32, &normal::Expr)],
 ) -> (Vector<DataType>, Vector<Option<Expr<'c>>>) {
-	log::info!(
-		"Eliminating {}, {}",
-		vars.iter().map(|(g, e)| format!("[{}, {}]", g, e)).join(", "),
-		cong.iter().map(|(g, e)| format!("[{}, {}]", g, e)).join(", ")
-	);
 	let groups = vars.iter().chain(cong).copied().into_group_map();
 	let vars = vars
 		.iter()
@@ -89,8 +111,8 @@ fn var_elim<'c>(
 			let group = groups.get(&g).unwrap();
 			keys.remove(&v);
 			if let Some((deps, expr)) = group.iter().find_map(|&expr| {
-				let dep_vars = expr.deps(bound.clone());
-				root_deps(&dep_vars, &deps_map).is_subset(&keys).then_some((dep_vars, expr))
+				let dep_vars = expr.deps(&bound);
+				root_deps(&dep_vars, &deps_map).is_subset(&keys).then(|| (dep_vars, expr))
 			}) {
 				log::info!("[dep] {} -> {}", v, expr);
 				deps_map.insert(v, deps);
@@ -107,9 +129,9 @@ fn var_elim<'c>(
 
 	fn root_deps(vars: &HashSet<VL>, deps: &BTreeMap<VL, HashSet<VL>>) -> HashSet<VL> {
 		let saturate = |var, deps: &BTreeMap<_, _>| {
-			deps.get(&var).map_or_else(|| once(var).collect(), |vars| root_deps(vars, deps))
+			deps.get(&var).map_or_else(|| HashSet::unit(var), |vars| root_deps(vars, deps))
 		};
-		vars.iter().flat_map(|&v| saturate(v, deps)).collect()
+		HashSet::unions(vars.iter().map(|&v| saturate(v, deps)))
 	}
 
 	fn prune<'c>(
@@ -133,37 +155,6 @@ fn var_elim<'c>(
 	(scope, var_subst)
 }
 
-impl<'c> Eval<(VL, DataType), Expr<'c>> for &Env<'c> {
-	fn eval(self, (VL(l), _): (VL, DataType)) -> Expr<'c> {
-		self.0[l].clone().unwrap()
-	}
-}
-
-impl<'c> Eval<normal::Relation, Relation<'c>> for &Env<'c> {
-	fn eval(self, Lambda(scope, body): normal::Relation) -> Relation<'c> {
-		log::info!("pausing {scope:?} {body} with {:?}", self.2 .1);
-		Relation(scope, self.clone(), body)
-	}
-}
-
-impl<'c> Eval<normal::LogicRel, LogicRel<'c>> for &Env<'c> {
-	fn eval(self, normal::LogicRel(scope, body): normal::LogicRel) -> LogicRel<'c> {
-		LogicRel(scope, self.clone(), *body)
-	}
-}
-
-impl<'c> Eval<normal::Application, Logic<'c>> for &Env<'c> {
-	fn eval(self, source: normal::Application) -> Logic<'c> {
-		Logic::Neutral(self.eval(source))
-	}
-}
-
-impl<'c> Eval<normal::UExpr, UExpr<'c>> for &Env<'c> {
-	fn eval(self, source: normal::UExpr) -> UExpr<'c> {
-		source.into_iter().filter_map(|term| self.eval(term)).collect()
-	}
-}
-
 impl<'c> Eval<normal::Term, Option<Term<'c>>> for &Env<'c> {
 	fn eval(self, source: normal::Term) -> Option<Term<'c>> {
 		let Env(subst, lvl, z3_env) = self;
@@ -171,7 +162,11 @@ impl<'c> Eval<normal::Term, Option<Term<'c>>> for &Env<'c> {
 		let solver = &z3_env.0.solver;
 		let constraint = (&z3_env).eval(&source.logic);
 		let vars = shared::Expr::vars(subst.len(), source.scope.clone());
-		let exprs = vars.iter().chain(exprs(&source.logic)).collect_vec();
+		let exprs = vars
+			.iter()
+			.chain(exprs(&source.logic))
+			.filter(|e| e.in_scope(subst.len() + source.scope.len()))
+			.collect_vec();
 		let z3_asts = exprs.iter().map(|&e| (&z3_env).eval(e)).collect_vec();
 		let z3_asts = z3_asts.iter().map(|e| e as &dyn Ast).collect_vec();
 		solver.push();
@@ -207,6 +202,10 @@ impl<'c> Eval<normal::Term, Option<Term<'c>>> for &Env<'c> {
 			},
 			SatResult::Sat => {
 				let groups = ids.into_iter().zip(exprs).collect_vec();
+				log::info!(
+					"Congruence groups: {}",
+					groups.iter().map(|(g, e)| format!("[{}, {}]", g, e)).join(", ")
+				);
 				let (vars, cong) = groups.split_at(source.scope.len());
 				let env = &Env(subst.clone(), *lvl, z3_env.clone());
 				let (scope, ref new_subst) = var_elim(env, vars, cong);

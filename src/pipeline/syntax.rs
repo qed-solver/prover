@@ -1,9 +1,10 @@
 use std::fmt::{Debug, Display, Formatter, Write};
-use std::ops::{Add, AddAssign, Mul, MulAssign, Not};
+use std::ops::{Add, Mul, Not};
 
-use imbl::Vector;
+use imbl::{Vector, vector};
 use indenter::indented;
 use itertools::Itertools;
+use UExpr::*;
 
 use super::shared::VL;
 use crate::pipeline::shared;
@@ -14,8 +15,9 @@ use crate::pipeline::shared::DataType;
 /// when having the explict definition.
 /// Here the lambda term uses a vector of data types to bind every components of the input tuple.
 /// That is, each component is treated as a unique variable that might appear in the function body.
-pub type Predicate = shared::Predicate<Relation>;
 pub type Expr = shared::Expr<Relation>;
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct Application(pub Relation, pub Vector<Expr>);
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub enum Relation {
@@ -23,6 +25,8 @@ pub enum Relation {
 	HOp(String, Vec<Expr>, Box<Relation>),
 	Lam(Vector<DataType>, Box<UExpr>),
 }
+
+pub type Logic = shared::Logic<Relation, Relation, Application>;
 
 impl Relation {
 	pub fn lam(scopes: Vector<DataType>, body: impl Into<Box<UExpr>>) -> Relation {
@@ -50,12 +54,10 @@ impl Display for Relation {
 /// as well as the result of a predicate and application of a relation with some arguments.
 #[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum UExpr {
-	Zero,
-	One,
 	// Addition
-	Add(Box<UExpr>, Box<UExpr>),
+	Add(Vector<UExpr>),
 	// Multiplication
-	Mul(Box<UExpr>, Box<UExpr>),
+	Mul(Vector<UExpr>),
 	// Squash operator
 	Squash(Box<UExpr>),
 	// Not operator
@@ -63,78 +65,97 @@ pub enum UExpr {
 	// Summation that ranges over tuples of certain schema
 	Sum(Vector<DataType>, Box<UExpr>),
 	// Predicate that can be evaluated to 0 or 1
-	Pred(Predicate),
+	Pred(Logic),
 	// Application of a relation with arguments.
 	// Here each argument are required to be a single variable.
 	App(Relation, Vector<Expr>),
 }
 
 impl UExpr {
+	pub fn zero() -> Self {
+		UExpr::Add(vector![])
+	}
+
+	pub fn one() -> Self {
+		UExpr::Mul(vector![])
+	}
+
 	pub fn sum(scopes: impl Into<Vector<DataType>>, body: impl Into<Box<UExpr>>) -> Self {
-		UExpr::Sum(scopes.into(), body.into())
+		Sum(scopes.into(), body.into())
 	}
 
 	pub fn squash(body: impl Into<Box<UExpr>>) -> Self {
-		UExpr::Squash(body.into())
+		Squash(body.into())
+	}
+
+	pub fn as_logic(self) -> Logic {
+		match self {
+			Add(us) => Logic::Or(us.into_iter().map(UExpr::as_logic).collect()),
+			Mul(us) => Logic::And(us.into_iter().map(UExpr::as_logic).collect()),
+			Squash(u) => u.as_logic(),
+			Not(u) => !u.as_logic(),
+			Sum(scopes, body) => Logic::Exists(Relation::Lam(scopes, body)),
+			Pred(logic) => logic,
+			App(table, args) => Logic::App(Application(table, args)),
+		}
 	}
 }
 
 impl Display for UExpr {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
-			UExpr::Zero => write!(f, "0"),
-			UExpr::One => write!(f, "1"),
-			UExpr::Add(u1, u2) => write!(f, "({} + {})", u1, u2),
-			UExpr::Mul(u1, u2) => write!(f, "({} × {})", u1, u2),
-			UExpr::Squash(u) => write!(f, "‖{}‖", u),
-			UExpr::Not(u) => write!(f, "¬({})", u),
-			UExpr::Sum(scopes, body) => {
+			Add(us) if us.is_empty() => write!(f, "0"),
+			Add(us) => write!(f, "({})", us.iter().format(" + ")),
+			Mul(us) if us.is_empty() => write!(f, "1"),
+			Mul(us) => write!(f, "({})", us.iter().format(" × ")),
+			Squash(u) => write!(f, "‖{}‖", u),
+			Not(u) => write!(f, "¬({})", u),
+			Sum(scopes, body) => {
 				writeln!(f, "∑ {:?} {{", scopes)?;
 				writeln!(indented(f).with_str("\t"), "{}", body)?;
 				write!(f, "}}")
 			},
-			UExpr::Pred(pred) => write!(f, "⟦{}⟧", pred),
-			UExpr::App(rel, args) => {
+			Pred(logic) => write!(f, "⟦{}⟧", logic),
+			App(rel, args) => {
 				write!(f, "{}({})", rel, args.iter().join(", "))
 			},
 		}
 	}
 }
 
+impl Display for Application {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		let Application(rel, args) = self;
+		write!(f, "{}({})", rel, args.iter().join(", "))
+	}
+}
+
 // The following overload the +, *, and ! operators for UExpr, so that we can construct an expression
 // in a natural way.
 
-impl<T: Into<Box<UExpr>>> Add<T> for UExpr {
+impl Add<UExpr> for UExpr {
 	type Output = UExpr;
 
-	fn add(self, rhs: T) -> Self::Output {
-		match (self, *rhs.into()) {
-			(UExpr::Zero, t) | (t, UExpr::Zero) => t,
-			(t1, t2) => UExpr::Add(Box::new(t1), Box::new(t2)),
+	fn add(self, rhs: UExpr) -> Self::Output {
+		match (self, rhs) {
+			(Add(us1), Add(us2)) => Add(us1 + us2),
+			(Add(us1), u2) => Add(us1 + vector![u2]),
+			(u1, Add(us2)) => Add(vector![u1] + us2),
+			(t1, t2) => Add(vector![t1] + vector![t2]),
 		}
 	}
 }
 
-impl<T: Into<Box<UExpr>>> AddAssign<T> for UExpr {
-	fn add_assign(&mut self, rhs: T) {
-		*self = self.clone() + rhs;
-	}
-}
-
-impl<T: Into<Box<UExpr>>> Mul<T> for UExpr {
+impl Mul<UExpr> for UExpr {
 	type Output = UExpr;
 
-	fn mul(self, rhs: T) -> Self::Output {
-		match (self, *rhs.into()) {
-			(UExpr::One, t) | (t, UExpr::One) => t,
-			(t1, t2) => UExpr::Mul(Box::new(t1), Box::new(t2)),
+	fn mul(self, rhs: UExpr) -> Self::Output {
+		match (self, rhs) {
+			(Mul(us1), Mul(us2)) => Mul(us1 + us2),
+			(Mul(us1), u2) => Mul(us1 + vector![u2]),
+			(u1, Mul(us2)) => Mul(vector![u1] + us2),
+			(t1, t2) => Mul(vector![t1] + vector![t2]),
 		}
-	}
-}
-
-impl<T: Into<Box<UExpr>>> MulAssign<T> for UExpr {
-	fn mul_assign(&mut self, rhs: T) {
-		*self = self.clone() * rhs;
 	}
 }
 
@@ -142,6 +163,6 @@ impl Not for UExpr {
 	type Output = UExpr;
 
 	fn not(self) -> Self::Output {
-		UExpr::Not(self.into())
+		Not(self.into())
 	}
 }
