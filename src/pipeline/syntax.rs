@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display, Formatter, Write};
 use std::ops::{Add, Mul, Not};
 
-use imbl::{Vector, vector};
+use imbl::{vector, Vector};
 use indenter::indented;
 use itertools::Itertools;
 use UExpr::*;

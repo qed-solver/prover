@@ -159,6 +159,48 @@ impl Logic {
 			Exists(LogicRel(scope, l)) => l.in_scope(lvl + scope.len()),
 		}
 	}
+
+	fn is_tt(&self) -> bool {
+		use shared::Logic::*;
+		match self {
+			Eq(e1, e2) if e1 == e2 => true,
+			And(ls) if ls.is_empty() => true,
+			Neg(l) if l.is_ff() => true,
+			_ => false,
+		}
+	}
+
+	fn is_ff(&self) -> bool {
+		use shared::Logic::*;
+		match self {
+			Or(ls) if ls.is_empty() => true,
+			Neg(l) if l.is_tt() => true,
+			_ => false,
+		}
+	}
+
+	fn norm(self) -> Logic {
+		use shared::Logic::*;
+		match self {
+			l if l.is_tt() => Logic::tt(),
+			l if l.is_ff() => Logic::ff(),
+			And(ls) => {
+				let ls = ls.into_iter().flat_map(|l| match l {
+					And(ls) => ls,
+					l => vector![l],
+				});
+				And(ls.collect())
+			},
+			Or(ls) => {
+				let ls = ls.into_iter().flat_map(|l| match l {
+					Or(ls) => ls,
+					l => vector![l],
+				});
+				Or(ls.collect())
+			},
+			l => l,
+		}
+	}
 }
 
 #[derive(Clone)]
@@ -283,11 +325,23 @@ impl<'c> Eval<stable::Term<'c>, Term> for &Env {
 	}
 }
 
-impl<'c> Eval<stable::LogicRel<'c>, LogicRel> for &Env {
-	fn eval(self, stable::LogicRel(scope, env, body): stable::LogicRel<'c>) -> LogicRel {
-		let lvl = self.0.len();
-		let body = (&env.extend(lvl, scope.clone())).eval(body);
-		LogicRel(scope.clone(), Box::new((&self.extend(scope)).eval(body)))
+impl<'c> Eval<stable::Logic<'c>, Logic> for &Env {
+	fn eval(self, source: stable::Logic<'c>) -> Logic {
+		use shared::Logic::*;
+		match source {
+			Bool(e) => Bool(self.eval(e)),
+			Eq(e1, e2) => Eq(self.eval(e1), self.eval(e2)),
+			Pred(p, args) => Pred(p, self.eval(args)),
+			Neg(l) => Neg(self.eval(l)),
+			And(ls) => And(self.eval(ls)),
+			Or(ls) => Or(self.eval(ls)),
+			App(app) => self.eval(app),
+			Exists(stable::LogicRel(scope, env, body)) => {
+				let body = (&env.extend(self.0.len(), scope.clone())).eval(body);
+				Exists(LogicRel(scope.clone(), Box::new((&self.extend(scope)).eval(body))))
+			},
+		}
+		.norm()
 	}
 }
 
@@ -466,7 +520,18 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 			Expr::Var(v, _) => subst[v.0].clone(),
 			Expr::Op(op, args, ty) if args.is_empty() => parse(ctx.as_ref(), op, ty).unwrap(),
 			Expr::Op(op, expr_args, ty) => {
-				let args = expr_args.iter().map(|arg| self.eval(arg)).collect_vec();
+				let cast = matches!(op.as_str(), "+" | "-" | "*" | "/" if ty == &Real)
+					|| matches!(op.as_str(), ">" | "<" | ">=" | "<=" | "=" if expr_args.iter().any(|e| e.ty() == Real));
+				let args = expr_args
+					.iter()
+					.map(|arg| {
+						if cast && arg.ty() != Real {
+							ctx.int_to_real(&self.eval(arg))
+						} else {
+							self.eval(arg)
+						}
+					})
+					.collect_vec();
 				let args = args.iter().collect_vec();
 				match op.as_str() {
 					num_op @ ("+" | "-" | "*" | "/" | "%" /*| "POWER" */) if ty == &Integer => {
@@ -495,7 +560,7 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 						"<=" => ctx.int_le(args[0], args[1]),
 						_ => unreachable!(),
 					},
-					cmp @ (">" | "<" | ">=" | "<=") if expr_args[0].ty() == Integer => match cmp {
+					cmp @ (">" | "<" | ">=" | "<=") if expr_args[0].ty() == Real => match cmp {
 						">" => ctx.real_gt(args[0], args[1]),
 						"<" => ctx.real_lt(args[0], args[1]),
 						">=" => ctx.real_ge(args[0], args[1]),
@@ -515,6 +580,9 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 					},
 					"IS NOT NULL" => {
 						ctx.bool_some(ctx.none(&expr_args[0].ty()).unwrap()._eq(args[0]).not())
+					},
+					"CAST" if ty == &Real && expr_args[0].ty() == Integer => {
+						ctx.int_to_real(args[0])
 					},
 					op => ctx.app(&format!("f!{}", op), &args, ty, true),
 				}

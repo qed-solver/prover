@@ -301,13 +301,8 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 			Sort { mut collation, offset, limit, source } => {
 				// TODO: Better way to handle multiple sort columns.
 				if let Some((col, _, ord)) = collation.pop() {
-					let col = col.into();
-					let ord = ord.into();
-					Rel::HOp(
-						"sort".to_string(),
-						vec![col, ord],
-						self.eval(Sort { collation, offset, limit, source }.into()),
-					)
+					let body = self.eval(Sort { collation, offset, limit, source }.into());
+					Rel::HOp("sort".to_string(), vec![col.into(), ord.into()], body)
 				} else {
 					let source = self.eval(source);
 					let offset = offset.map(|n| self.eval(n)).unwrap_or(0u32.into());

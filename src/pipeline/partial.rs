@@ -172,7 +172,7 @@ impl Eval<syntax::UExpr, UExpr> for &Env {
 			App(table, args) => {
 				let rel: Relation = self.eval(table);
 				rel.app(self.eval(args))
-			}
+			},
 		}
 	}
 }

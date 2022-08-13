@@ -13,8 +13,7 @@ use z3::SatResult;
 
 use super::normal::Term;
 use super::shared::{self, Ctx};
-use crate::pipeline::normal::{Expr, Z3Env};
-use crate::pipeline::normal::{HOpMap, RelHOpMap, Relation, UExpr};
+use crate::pipeline::normal::{Expr, HOpMap, RelHOpMap, Relation, UExpr, Z3Env};
 use crate::pipeline::shared::{DataType, Eval, Head, VL};
 
 pub trait Unify<T> {
@@ -208,7 +207,7 @@ pub(crate) fn smt<'c>(solver: &'c z3::Solver, pred: Bool<'c>) -> bool {
 		.replace("(+ ", "(+ 0 ");
 	let smt = smt.strip_prefix("; \n(set-info :status )").unwrap_or(smt.as_str());
 	let mut child = Command::new("cvc5")
-		.args(["--tlimit=2000", "--strings-exp"])
+		.args(["--tlimit=5000", "--strings-exp"])
 		.stdin(Stdio::piped())
 		.stdout(Stdio::piped())
 		.spawn()

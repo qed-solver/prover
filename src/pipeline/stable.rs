@@ -110,10 +110,15 @@ fn var_elim<'c>(
 		.map(|(g, v, ty)| {
 			let group = groups.get(&g).unwrap();
 			keys.remove(&v);
-			if let Some((deps, expr)) = group.iter().find_map(|&expr| {
-				let dep_vars = expr.deps(&bound);
-				root_deps(&dep_vars, &deps_map).is_subset(&keys).then(|| (dep_vars, expr))
-			}) {
+			if let Some((_, deps, expr)) = group
+				.iter()
+				.filter_map(|&expr| {
+					let deps = expr.deps(&bound);
+					let root_deps = root_deps(&deps, &deps_map);
+					root_deps.is_subset(&keys).then(|| (root_deps.len(), deps, expr))
+				})
+				.min_by_key(|a| a.0)
+			{
 				log::info!("[dep] {} -> {}", v, expr);
 				deps_map.insert(v, deps);
 				(expr.clone(), None)
@@ -127,23 +132,23 @@ fn var_elim<'c>(
 		})
 		.unzip();
 
-	fn root_deps(vars: &HashSet<VL>, deps: &BTreeMap<VL, HashSet<VL>>) -> HashSet<VL> {
+	fn root_deps(vars: &HashSet<VL>, deps_map: &BTreeMap<VL, HashSet<VL>>) -> HashSet<VL> {
 		let saturate = |var, deps: &BTreeMap<_, _>| {
 			deps.get(&var).map_or_else(|| HashSet::unit(var), |vars| root_deps(vars, deps))
 		};
-		HashSet::unions(vars.iter().map(|&v| saturate(v, deps)))
+		HashSet::unions(vars.iter().map(|&v| saturate(v, deps_map)))
 	}
 
 	fn prune<'c>(
 		v: VL,
 		keys: &HashSet<VL>,
-		dep_maps: &mut BTreeMap<VL, HashSet<VL>>,
+		deps_map: &mut BTreeMap<VL, HashSet<VL>>,
 		var_subst: &mut Vector<Option<Expr<'c>>>,
 		exprs: &Vec<normal::Expr>,
 		env: &Env<'c>,
 	) {
-		if let Some((v, deps)) = dep_maps.remove_entry(&v) {
-			deps.into_iter().for_each(|w| prune(w, keys, dep_maps, var_subst, exprs, env));
+		if let Some((v, deps)) = deps_map.remove_entry(&v) {
+			deps.into_iter().for_each(|w| prune(w, keys, deps_map, var_subst, exprs, env));
 			let i = v.0 - env.0.len();
 			var_subst[i] = Some((&env.append(var_subst.clone())).eval(exprs[i].clone()));
 		};
@@ -178,7 +183,7 @@ impl<'c> Eval<normal::Term, Option<Term<'c>>> for &Env<'c> {
 			let p = crossbeam::sync::Parker::new();
 			let u = p.unparker().clone();
 			s.spawn(move |_| {
-				p.park_timeout(Duration::from_secs(5));
+				p.park_timeout(Duration::from_secs(10));
 				if !checked.load() {
 					handle.interrupt();
 				}

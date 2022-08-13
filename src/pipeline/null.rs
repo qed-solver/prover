@@ -135,6 +135,7 @@ ctx_impl!(
 		le(x, y) -> Bool;
 		gt(x, y) -> Bool;
 		ge(x, y) -> Bool;
+		to_real(x) -> Real;
 	};
 	Bool {
 		not(x) -> Bool;
