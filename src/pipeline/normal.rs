@@ -520,18 +520,7 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 			Expr::Var(v, _) => subst[v.0].clone(),
 			Expr::Op(op, args, ty) if args.is_empty() => parse(ctx.as_ref(), op, ty).unwrap(),
 			Expr::Op(op, expr_args, ty) => {
-				let cast = matches!(op.as_str(), "+" | "-" | "*" | "/" if ty == &Real)
-					|| matches!(op.as_str(), ">" | "<" | ">=" | "<=" | "=" if expr_args.iter().any(|e| e.ty() == Real));
-				let args = expr_args
-					.iter()
-					.map(|arg| {
-						if cast && arg.ty() != Real {
-							ctx.int_to_real(&self.eval(arg))
-						} else {
-							self.eval(arg)
-						}
-					})
-					.collect_vec();
+				let args = expr_args.iter().map(|a| self.eval(a)).collect_vec();
 				let args = args.iter().collect_vec();
 				match op.as_str() {
 					num_op @ ("+" | "-" | "*" | "/" | "%" /*| "POWER" */) if ty == &Integer => {
@@ -580,6 +569,9 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 					},
 					"IS NOT NULL" => {
 						ctx.bool_some(ctx.none(&expr_args[0].ty()).unwrap()._eq(args[0]).not())
+					},
+					"CAST" if ty == &expr_args[0].ty() => {
+						args[0].clone()
 					},
 					"CAST" if ty == &Real && expr_args[0].ty() == Integer => {
 						ctx.int_to_real(args[0])

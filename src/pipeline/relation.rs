@@ -367,6 +367,14 @@ impl Expr {
 		.clone()
 	}
 
+	fn into_real(self) -> Expr {
+		if self.ty() == DataType::Real {
+			self
+		} else {
+			Expr::Op { op: "CAST".to_string(), args: vec![self], ty: DataType::Real }
+		}
+	}
+
 	fn eval_agg(self, source: &Relation, env: Env) -> syntax::Expr {
 		use shared::Expr::*;
 		if let Expr::Op { op, args, ty } = self {
@@ -386,15 +394,13 @@ impl Eval<Expr, syntax::Expr> for Env<'_> {
 		use shared::Expr::*;
 		match source {
 			Expr::Col { column, ty } => self.1[column.0].clone(),
-			Expr::Op { op, args, ty } if op == "CAST" && args.len() == 1 => {
-				let args: Vec<syntax::Expr> = self.eval(args);
-				if args[0].ty() == ty {
-					args[0].clone()
-				} else {
-					Op(op, args, ty)
-				}
+			Expr::Op { op, args, ty } => {
+				let cast = matches!(op.as_str(), "+" | "-" | "*" | "/" if &ty == &DataType::Real)
+					|| matches!(op.as_str(), ">" | "<" | ">=" | "<=" | "=" if args.iter().any(|e| e.ty() == DataType::Real));
+				let args =
+					if cast { args.into_iter().map(Expr::into_real).collect() } else { args };
+				Op(op, self.eval(args), ty)
 			},
-			Expr::Op { op, args, ty } => Op(op, self.eval(args), ty),
 			Expr::HOp { op, args, rel, ty } => HOp(op, self.eval(args), self.eval(rel), ty),
 		}
 	}
@@ -406,6 +412,10 @@ impl Eval<Expr, Logic> for Env<'_> {
 			Expr::Op { op, args, ty: DataType::Boolean } => match op.to_uppercase().as_str() {
 				"TRUE" => Logic::tt(),
 				"FALSE" => Logic::ff(),
+				"=" if args.iter().any(|a| a.ty() == DataType::Real) => {
+					let args = args.into_iter().map(Expr::into_real).collect_vec();
+					Logic::Eq(self.eval(args[0].clone()), self.eval(args[1].clone()))
+				},
 				"=" => Logic::Eq(self.eval(args[0].clone()), self.eval(args[1].clone())),
 				"<>" => !Logic::Eq(self.eval(args[0].clone()), self.eval(args[1].clone())),
 				"AND" => Logic::And(args.into_iter().map(|arg| self.eval(arg)).collect()),

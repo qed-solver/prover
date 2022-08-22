@@ -6,15 +6,14 @@ use std::process::{Command, Stdio};
 use std::rc::Rc;
 
 use imbl::Vector;
-use isoperm::wrapper::Isoperm;
-use itertools::Itertools;
+use itertools::{Either, Itertools};
 use z3::ast::{Ast, Bool, Dynamic, Int};
 use z3::SatResult;
 
 use super::normal::Term;
 use super::shared::{self, Ctx};
 use crate::pipeline::normal::{Expr, HOpMap, RelHOpMap, Relation, UExpr, Z3Env};
-use crate::pipeline::shared::{DataType, Eval, Head, VL};
+use crate::pipeline::shared::{DataType, Eval};
 
 pub trait Unify<T> {
 	fn unify(self, t1: T, t2: T) -> bool;
@@ -114,6 +113,36 @@ fn perm_equiv<T: Ord + Clone>(v1: &Vector<T>, v2: &Vector<T>) -> bool {
 	}
 }
 
+fn perms<T, V>(types: Vec<T>, vars: Vec<V>) -> impl Iterator<Item = Vec<V>>
+where
+	T: Ord + PartialEq + Clone,
+	V: Clone,
+{
+	let sort_perm = permutation::sort(types.as_slice());
+	let sorted_scopes = sort_perm.apply_slice(types.as_slice());
+	let sorted_vars = sort_perm.apply_slice(vars.as_slice());
+	let groups = sorted_scopes.iter().group_by(|a| *a);
+	let group_lengths = if types.is_empty() {
+		Either::Left(std::iter::once(0))
+	} else {
+		Either::Right(groups.into_iter().map(|(_, group)| group.count()))
+	};
+	let mut level = 0;
+	let inv_sort_perm = sort_perm.inverse();
+	group_lengths
+		.map(|length| {
+			let perms = (level..level + length).permutations(length);
+			level += length;
+			perms
+		})
+		.multi_cartesian_product()
+		.map(move |perms| {
+			let perm_vec = perms.into_iter().flatten().collect_vec();
+			let permute = &inv_sort_perm * &permutation::Permutation::from_vec(perm_vec);
+			permute.apply_slice(sorted_vars.as_slice())
+		})
+}
+
 impl<'c> Unify<&Term> for &UnifyEnv<'c> {
 	fn unify(self, t1: &Term, t2: &Term) -> bool {
 		if !perm_equiv(&t1.scope, &t2.scope) {
@@ -121,58 +150,11 @@ impl<'c> Unify<&Term> for &UnifyEnv<'c> {
 		}
 		log::info!("Unifying\n{}\n{}", t1, t2);
 		let UnifyEnv(ctx, subst1, subst2) = self;
-		type Var<'e, 'c> = isoperm::wrapper::Var<usize, &'e Dynamic<'c>, &'e Expr>;
-		fn extract<'v, 'c>(
-			t: &'v Term,
-			subst: &'v Vector<Dynamic<'c>>,
-		) -> (Vec<(usize, Vec<Var<'v, 'c>>)>, HashMap<Var<'v, 'c>, DataType>) {
-			let scope = subst.len()..subst.len() + t.scope.len();
-			let mut args: HashMap<_, _> =
-				scope.clone().map(Var::Local).zip(t.scope.clone()).collect();
-			let constraints = t
-				.apps
-				.iter()
-				.filter_map(|app| {
-					let translate = |arg: &'v Expr| match arg {
-						Expr::Var(VL(l), _) if scope.contains(l) => Var::Local(*l),
-						Expr::Var(VL(l), ty) => {
-							let v = &subst[*l];
-							args.insert(Var::Global(v), ty.clone());
-							Var::Global(v)
-						},
-						arg => {
-							args.insert(Var::Expr(arg), arg.ty());
-							Var::Expr(arg)
-						},
-					};
-					match &app.head {
-						&Head::Var(VL(t)) => Some((t, app.args.iter().map(translate).collect())),
-						Head::HOp(_, _, _) => None,
-					}
-				})
-				.collect();
-			(constraints, args)
-		}
-		let (constraints1, args1) = extract(t1, subst1);
-		let (constraints2, args2) = extract(t2, subst2);
 		let z3_ctx = ctx.z3_ctx();
-		let vars1 = t1.scope.iter().map(|ty| ctx.var(ty, "v")).collect_vec();
-		let subst1 = subst1 + &vars1.into();
-		Isoperm::new(constraints1, args1, constraints2, args2)
-			.unwrap()
-			.result()
-			.map(|bij| {
-				bij.into_iter()
-					.filter_map(|(v1, v2)| match (v1, v2) {
-						(&Var::Local(l1), &Var::Local(l2)) => Some((l2, subst1[l1].clone())),
-						_ => None,
-					})
-					.sorted_by_key(|(l, _)| *l)
-					.map(|(_, v)| v)
-					.collect_vec()
-			})
-			.take(24)
-			.any(|vars2| {
+		let vars1 = t1.scope.iter().map(|ty| ctx.var(ty, "v")).collect();
+		let subst1 = subst1 + &vars1;
+		perms(t1.scope.iter().cloned().collect(), vars1.into_iter().collect()).take(24).any(
+			|vars2| {
 				assert_eq!(vars2.len(), t2.scope.len());
 				log::info!("Permutation: {:?}", vars2);
 				let subst2 = subst2 + &vars2.into();
@@ -194,7 +176,8 @@ impl<'c> Unify<&Term> for &UnifyEnv<'c> {
 				log::info!("{}", equiv);
 				log::info!("{}", h_ops_equiv);
 				smt(solver, h_ops_equiv.implies(&equiv))
-			})
+			},
+		)
 	}
 }
 
