@@ -1,11 +1,12 @@
 {
   "schemas" : [ {
     "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
-    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "fields" : [ "EMPNO", "MGR" ],
+    "types" : [ "INTEGER", "INTEGER" ],
+    "nullable" : [ false, true ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "project" : {
@@ -20,7 +21,7 @@
             "operand" : [ {
               "operator" : "<>",
               "operand" : [ {
-                "column" : 3,
+                "column" : 1,
                 "type" : "INTEGER"
               }, {
                 "operator" : "7",
@@ -31,7 +32,7 @@
             }, {
               "operator" : "<>",
               "operand" : [ {
-                "column" : 3,
+                "column" : 1,
                 "type" : "INTEGER"
               }, {
                 "operator" : "8",
@@ -59,7 +60,7 @@
           "condition" : {
             "operator" : "IS NOT NULL",
             "operand" : [ {
-              "column" : 3,
+              "column" : 1,
               "type" : "INTEGER"
             } ],
             "type" : "BOOLEAN"
@@ -71,5 +72,5 @@
       }
     }
   } ],
-  "help" : [ "LogicalProject(EMPNO=[$0])\r\n  LogicalFilter(condition=[OR(<>($3, 7), <>($3, 8))])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EMPNO=[$0])\r\n  LogicalFilter(condition=[IS NOT NULL($3)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  "help" : [ "LogicalProject(EMPNO=[$0])\r\n  LogicalFilter(condition=[OR(<>($1, 7), <>($1, 8))])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EMPNO=[$0])\r\n  LogicalFilter(condition=[IS NOT NULL($1)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
 }

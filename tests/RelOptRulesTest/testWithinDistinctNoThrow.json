@@ -1,11 +1,12 @@
 {
   "schemas" : [ {
     "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
-    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "fields" : [ "JOB", "SAL", "DEPTNO" ],
+    "types" : [ "VARCHAR", "INTEGER", "INTEGER" ],
+    "nullable" : [ false, false, false ],
+    "key" : [ ],
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "distinct" : {
@@ -18,13 +19,13 @@
           "source" : {
             "project" : {
               "target" : [ {
-                "column" : 7,
-                "type" : "INTEGER"
-              }, {
-                "column" : 5,
-                "type" : "INTEGER"
-              }, {
                 "column" : 2,
+                "type" : "INTEGER"
+              }, {
+                "column" : 1,
+                "type" : "INTEGER"
+              }, {
+                "column" : 0,
                 "type" : "VARCHAR"
               } ],
               "source" : {
@@ -70,13 +71,13 @@
               "source" : {
                 "project" : {
                   "target" : [ {
-                    "column" : 8,
-                    "type" : "INTEGER"
-                  }, {
-                    "column" : 6,
-                    "type" : "INTEGER"
-                  }, {
                     "column" : 3,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 2,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 1,
                     "type" : "VARCHAR"
                   } ],
                   "source" : {
@@ -161,13 +162,13 @@
                           "source" : {
                             "project" : {
                               "target" : [ {
-                                "column" : 7,
-                                "type" : "INTEGER"
-                              }, {
-                                "column" : 5,
-                                "type" : "INTEGER"
-                              }, {
                                 "column" : 2,
+                                "type" : "INTEGER"
+                              }, {
+                                "column" : 1,
+                                "type" : "INTEGER"
+                              }, {
+                                "column" : 0,
                                 "type" : "VARCHAR"
                               } ],
                               "source" : {
@@ -233,13 +234,13 @@
                               "source" : {
                                 "project" : {
                                   "target" : [ {
-                                    "column" : 9,
-                                    "type" : "INTEGER"
-                                  }, {
-                                    "column" : 7,
-                                    "type" : "INTEGER"
-                                  }, {
                                     "column" : 4,
+                                    "type" : "INTEGER"
+                                  }, {
+                                    "column" : 3,
+                                    "type" : "INTEGER"
+                                  }, {
+                                    "column" : 2,
                                     "type" : "VARCHAR"
                                   } ],
                                   "source" : {
@@ -338,13 +339,13 @@
                               "source" : {
                                 "project" : {
                                   "target" : [ {
-                                    "column" : 8,
-                                    "type" : "INTEGER"
-                                  }, {
-                                    "column" : 6,
-                                    "type" : "INTEGER"
-                                  }, {
                                     "column" : 3,
+                                    "type" : "INTEGER"
+                                  }, {
+                                    "column" : 2,
+                                    "type" : "INTEGER"
+                                  }, {
+                                    "column" : 1,
                                     "type" : "VARCHAR"
                                   } ],
                                   "source" : {
@@ -410,13 +411,13 @@
                                   "source" : {
                                     "project" : {
                                       "target" : [ {
-                                        "column" : 10,
-                                        "type" : "INTEGER"
-                                      }, {
-                                        "column" : 8,
-                                        "type" : "INTEGER"
-                                      }, {
                                         "column" : 5,
+                                        "type" : "INTEGER"
+                                      }, {
+                                        "column" : 4,
+                                        "type" : "INTEGER"
+                                      }, {
+                                        "column" : 3,
                                         "type" : "VARCHAR"
                                       } ],
                                       "source" : {
@@ -440,5 +441,5 @@
       }
     }
   } ],
-  "help" : [ "LogicalAggregate(group=[{0}], EXPR$1=[SUM($1)], EXPR$2=[SUM($1) WITHIN DISTINCT ($2)])\r\n  LogicalProject(DEPTNO=[$7], SAL=[$5], JOB=[$2])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(DEPTNO=[$0], $f1=[CAST($1):INTEGER NOT NULL], $f2=[$2])\r\n  LogicalAggregate(group=[{0}], agg#0=[MIN($1) FILTER $3], agg#1=[$SUM0($2) FILTER $4])\r\n    LogicalProject(DEPTNO=[$0], $f2=[$2], $f3=[$3], $f5=[=($4, 1)], $f6=[=($4, 0)])\r\n      LogicalAggregate(group=[{0, 2}], groups=[[{0, 2}, {0}]], agg#0=[$SUM0($1)], agg#1=[MIN($1)], agg#2=[GROUPING($0, $2)])\r\n        LogicalProject(DEPTNO=[$7], SAL=[$5], JOB=[$2])\r\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  "help" : [ "LogicalAggregate(group=[{0}], EXPR$1=[SUM($1)], EXPR$2=[SUM($1) WITHIN DISTINCT ($2)])\r\n  LogicalProject(DEPTNO=[$2], SAL=[$1], JOB=[$0])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(DEPTNO=[$0], $f1=[CAST($1):INTEGER NOT NULL], $f2=[$2])\r\n  LogicalAggregate(group=[{0}], agg#0=[MIN($1) FILTER $3], agg#1=[$SUM0($2) FILTER $4])\r\n    LogicalProject(DEPTNO=[$0], $f2=[$2], $f3=[$3], $f5=[=($4, 1)], $f6=[=($4, 0)])\r\n      LogicalAggregate(group=[{0, 2}], groups=[[{0, 2}, {0}]], agg#0=[$SUM0($1)], agg#1=[MIN($1)], agg#2=[GROUPING($0, $2)])\r\n        LogicalProject(DEPTNO=[$2], SAL=[$1], JOB=[$0])\r\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
 }

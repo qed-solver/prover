@@ -5,7 +5,7 @@ use imbl::{vector, Vector};
 use itertools::{Either, Itertools};
 use serde::{Deserialize, Serialize};
 
-use crate::pipeline::shared::{Constraint, DataType, Eval, Schema, VL};
+use crate::pipeline::shared::{DataType, Eval, Schema, VL};
 use crate::pipeline::syntax::{Logic, UExpr};
 use crate::pipeline::{shared, syntax};
 use crate::solver::Payload;
@@ -115,9 +115,12 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 					.iter()
 					.map(|cond| Pred(Env(schemas, &vars, lvl + scopes.len()).eval(cond.clone())));
 				let constraints =
-					schema.constraints.iter().zip(vars.clone()).map(|(constr, v)| match constr {
-						Constraint::NotNullable => Pred(!Logic::is_null(v)),
-						_ => UExpr::one(),
+					schema.nullabilities.iter().zip(vars.clone()).map(|(nullable, v)| {
+						if !*nullable {
+							Pred(!Logic::is_null(v))
+						} else {
+							UExpr::one()
+						}
 					});
 				let app = if schema.primary.is_empty() {
 					App(Rel::Var(VL(t)), vars.clone())

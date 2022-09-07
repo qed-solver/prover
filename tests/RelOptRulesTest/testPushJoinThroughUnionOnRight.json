@@ -3,14 +3,15 @@
     "name" : "EMP",
     "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "project" : {
       "target" : [ {
-        "column" : 5,
+        "column" : 0,
         "type" : "INTEGER"
       } ],
       "source" : {
@@ -22,36 +23,20 @@
             "type" : "BOOLEAN"
           },
           "left" : {
-            "scan" : 0
+            "project" : {
+              "target" : [ {
+                "column" : 5,
+                "type" : "INTEGER"
+              } ],
+              "source" : {
+                "scan" : 0
+              }
+            }
           },
           "right" : {
             "union" : [ {
               "project" : {
                 "target" : [ {
-                  "column" : 0,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 1,
-                  "type" : "VARCHAR"
-                }, {
-                  "column" : 2,
-                  "type" : "VARCHAR"
-                }, {
-                  "column" : 3,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 4,
-                  "type" : "TIMESTAMP"
-                }, {
-                  "column" : 5,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 6,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 7,
-                  "type" : "INTEGER"
-                }, {
                   "column" : 8,
                   "type" : "BOOLEAN"
                 } ],
@@ -62,30 +47,6 @@
             }, {
               "project" : {
                 "target" : [ {
-                  "column" : 0,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 1,
-                  "type" : "VARCHAR"
-                }, {
-                  "column" : 2,
-                  "type" : "VARCHAR"
-                }, {
-                  "column" : 3,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 4,
-                  "type" : "TIMESTAMP"
-                }, {
-                  "column" : 5,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 6,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 7,
-                  "type" : "INTEGER"
-                }, {
                   "column" : 8,
                   "type" : "BOOLEAN"
                 } ],
@@ -99,13 +60,13 @@
       }
     }
   }, {
-    "project" : {
-      "target" : [ {
-        "column" : 5,
-        "type" : "INTEGER"
-      } ],
-      "source" : {
-        "union" : [ {
+    "union" : [ {
+      "project" : {
+        "target" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "source" : {
           "join" : {
             "kind" : "INNER",
             "condition" : {
@@ -114,37 +75,22 @@
               "type" : "BOOLEAN"
             },
             "left" : {
-              "scan" : 0
+              "project" : {
+                "target" : [ {
+                  "column" : 5,
+                  "type" : "INTEGER"
+                } ],
+                "source" : {
+                  "scan" : 0
+                }
+              }
             },
             "right" : {
               "project" : {
                 "target" : [ {
-                  "column" : 0,
+                  "operator" : "0",
+                  "operand" : [ ],
                   "type" : "INTEGER"
-                }, {
-                  "column" : 1,
-                  "type" : "VARCHAR"
-                }, {
-                  "column" : 2,
-                  "type" : "VARCHAR"
-                }, {
-                  "column" : 3,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 4,
-                  "type" : "TIMESTAMP"
-                }, {
-                  "column" : 5,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 6,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 7,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 8,
-                  "type" : "BOOLEAN"
                 } ],
                 "source" : {
                   "scan" : 0
@@ -152,56 +98,49 @@
               }
             }
           }
-        }, {
-          "join" : {
-            "kind" : "INNER",
-            "condition" : {
-              "operator" : "true",
-              "operand" : [ ],
-              "type" : "BOOLEAN"
-            },
-            "left" : {
-              "scan" : 0
-            },
-            "right" : {
-              "project" : {
-                "target" : [ {
-                  "column" : 0,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 1,
-                  "type" : "VARCHAR"
-                }, {
-                  "column" : 2,
-                  "type" : "VARCHAR"
-                }, {
-                  "column" : 3,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 4,
-                  "type" : "TIMESTAMP"
-                }, {
-                  "column" : 5,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 6,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 7,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 8,
-                  "type" : "BOOLEAN"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
-              }
-            }
-          }
-        } ]
+        }
       }
-    }
+    }, {
+      "project" : {
+        "target" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "source" : {
+          "join" : {
+            "kind" : "INNER",
+            "condition" : {
+              "operator" : "true",
+              "operand" : [ ],
+              "type" : "BOOLEAN"
+            },
+            "left" : {
+              "project" : {
+                "target" : [ {
+                  "column" : 5,
+                  "type" : "INTEGER"
+                } ],
+                "source" : {
+                  "scan" : 0
+                }
+              }
+            },
+            "right" : {
+              "project" : {
+                "target" : [ {
+                  "operator" : "0",
+                  "operand" : [ ],
+                  "type" : "INTEGER"
+                } ],
+                "source" : {
+                  "scan" : 0
+                }
+              }
+            }
+          }
+        }
+      }
+    } ]
   } ],
-  "help" : [ "LogicalProject(SAL=[$5])\r\n  LogicalJoin(condition=[true], joinType=[inner])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalUnion(all=[true])\r\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(SAL=[$5])\r\n  LogicalUnion(all=[true])\r\n    LogicalJoin(condition=[true], joinType=[inner])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalJoin(condition=[true], joinType=[inner])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  "help" : [ "LogicalProject(SAL=[$0])\r\n  LogicalJoin(condition=[true], joinType=[inner])\r\n    LogicalProject(SAL=[$5])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalUnion(all=[true])\r\n      LogicalProject(SLACKER=[$8])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalProject(SLACKER=[$8])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalUnion(all=[true])\r\n  LogicalProject(SAL=[$0])\r\n    LogicalJoin(condition=[true], joinType=[inner])\r\n      LogicalProject(SAL=[$5])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalProject(DUMMY=[0])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n  LogicalProject(SAL=[$0])\r\n    LogicalJoin(condition=[true], joinType=[inner])\r\n      LogicalProject(SAL=[$5])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalProject(DUMMY=[0])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
 }

@@ -3,16 +3,18 @@
     "name" : "EMP",
     "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   }, {
     "name" : "DEPT",
     "fields" : [ "DEPTNO", "NAME" ],
     "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "nullable" : [ false, false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "project" : {
@@ -71,18 +73,7 @@
                 "scan" : 0
               },
               "right" : {
-                "project" : {
-                  "target" : [ {
-                    "column" : 0,
-                    "type" : "INTEGER"
-                  }, {
-                    "column" : 1,
-                    "type" : "VARCHAR"
-                  } ],
-                  "source" : {
-                    "scan" : 1
-                  }
-                }
+                "scan" : 1
               }
             }
           }
@@ -149,18 +140,7 @@
                 "sort" : {
                   "collation" : [ [ 1, "VARCHAR", "ASC" ] ],
                   "source" : {
-                    "project" : {
-                      "target" : [ {
-                        "column" : 0,
-                        "type" : "INTEGER"
-                      }, {
-                        "column" : 1,
-                        "type" : "VARCHAR"
-                      } ],
-                      "source" : {
-                        "scan" : 1
-                      }
-                    }
+                    "scan" : 1
                   }
                 }
               }
@@ -170,5 +150,5 @@
       }
     }
   } ],
-  "help" : [ "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], DEPTNO0=[$9], NAME=[$10])\r\n  LogicalSort(sort0=[$10], dir0=[ASC])\r\n    LogicalJoin(condition=[=($7, $9)], joinType=[right])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalProject(DEPTNO=[$0], NAME=[$1])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], DEPTNO0=[$9], NAME=[$10])\r\n  LogicalSort(sort0=[$10], dir0=[ASC])\r\n    LogicalJoin(condition=[=($7, $9)], joinType=[right])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalSort(sort0=[$1], dir0=[ASC])\r\n        LogicalProject(DEPTNO=[$0], NAME=[$1])\r\n          LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+  "help" : [ "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], DEPTNO0=[$9], NAME=[$10])\r\n  LogicalSort(sort0=[$10], dir0=[ASC])\r\n    LogicalJoin(condition=[=($7, $9)], joinType=[right])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], DEPTNO0=[$9], NAME=[$10])\r\n  LogicalSort(sort0=[$10], dir0=[ASC])\r\n    LogicalJoin(condition=[=($7, $9)], joinType=[right])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalSort(sort0=[$1], dir0=[ASC])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
 }

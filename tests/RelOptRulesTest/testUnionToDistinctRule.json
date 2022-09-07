@@ -3,38 +3,17 @@
     "name" : "DEPT",
     "fields" : [ "DEPTNO", "NAME" ],
     "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "nullable" : [ false, false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "distinct" : {
       "union" : [ {
-        "project" : {
-          "target" : [ {
-            "column" : 0,
-            "type" : "INTEGER"
-          }, {
-            "column" : 1,
-            "type" : "VARCHAR"
-          } ],
-          "source" : {
-            "scan" : 0
-          }
-        }
+        "scan" : 0
       }, {
-        "project" : {
-          "target" : [ {
-            "column" : 0,
-            "type" : "INTEGER"
-          }, {
-            "column" : 1,
-            "type" : "VARCHAR"
-          } ],
-          "source" : {
-            "scan" : 0
-          }
-        }
+        "scan" : 0
       } ]
     }
   }, {
@@ -50,31 +29,9 @@
           } ],
           "source" : {
             "union" : [ {
-              "project" : {
-                "target" : [ {
-                  "column" : 0,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 1,
-                  "type" : "VARCHAR"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
-              }
+              "scan" : 0
             }, {
-              "project" : {
-                "target" : [ {
-                  "column" : 0,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 1,
-                  "type" : "VARCHAR"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
-              }
+              "scan" : 0
             } ]
           }
         }
@@ -110,31 +67,9 @@
               },
               "source" : {
                 "union" : [ {
-                  "project" : {
-                    "target" : [ {
-                      "column" : 2,
-                      "type" : "INTEGER"
-                    }, {
-                      "column" : 3,
-                      "type" : "VARCHAR"
-                    } ],
-                    "source" : {
-                      "scan" : 0
-                    }
-                  }
+                  "scan" : 0
                 }, {
-                  "project" : {
-                    "target" : [ {
-                      "column" : 2,
-                      "type" : "INTEGER"
-                    }, {
-                      "column" : 3,
-                      "type" : "VARCHAR"
-                    } ],
-                    "source" : {
-                      "scan" : 0
-                    }
-                  }
+                  "scan" : 0
                 } ]
               }
             }
@@ -143,5 +78,5 @@
       } ]
     }
   } ],
-  "help" : [ "LogicalUnion(all=[false])\r\n  LogicalProject(DEPTNO=[$0], NAME=[$1])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n  LogicalProject(DEPTNO=[$0], NAME=[$1])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalAggregate(group=[{0, 1}])\r\n  LogicalUnion(all=[true])\r\n    LogicalProject(DEPTNO=[$0], NAME=[$1])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalProject(DEPTNO=[$0], NAME=[$1])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+  "help" : [ "LogicalUnion(all=[false])\r\n  LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n  LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalAggregate(group=[{0, 1}])\r\n  LogicalUnion(all=[true])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
 }

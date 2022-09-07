@@ -1,18 +1,20 @@
 {
   "schemas" : [ {
     "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
-    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "fields" : [ "DEPTNO" ],
+    "types" : [ "INTEGER" ],
+    "nullable" : [ false ],
+    "key" : [ ],
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   }, {
     "name" : "DEPT",
-    "fields" : [ "DEPTNO", "NAME" ],
-    "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "fields" : [ "DEPTNO" ],
+    "types" : [ "INTEGER" ],
+    "nullable" : [ false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "project" : {
@@ -27,10 +29,10 @@
           "condition" : {
             "operator" : "=",
             "operand" : [ {
-              "column" : 7,
+              "column" : 0,
               "type" : "INTEGER"
             }, {
-              "column" : 9,
+              "column" : 1,
               "type" : "INTEGER"
             } ],
             "type" : "BOOLEAN"
@@ -57,10 +59,10 @@
           "condition" : {
             "operator" : "=",
             "operand" : [ {
-              "column" : 7,
+              "column" : 0,
               "type" : "INTEGER"
             }, {
-              "column" : 9,
+              "column" : 1,
               "type" : "INTEGER"
             } ],
             "type" : "BOOLEAN"
@@ -71,10 +73,10 @@
               "condition" : {
                 "operator" : "=",
                 "operand" : [ {
-                  "column" : 7,
+                  "column" : 0,
                   "type" : "INTEGER"
                 }, {
-                  "column" : 9,
+                  "column" : 1,
                   "type" : "INTEGER"
                 } ],
                 "type" : "BOOLEAN"
@@ -94,5 +96,5 @@
       }
     }
   } ],
-  "help" : [ "LogicalProject(EXPR$0=[1])\r\n  LogicalJoin(condition=[=($7, $9)], joinType=[inner])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(EXPR$0=[1])\r\n  LogicalJoin(condition=[=($7, $9)], joinType=[inner], semiJoinDone=[true])\r\n    LogicalJoin(condition=[=($7, $9)], joinType=[semi])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+  "help" : [ "LogicalProject(EXPR$0=[1])\r\n  LogicalJoin(condition=[=($0, $1)], joinType=[inner])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(EXPR$0=[1])\r\n  LogicalJoin(condition=[=($0, $1)], joinType=[inner])\r\n    LogicalJoin(condition=[=($0, $1)], joinType=[semi])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
 }

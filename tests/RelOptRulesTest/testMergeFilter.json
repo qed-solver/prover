@@ -3,9 +3,10 @@
     "name" : "DEPT",
     "fields" : [ "DEPTNO", "NAME" ],
     "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "nullable" : [ false, false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "project" : {
@@ -67,36 +68,25 @@
         "type" : "VARCHAR"
       } ],
       "source" : {
-        "project" : {
-          "target" : [ {
-            "column" : 0,
-            "type" : "INTEGER"
-          }, {
-            "column" : 1,
-            "type" : "VARCHAR"
-          } ],
+        "filter" : {
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            }, {
+              "operator" : "10",
+              "operand" : [ ],
+              "type" : "INTEGER"
+            } ],
+            "type" : "BOOLEAN"
+          },
           "source" : {
-            "filter" : {
-              "condition" : {
-                "operator" : "=",
-                "operand" : [ {
-                  "column" : 0,
-                  "type" : "INTEGER"
-                }, {
-                  "operator" : "10",
-                  "operand" : [ ],
-                  "type" : "INTEGER"
-                } ],
-                "type" : "BOOLEAN"
-              },
-              "source" : {
-                "scan" : 0
-              }
-            }
+            "scan" : 0
           }
         }
       }
     }
   } ],
-  "help" : [ "LogicalProject(NAME=[$1])\r\n  LogicalFilter(condition=[=($0, 10)])\r\n    LogicalProject(DEPTNO=[$0], NAME=[$1])\r\n      LogicalFilter(condition=[=($0, 10)])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(NAME=[$1])\r\n  LogicalProject(DEPTNO=[$0], NAME=[$1])\r\n    LogicalFilter(condition=[=($0, 10)])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+  "help" : [ "LogicalProject(NAME=[$1])\r\n  LogicalFilter(condition=[=($0, 10)])\r\n    LogicalProject(DEPTNO=[$0], NAME=[$1])\r\n      LogicalFilter(condition=[=($0, 10)])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(NAME=[$1])\r\n  LogicalFilter(condition=[=($0, 10)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
 }

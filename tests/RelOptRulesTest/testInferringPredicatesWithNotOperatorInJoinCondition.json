@@ -3,9 +3,10 @@
     "name" : "EMP",
     "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "project" : {
@@ -195,54 +196,38 @@
           "left" : {
             "filter" : {
               "condition" : {
-                "operator" : "SEARCH",
+                "operator" : "NOT",
                 "operand" : [ {
-                  "column" : 7,
-                  "type" : "INTEGER"
-                }, {
-                  "operator" : "Sarg[(-∞..4), (4..6), (6..+∞)]",
-                  "operand" : [ ],
-                  "type" : "INTEGER"
+                  "operator" : "OR",
+                  "operand" : [ {
+                    "operator" : "=",
+                    "operand" : [ {
+                      "column" : 7,
+                      "type" : "INTEGER"
+                    }, {
+                      "operator" : "4",
+                      "operand" : [ ],
+                      "type" : "INTEGER"
+                    } ],
+                    "type" : "BOOLEAN"
+                  }, {
+                    "operator" : "=",
+                    "operand" : [ {
+                      "column" : 7,
+                      "type" : "INTEGER"
+                    }, {
+                      "operator" : "6",
+                      "operand" : [ ],
+                      "type" : "INTEGER"
+                    } ],
+                    "type" : "BOOLEAN"
+                  } ],
+                  "type" : "BOOLEAN"
                 } ],
                 "type" : "BOOLEAN"
               },
               "source" : {
-                "filter" : {
-                  "condition" : {
-                    "operator" : "NOT",
-                    "operand" : [ {
-                      "operator" : "OR",
-                      "operand" : [ {
-                        "operator" : "=",
-                        "operand" : [ {
-                          "column" : 7,
-                          "type" : "INTEGER"
-                        }, {
-                          "operator" : "4",
-                          "operand" : [ ],
-                          "type" : "INTEGER"
-                        } ],
-                        "type" : "BOOLEAN"
-                      }, {
-                        "operator" : "=",
-                        "operand" : [ {
-                          "column" : 7,
-                          "type" : "INTEGER"
-                        }, {
-                          "operator" : "6",
-                          "operand" : [ ],
-                          "type" : "INTEGER"
-                        } ],
-                        "type" : "BOOLEAN"
-                      } ],
-                      "type" : "BOOLEAN"
-                    } ],
-                    "type" : "BOOLEAN"
-                  },
-                  "source" : {
-                    "scan" : 0
-                  }
-                }
+                "scan" : 0
               }
             }
           },
@@ -269,5 +254,5 @@
       }
     }
   } ],
-  "help" : [ "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], EMPNO0=[$9], ENAME0=[$10], JOB0=[$11], MGR0=[$12], HIREDATE0=[$13], SAL0=[$14], COMM0=[$15], DEPTNO0=[$16], SLACKER0=[$17])\r\n  LogicalJoin(condition=[AND(=($16, $7), NOT(OR(=($7, 4), =($7, 6))))], joinType=[inner])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], EMPNO0=[$9], ENAME0=[$10], JOB0=[$11], MGR0=[$12], HIREDATE0=[$13], SAL0=[$14], COMM0=[$15], DEPTNO0=[$16], SLACKER0=[$17])\r\n  LogicalJoin(condition=[=($16, $7)], joinType=[inner])\r\n    LogicalFilter(condition=[SEARCH($7, Sarg[(-∞..4), (4..6), (6..+∞)])])\r\n      LogicalFilter(condition=[NOT(OR(=($7, 4), =($7, 6)))])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalFilter(condition=[SEARCH($7, Sarg[(-∞..4), (4..6), (6..+∞)])])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  "help" : [ "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], EMPNO0=[$9], ENAME0=[$10], JOB0=[$11], MGR0=[$12], HIREDATE0=[$13], SAL0=[$14], COMM0=[$15], DEPTNO0=[$16], SLACKER0=[$17])\r\n  LogicalJoin(condition=[AND(=($16, $7), NOT(OR(=($7, 4), =($7, 6))))], joinType=[inner])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], EMPNO0=[$9], ENAME0=[$10], JOB0=[$11], MGR0=[$12], HIREDATE0=[$13], SAL0=[$14], COMM0=[$15], DEPTNO0=[$16], SLACKER0=[$17])\r\n  LogicalJoin(condition=[=($16, $7)], joinType=[inner])\r\n    LogicalFilter(condition=[NOT(OR(=($7, 4), =($7, 6)))])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalFilter(condition=[SEARCH($7, Sarg[(-∞..4), (4..6), (6..+∞)])])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
 }

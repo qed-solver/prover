@@ -1,23 +1,25 @@
 {
   "schemas" : [ {
     "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
-    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "fields" : [ "EMPNO", "JOB", "SAL" ],
+    "types" : [ "INTEGER", "VARCHAR", "INTEGER" ],
+    "nullable" : [ false, false, false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   }, {
     "name" : "DEPT",
     "fields" : [ "DEPTNO", "NAME" ],
     "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "nullable" : [ false, false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "project" : {
       "target" : [ {
-        "column" : 5,
+        "column" : 2,
         "type" : "INTEGER"
       } ],
       "source" : {
@@ -33,7 +35,7 @@
               "query" : {
                 "project" : {
                   "target" : [ {
-                    "column" : 9,
+                    "column" : 3,
                     "type" : "INTEGER"
                   } ],
                   "source" : {
@@ -41,10 +43,10 @@
                       "condition" : {
                         "operator" : "=",
                         "operand" : [ {
-                          "column" : 2,
+                          "column" : 1,
                           "type" : "VARCHAR"
                         }, {
-                          "column" : 10,
+                          "column" : 4,
                           "type" : "VARCHAR"
                         } ],
                         "type" : "BOOLEAN"
@@ -69,7 +71,7 @@
   }, {
     "project" : {
       "target" : [ {
-        "column" : 5,
+        "column" : 2,
         "type" : "INTEGER"
       } ],
       "source" : {
@@ -79,7 +81,7 @@
             "operand" : [ {
               "operator" : "=",
               "operand" : [ {
-                "column" : 9,
+                "column" : 3,
                 "type" : "BIGINT"
               }, {
                 "operator" : "0",
@@ -94,17 +96,17 @@
                 "operand" : [ {
                   "operator" : "IS NOT NULL",
                   "operand" : [ {
-                    "column" : 13,
+                    "column" : 7,
                     "type" : "BOOLEAN"
                   } ],
                   "type" : "BOOLEAN"
                 }, {
                   "operator" : "<",
                   "operand" : [ {
-                    "column" : 10,
+                    "column" : 4,
                     "type" : "BIGINT"
                   }, {
-                    "column" : 9,
+                    "column" : 3,
                     "type" : "BIGINT"
                   } ],
                   "type" : "BOOLEAN"
@@ -126,17 +128,17 @@
                     "column" : 0,
                     "type" : "INTEGER"
                   }, {
-                    "column" : 12,
+                    "column" : 6,
                     "type" : "INTEGER"
                   } ],
                   "type" : "BOOLEAN"
                 }, {
                   "operator" : "=",
                   "operand" : [ {
-                    "column" : 2,
+                    "column" : 1,
                     "type" : "VARCHAR"
                   }, {
-                    "column" : 14,
+                    "column" : 8,
                     "type" : "VARCHAR"
                   } ],
                   "type" : "BOOLEAN"
@@ -149,10 +151,10 @@
                   "condition" : {
                     "operator" : "=",
                     "operand" : [ {
-                      "column" : 2,
+                      "column" : 1,
                       "type" : "VARCHAR"
                     }, {
-                      "column" : 11,
+                      "column" : 5,
                       "type" : "VARCHAR"
                     } ],
                     "type" : "BOOLEAN"
@@ -261,5 +263,5 @@
       }
     }
   } ],
-  "help" : [ "LogicalProject(SAL=[$5])\r\n  LogicalFilter(condition=[NOT(IN($0, {\nLogicalProject(DEPTNO=[$0])\r\n  LogicalFilter(condition=[=($cor0.JOB, $1)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n}))], variablesSet=[[$cor0]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(SAL=[$5])\r\n  LogicalFilter(condition=[OR(=($9, 0), IS NOT TRUE(OR(IS NOT NULL($13), <($10, $9))))])\r\n    LogicalJoin(condition=[AND(=($0, $12), =($2, $14))], joinType=[left])\r\n      LogicalJoin(condition=[=($2, $11)], joinType=[left])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n        LogicalProject(c=[$1], ck=[$1], NAME=[$0])\r\n          LogicalAggregate(group=[{0}], c=[COUNT()])\r\n            LogicalProject(NAME=[$1])\r\n              LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n      LogicalProject(DEPTNO=[$0], i=[true], NAME=[$1])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+  "help" : [ "LogicalProject(SAL=[$2])\r\n  LogicalFilter(condition=[NOT(IN($0, {\nLogicalProject(DEPTNO=[$0])\r\n  LogicalFilter(condition=[=($cor0.JOB, $1)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n}))], variablesSet=[[$cor0]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(SAL=[$2])\r\n  LogicalFilter(condition=[OR(=($3, 0), IS NOT TRUE(OR(IS NOT NULL($7), <($4, $3))))])\r\n    LogicalJoin(condition=[AND(=($0, $6), =($1, $8))], joinType=[left])\r\n      LogicalJoin(condition=[=($1, $5)], joinType=[left])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n        LogicalProject(c=[$1], ck=[$1], NAME=[$0])\r\n          LogicalAggregate(group=[{0}], c=[COUNT()])\r\n            LogicalProject(NAME=[$1])\r\n              LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n      LogicalProject(DEPTNO=[$0], i=[true], NAME=[$1])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
 }

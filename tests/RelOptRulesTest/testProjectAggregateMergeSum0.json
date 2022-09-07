@@ -1,11 +1,12 @@
 {
   "schemas" : [ {
     "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
-    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "fields" : [ "SAL" ],
+    "types" : [ "INTEGER" ],
+    "nullable" : [ false ],
+    "key" : [ ],
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "project" : {
@@ -38,15 +39,7 @@
             "project" : {
               "target" : [ ],
               "source" : {
-                "project" : {
-                  "target" : [ {
-                    "column" : 5,
-                    "type" : "INTEGER"
-                  } ],
-                  "source" : {
-                    "scan" : 0
-                  }
-                }
+                "scan" : 0
               }
             }
           }, {
@@ -67,15 +60,7 @@
                     "type" : "BOOLEAN"
                   },
                   "source" : {
-                    "project" : {
-                      "target" : [ {
-                        "column" : 5,
-                        "type" : "INTEGER"
-                      } ],
-                      "source" : {
-                        "scan" : 0
-                      }
-                    }
+                    "scan" : 0
                   }
                 }
               }
@@ -90,15 +75,7 @@
         "project" : {
           "target" : [ ],
           "source" : {
-            "project" : {
-              "target" : [ {
-                "column" : 5,
-                "type" : "INTEGER"
-              } ],
-              "source" : {
-                "scan" : 0
-              }
-            }
+            "scan" : 0
           }
         }
       }, {
@@ -119,15 +96,7 @@
                 "type" : "BOOLEAN"
               },
               "source" : {
-                "project" : {
-                  "target" : [ {
-                    "column" : 5,
-                    "type" : "INTEGER"
-                  } ],
-                  "source" : {
-                    "scan" : 0
-                  }
-                }
+                "scan" : 0
               }
             }
           }
@@ -135,5 +104,5 @@
       } ]
     }
   } ],
-  "help" : [ "LogicalProject(SS0=[CASE(IS NOT NULL($0), CAST($0):INTEGER NOT NULL, 0)])\r\n  LogicalAggregate(group=[{}], SUM_SAL=[SUM($0)])\r\n    LogicalProject(SAL=[$5])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalAggregate(group=[{}], agg#0=[$SUM0($0)])\r\n  LogicalProject(SAL=[$5])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  "help" : [ "LogicalProject(SS0=[CASE(IS NOT NULL($0), CAST($0):INTEGER NOT NULL, 0)])\r\n  LogicalAggregate(group=[{}], SUM_SAL=[SUM($0)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalAggregate(group=[{}], agg#0=[$SUM0($0)])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
 }

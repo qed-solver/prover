@@ -1,36 +1,29 @@
 {
   "schemas" : [ {
     "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
-    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "fields" : [ "MGR" ],
+    "types" : [ "INTEGER" ],
+    "nullable" : [ true ],
+    "key" : [ ],
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
-    "project" : {
-      "target" : [ {
-        "column" : 3,
-        "type" : "INTEGER"
-      } ],
+    "filter" : {
+      "condition" : {
+        "operator" : "=",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        }, {
+          "operator" : "10",
+          "operand" : [ ],
+          "type" : "INTEGER"
+        } ],
+        "type" : "BOOLEAN"
+      },
       "source" : {
-        "filter" : {
-          "condition" : {
-            "operator" : "=",
-            "operand" : [ {
-              "column" : 3,
-              "type" : "INTEGER"
-            }, {
-              "operator" : "10",
-              "operand" : [ ],
-              "type" : "INTEGER"
-            } ],
-            "type" : "BOOLEAN"
-          },
-          "source" : {
-            "scan" : 0
-          }
-        }
+        "scan" : 0
       }
     }
   }, {
@@ -49,7 +42,7 @@
           "condition" : {
             "operator" : "=",
             "operand" : [ {
-              "column" : 3,
+              "column" : 0,
               "type" : "INTEGER"
             }, {
               "operator" : "10",
@@ -65,5 +58,5 @@
       }
     }
   } ],
-  "help" : [ "LogicalProject(MGR=[$3])\r\n  LogicalFilter(condition=[=($3, 10)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(MGR=[CAST(10):INTEGER])\r\n  LogicalFilter(condition=[=($3, 10)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  "help" : [ "LogicalFilter(condition=[=($0, 10)])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(MGR=[CAST(10):INTEGER])\r\n  LogicalFilter(condition=[=($0, 10)])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
 }

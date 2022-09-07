@@ -1,18 +1,20 @@
 {
   "schemas" : [ {
     "name" : "DEPT",
-    "fields" : [ "DEPTNO", "NAME" ],
-    "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "fields" : [ "DEPTNO" ],
+    "types" : [ "INTEGER" ],
+    "nullable" : [ false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   }, {
     "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
-    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "fields" : [ "DEPTNO" ],
+    "types" : [ "INTEGER" ],
+    "nullable" : [ false ],
+    "key" : [ ],
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "project" : {
@@ -136,25 +138,6 @@
                 "column" : 0,
                 "type" : "INTEGER"
               }, {
-                "operator" : "+",
-                "operand" : [ {
-                  "operator" : "8",
-                  "operand" : [ ],
-                  "type" : "INTEGER"
-                }, {
-                  "operator" : "7",
-                  "operand" : [ ],
-                  "type" : "INTEGER"
-                } ],
-                "type" : "INTEGER"
-              } ],
-              "type" : "BOOLEAN"
-            }, {
-              "operator" : "=",
-              "operand" : [ {
-                "column" : 0,
-                "type" : "INTEGER"
-              }, {
                 "operator" : "CASE",
                 "operand" : [ {
                   "operator" : "IS NOT NULL",
@@ -184,36 +167,6 @@
               "target" : [ {
                 "column" : 0,
                 "type" : "INTEGER"
-              }, {
-                "column" : 1,
-                "type" : "VARCHAR"
-              }, {
-                "column" : 2,
-                "type" : "INTEGER"
-              }, {
-                "column" : 3,
-                "type" : "VARCHAR"
-              }, {
-                "column" : 4,
-                "type" : "VARCHAR"
-              }, {
-                "column" : 5,
-                "type" : "INTEGER"
-              }, {
-                "column" : 6,
-                "type" : "TIMESTAMP"
-              }, {
-                "column" : 7,
-                "type" : "INTEGER"
-              }, {
-                "column" : 8,
-                "type" : "INTEGER"
-              }, {
-                "column" : 9,
-                "type" : "INTEGER"
-              }, {
-                "column" : 10,
-                "type" : "BOOLEAN"
               } ],
               "source" : {
                 "join" : {
@@ -224,7 +177,7 @@
                       "column" : 0,
                       "type" : "INTEGER"
                     }, {
-                      "column" : 11,
+                      "column" : 1,
                       "type" : "INTEGER"
                     } ],
                     "type" : "BOOLEAN"
@@ -235,36 +188,9 @@
                   "right" : {
                     "project" : {
                       "target" : [ {
-                        "column" : 0,
-                        "type" : "INTEGER"
-                      }, {
-                        "column" : 1,
-                        "type" : "VARCHAR"
-                      }, {
-                        "column" : 2,
-                        "type" : "VARCHAR"
-                      }, {
-                        "column" : 3,
-                        "type" : "INTEGER"
-                      }, {
-                        "column" : 4,
-                        "type" : "TIMESTAMP"
-                      }, {
-                        "column" : 5,
-                        "type" : "INTEGER"
-                      }, {
-                        "column" : 6,
-                        "type" : "INTEGER"
-                      }, {
-                        "column" : 7,
-                        "type" : "INTEGER"
-                      }, {
-                        "column" : 8,
-                        "type" : "BOOLEAN"
-                      }, {
                         "operator" : "+",
                         "operand" : [ {
-                          "column" : 7,
+                          "column" : 0,
                           "type" : "INTEGER"
                         }, {
                           "operator" : "-",
@@ -336,5 +262,5 @@
       }
     }
   } ],
-  "help" : [ "LogicalProject(EXPR$0=[+(1, 2)], EXPR$1=[+($0, +(3, 4))], EXPR$2=[+(+(5, 6), $0)], EXPR$3=[null:INTEGER], EXPR$4=[CASE(IS NOT NULL(2), 2, null:INTEGER)], EXPR$5=[ROW(+(7, 8))])\r\n  LogicalFilter(condition=[AND(=($0, +(7, 8)), =($0, +(8, 7)), =($0, CASE(IS NOT NULL(2), 2, null:INTEGER)))])\r\n    LogicalProject(DEPTNO=[$0], NAME=[$1], EMPNO=[$2], ENAME=[$3], JOB=[$4], MGR=[$5], HIREDATE=[$6], SAL=[$7], COMM=[$8], DEPTNO0=[$9], SLACKER=[$10])\r\n      LogicalJoin(condition=[=($0, $11)], joinType=[inner])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n        LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], $f9=[+($7, -(5, 5))])\r\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EXPR$0=[3], EXPR$1=[22], EXPR$2=[26], EXPR$3=[null:INTEGER], EXPR$4=[CAST(2):INTEGER], EXPR$5=[ROW(15)])\r\n  LogicalValues(tuples=[[]])\r\n" ]
+  "help" : [ "LogicalProject(EXPR$0=[+(1, 2)], EXPR$1=[+($0, +(3, 4))], EXPR$2=[+(+(5, 6), $0)], EXPR$3=[null:INTEGER], EXPR$4=[CASE(IS NOT NULL(2), 2, null:INTEGER)], EXPR$5=[ROW(+(7, 8))])\r\n  LogicalFilter(condition=[AND(=($0, +(7, 8)), =($0, CASE(IS NOT NULL(2), 2, null:INTEGER)))])\r\n    LogicalProject(DEPTNO=[$0])\r\n      LogicalJoin(condition=[=($0, $1)], joinType=[inner])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n        LogicalProject($f9=[+($0, -(5, 5))])\r\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EXPR$0=[3], EXPR$1=[22], EXPR$2=[26], EXPR$3=[null:INTEGER], EXPR$4=[CAST(2):INTEGER], EXPR$5=[ROW(15)])\r\n  LogicalValues(tuples=[[]])\r\n" ]
 }

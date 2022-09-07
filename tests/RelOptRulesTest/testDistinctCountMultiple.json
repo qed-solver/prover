@@ -1,11 +1,12 @@
 {
   "schemas" : [ {
     "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
-    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "fields" : [ "ENAME", "JOB", "DEPTNO" ],
+    "types" : [ "VARCHAR", "VARCHAR", "INTEGER" ],
+    "nullable" : [ false, false, false ],
+    "key" : [ ],
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "distinct" : {
@@ -18,13 +19,13 @@
           "source" : {
             "project" : {
               "target" : [ {
-                "column" : 7,
+                "column" : 2,
                 "type" : "INTEGER"
               }, {
-                "column" : 1,
+                "column" : 0,
                 "type" : "VARCHAR"
               }, {
-                "column" : 2,
+                "column" : 1,
                 "type" : "VARCHAR"
               } ],
               "source" : {
@@ -70,13 +71,13 @@
               "source" : {
                 "project" : {
                   "target" : [ {
-                    "column" : 8,
+                    "column" : 3,
                     "type" : "INTEGER"
                   }, {
-                    "column" : 2,
+                    "column" : 1,
                     "type" : "VARCHAR"
                   }, {
-                    "column" : 3,
+                    "column" : 2,
                     "type" : "VARCHAR"
                   } ],
                   "source" : {
@@ -151,13 +152,13 @@
                       "correlate" : [ {
                         "project" : {
                           "target" : [ {
+                            "column" : 0,
+                            "type" : "VARCHAR"
+                          }, {
                             "column" : 1,
                             "type" : "VARCHAR"
                           }, {
                             "column" : 2,
-                            "type" : "VARCHAR"
-                          }, {
-                            "column" : 7,
                             "type" : "INTEGER"
                           } ],
                           "source" : {
@@ -169,13 +170,13 @@
                           "function" : [ {
                             "operator" : "GROUPING",
                             "operand" : [ {
-                              "column" : 10,
+                              "column" : 5,
                               "type" : "INTEGER"
                             }, {
-                              "column" : 4,
+                              "column" : 3,
                               "type" : "VARCHAR"
                             }, {
-                              "column" : 5,
+                              "column" : 4,
                               "type" : "VARCHAR"
                             } ],
                             "type" : "BIGINT"
@@ -190,7 +191,7 @@
                                     "column" : 0,
                                     "type" : "VARCHAR"
                                   }, {
-                                    "column" : 4,
+                                    "column" : 3,
                                     "type" : "VARCHAR"
                                   } ],
                                   "type" : "BOOLEAN"
@@ -200,7 +201,7 @@
                                     "column" : 1,
                                     "type" : "VARCHAR"
                                   }, {
-                                    "column" : 5,
+                                    "column" : 4,
                                     "type" : "VARCHAR"
                                   } ],
                                   "type" : "BOOLEAN"
@@ -210,7 +211,7 @@
                                     "column" : 2,
                                     "type" : "INTEGER"
                                   }, {
-                                    "column" : 10,
+                                    "column" : 5,
                                     "type" : "INTEGER"
                                   } ],
                                   "type" : "BOOLEAN"
@@ -319,13 +320,13 @@
                           "correlate" : [ {
                             "project" : {
                               "target" : [ {
+                                "column" : 1,
+                                "type" : "VARCHAR"
+                              }, {
                                 "column" : 2,
                                 "type" : "VARCHAR"
                               }, {
                                 "column" : 3,
-                                "type" : "VARCHAR"
-                              }, {
-                                "column" : 8,
                                 "type" : "INTEGER"
                               } ],
                               "source" : {
@@ -337,13 +338,13 @@
                               "function" : [ {
                                 "operator" : "GROUPING",
                                 "operand" : [ {
-                                  "column" : 11,
+                                  "column" : 6,
                                   "type" : "INTEGER"
                                 }, {
-                                  "column" : 5,
+                                  "column" : 4,
                                   "type" : "VARCHAR"
                                 }, {
-                                  "column" : 6,
+                                  "column" : 5,
                                   "type" : "VARCHAR"
                                 } ],
                                 "type" : "BIGINT"
@@ -358,7 +359,7 @@
                                         "column" : 1,
                                         "type" : "VARCHAR"
                                       }, {
-                                        "column" : 5,
+                                        "column" : 4,
                                         "type" : "VARCHAR"
                                       } ],
                                       "type" : "BOOLEAN"
@@ -368,7 +369,7 @@
                                         "column" : 2,
                                         "type" : "VARCHAR"
                                       }, {
-                                        "column" : 6,
+                                        "column" : 5,
                                         "type" : "VARCHAR"
                                       } ],
                                       "type" : "BOOLEAN"
@@ -378,7 +379,7 @@
                                         "column" : 3,
                                         "type" : "INTEGER"
                                       }, {
-                                        "column" : 11,
+                                        "column" : 6,
                                         "type" : "INTEGER"
                                       } ],
                                       "type" : "BOOLEAN"
@@ -404,5 +405,5 @@
       } ]
     }
   } ],
-  "help" : [ "LogicalAggregate(group=[{0}], EXPR$1=[COUNT(DISTINCT $1)], EXPR$2=[COUNT(DISTINCT $2)])\r\n  LogicalProject(DEPTNO=[$7], ENAME=[$1], JOB=[$2])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalAggregate(group=[{0}], EXPR$1=[COUNT($1) FILTER $3], EXPR$2=[COUNT($2) FILTER $4])\r\n  LogicalProject(DEPTNO=[$0], ENAME=[$1], JOB=[$2], $g_1=[=($3, 1)], $g_2=[=($3, 2)])\r\n    LogicalProject(DEPTNO=[$2], ENAME=[$0], JOB=[$1], $g=[$3])\r\n      LogicalAggregate(group=[{1, 2, 7}], groups=[[{1, 7}, {2, 7}]], $g=[GROUPING($7, $1, $2)])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  "help" : [ "LogicalAggregate(group=[{0}], EXPR$1=[COUNT(DISTINCT $1)], EXPR$2=[COUNT(DISTINCT $2)])\r\n  LogicalProject(DEPTNO=[$2], ENAME=[$0], JOB=[$1])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalAggregate(group=[{0}], EXPR$1=[COUNT($1) FILTER $3], EXPR$2=[COUNT($2) FILTER $4])\r\n  LogicalProject(DEPTNO=[$0], ENAME=[$1], JOB=[$2], $g_1=[=($3, 1)], $g_2=[=($3, 2)])\r\n    LogicalProject(DEPTNO=[$2], ENAME=[$0], JOB=[$1], $g=[$3])\r\n      LogicalAggregate(group=[{0, 1, 2}], groups=[[{0, 2}, {1, 2}]], $g=[GROUPING($2, $0, $1)])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
 }

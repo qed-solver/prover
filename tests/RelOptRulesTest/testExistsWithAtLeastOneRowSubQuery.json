@@ -1,0 +1,125 @@
+{
+  "schemas" : [ {
+    "name" : "DEPT",
+    "fields" : [ "DEPTNO", "NAME" ],
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "nullable" : [ false, false ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ],
+    "guaranteed" : [ ]
+  }, {
+    "name" : "EMP",
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ],
+    "guaranteed" : [ ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "EXISTS",
+            "operand" : [ ],
+            "query" : {
+              "distinct" : {
+                "correlate" : [ {
+                  "project" : {
+                    "target" : [ ],
+                    "source" : {
+                      "project" : {
+                        "target" : [ {
+                          "operator" : "0",
+                          "operand" : [ ],
+                          "type" : "INTEGER"
+                        } ],
+                        "source" : {
+                          "filter" : {
+                            "condition" : {
+                              "operator" : "=",
+                              "operand" : [ {
+                                "column" : 0,
+                                "type" : "INTEGER"
+                              }, {
+                                "column" : 9,
+                                "type" : "INTEGER"
+                              } ],
+                              "type" : "BOOLEAN"
+                            },
+                            "source" : {
+                              "scan" : 1
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }, {
+                  "aggregate" : {
+                    "function" : [ {
+                      "operator" : "COUNT",
+                      "operand" : [ ],
+                      "type" : "BIGINT"
+                    } ],
+                    "source" : {
+                      "filter" : {
+                        "condition" : {
+                          "operator" : "AND",
+                          "operand" : [ ],
+                          "type" : "BOOLEAN"
+                        },
+                        "source" : {
+                          "project" : {
+                            "target" : [ {
+                              "operator" : "0",
+                              "operand" : [ ],
+                              "type" : "INTEGER"
+                            } ],
+                            "source" : {
+                              "filter" : {
+                                "condition" : {
+                                  "operator" : "=",
+                                  "operand" : [ {
+                                    "column" : 0,
+                                    "type" : "INTEGER"
+                                  }, {
+                                    "column" : 9,
+                                    "type" : "INTEGER"
+                                  } ],
+                                  "type" : "BOOLEAN"
+                                },
+                                "source" : {
+                                  "scan" : 1
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                } ]
+              }
+            },
+            "type" : "BOOLEAN"
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  }, {
+    "scan" : 0
+  } ],
+  "help" : [ "LogicalProject(DEPTNO=[$0], NAME=[$1])\r\n  LogicalFilter(condition=[EXISTS({\nLogicalAggregate(group=[{}], EXPR$0=[COUNT()])\r\n  LogicalProject($f0=[0])\r\n    LogicalFilter(condition=[=($cor0.DEPTNO, $7)])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n})], variablesSet=[[$cor0]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+}

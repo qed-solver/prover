@@ -3,9 +3,10 @@
     "name" : "EMP",
     "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "project" : {
@@ -148,7 +149,7 @@
           "condition" : {
             "operator" : "IS NULL",
             "operand" : [ {
-              "column" : 12,
+              "column" : 11,
               "type" : "BOOLEAN"
             } ],
             "type" : "BOOLEAN"
@@ -162,7 +163,7 @@
                   "column" : 2,
                   "type" : "VARCHAR"
                 }, {
-                  "column" : 11,
+                  "column" : 10,
                   "type" : "VARCHAR"
                 } ],
                 "type" : "BOOLEAN"
@@ -185,27 +186,49 @@
                     "scan" : 0
                   },
                   "right" : {
-                    "project" : {
-                      "target" : [ {
-                        "column" : 0,
-                        "type" : "INTEGER"
-                      }, {
-                        "operator" : "true",
-                        "operand" : [ ],
-                        "type" : "BOOLEAN"
-                      } ],
-                      "source" : {
-                        "distinct" : {
-                          "correlate" : [ {
+                    "distinct" : {
+                      "correlate" : [ {
+                        "project" : {
+                          "target" : [ {
+                            "column" : 0,
+                            "type" : "INTEGER"
+                          } ],
+                          "source" : {
                             "project" : {
                               "target" : [ {
-                                "column" : 0,
+                                "column" : 7,
                                 "type" : "INTEGER"
                               } ],
                               "source" : {
+                                "scan" : 0
+                              }
+                            }
+                          }
+                        }
+                      }, {
+                        "aggregate" : {
+                          "function" : [ ],
+                          "source" : {
+                            "filter" : {
+                              "condition" : {
+                                "operator" : "AND",
+                                "operand" : [ {
+                                  "operator" : "=",
+                                  "operand" : [ {
+                                    "column" : 0,
+                                    "type" : "INTEGER"
+                                  }, {
+                                    "column" : 1,
+                                    "type" : "INTEGER"
+                                  } ],
+                                  "type" : "BOOLEAN"
+                                } ],
+                                "type" : "BOOLEAN"
+                              },
+                              "source" : {
                                 "project" : {
                                   "target" : [ {
-                                    "column" : 7,
+                                    "column" : 8,
                                     "type" : "INTEGER"
                                   } ],
                                   "source" : {
@@ -214,43 +237,9 @@
                                 }
                               }
                             }
-                          }, {
-                            "aggregate" : {
-                              "function" : [ ],
-                              "source" : {
-                                "filter" : {
-                                  "condition" : {
-                                    "operator" : "AND",
-                                    "operand" : [ {
-                                      "operator" : "=",
-                                      "operand" : [ {
-                                        "column" : 0,
-                                        "type" : "INTEGER"
-                                      }, {
-                                        "column" : 1,
-                                        "type" : "INTEGER"
-                                      } ],
-                                      "type" : "BOOLEAN"
-                                    } ],
-                                    "type" : "BOOLEAN"
-                                  },
-                                  "source" : {
-                                    "project" : {
-                                      "target" : [ {
-                                        "column" : 8,
-                                        "type" : "INTEGER"
-                                      } ],
-                                      "source" : {
-                                        "scan" : 0
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          } ]
+                          }
                         }
-                      }
+                      } ]
                     }
                   }
                 }
@@ -276,7 +265,7 @@
                           "source" : {
                             "project" : {
                               "target" : [ {
-                                "column" : 2,
+                                "column" : 0,
                                 "type" : "VARCHAR"
                               } ],
                               "source" : {
@@ -284,7 +273,7 @@
                                   "condition" : {
                                     "operator" : "=",
                                     "operand" : [ {
-                                      "column" : 5,
+                                      "column" : 1,
                                       "type" : "INTEGER"
                                     }, {
                                       "operator" : "34",
@@ -294,7 +283,18 @@
                                     "type" : "BOOLEAN"
                                   },
                                   "source" : {
-                                    "scan" : 0
+                                    "project" : {
+                                      "target" : [ {
+                                        "column" : 2,
+                                        "type" : "VARCHAR"
+                                      }, {
+                                        "column" : 5,
+                                        "type" : "INTEGER"
+                                      } ],
+                                      "source" : {
+                                        "scan" : 0
+                                      }
+                                    }
                                   }
                                 }
                               }
@@ -324,7 +324,7 @@
                               "source" : {
                                 "project" : {
                                   "target" : [ {
-                                    "column" : 3,
+                                    "column" : 1,
                                     "type" : "VARCHAR"
                                   } ],
                                   "source" : {
@@ -332,7 +332,7 @@
                                       "condition" : {
                                         "operator" : "=",
                                         "operand" : [ {
-                                          "column" : 6,
+                                          "column" : 2,
                                           "type" : "INTEGER"
                                         }, {
                                           "operator" : "34",
@@ -342,7 +342,18 @@
                                         "type" : "BOOLEAN"
                                       },
                                       "source" : {
-                                        "scan" : 0
+                                        "project" : {
+                                          "target" : [ {
+                                            "column" : 3,
+                                            "type" : "VARCHAR"
+                                          }, {
+                                            "column" : 6,
+                                            "type" : "INTEGER"
+                                          } ],
+                                          "source" : {
+                                            "scan" : 0
+                                          }
+                                        }
                                       }
                                     }
                                   }
@@ -362,5 +373,5 @@
       }
     }
   } ],
-  "help" : [ "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\r\n  LogicalFilter(condition=[AND(EXISTS({\nLogicalFilter(condition=[=($cor0.DEPTNO, $7)])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n}), NOT(EXISTS({\nLogicalFilter(condition=[AND(=($2, $cor0.JOB), =($5, 34))])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n})))], variablesSet=[[$cor0]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\r\n  LogicalFilter(condition=[IS NULL($12)])\r\n    LogicalJoin(condition=[=($2, $11)], joinType=[left])\r\n      LogicalJoin(condition=[=($7, $9)], joinType=[inner])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n        LogicalProject(DEPTNO=[$0], $f1=[true])\r\n          LogicalAggregate(group=[{0}])\r\n            LogicalProject(DEPTNO=[$7])\r\n              LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalProject(JOB=[$0], $f1=[true])\r\n        LogicalAggregate(group=[{0}])\r\n          LogicalProject(JOB=[$2])\r\n            LogicalFilter(condition=[=($5, 34)])\r\n              LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  "help" : [ "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\r\n  LogicalFilter(condition=[AND(EXISTS({\nLogicalFilter(condition=[=($cor0.DEPTNO, $7)])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n}), NOT(EXISTS({\nLogicalFilter(condition=[AND(=($2, $cor0.JOB), =($5, 34))])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n})))], variablesSet=[[$cor0]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\r\n  LogicalFilter(condition=[IS NULL($11)])\r\n    LogicalJoin(condition=[=($2, $10)], joinType=[left])\r\n      LogicalJoin(condition=[=($7, $9)], joinType=[inner])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n        LogicalAggregate(group=[{0}])\r\n          LogicalProject(DEPTNO=[$7])\r\n            LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalProject(JOB=[$0], $f1=[true])\r\n        LogicalAggregate(group=[{0}])\r\n          LogicalProject(JOB=[$0])\r\n            LogicalFilter(condition=[=($1, 34)])\r\n              LogicalProject(JOB=[$2], SAL=[$5])\r\n                LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
 }

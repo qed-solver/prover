@@ -1,45 +1,22 @@
 {
   "schemas" : [ {
     "name" : "DEPT",
-    "fields" : [ "DEPTNO", "NAME" ],
-    "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "fields" : [ "NAME" ],
+    "types" : [ "VARCHAR" ],
+    "nullable" : [ false ],
+    "key" : [ ],
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "sort" : {
       "collation" : [ [ 0, "VARCHAR", "ASC" ] ],
       "source" : {
-        "project" : {
-          "target" : [ {
-            "column" : 0,
-            "type" : "VARCHAR"
-          } ],
-          "source" : {
-            "union" : [ {
-              "project" : {
-                "target" : [ {
-                  "column" : 1,
-                  "type" : "VARCHAR"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
-              }
-            }, {
-              "project" : {
-                "target" : [ {
-                  "column" : 1,
-                  "type" : "VARCHAR"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
-              }
-            } ]
-          }
-        }
+        "union" : [ {
+          "scan" : 0
+        }, {
+          "scan" : 0
+        } ]
       }
     }
   }, {
@@ -50,35 +27,19 @@
           "sort" : {
             "collation" : [ [ 0, "VARCHAR", "ASC" ] ],
             "source" : {
-              "project" : {
-                "target" : [ {
-                  "column" : 1,
-                  "type" : "VARCHAR"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
-              }
+              "scan" : 0
             }
           }
         }, {
           "sort" : {
             "collation" : [ [ 0, "VARCHAR", "ASC" ] ],
             "source" : {
-              "project" : {
-                "target" : [ {
-                  "column" : 1,
-                  "type" : "VARCHAR"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
-              }
+              "scan" : 0
             }
           }
         } ]
       }
     }
   } ],
-  "help" : [ "LogicalSort(sort0=[$0], dir0=[ASC])\r\n  LogicalProject(NAME=[$0])\r\n    LogicalUnion(all=[true])\r\n      LogicalProject(NAME=[$1])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n      LogicalProject(NAME=[$1])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalSort(sort0=[$0], dir0=[ASC])\r\n  LogicalUnion(all=[true])\r\n    LogicalSort(sort0=[$0], dir0=[ASC])\r\n      LogicalProject(NAME=[$1])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalSort(sort0=[$0], dir0=[ASC])\r\n      LogicalProject(NAME=[$1])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+  "help" : [ "LogicalSort(sort0=[$0], dir0=[ASC])\r\n  LogicalUnion(all=[true])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalSort(sort0=[$0], dir0=[ASC])\r\n  LogicalUnion(all=[true])\r\n    LogicalSort(sort0=[$0], dir0=[ASC])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalSort(sort0=[$0], dir0=[ASC])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
 }

@@ -3,16 +3,18 @@
     "name" : "DEPT",
     "fields" : [ "DEPTNO", "NAME" ],
     "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "nullable" : [ false, false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   }, {
     "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
-    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "fields" : [ "DEPTNO" ],
+    "types" : [ "INTEGER" ],
+    "nullable" : [ false ],
+    "key" : [ ],
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "project" : {
@@ -26,15 +28,7 @@
           "type" : "INTEGER"
         } ],
         "query" : {
-          "project" : {
-            "target" : [ {
-              "column" : 9,
-              "type" : "INTEGER"
-            } ],
-            "source" : {
-              "scan" : 1
-            }
-          }
+          "scan" : 1
         },
         "type" : "BOOLEAN"
       } ],
@@ -206,15 +200,7 @@
                     "project" : {
                       "target" : [ ],
                       "source" : {
-                        "project" : {
-                          "target" : [ {
-                            "column" : 7,
-                            "type" : "INTEGER"
-                          } ],
-                          "source" : {
-                            "scan" : 1
-                          }
-                        }
+                        "scan" : 1
                       }
                     }
                   }, {
@@ -239,15 +225,7 @@
                             "type" : "BOOLEAN"
                           },
                           "source" : {
-                            "project" : {
-                              "target" : [ {
-                                "column" : 7,
-                                "type" : "INTEGER"
-                              } ],
-                              "source" : {
-                                "scan" : 1
-                              }
-                            }
+                            "scan" : 1
                           }
                         }
                       }
@@ -261,5 +239,5 @@
       }
     }
   } ],
-  "help" : [ "LogicalProject(NAME=[$1], EXPR$1=[> SOME($0, {\nLogicalProject(DEPTNO=[$7])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n})])\r\n  LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(NAME=[$1], EXPR$1=[CAST(OR(AND(IS TRUE(>($0, $2)), <>($3, 0)), AND(>($3, $4), null, <>($3, 0), IS NOT TRUE(>($0, $2))), AND(>($0, $2), <>($3, 0), IS NOT TRUE(>($0, $2)), <=($3, $4)))):BOOLEAN NOT NULL])\r\n  LogicalJoin(condition=[true], joinType=[inner])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalProject(m=[$0], c=[$1], d=[$1])\r\n      LogicalAggregate(group=[{}], m=[MIN($0)], c=[COUNT()])\r\n        LogicalProject(DEPTNO=[$7])\r\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  "help" : [ "LogicalProject(NAME=[$1], EXPR$1=[> SOME($0, {\nLogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n})])\r\n  LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(NAME=[$1], EXPR$1=[CAST(OR(AND(IS TRUE(>($0, $2)), <>($3, 0)), AND(>($3, $4), null, <>($3, 0), IS NOT TRUE(>($0, $2))), AND(>($0, $2), <>($3, 0), IS NOT TRUE(>($0, $2)), <=($3, $4)))):BOOLEAN NOT NULL])\r\n  LogicalJoin(condition=[true], joinType=[inner])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalProject(m=[$0], c=[$1], d=[$1])\r\n      LogicalAggregate(group=[{}], m=[MIN($0)], c=[COUNT()])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
 }

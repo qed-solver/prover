@@ -3,9 +3,10 @@
     "name" : "EMP",
     "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "project" : {
@@ -23,7 +24,7 @@
           }, {
             "operator" : "CAST",
             "operand" : [ {
-              "column" : 7,
+              "column" : 1,
               "type" : "INTEGER"
             } ],
             "type" : "INTEGER"
@@ -37,7 +38,7 @@
         "query" : {
           "project" : {
             "target" : [ {
-              "column" : 10,
+              "column" : 3,
               "type" : "INTEGER"
             } ],
             "source" : {
@@ -45,7 +46,7 @@
                 "condition" : {
                   "operator" : "<",
                   "operand" : [ {
-                    "column" : 9,
+                    "column" : 2,
                     "type" : "INTEGER"
                   }, {
                     "operator" : "20",
@@ -57,7 +58,7 @@
                 "source" : {
                   "project" : {
                     "target" : [ {
-                      "column" : 9,
+                      "column" : 2,
                       "type" : "INTEGER"
                     }, {
                       "operator" : "CASE",
@@ -68,7 +69,7 @@
                       }, {
                         "operator" : "CAST",
                         "operand" : [ {
-                          "column" : 16,
+                          "column" : 9,
                           "type" : "INTEGER"
                         } ],
                         "type" : "INTEGER"
@@ -91,7 +92,18 @@
         "type" : "BOOLEAN"
       } ],
       "source" : {
-        "scan" : 0
+        "project" : {
+          "target" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "column" : 7,
+            "type" : "INTEGER"
+          } ],
+          "source" : {
+            "scan" : 0
+          }
+        }
       }
     }
   }, {
@@ -104,7 +116,7 @@
         "operand" : [ {
           "operator" : "=",
           "operand" : [ {
-            "column" : 9,
+            "column" : 2,
             "type" : "BIGINT"
           }, {
             "operator" : "0",
@@ -127,7 +139,7 @@
             }, {
               "operator" : "CAST",
               "operand" : [ {
-                "column" : 7,
+                "column" : 1,
                 "type" : "INTEGER"
               } ],
               "type" : "INTEGER"
@@ -146,7 +158,7 @@
         }, {
           "operator" : "IS NOT NULL",
           "operand" : [ {
-            "column" : 12,
+            "column" : 5,
             "type" : "BOOLEAN"
           } ],
           "type" : "BOOLEAN"
@@ -157,10 +169,10 @@
         }, {
           "operator" : "<",
           "operand" : [ {
-            "column" : 10,
+            "column" : 3,
             "type" : "BIGINT"
           }, {
-            "column" : 9,
+            "column" : 2,
             "type" : "BIGINT"
           } ],
           "type" : "BOOLEAN"
@@ -189,7 +201,7 @@
               }, {
                 "operator" : "CAST",
                 "operand" : [ {
-                  "column" : 7,
+                  "column" : 1,
                   "type" : "INTEGER"
                 } ],
                 "type" : "INTEGER"
@@ -200,7 +212,7 @@
               } ],
               "type" : "INTEGER"
             }, {
-              "column" : 11,
+              "column" : 4,
               "type" : "INTEGER"
             } ],
             "type" : "BOOLEAN"
@@ -214,7 +226,18 @@
                 "type" : "BOOLEAN"
               },
               "left" : {
-                "scan" : 0
+                "project" : {
+                  "target" : [ {
+                    "column" : 0,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 7,
+                    "type" : "INTEGER"
+                  } ],
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
               },
               "right" : {
                 "distinct" : {
@@ -255,7 +278,7 @@
                                     }, {
                                       "operator" : "CAST",
                                       "operand" : [ {
-                                        "column" : 7,
+                                        "column" : 1,
                                         "type" : "INTEGER"
                                       } ],
                                       "type" : "INTEGER"
@@ -267,7 +290,18 @@
                                     "type" : "INTEGER"
                                   } ],
                                   "source" : {
-                                    "scan" : 0
+                                    "project" : {
+                                      "target" : [ {
+                                        "column" : 0,
+                                        "type" : "INTEGER"
+                                      }, {
+                                        "column" : 7,
+                                        "type" : "INTEGER"
+                                      } ],
+                                      "source" : {
+                                        "scan" : 0
+                                      }
+                                    }
                                   }
                                 }
                               }
@@ -331,7 +365,7 @@
                                         }, {
                                           "operator" : "CAST",
                                           "operand" : [ {
-                                            "column" : 7,
+                                            "column" : 1,
                                             "type" : "INTEGER"
                                           } ],
                                           "type" : "INTEGER"
@@ -343,7 +377,18 @@
                                         "type" : "INTEGER"
                                       } ],
                                       "source" : {
-                                        "scan" : 0
+                                        "project" : {
+                                          "target" : [ {
+                                            "column" : 0,
+                                            "type" : "INTEGER"
+                                          }, {
+                                            "column" : 7,
+                                            "type" : "INTEGER"
+                                          } ],
+                                          "source" : {
+                                            "scan" : 0
+                                          }
+                                        }
                                       }
                                     }
                                   }
@@ -408,7 +453,7 @@
                                 }, {
                                   "operator" : "CAST",
                                   "operand" : [ {
-                                    "column" : 7,
+                                    "column" : 1,
                                     "type" : "INTEGER"
                                   } ],
                                   "type" : "INTEGER"
@@ -420,7 +465,18 @@
                                 "type" : "INTEGER"
                               } ],
                               "source" : {
-                                "scan" : 0
+                                "project" : {
+                                  "target" : [ {
+                                    "column" : 0,
+                                    "type" : "INTEGER"
+                                  }, {
+                                    "column" : 7,
+                                    "type" : "INTEGER"
+                                  } ],
+                                  "source" : {
+                                    "scan" : 0
+                                  }
+                                }
                               }
                             }
                           }
@@ -497,7 +553,7 @@
                                     }, {
                                       "operator" : "CAST",
                                       "operand" : [ {
-                                        "column" : 9,
+                                        "column" : 3,
                                         "type" : "INTEGER"
                                       } ],
                                       "type" : "INTEGER"
@@ -509,7 +565,18 @@
                                     "type" : "INTEGER"
                                   } ],
                                   "source" : {
-                                    "scan" : 0
+                                    "project" : {
+                                      "target" : [ {
+                                        "column" : 2,
+                                        "type" : "INTEGER"
+                                      }, {
+                                        "column" : 9,
+                                        "type" : "INTEGER"
+                                      } ],
+                                      "source" : {
+                                        "scan" : 0
+                                      }
+                                    }
                                   }
                                 }
                               }
@@ -527,5 +594,5 @@
       }
     }
   } ],
-  "help" : [ "LogicalProject(EMPNO=[$0], D=[IN(CASE(true, CAST($7):INTEGER, null:INTEGER), {\nLogicalProject(DEPTNO=[$1])\r\n  LogicalFilter(condition=[<($0, 20)])\r\n    LogicalProject(EMPNO=[$0], DEPTNO=[CASE(true, CAST($7):INTEGER, null:INTEGER)])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n})])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EMPNO=[$0], D=[CASE(=($9, 0), false, IS NULL(CASE(true, CAST($7):INTEGER, null:INTEGER)), null:BOOLEAN, IS NOT NULL($12), true, <($10, $9), null:BOOLEAN, false)])\r\n  LogicalJoin(condition=[=(CASE(true, CAST($7):INTEGER, null:INTEGER), $11)], joinType=[left])\r\n    LogicalJoin(condition=[true], joinType=[inner])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalAggregate(group=[{}], c=[COUNT()], ck=[COUNT($0)])\r\n        LogicalProject(DEPTNO=[$1])\r\n          LogicalFilter(condition=[<($0, 20)])\r\n            LogicalProject(EMPNO=[$0], DEPTNO=[CASE(true, CAST($7):INTEGER, null:INTEGER)])\r\n              LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalAggregate(group=[{0, 1}])\r\n      LogicalProject(DEPTNO=[$1], i=[true])\r\n        LogicalFilter(condition=[<($0, 20)])\r\n          LogicalProject(EMPNO=[$0], DEPTNO=[CASE(true, CAST($7):INTEGER, null:INTEGER)])\r\n            LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  "help" : [ "LogicalProject(EMPNO=[$0], D=[IN(CASE(true, CAST($1):INTEGER, null:INTEGER), {\nLogicalProject(DEPTNO=[$1])\r\n  LogicalFilter(condition=[<($0, 20)])\r\n    LogicalProject(EMPNO=[$0], DEPTNO=[CASE(true, CAST($7):INTEGER, null:INTEGER)])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n})])\r\n  LogicalProject(EMPNO=[$0], DEPTNO=[$7])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EMPNO=[$0], D=[CASE(=($2, 0), false, IS NULL(CASE(true, CAST($1):INTEGER, null:INTEGER)), null:BOOLEAN, IS NOT NULL($5), true, <($3, $2), null:BOOLEAN, false)])\r\n  LogicalJoin(condition=[=(CASE(true, CAST($1):INTEGER, null:INTEGER), $4)], joinType=[left])\r\n    LogicalJoin(condition=[true], joinType=[inner])\r\n      LogicalProject(EMPNO=[$0], DEPTNO=[$7])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalAggregate(group=[{}], c=[COUNT()], ck=[COUNT($0)])\r\n        LogicalProject(DEPTNO=[$1])\r\n          LogicalFilter(condition=[<($0, 20)])\r\n            LogicalProject(EMPNO=[$0], DEPTNO=[CASE(true, CAST($1):INTEGER, null:INTEGER)])\r\n              LogicalProject(EMPNO=[$0], DEPTNO=[$7])\r\n                LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalAggregate(group=[{0, 1}])\r\n      LogicalProject(DEPTNO=[$1], i=[true])\r\n        LogicalFilter(condition=[<($0, 20)])\r\n          LogicalProject(EMPNO=[$0], DEPTNO=[CASE(true, CAST($1):INTEGER, null:INTEGER)])\r\n            LogicalProject(EMPNO=[$0], DEPTNO=[$7])\r\n              LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
 }

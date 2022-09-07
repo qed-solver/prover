@@ -1,18 +1,20 @@
 {
   "schemas" : [ {
     "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
-    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "fields" : [ "JOB", "DEPTNO" ],
+    "types" : [ "VARCHAR", "INTEGER" ],
+    "nullable" : [ false, false ],
+    "key" : [ ],
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   }, {
     "name" : "DEPT",
-    "fields" : [ "DEPTNO", "NAME" ],
-    "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "fields" : [ "DEPTNO" ],
+    "types" : [ "INTEGER" ],
+    "nullable" : [ false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "distinct" : {
@@ -25,10 +27,10 @@
           "source" : {
             "project" : {
               "target" : [ {
-                "column" : 7,
+                "column" : 1,
                 "type" : "INTEGER"
               }, {
-                "column" : 2,
+                "column" : 0,
                 "type" : "VARCHAR"
               } ],
               "source" : {
@@ -37,10 +39,10 @@
                   "condition" : {
                     "operator" : "=",
                     "operand" : [ {
-                      "column" : 7,
+                      "column" : 1,
                       "type" : "INTEGER"
                     }, {
-                      "column" : 9,
+                      "column" : 2,
                       "type" : "INTEGER"
                     } ],
                     "type" : "BOOLEAN"
@@ -86,10 +88,10 @@
               "source" : {
                 "project" : {
                   "target" : [ {
-                    "column" : 8,
+                    "column" : 2,
                     "type" : "INTEGER"
                   }, {
-                    "column" : 3,
+                    "column" : 1,
                     "type" : "VARCHAR"
                   } ],
                   "source" : {
@@ -98,10 +100,10 @@
                       "condition" : {
                         "operator" : "=",
                         "operand" : [ {
-                          "column" : 8,
+                          "column" : 2,
                           "type" : "INTEGER"
                         }, {
-                          "column" : 10,
+                          "column" : 3,
                           "type" : "INTEGER"
                         } ],
                         "type" : "BOOLEAN"
@@ -126,7 +128,7 @@
       "correlate" : [ {
         "project" : {
           "target" : [ {
-            "column" : 7,
+            "column" : 1,
             "type" : "INTEGER"
           } ],
           "source" : {
@@ -138,7 +140,7 @@
           "function" : [ {
             "operator" : "COUNT",
             "operand" : [ {
-              "column" : 3,
+              "column" : 1,
               "type" : "VARCHAR"
             } ],
             "type" : "BIGINT"
@@ -153,7 +155,7 @@
                     "column" : 0,
                     "type" : "INTEGER"
                   }, {
-                    "column" : 8,
+                    "column" : 2,
                     "type" : "INTEGER"
                   } ],
                   "type" : "BOOLEAN"
@@ -169,5 +171,5 @@
       } ]
     }
   } ],
-  "help" : [ "LogicalAggregate(group=[{0}], EXPR$1=[COUNT(DISTINCT $1)])\r\n  LogicalProject(DEPTNO=[$7], JOB=[$2])\r\n    LogicalJoin(condition=[=($7, $9)], joinType=[left])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalAggregate(group=[{7}], EXPR$1=[COUNT(DISTINCT $2)])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  "help" : [ "LogicalAggregate(group=[{0}], EXPR$1=[COUNT(DISTINCT $1)])\r\n  LogicalProject(DEPTNO=[$1], JOB=[$0])\r\n    LogicalJoin(condition=[=($1, $2)], joinType=[left])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalAggregate(group=[{1}], EXPR$1=[COUNT(DISTINCT $0)])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
 }

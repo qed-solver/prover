@@ -35,20 +35,11 @@ pub struct Schema {
 	#[serde(skip)]
 	#[serde(rename = "foreign_key")]
 	pub foreign: HashMap<usize, VL>,
-	#[serde(rename = "strategy")]
+	#[serde(rename = "nullable")]
 	#[serde(default)]
-	pub constraints: Vec<Constraint>,
+	pub nullabilities: Vec<bool>,
 	#[serde(default)]
 	pub guaranteed: Vec<super::relation::Expr>,
-}
-
-#[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum Constraint {
-	NotNullable,
-	#[default]
-	#[serde(other)]
-	Nullable,
 }
 
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]

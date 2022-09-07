@@ -1,11 +1,12 @@
 {
   "schemas" : [ {
     "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
-    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "fields" : [ "ENAME", "DEPTNO" ],
+    "types" : [ "VARCHAR", "INTEGER" ],
+    "nullable" : [ false, false ],
+    "key" : [ ],
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "distinct" : {
@@ -18,10 +19,10 @@
           "source" : {
             "project" : {
               "target" : [ {
-                "column" : 7,
+                "column" : 1,
                 "type" : "INTEGER"
               }, {
-                "column" : 1,
+                "column" : 0,
                 "type" : "VARCHAR"
               } ],
               "source" : {
@@ -60,10 +61,10 @@
               "source" : {
                 "project" : {
                   "target" : [ {
-                    "column" : 8,
+                    "column" : 2,
                     "type" : "INTEGER"
                   }, {
-                    "column" : 2,
+                    "column" : 1,
                     "type" : "VARCHAR"
                   } ],
                   "source" : {
@@ -89,10 +90,10 @@
               "correlate" : [ {
                 "project" : {
                   "target" : [ {
-                    "column" : 1,
+                    "column" : 0,
                     "type" : "VARCHAR"
                   }, {
-                    "column" : 7,
+                    "column" : 1,
                     "type" : "INTEGER"
                   } ],
                   "source" : {
@@ -112,7 +113,7 @@
                             "column" : 0,
                             "type" : "VARCHAR"
                           }, {
-                            "column" : 3,
+                            "column" : 2,
                             "type" : "VARCHAR"
                           } ],
                           "type" : "BOOLEAN"
@@ -122,7 +123,7 @@
                             "column" : 1,
                             "type" : "INTEGER"
                           }, {
-                            "column" : 9,
+                            "column" : 3,
                             "type" : "INTEGER"
                           } ],
                           "type" : "BOOLEAN"
@@ -143,10 +144,7 @@
         "aggregate" : {
           "function" : [ {
             "operator" : "COUNT",
-            "operand" : [ {
-              "column" : 1,
-              "type" : "VARCHAR"
-            } ],
+            "operand" : [ ],
             "type" : "BIGINT"
           } ],
           "source" : {
@@ -171,10 +169,10 @@
                   "correlate" : [ {
                     "project" : {
                       "target" : [ {
-                        "column" : 2,
+                        "column" : 1,
                         "type" : "VARCHAR"
                       }, {
-                        "column" : 8,
+                        "column" : 2,
                         "type" : "INTEGER"
                       } ],
                       "source" : {
@@ -194,7 +192,7 @@
                                 "column" : 1,
                                 "type" : "VARCHAR"
                               }, {
-                                "column" : 4,
+                                "column" : 3,
                                 "type" : "VARCHAR"
                               } ],
                               "type" : "BOOLEAN"
@@ -204,7 +202,7 @@
                                 "column" : 2,
                                 "type" : "INTEGER"
                               }, {
-                                "column" : 10,
+                                "column" : 4,
                                 "type" : "INTEGER"
                               } ],
                               "type" : "BOOLEAN"
@@ -226,5 +224,5 @@
       } ]
     }
   } ],
-  "help" : [ "LogicalAggregate(group=[{0}], EXPR$1=[COUNT(DISTINCT $1)])\r\n  LogicalProject(DEPTNO=[$7], ENAME=[$1])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalAggregate(group=[{1}], EXPR$1=[COUNT($0)])\r\n  LogicalAggregate(group=[{1, 7}])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  "help" : [ "LogicalAggregate(group=[{0}], EXPR$1=[COUNT(DISTINCT $1)])\r\n  LogicalProject(DEPTNO=[$1], ENAME=[$0])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalAggregate(group=[{1}], EXPR$1=[COUNT()])\r\n  LogicalAggregate(group=[{0, 1}])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
 }

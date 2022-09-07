@@ -3,9 +3,10 @@
     "name" : "T",
     "fields" : [ "\"K0\"", "\"C1\"", "\"F1\".\"A0\"", "\"F2\".\"A0\"", "\"F0\".\"C0\"", "\"F1\".\"C0\"", "\"F0\".\"C1\"", "\"F1\".\"C2\"", "\"F2\".\"C3\"" ],
     "types" : [ "VARCHAR", "VARCHAR", "INTEGER", "BOOLEAN", "INTEGER", "INTEGER", "INTEGER", "INTEGER", "INTEGER" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "nullable" : [ false, false, false, false, false, true, false, false, false ],
     "key" : [ ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "project" : {
@@ -95,64 +96,66 @@
         "type" : "INTEGER"
       } ],
       "source" : {
-        "project" : {
-          "target" : [ {
-            "column" : 0,
-            "type" : "VARCHAR"
-          }, {
-            "column" : 1,
-            "type" : "VARCHAR"
-          }, {
-            "column" : 2,
-            "type" : "INTEGER"
-          }, {
-            "column" : 3,
+        "join" : {
+          "kind" : "INNER",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 4,
+              "type" : "INTEGER"
+            }, {
+              "column" : 9,
+              "type" : "INTEGER"
+            } ],
             "type" : "BOOLEAN"
-          }, {
-            "column" : 4,
-            "type" : "INTEGER"
-          }, {
-            "column" : 5,
-            "type" : "INTEGER"
-          }, {
-            "column" : 6,
-            "type" : "INTEGER"
-          }, {
-            "column" : 7,
-            "type" : "INTEGER"
-          }, {
-            "column" : 8,
-            "type" : "INTEGER"
-          } ],
-          "source" : {
-            "join" : {
-              "kind" : "INNER",
-              "condition" : {
-                "operator" : "=",
-                "operand" : [ {
-                  "column" : 4,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 9,
-                  "type" : "INTEGER"
-                } ],
-                "type" : "BOOLEAN"
-              },
-              "left" : {
-                "scan" : 0
-              },
-              "right" : {
-                "distinct" : {
-                  "correlate" : [ {
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "distinct" : {
+              "correlate" : [ {
+                "project" : {
+                  "target" : [ {
+                    "column" : 0,
+                    "type" : "INTEGER"
+                  } ],
+                  "source" : {
                     "project" : {
                       "target" : [ {
-                        "column" : 0,
+                        "column" : 5,
                         "type" : "INTEGER"
                       } ],
                       "source" : {
+                        "scan" : 0
+                      }
+                    }
+                  }
+                }
+              }, {
+                "aggregate" : {
+                  "function" : [ ],
+                  "source" : {
+                    "filter" : {
+                      "condition" : {
+                        "operator" : "AND",
+                        "operand" : [ {
+                          "operator" : "=",
+                          "operand" : [ {
+                            "column" : 0,
+                            "type" : "INTEGER"
+                          }, {
+                            "column" : 1,
+                            "type" : "INTEGER"
+                          } ],
+                          "type" : "BOOLEAN"
+                        } ],
+                        "type" : "BOOLEAN"
+                      },
+                      "source" : {
                         "project" : {
                           "target" : [ {
-                            "column" : 5,
+                            "column" : 6,
                             "type" : "INTEGER"
                           } ],
                           "source" : {
@@ -161,48 +164,14 @@
                         }
                       }
                     }
-                  }, {
-                    "aggregate" : {
-                      "function" : [ ],
-                      "source" : {
-                        "filter" : {
-                          "condition" : {
-                            "operator" : "AND",
-                            "operand" : [ {
-                              "operator" : "=",
-                              "operand" : [ {
-                                "column" : 0,
-                                "type" : "INTEGER"
-                              }, {
-                                "column" : 1,
-                                "type" : "INTEGER"
-                              } ],
-                              "type" : "BOOLEAN"
-                            } ],
-                            "type" : "BOOLEAN"
-                          },
-                          "source" : {
-                            "project" : {
-                              "target" : [ {
-                                "column" : 6,
-                                "type" : "INTEGER"
-                              } ],
-                              "source" : {
-                                "scan" : 0
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  } ]
+                  }
                 }
-              }
+              } ]
             }
           }
         }
       }
     }
   } ],
-  "help" : [ "LogicalProject(\"K0\"=[$0], \"C1\"=[$1], \"F1\".\"A0\"=[$2], \"F2\".\"A0\"=[$3], \"F0\".\"C0\"=[$4], \"F1\".\"C0\"=[$5], \"F0\".\"C1\"=[$6], \"F1\".\"C2\"=[$7], \"F2\".\"C3\"=[$8])\r\n  LogicalFilter(condition=[IN($4, {\nLogicalProject(C0=[$5])\r\n  LogicalTableScan(table=[[CATALOG, STRUCT, T]])\r\n})])\r\n    LogicalTableScan(table=[[CATALOG, STRUCT, T]])\r\n", "LogicalProject(\"K0\"=[$0], \"C1\"=[$1], \"F1\".\"A0\"=[$2], \"F2\".\"A0\"=[$3], \"F0\".\"C0\"=[$4], \"F1\".\"C0\"=[$5], \"F0\".\"C1\"=[$6], \"F1\".\"C2\"=[$7], \"F2\".\"C3\"=[$8])\r\n  LogicalProject(\"K0\"=[$0], \"C1\"=[$1], \"F1\".\"A0\"=[$2], \"F2\".\"A0\"=[$3], \"F0\".\"C0\"=[$4], \"F1\".\"C0\"=[$5], \"F0\".\"C1\"=[$6], \"F1\".\"C2\"=[$7], \"F2\".\"C3\"=[$8])\r\n    LogicalJoin(condition=[=($4, $9)], joinType=[inner])\r\n      LogicalTableScan(table=[[CATALOG, STRUCT, T]])\r\n      LogicalAggregate(group=[{0}])\r\n        LogicalProject(C0=[$5])\r\n          LogicalTableScan(table=[[CATALOG, STRUCT, T]])\r\n" ]
+  "help" : [ "LogicalProject(\"K0\"=[$0], \"C1\"=[$1], \"F1\".\"A0\"=[$2], \"F2\".\"A0\"=[$3], \"F0\".\"C0\"=[$4], \"F1\".\"C0\"=[$5], \"F0\".\"C1\"=[$6], \"F1\".\"C2\"=[$7], \"F2\".\"C3\"=[$8])\r\n  LogicalFilter(condition=[IN($4, {\nLogicalProject(C0=[$5])\r\n  LogicalTableScan(table=[[CATALOG, STRUCT, T]])\r\n})])\r\n    LogicalTableScan(table=[[CATALOG, STRUCT, T]])\r\n", "LogicalProject(\"K0\"=[$0], \"C1\"=[$1], \"F1\".\"A0\"=[$2], \"F2\".\"A0\"=[$3], \"F0\".\"C0\"=[$4], \"F1\".\"C0\"=[$5], \"F0\".\"C1\"=[$6], \"F1\".\"C2\"=[$7], \"F2\".\"C3\"=[$8])\r\n  LogicalJoin(condition=[=($4, $9)], joinType=[inner])\r\n    LogicalTableScan(table=[[CATALOG, STRUCT, T]])\r\n    LogicalAggregate(group=[{0}])\r\n      LogicalProject(\"F1\".\"C0\"=[$5])\r\n        LogicalTableScan(table=[[CATALOG, STRUCT, T]])\r\n" ]
 }

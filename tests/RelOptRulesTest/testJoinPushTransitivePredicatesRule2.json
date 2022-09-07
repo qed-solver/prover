@@ -1,16 +1,17 @@
 {
   "schemas" : [ {
     "name" : "EMPNULLABLES",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
-    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "fields" : [ "SAL", "DEPTNO" ],
+    "types" : [ "INTEGER", "INTEGER" ],
+    "nullable" : [ true, true ],
+    "key" : [ ],
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "project" : {
       "target" : [ {
-        "column" : 5,
+        "column" : 0,
         "type" : "INTEGER"
       } ],
       "source" : {
@@ -21,20 +22,20 @@
             "operand" : [ {
               "operator" : "=",
               "operand" : [ {
-                "column" : 5,
+                "column" : 0,
                 "type" : "INTEGER"
               }, {
-                "column" : 11,
+                "column" : 3,
                 "type" : "INTEGER"
               } ],
               "type" : "BOOLEAN"
             }, {
               "operator" : "=",
               "operand" : [ {
-                "column" : 9,
+                "column" : 1,
                 "type" : "BOOLEAN"
               }, {
-                "column" : 12,
+                "column" : 4,
                 "type" : "BOOLEAN"
               } ],
               "type" : "BOOLEAN"
@@ -47,33 +48,9 @@
                 "column" : 0,
                 "type" : "INTEGER"
               }, {
-                "column" : 1,
-                "type" : "VARCHAR"
-              }, {
-                "column" : 2,
-                "type" : "VARCHAR"
-              }, {
-                "column" : 3,
-                "type" : "INTEGER"
-              }, {
-                "column" : 4,
-                "type" : "TIMESTAMP"
-              }, {
-                "column" : 5,
-                "type" : "INTEGER"
-              }, {
-                "column" : 6,
-                "type" : "INTEGER"
-              }, {
-                "column" : 8,
-                "type" : "BOOLEAN"
-              }, {
-                "column" : 5,
-                "type" : "INTEGER"
-              }, {
                 "operator" : "=",
                 "operand" : [ {
-                  "column" : 5,
+                  "column" : 0,
                   "type" : "INTEGER"
                 }, {
                   "operator" : "4",
@@ -89,7 +66,7 @@
                     "operand" : [ {
                       "operator" : "=",
                       "operand" : [ {
-                        "column" : 7,
+                        "column" : 1,
                         "type" : "INTEGER"
                       }, {
                         "operator" : "20",
@@ -100,7 +77,7 @@
                     }, {
                       "operator" : ">",
                       "operand" : [ {
-                        "column" : 5,
+                        "column" : 0,
                         "type" : "INTEGER"
                       }, {
                         "operator" : "1000",
@@ -146,65 +123,136 @@
                         "type" : "BOOLEAN"
                       } ],
                       "source" : {
-                        "project" : {
-                          "target" : [ {
-                            "column" : 5,
-                            "type" : "INTEGER"
-                          }, {
-                            "column" : 8,
-                            "type" : "INTEGER"
-                          }, {
-                            "column" : 9,
+                        "join" : {
+                          "kind" : "INNER",
+                          "condition" : {
+                            "operator" : "OR",
+                            "operand" : [ {
+                              "operator" : "=",
+                              "operand" : [ {
+                                "column" : 1,
+                                "type" : "INTEGER"
+                              }, {
+                                "column" : 0,
+                                "type" : "INTEGER"
+                              } ],
+                              "type" : "BOOLEAN"
+                            }, {
+                              "column" : 2,
+                              "type" : "BOOLEAN"
+                            } ],
                             "type" : "BOOLEAN"
-                          } ],
-                          "source" : {
-                            "join" : {
-                              "kind" : "INNER",
-                              "condition" : {
-                                "operator" : "OR",
-                                "operand" : [ {
-                                  "operator" : "=",
-                                  "operand" : [ {
-                                    "column" : 8,
-                                    "type" : "INTEGER"
-                                  }, {
-                                    "column" : 5,
-                                    "type" : "INTEGER"
-                                  } ],
-                                  "type" : "BOOLEAN"
-                                }, {
-                                  "column" : 9,
-                                  "type" : "BOOLEAN"
-                                } ],
-                                "type" : "BOOLEAN"
-                              },
-                              "left" : {
+                          },
+                          "left" : {
+                            "project" : {
+                              "target" : [ {
+                                "column" : 0,
+                                "type" : "INTEGER"
+                              } ],
+                              "source" : {
+                                "filter" : {
+                                  "condition" : {
+                                    "operator" : "AND",
+                                    "operand" : [ {
+                                      "operator" : "=",
+                                      "operand" : [ {
+                                        "column" : 1,
+                                        "type" : "INTEGER"
+                                      }, {
+                                        "operator" : "20",
+                                        "operand" : [ ],
+                                        "type" : "INTEGER"
+                                      } ],
+                                      "type" : "BOOLEAN"
+                                    }, {
+                                      "operator" : ">",
+                                      "operand" : [ {
+                                        "column" : 0,
+                                        "type" : "INTEGER"
+                                      }, {
+                                        "operator" : "1000",
+                                        "operand" : [ ],
+                                        "type" : "INTEGER"
+                                      } ],
+                                      "type" : "BOOLEAN"
+                                    } ],
+                                    "type" : "BOOLEAN"
+                                  },
+                                  "source" : {
+                                    "scan" : 0
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "right" : {
+                            "distinct" : {
+                              "correlate" : [ {
                                 "project" : {
                                   "target" : [ {
                                     "column" : 0,
                                     "type" : "INTEGER"
                                   }, {
                                     "column" : 1,
-                                    "type" : "VARCHAR"
-                                  }, {
-                                    "column" : 2,
-                                    "type" : "VARCHAR"
-                                  }, {
-                                    "column" : 3,
-                                    "type" : "INTEGER"
-                                  }, {
-                                    "column" : 4,
-                                    "type" : "TIMESTAMP"
-                                  }, {
-                                    "column" : 5,
-                                    "type" : "INTEGER"
-                                  }, {
-                                    "column" : 6,
-                                    "type" : "INTEGER"
-                                  }, {
-                                    "column" : 8,
                                     "type" : "BOOLEAN"
                                   } ],
+                                  "source" : {
+                                    "project" : {
+                                      "target" : [ {
+                                        "column" : 0,
+                                        "type" : "INTEGER"
+                                      }, {
+                                        "operator" : "=",
+                                        "operand" : [ {
+                                          "column" : 0,
+                                          "type" : "INTEGER"
+                                        }, {
+                                          "operator" : "4",
+                                          "operand" : [ ],
+                                          "type" : "INTEGER"
+                                        } ],
+                                        "type" : "BOOLEAN"
+                                      } ],
+                                      "source" : {
+                                        "filter" : {
+                                          "condition" : {
+                                            "operator" : "AND",
+                                            "operand" : [ {
+                                              "operator" : "=",
+                                              "operand" : [ {
+                                                "column" : 1,
+                                                "type" : "INTEGER"
+                                              }, {
+                                                "operator" : "20",
+                                                "operand" : [ ],
+                                                "type" : "INTEGER"
+                                              } ],
+                                              "type" : "BOOLEAN"
+                                            }, {
+                                              "operator" : ">",
+                                              "operand" : [ {
+                                                "column" : 0,
+                                                "type" : "INTEGER"
+                                              }, {
+                                                "operator" : "1000",
+                                                "operand" : [ ],
+                                                "type" : "INTEGER"
+                                              } ],
+                                              "type" : "BOOLEAN"
+                                            } ],
+                                            "type" : "BOOLEAN"
+                                          },
+                                          "source" : {
+                                            "scan" : 0
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }, {
+                                "aggregate" : {
+                                  "function" : [ ],
                                   "source" : {
                                     "filter" : {
                                       "condition" : {
@@ -212,55 +260,35 @@
                                         "operand" : [ {
                                           "operator" : "=",
                                           "operand" : [ {
-                                            "column" : 7,
+                                            "column" : 0,
                                             "type" : "INTEGER"
                                           }, {
-                                            "operator" : "20",
-                                            "operand" : [ ],
+                                            "column" : 2,
                                             "type" : "INTEGER"
                                           } ],
                                           "type" : "BOOLEAN"
                                         }, {
-                                          "operator" : ">",
+                                          "operator" : "=",
                                           "operand" : [ {
-                                            "column" : 5,
-                                            "type" : "INTEGER"
+                                            "column" : 1,
+                                            "type" : "BOOLEAN"
                                           }, {
-                                            "operator" : "1000",
-                                            "operand" : [ ],
-                                            "type" : "INTEGER"
+                                            "column" : 3,
+                                            "type" : "BOOLEAN"
                                           } ],
                                           "type" : "BOOLEAN"
                                         } ],
                                         "type" : "BOOLEAN"
                                       },
                                       "source" : {
-                                        "scan" : 0
-                                      }
-                                    }
-                                  }
-                                }
-                              },
-                              "right" : {
-                                "distinct" : {
-                                  "correlate" : [ {
-                                    "project" : {
-                                      "target" : [ {
-                                        "column" : 0,
-                                        "type" : "INTEGER"
-                                      }, {
-                                        "column" : 1,
-                                        "type" : "BOOLEAN"
-                                      } ],
-                                      "source" : {
                                         "project" : {
                                           "target" : [ {
-                                            "column" : 5,
+                                            "column" : 2,
                                             "type" : "INTEGER"
                                           }, {
                                             "operator" : "=",
                                             "operand" : [ {
-                                              "column" : 5,
+                                              "column" : 2,
                                               "type" : "INTEGER"
                                             }, {
                                               "operator" : "4",
@@ -276,7 +304,7 @@
                                                 "operand" : [ {
                                                   "operator" : "=",
                                                   "operand" : [ {
-                                                    "column" : 7,
+                                                    "column" : 3,
                                                     "type" : "INTEGER"
                                                   }, {
                                                     "operator" : "20",
@@ -287,7 +315,7 @@
                                                 }, {
                                                   "operator" : ">",
                                                   "operand" : [ {
-                                                    "column" : 5,
+                                                    "column" : 2,
                                                     "type" : "INTEGER"
                                                   }, {
                                                     "operator" : "1000",
@@ -306,95 +334,9 @@
                                         }
                                       }
                                     }
-                                  }, {
-                                    "aggregate" : {
-                                      "function" : [ ],
-                                      "source" : {
-                                        "filter" : {
-                                          "condition" : {
-                                            "operator" : "AND",
-                                            "operand" : [ {
-                                              "operator" : "=",
-                                              "operand" : [ {
-                                                "column" : 0,
-                                                "type" : "INTEGER"
-                                              }, {
-                                                "column" : 2,
-                                                "type" : "INTEGER"
-                                              } ],
-                                              "type" : "BOOLEAN"
-                                            }, {
-                                              "operator" : "=",
-                                              "operand" : [ {
-                                                "column" : 1,
-                                                "type" : "BOOLEAN"
-                                              }, {
-                                                "column" : 3,
-                                                "type" : "BOOLEAN"
-                                              } ],
-                                              "type" : "BOOLEAN"
-                                            } ],
-                                            "type" : "BOOLEAN"
-                                          },
-                                          "source" : {
-                                            "project" : {
-                                              "target" : [ {
-                                                "column" : 7,
-                                                "type" : "INTEGER"
-                                              }, {
-                                                "operator" : "=",
-                                                "operand" : [ {
-                                                  "column" : 7,
-                                                  "type" : "INTEGER"
-                                                }, {
-                                                  "operator" : "4",
-                                                  "operand" : [ ],
-                                                  "type" : "INTEGER"
-                                                } ],
-                                                "type" : "BOOLEAN"
-                                              } ],
-                                              "source" : {
-                                                "filter" : {
-                                                  "condition" : {
-                                                    "operator" : "AND",
-                                                    "operand" : [ {
-                                                      "operator" : "=",
-                                                      "operand" : [ {
-                                                        "column" : 9,
-                                                        "type" : "INTEGER"
-                                                      }, {
-                                                        "operator" : "20",
-                                                        "operand" : [ ],
-                                                        "type" : "INTEGER"
-                                                      } ],
-                                                      "type" : "BOOLEAN"
-                                                    }, {
-                                                      "operator" : ">",
-                                                      "operand" : [ {
-                                                        "column" : 7,
-                                                        "type" : "INTEGER"
-                                                      }, {
-                                                        "operator" : "1000",
-                                                        "operand" : [ ],
-                                                        "type" : "INTEGER"
-                                                      } ],
-                                                      "type" : "BOOLEAN"
-                                                    } ],
-                                                    "type" : "BOOLEAN"
-                                                  },
-                                                  "source" : {
-                                                    "scan" : 0
-                                                  }
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  } ]
+                                  }
                                 }
-                              }
+                              } ]
                             }
                           }
                         }
@@ -441,65 +383,136 @@
                             "type" : "BOOLEAN"
                           },
                           "source" : {
-                            "project" : {
-                              "target" : [ {
-                                "column" : 8,
-                                "type" : "INTEGER"
-                              }, {
-                                "column" : 11,
-                                "type" : "INTEGER"
-                              }, {
-                                "column" : 12,
+                            "join" : {
+                              "kind" : "INNER",
+                              "condition" : {
+                                "operator" : "OR",
+                                "operand" : [ {
+                                  "operator" : "=",
+                                  "operand" : [ {
+                                    "column" : 4,
+                                    "type" : "INTEGER"
+                                  }, {
+                                    "column" : 3,
+                                    "type" : "INTEGER"
+                                  } ],
+                                  "type" : "BOOLEAN"
+                                }, {
+                                  "column" : 5,
+                                  "type" : "BOOLEAN"
+                                } ],
                                 "type" : "BOOLEAN"
-                              } ],
-                              "source" : {
-                                "join" : {
-                                  "kind" : "INNER",
-                                  "condition" : {
-                                    "operator" : "OR",
-                                    "operand" : [ {
-                                      "operator" : "=",
-                                      "operand" : [ {
-                                        "column" : 11,
-                                        "type" : "INTEGER"
-                                      }, {
-                                        "column" : 8,
-                                        "type" : "INTEGER"
-                                      } ],
-                                      "type" : "BOOLEAN"
-                                    }, {
-                                      "column" : 12,
-                                      "type" : "BOOLEAN"
-                                    } ],
-                                    "type" : "BOOLEAN"
-                                  },
-                                  "left" : {
+                              },
+                              "left" : {
+                                "project" : {
+                                  "target" : [ {
+                                    "column" : 3,
+                                    "type" : "INTEGER"
+                                  } ],
+                                  "source" : {
+                                    "filter" : {
+                                      "condition" : {
+                                        "operator" : "AND",
+                                        "operand" : [ {
+                                          "operator" : "=",
+                                          "operand" : [ {
+                                            "column" : 4,
+                                            "type" : "INTEGER"
+                                          }, {
+                                            "operator" : "20",
+                                            "operand" : [ ],
+                                            "type" : "INTEGER"
+                                          } ],
+                                          "type" : "BOOLEAN"
+                                        }, {
+                                          "operator" : ">",
+                                          "operand" : [ {
+                                            "column" : 3,
+                                            "type" : "INTEGER"
+                                          }, {
+                                            "operator" : "1000",
+                                            "operand" : [ ],
+                                            "type" : "INTEGER"
+                                          } ],
+                                          "type" : "BOOLEAN"
+                                        } ],
+                                        "type" : "BOOLEAN"
+                                      },
+                                      "source" : {
+                                        "scan" : 0
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "distinct" : {
+                                  "correlate" : [ {
                                     "project" : {
                                       "target" : [ {
                                         "column" : 3,
                                         "type" : "INTEGER"
                                       }, {
                                         "column" : 4,
-                                        "type" : "VARCHAR"
-                                      }, {
-                                        "column" : 5,
-                                        "type" : "VARCHAR"
-                                      }, {
-                                        "column" : 6,
-                                        "type" : "INTEGER"
-                                      }, {
-                                        "column" : 7,
-                                        "type" : "TIMESTAMP"
-                                      }, {
-                                        "column" : 8,
-                                        "type" : "INTEGER"
-                                      }, {
-                                        "column" : 9,
-                                        "type" : "INTEGER"
-                                      }, {
-                                        "column" : 11,
                                         "type" : "BOOLEAN"
                                       } ],
+                                      "source" : {
+                                        "project" : {
+                                          "target" : [ {
+                                            "column" : 3,
+                                            "type" : "INTEGER"
+                                          }, {
+                                            "operator" : "=",
+                                            "operand" : [ {
+                                              "column" : 3,
+                                              "type" : "INTEGER"
+                                            }, {
+                                              "operator" : "4",
+                                              "operand" : [ ],
+                                              "type" : "INTEGER"
+                                            } ],
+                                            "type" : "BOOLEAN"
+                                          } ],
+                                          "source" : {
+                                            "filter" : {
+                                              "condition" : {
+                                                "operator" : "AND",
+                                                "operand" : [ {
+                                                  "operator" : "=",
+                                                  "operand" : [ {
+                                                    "column" : 4,
+                                                    "type" : "INTEGER"
+                                                  }, {
+                                                    "operator" : "20",
+                                                    "operand" : [ ],
+                                                    "type" : "INTEGER"
+                                                  } ],
+                                                  "type" : "BOOLEAN"
+                                                }, {
+                                                  "operator" : ">",
+                                                  "operand" : [ {
+                                                    "column" : 3,
+                                                    "type" : "INTEGER"
+                                                  }, {
+                                                    "operator" : "1000",
+                                                    "operand" : [ ],
+                                                    "type" : "INTEGER"
+                                                  } ],
+                                                  "type" : "BOOLEAN"
+                                                } ],
+                                                "type" : "BOOLEAN"
+                                              },
+                                              "source" : {
+                                                "scan" : 0
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }, {
+                                    "aggregate" : {
+                                      "function" : [ ],
                                       "source" : {
                                         "filter" : {
                                           "condition" : {
@@ -507,55 +520,35 @@
                                             "operand" : [ {
                                               "operator" : "=",
                                               "operand" : [ {
-                                                "column" : 10,
+                                                "column" : 3,
                                                 "type" : "INTEGER"
                                               }, {
-                                                "operator" : "20",
-                                                "operand" : [ ],
+                                                "column" : 5,
                                                 "type" : "INTEGER"
                                               } ],
                                               "type" : "BOOLEAN"
                                             }, {
-                                              "operator" : ">",
+                                              "operator" : "=",
                                               "operand" : [ {
-                                                "column" : 8,
-                                                "type" : "INTEGER"
+                                                "column" : 4,
+                                                "type" : "BOOLEAN"
                                               }, {
-                                                "operator" : "1000",
-                                                "operand" : [ ],
-                                                "type" : "INTEGER"
+                                                "column" : 6,
+                                                "type" : "BOOLEAN"
                                               } ],
                                               "type" : "BOOLEAN"
                                             } ],
                                             "type" : "BOOLEAN"
                                           },
                                           "source" : {
-                                            "scan" : 0
-                                          }
-                                        }
-                                      }
-                                    }
-                                  },
-                                  "right" : {
-                                    "distinct" : {
-                                      "correlate" : [ {
-                                        "project" : {
-                                          "target" : [ {
-                                            "column" : 3,
-                                            "type" : "INTEGER"
-                                          }, {
-                                            "column" : 4,
-                                            "type" : "BOOLEAN"
-                                          } ],
-                                          "source" : {
                                             "project" : {
                                               "target" : [ {
-                                                "column" : 8,
+                                                "column" : 5,
                                                 "type" : "INTEGER"
                                               }, {
                                                 "operator" : "=",
                                                 "operand" : [ {
-                                                  "column" : 8,
+                                                  "column" : 5,
                                                   "type" : "INTEGER"
                                                 }, {
                                                   "operator" : "4",
@@ -571,7 +564,7 @@
                                                     "operand" : [ {
                                                       "operator" : "=",
                                                       "operand" : [ {
-                                                        "column" : 10,
+                                                        "column" : 6,
                                                         "type" : "INTEGER"
                                                       }, {
                                                         "operator" : "20",
@@ -582,7 +575,7 @@
                                                     }, {
                                                       "operator" : ">",
                                                       "operand" : [ {
-                                                        "column" : 8,
+                                                        "column" : 5,
                                                         "type" : "INTEGER"
                                                       }, {
                                                         "operator" : "1000",
@@ -601,95 +594,9 @@
                                             }
                                           }
                                         }
-                                      }, {
-                                        "aggregate" : {
-                                          "function" : [ ],
-                                          "source" : {
-                                            "filter" : {
-                                              "condition" : {
-                                                "operator" : "AND",
-                                                "operand" : [ {
-                                                  "operator" : "=",
-                                                  "operand" : [ {
-                                                    "column" : 3,
-                                                    "type" : "INTEGER"
-                                                  }, {
-                                                    "column" : 5,
-                                                    "type" : "INTEGER"
-                                                  } ],
-                                                  "type" : "BOOLEAN"
-                                                }, {
-                                                  "operator" : "=",
-                                                  "operand" : [ {
-                                                    "column" : 4,
-                                                    "type" : "BOOLEAN"
-                                                  }, {
-                                                    "column" : 6,
-                                                    "type" : "BOOLEAN"
-                                                  } ],
-                                                  "type" : "BOOLEAN"
-                                                } ],
-                                                "type" : "BOOLEAN"
-                                              },
-                                              "source" : {
-                                                "project" : {
-                                                  "target" : [ {
-                                                    "column" : 10,
-                                                    "type" : "INTEGER"
-                                                  }, {
-                                                    "operator" : "=",
-                                                    "operand" : [ {
-                                                      "column" : 10,
-                                                      "type" : "INTEGER"
-                                                    }, {
-                                                      "operator" : "4",
-                                                      "operand" : [ ],
-                                                      "type" : "INTEGER"
-                                                    } ],
-                                                    "type" : "BOOLEAN"
-                                                  } ],
-                                                  "source" : {
-                                                    "filter" : {
-                                                      "condition" : {
-                                                        "operator" : "AND",
-                                                        "operand" : [ {
-                                                          "operator" : "=",
-                                                          "operand" : [ {
-                                                            "column" : 12,
-                                                            "type" : "INTEGER"
-                                                          }, {
-                                                            "operator" : "20",
-                                                            "operand" : [ ],
-                                                            "type" : "INTEGER"
-                                                          } ],
-                                                          "type" : "BOOLEAN"
-                                                        }, {
-                                                          "operator" : ">",
-                                                          "operand" : [ {
-                                                            "column" : 10,
-                                                            "type" : "INTEGER"
-                                                          }, {
-                                                            "operator" : "1000",
-                                                            "operand" : [ ],
-                                                            "type" : "INTEGER"
-                                                          } ],
-                                                          "type" : "BOOLEAN"
-                                                        } ],
-                                                        "type" : "BOOLEAN"
-                                                      },
-                                                      "source" : {
-                                                        "scan" : 0
-                                                      }
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      } ]
+                                      }
                                     }
-                                  }
+                                  } ]
                                 }
                               }
                             }
@@ -708,7 +615,7 @@
   }, {
     "project" : {
       "target" : [ {
-        "column" : 5,
+        "column" : 0,
         "type" : "INTEGER"
       } ],
       "source" : {
@@ -719,20 +626,20 @@
             "operand" : [ {
               "operator" : "=",
               "operand" : [ {
-                "column" : 5,
+                "column" : 0,
                 "type" : "INTEGER"
               }, {
-                "column" : 11,
+                "column" : 3,
                 "type" : "INTEGER"
               } ],
               "type" : "BOOLEAN"
             }, {
               "operator" : "=",
               "operand" : [ {
-                "column" : 9,
+                "column" : 1,
                 "type" : "BOOLEAN"
               }, {
-                "column" : 12,
+                "column" : 4,
                 "type" : "BOOLEAN"
               } ],
               "type" : "BOOLEAN"
@@ -744,7 +651,7 @@
               "condition" : {
                 "operator" : ">",
                 "operand" : [ {
-                  "column" : 5,
+                  "column" : 0,
                   "type" : "INTEGER"
                 }, {
                   "operator" : "1000",
@@ -759,33 +666,9 @@
                     "column" : 0,
                     "type" : "INTEGER"
                   }, {
-                    "column" : 1,
-                    "type" : "VARCHAR"
-                  }, {
-                    "column" : 2,
-                    "type" : "VARCHAR"
-                  }, {
-                    "column" : 3,
-                    "type" : "INTEGER"
-                  }, {
-                    "column" : 4,
-                    "type" : "TIMESTAMP"
-                  }, {
-                    "column" : 5,
-                    "type" : "INTEGER"
-                  }, {
-                    "column" : 6,
-                    "type" : "INTEGER"
-                  }, {
-                    "column" : 8,
-                    "type" : "BOOLEAN"
-                  }, {
-                    "column" : 5,
-                    "type" : "INTEGER"
-                  }, {
                     "operator" : "=",
                     "operand" : [ {
-                      "column" : 5,
+                      "column" : 0,
                       "type" : "INTEGER"
                     }, {
                       "operator" : "4",
@@ -801,7 +684,7 @@
                         "operand" : [ {
                           "operator" : "=",
                           "operand" : [ {
-                            "column" : 7,
+                            "column" : 1,
                             "type" : "INTEGER"
                           }, {
                             "operator" : "20",
@@ -812,7 +695,7 @@
                         }, {
                           "operator" : ">",
                           "operand" : [ {
-                            "column" : 5,
+                            "column" : 0,
                             "type" : "INTEGER"
                           }, {
                             "operator" : "1000",
@@ -860,65 +743,136 @@
                         "type" : "BOOLEAN"
                       } ],
                       "source" : {
-                        "project" : {
-                          "target" : [ {
-                            "column" : 5,
-                            "type" : "INTEGER"
-                          }, {
-                            "column" : 8,
-                            "type" : "INTEGER"
-                          }, {
-                            "column" : 9,
+                        "join" : {
+                          "kind" : "INNER",
+                          "condition" : {
+                            "operator" : "OR",
+                            "operand" : [ {
+                              "operator" : "=",
+                              "operand" : [ {
+                                "column" : 1,
+                                "type" : "INTEGER"
+                              }, {
+                                "column" : 0,
+                                "type" : "INTEGER"
+                              } ],
+                              "type" : "BOOLEAN"
+                            }, {
+                              "column" : 2,
+                              "type" : "BOOLEAN"
+                            } ],
                             "type" : "BOOLEAN"
-                          } ],
-                          "source" : {
-                            "join" : {
-                              "kind" : "INNER",
-                              "condition" : {
-                                "operator" : "OR",
-                                "operand" : [ {
-                                  "operator" : "=",
-                                  "operand" : [ {
-                                    "column" : 8,
-                                    "type" : "INTEGER"
-                                  }, {
-                                    "column" : 5,
-                                    "type" : "INTEGER"
-                                  } ],
-                                  "type" : "BOOLEAN"
-                                }, {
-                                  "column" : 9,
-                                  "type" : "BOOLEAN"
-                                } ],
-                                "type" : "BOOLEAN"
-                              },
-                              "left" : {
+                          },
+                          "left" : {
+                            "project" : {
+                              "target" : [ {
+                                "column" : 0,
+                                "type" : "INTEGER"
+                              } ],
+                              "source" : {
+                                "filter" : {
+                                  "condition" : {
+                                    "operator" : "AND",
+                                    "operand" : [ {
+                                      "operator" : "=",
+                                      "operand" : [ {
+                                        "column" : 1,
+                                        "type" : "INTEGER"
+                                      }, {
+                                        "operator" : "20",
+                                        "operand" : [ ],
+                                        "type" : "INTEGER"
+                                      } ],
+                                      "type" : "BOOLEAN"
+                                    }, {
+                                      "operator" : ">",
+                                      "operand" : [ {
+                                        "column" : 0,
+                                        "type" : "INTEGER"
+                                      }, {
+                                        "operator" : "1000",
+                                        "operand" : [ ],
+                                        "type" : "INTEGER"
+                                      } ],
+                                      "type" : "BOOLEAN"
+                                    } ],
+                                    "type" : "BOOLEAN"
+                                  },
+                                  "source" : {
+                                    "scan" : 0
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "right" : {
+                            "distinct" : {
+                              "correlate" : [ {
                                 "project" : {
                                   "target" : [ {
                                     "column" : 0,
                                     "type" : "INTEGER"
                                   }, {
                                     "column" : 1,
-                                    "type" : "VARCHAR"
-                                  }, {
-                                    "column" : 2,
-                                    "type" : "VARCHAR"
-                                  }, {
-                                    "column" : 3,
-                                    "type" : "INTEGER"
-                                  }, {
-                                    "column" : 4,
-                                    "type" : "TIMESTAMP"
-                                  }, {
-                                    "column" : 5,
-                                    "type" : "INTEGER"
-                                  }, {
-                                    "column" : 6,
-                                    "type" : "INTEGER"
-                                  }, {
-                                    "column" : 8,
                                     "type" : "BOOLEAN"
                                   } ],
+                                  "source" : {
+                                    "project" : {
+                                      "target" : [ {
+                                        "column" : 0,
+                                        "type" : "INTEGER"
+                                      }, {
+                                        "operator" : "=",
+                                        "operand" : [ {
+                                          "column" : 0,
+                                          "type" : "INTEGER"
+                                        }, {
+                                          "operator" : "4",
+                                          "operand" : [ ],
+                                          "type" : "INTEGER"
+                                        } ],
+                                        "type" : "BOOLEAN"
+                                      } ],
+                                      "source" : {
+                                        "filter" : {
+                                          "condition" : {
+                                            "operator" : "AND",
+                                            "operand" : [ {
+                                              "operator" : "=",
+                                              "operand" : [ {
+                                                "column" : 1,
+                                                "type" : "INTEGER"
+                                              }, {
+                                                "operator" : "20",
+                                                "operand" : [ ],
+                                                "type" : "INTEGER"
+                                              } ],
+                                              "type" : "BOOLEAN"
+                                            }, {
+                                              "operator" : ">",
+                                              "operand" : [ {
+                                                "column" : 0,
+                                                "type" : "INTEGER"
+                                              }, {
+                                                "operator" : "1000",
+                                                "operand" : [ ],
+                                                "type" : "INTEGER"
+                                              } ],
+                                              "type" : "BOOLEAN"
+                                            } ],
+                                            "type" : "BOOLEAN"
+                                          },
+                                          "source" : {
+                                            "scan" : 0
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }, {
+                                "aggregate" : {
+                                  "function" : [ ],
                                   "source" : {
                                     "filter" : {
                                       "condition" : {
@@ -926,55 +880,35 @@
                                         "operand" : [ {
                                           "operator" : "=",
                                           "operand" : [ {
-                                            "column" : 7,
+                                            "column" : 0,
                                             "type" : "INTEGER"
                                           }, {
-                                            "operator" : "20",
-                                            "operand" : [ ],
+                                            "column" : 2,
                                             "type" : "INTEGER"
                                           } ],
                                           "type" : "BOOLEAN"
                                         }, {
-                                          "operator" : ">",
+                                          "operator" : "=",
                                           "operand" : [ {
-                                            "column" : 5,
-                                            "type" : "INTEGER"
+                                            "column" : 1,
+                                            "type" : "BOOLEAN"
                                           }, {
-                                            "operator" : "1000",
-                                            "operand" : [ ],
-                                            "type" : "INTEGER"
+                                            "column" : 3,
+                                            "type" : "BOOLEAN"
                                           } ],
                                           "type" : "BOOLEAN"
                                         } ],
                                         "type" : "BOOLEAN"
                                       },
                                       "source" : {
-                                        "scan" : 0
-                                      }
-                                    }
-                                  }
-                                }
-                              },
-                              "right" : {
-                                "distinct" : {
-                                  "correlate" : [ {
-                                    "project" : {
-                                      "target" : [ {
-                                        "column" : 0,
-                                        "type" : "INTEGER"
-                                      }, {
-                                        "column" : 1,
-                                        "type" : "BOOLEAN"
-                                      } ],
-                                      "source" : {
                                         "project" : {
                                           "target" : [ {
-                                            "column" : 5,
+                                            "column" : 2,
                                             "type" : "INTEGER"
                                           }, {
                                             "operator" : "=",
                                             "operand" : [ {
-                                              "column" : 5,
+                                              "column" : 2,
                                               "type" : "INTEGER"
                                             }, {
                                               "operator" : "4",
@@ -990,7 +924,7 @@
                                                 "operand" : [ {
                                                   "operator" : "=",
                                                   "operand" : [ {
-                                                    "column" : 7,
+                                                    "column" : 3,
                                                     "type" : "INTEGER"
                                                   }, {
                                                     "operator" : "20",
@@ -1001,7 +935,7 @@
                                                 }, {
                                                   "operator" : ">",
                                                   "operand" : [ {
-                                                    "column" : 5,
+                                                    "column" : 2,
                                                     "type" : "INTEGER"
                                                   }, {
                                                     "operator" : "1000",
@@ -1020,95 +954,9 @@
                                         }
                                       }
                                     }
-                                  }, {
-                                    "aggregate" : {
-                                      "function" : [ ],
-                                      "source" : {
-                                        "filter" : {
-                                          "condition" : {
-                                            "operator" : "AND",
-                                            "operand" : [ {
-                                              "operator" : "=",
-                                              "operand" : [ {
-                                                "column" : 0,
-                                                "type" : "INTEGER"
-                                              }, {
-                                                "column" : 2,
-                                                "type" : "INTEGER"
-                                              } ],
-                                              "type" : "BOOLEAN"
-                                            }, {
-                                              "operator" : "=",
-                                              "operand" : [ {
-                                                "column" : 1,
-                                                "type" : "BOOLEAN"
-                                              }, {
-                                                "column" : 3,
-                                                "type" : "BOOLEAN"
-                                              } ],
-                                              "type" : "BOOLEAN"
-                                            } ],
-                                            "type" : "BOOLEAN"
-                                          },
-                                          "source" : {
-                                            "project" : {
-                                              "target" : [ {
-                                                "column" : 7,
-                                                "type" : "INTEGER"
-                                              }, {
-                                                "operator" : "=",
-                                                "operand" : [ {
-                                                  "column" : 7,
-                                                  "type" : "INTEGER"
-                                                }, {
-                                                  "operator" : "4",
-                                                  "operand" : [ ],
-                                                  "type" : "INTEGER"
-                                                } ],
-                                                "type" : "BOOLEAN"
-                                              } ],
-                                              "source" : {
-                                                "filter" : {
-                                                  "condition" : {
-                                                    "operator" : "AND",
-                                                    "operand" : [ {
-                                                      "operator" : "=",
-                                                      "operand" : [ {
-                                                        "column" : 9,
-                                                        "type" : "INTEGER"
-                                                      }, {
-                                                        "operator" : "20",
-                                                        "operand" : [ ],
-                                                        "type" : "INTEGER"
-                                                      } ],
-                                                      "type" : "BOOLEAN"
-                                                    }, {
-                                                      "operator" : ">",
-                                                      "operand" : [ {
-                                                        "column" : 7,
-                                                        "type" : "INTEGER"
-                                                      }, {
-                                                        "operator" : "1000",
-                                                        "operand" : [ ],
-                                                        "type" : "INTEGER"
-                                                      } ],
-                                                      "type" : "BOOLEAN"
-                                                    } ],
-                                                    "type" : "BOOLEAN"
-                                                  },
-                                                  "source" : {
-                                                    "scan" : 0
-                                                  }
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  } ]
+                                  }
                                 }
-                              }
+                              } ]
                             }
                           }
                         }
@@ -1155,65 +1003,136 @@
                             "type" : "BOOLEAN"
                           },
                           "source" : {
-                            "project" : {
-                              "target" : [ {
-                                "column" : 8,
-                                "type" : "INTEGER"
-                              }, {
-                                "column" : 11,
-                                "type" : "INTEGER"
-                              }, {
-                                "column" : 12,
+                            "join" : {
+                              "kind" : "INNER",
+                              "condition" : {
+                                "operator" : "OR",
+                                "operand" : [ {
+                                  "operator" : "=",
+                                  "operand" : [ {
+                                    "column" : 4,
+                                    "type" : "INTEGER"
+                                  }, {
+                                    "column" : 3,
+                                    "type" : "INTEGER"
+                                  } ],
+                                  "type" : "BOOLEAN"
+                                }, {
+                                  "column" : 5,
+                                  "type" : "BOOLEAN"
+                                } ],
                                 "type" : "BOOLEAN"
-                              } ],
-                              "source" : {
-                                "join" : {
-                                  "kind" : "INNER",
-                                  "condition" : {
-                                    "operator" : "OR",
-                                    "operand" : [ {
-                                      "operator" : "=",
-                                      "operand" : [ {
-                                        "column" : 11,
-                                        "type" : "INTEGER"
-                                      }, {
-                                        "column" : 8,
-                                        "type" : "INTEGER"
-                                      } ],
-                                      "type" : "BOOLEAN"
-                                    }, {
-                                      "column" : 12,
-                                      "type" : "BOOLEAN"
-                                    } ],
-                                    "type" : "BOOLEAN"
-                                  },
-                                  "left" : {
+                              },
+                              "left" : {
+                                "project" : {
+                                  "target" : [ {
+                                    "column" : 3,
+                                    "type" : "INTEGER"
+                                  } ],
+                                  "source" : {
+                                    "filter" : {
+                                      "condition" : {
+                                        "operator" : "AND",
+                                        "operand" : [ {
+                                          "operator" : "=",
+                                          "operand" : [ {
+                                            "column" : 4,
+                                            "type" : "INTEGER"
+                                          }, {
+                                            "operator" : "20",
+                                            "operand" : [ ],
+                                            "type" : "INTEGER"
+                                          } ],
+                                          "type" : "BOOLEAN"
+                                        }, {
+                                          "operator" : ">",
+                                          "operand" : [ {
+                                            "column" : 3,
+                                            "type" : "INTEGER"
+                                          }, {
+                                            "operator" : "1000",
+                                            "operand" : [ ],
+                                            "type" : "INTEGER"
+                                          } ],
+                                          "type" : "BOOLEAN"
+                                        } ],
+                                        "type" : "BOOLEAN"
+                                      },
+                                      "source" : {
+                                        "scan" : 0
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "distinct" : {
+                                  "correlate" : [ {
                                     "project" : {
                                       "target" : [ {
                                         "column" : 3,
                                         "type" : "INTEGER"
                                       }, {
                                         "column" : 4,
-                                        "type" : "VARCHAR"
-                                      }, {
-                                        "column" : 5,
-                                        "type" : "VARCHAR"
-                                      }, {
-                                        "column" : 6,
-                                        "type" : "INTEGER"
-                                      }, {
-                                        "column" : 7,
-                                        "type" : "TIMESTAMP"
-                                      }, {
-                                        "column" : 8,
-                                        "type" : "INTEGER"
-                                      }, {
-                                        "column" : 9,
-                                        "type" : "INTEGER"
-                                      }, {
-                                        "column" : 11,
                                         "type" : "BOOLEAN"
                                       } ],
+                                      "source" : {
+                                        "project" : {
+                                          "target" : [ {
+                                            "column" : 3,
+                                            "type" : "INTEGER"
+                                          }, {
+                                            "operator" : "=",
+                                            "operand" : [ {
+                                              "column" : 3,
+                                              "type" : "INTEGER"
+                                            }, {
+                                              "operator" : "4",
+                                              "operand" : [ ],
+                                              "type" : "INTEGER"
+                                            } ],
+                                            "type" : "BOOLEAN"
+                                          } ],
+                                          "source" : {
+                                            "filter" : {
+                                              "condition" : {
+                                                "operator" : "AND",
+                                                "operand" : [ {
+                                                  "operator" : "=",
+                                                  "operand" : [ {
+                                                    "column" : 4,
+                                                    "type" : "INTEGER"
+                                                  }, {
+                                                    "operator" : "20",
+                                                    "operand" : [ ],
+                                                    "type" : "INTEGER"
+                                                  } ],
+                                                  "type" : "BOOLEAN"
+                                                }, {
+                                                  "operator" : ">",
+                                                  "operand" : [ {
+                                                    "column" : 3,
+                                                    "type" : "INTEGER"
+                                                  }, {
+                                                    "operator" : "1000",
+                                                    "operand" : [ ],
+                                                    "type" : "INTEGER"
+                                                  } ],
+                                                  "type" : "BOOLEAN"
+                                                } ],
+                                                "type" : "BOOLEAN"
+                                              },
+                                              "source" : {
+                                                "scan" : 0
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }, {
+                                    "aggregate" : {
+                                      "function" : [ ],
                                       "source" : {
                                         "filter" : {
                                           "condition" : {
@@ -1221,55 +1140,35 @@
                                             "operand" : [ {
                                               "operator" : "=",
                                               "operand" : [ {
-                                                "column" : 10,
+                                                "column" : 3,
                                                 "type" : "INTEGER"
                                               }, {
-                                                "operator" : "20",
-                                                "operand" : [ ],
+                                                "column" : 5,
                                                 "type" : "INTEGER"
                                               } ],
                                               "type" : "BOOLEAN"
                                             }, {
-                                              "operator" : ">",
+                                              "operator" : "=",
                                               "operand" : [ {
-                                                "column" : 8,
-                                                "type" : "INTEGER"
+                                                "column" : 4,
+                                                "type" : "BOOLEAN"
                                               }, {
-                                                "operator" : "1000",
-                                                "operand" : [ ],
-                                                "type" : "INTEGER"
+                                                "column" : 6,
+                                                "type" : "BOOLEAN"
                                               } ],
                                               "type" : "BOOLEAN"
                                             } ],
                                             "type" : "BOOLEAN"
                                           },
                                           "source" : {
-                                            "scan" : 0
-                                          }
-                                        }
-                                      }
-                                    }
-                                  },
-                                  "right" : {
-                                    "distinct" : {
-                                      "correlate" : [ {
-                                        "project" : {
-                                          "target" : [ {
-                                            "column" : 3,
-                                            "type" : "INTEGER"
-                                          }, {
-                                            "column" : 4,
-                                            "type" : "BOOLEAN"
-                                          } ],
-                                          "source" : {
                                             "project" : {
                                               "target" : [ {
-                                                "column" : 8,
+                                                "column" : 5,
                                                 "type" : "INTEGER"
                                               }, {
                                                 "operator" : "=",
                                                 "operand" : [ {
-                                                  "column" : 8,
+                                                  "column" : 5,
                                                   "type" : "INTEGER"
                                                 }, {
                                                   "operator" : "4",
@@ -1285,7 +1184,7 @@
                                                     "operand" : [ {
                                                       "operator" : "=",
                                                       "operand" : [ {
-                                                        "column" : 10,
+                                                        "column" : 6,
                                                         "type" : "INTEGER"
                                                       }, {
                                                         "operator" : "20",
@@ -1296,7 +1195,7 @@
                                                     }, {
                                                       "operator" : ">",
                                                       "operand" : [ {
-                                                        "column" : 8,
+                                                        "column" : 5,
                                                         "type" : "INTEGER"
                                                       }, {
                                                         "operator" : "1000",
@@ -1315,95 +1214,9 @@
                                             }
                                           }
                                         }
-                                      }, {
-                                        "aggregate" : {
-                                          "function" : [ ],
-                                          "source" : {
-                                            "filter" : {
-                                              "condition" : {
-                                                "operator" : "AND",
-                                                "operand" : [ {
-                                                  "operator" : "=",
-                                                  "operand" : [ {
-                                                    "column" : 3,
-                                                    "type" : "INTEGER"
-                                                  }, {
-                                                    "column" : 5,
-                                                    "type" : "INTEGER"
-                                                  } ],
-                                                  "type" : "BOOLEAN"
-                                                }, {
-                                                  "operator" : "=",
-                                                  "operand" : [ {
-                                                    "column" : 4,
-                                                    "type" : "BOOLEAN"
-                                                  }, {
-                                                    "column" : 6,
-                                                    "type" : "BOOLEAN"
-                                                  } ],
-                                                  "type" : "BOOLEAN"
-                                                } ],
-                                                "type" : "BOOLEAN"
-                                              },
-                                              "source" : {
-                                                "project" : {
-                                                  "target" : [ {
-                                                    "column" : 10,
-                                                    "type" : "INTEGER"
-                                                  }, {
-                                                    "operator" : "=",
-                                                    "operand" : [ {
-                                                      "column" : 10,
-                                                      "type" : "INTEGER"
-                                                    }, {
-                                                      "operator" : "4",
-                                                      "operand" : [ ],
-                                                      "type" : "INTEGER"
-                                                    } ],
-                                                    "type" : "BOOLEAN"
-                                                  } ],
-                                                  "source" : {
-                                                    "filter" : {
-                                                      "condition" : {
-                                                        "operator" : "AND",
-                                                        "operand" : [ {
-                                                          "operator" : "=",
-                                                          "operand" : [ {
-                                                            "column" : 12,
-                                                            "type" : "INTEGER"
-                                                          }, {
-                                                            "operator" : "20",
-                                                            "operand" : [ ],
-                                                            "type" : "INTEGER"
-                                                          } ],
-                                                          "type" : "BOOLEAN"
-                                                        }, {
-                                                          "operator" : ">",
-                                                          "operand" : [ {
-                                                            "column" : 10,
-                                                            "type" : "INTEGER"
-                                                          }, {
-                                                            "operator" : "1000",
-                                                            "operand" : [ ],
-                                                            "type" : "INTEGER"
-                                                          } ],
-                                                          "type" : "BOOLEAN"
-                                                        } ],
-                                                        "type" : "BOOLEAN"
-                                                      },
-                                                      "source" : {
-                                                        "scan" : 0
-                                                      }
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      } ]
+                                      }
                                     }
-                                  }
+                                  } ]
                                 }
                               }
                             }
@@ -1420,5 +1233,5 @@
       }
     }
   } ],
-  "help" : [ "LogicalProject(SAL=[$5])\r\n  LogicalJoin(condition=[AND(=($5, $11), =($9, $12))], joinType=[inner])\r\n    LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], SLACKER=[$8], SAL0=[$5], $f9=[=($5, 4)])\r\n      LogicalFilter(condition=[AND(=($7, 20), >($5, 1000))])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\r\n    LogicalFilter(condition=[=($1, $0)])\r\n      LogicalAggregate(group=[{0, 1, 2}])\r\n        LogicalProject(SAL=[$5], SAL0=[$8], $f9=[$9])\r\n          LogicalJoin(condition=[OR(=($8, $5), $9)], joinType=[inner])\r\n            LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], SLACKER=[$8])\r\n              LogicalFilter(condition=[AND(=($7, 20), >($5, 1000))])\r\n                LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\r\n            LogicalAggregate(group=[{0, 1}])\r\n              LogicalProject(SAL=[$5], $f9=[=($5, 4)])\r\n                LogicalFilter(condition=[AND(=($7, 20), >($5, 1000))])\r\n                  LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\r\n", "LogicalProject(SAL=[$5])\r\n  LogicalJoin(condition=[AND(=($5, $11), =($9, $12))], joinType=[inner])\r\n    LogicalFilter(condition=[>($5, 1000)])\r\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], SLACKER=[$8], SAL0=[$5], $f9=[=($5, 4)])\r\n        LogicalFilter(condition=[AND(=($7, 20), >($5, 1000))])\r\n          LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\r\n    LogicalFilter(condition=[=($1, $0)])\r\n      LogicalAggregate(group=[{0, 1, 2}])\r\n        LogicalProject(SAL=[$5], SAL0=[$8], $f9=[$9])\r\n          LogicalJoin(condition=[OR(=($8, $5), $9)], joinType=[inner])\r\n            LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], SLACKER=[$8])\r\n              LogicalFilter(condition=[AND(=($7, 20), >($5, 1000))])\r\n                LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\r\n            LogicalAggregate(group=[{0, 1}])\r\n              LogicalProject(SAL=[$5], $f9=[=($5, 4)])\r\n                LogicalFilter(condition=[AND(=($7, 20), >($5, 1000))])\r\n                  LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\r\n" ]
+  "help" : [ "LogicalProject(SAL=[$0])\r\n  LogicalJoin(condition=[AND(=($0, $3), =($1, $4))], joinType=[inner])\r\n    LogicalProject(SAL=[$0], $f9=[=($0, 4)])\r\n      LogicalFilter(condition=[AND(=($1, 20), >($0, 1000))])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\r\n    LogicalFilter(condition=[=($1, $0)])\r\n      LogicalAggregate(group=[{0, 1, 2}])\r\n        LogicalJoin(condition=[OR(=($1, $0), $2)], joinType=[inner])\r\n          LogicalProject(SAL=[$0])\r\n            LogicalFilter(condition=[AND(=($1, 20), >($0, 1000))])\r\n              LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\r\n          LogicalAggregate(group=[{0, 1}])\r\n            LogicalProject(SAL=[$0], $f9=[=($0, 4)])\r\n              LogicalFilter(condition=[AND(=($1, 20), >($0, 1000))])\r\n                LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\r\n", "LogicalProject(SAL=[$0])\r\n  LogicalJoin(condition=[AND(=($0, $3), =($1, $4))], joinType=[inner])\r\n    LogicalFilter(condition=[>($0, 1000)])\r\n      LogicalProject(SAL=[$0], $f9=[=($0, 4)])\r\n        LogicalFilter(condition=[AND(=($1, 20), >($0, 1000))])\r\n          LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\r\n    LogicalFilter(condition=[=($1, $0)])\r\n      LogicalAggregate(group=[{0, 1, 2}])\r\n        LogicalJoin(condition=[OR(=($1, $0), $2)], joinType=[inner])\r\n          LogicalProject(SAL=[$0])\r\n            LogicalFilter(condition=[AND(=($1, 20), >($0, 1000))])\r\n              LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\r\n          LogicalAggregate(group=[{0, 1}])\r\n            LogicalProject(SAL=[$0], $f9=[=($0, 4)])\r\n              LogicalFilter(condition=[AND(=($1, 20), >($0, 1000))])\r\n                LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\r\n" ]
 }

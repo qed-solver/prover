@@ -1,18 +1,20 @@
 {
   "schemas" : [ {
     "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
-    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "fields" : [ "EMPNO", "DEPTNO" ],
+    "types" : [ "INTEGER", "INTEGER" ],
+    "nullable" : [ false, false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   }, {
     "name" : "DEPT",
-    "fields" : [ "DEPTNO", "NAME" ],
-    "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "fields" : [ "DEPTNO" ],
+    "types" : [ "INTEGER" ],
+    "nullable" : [ false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
     "distinct" : {
@@ -28,7 +30,7 @@
                 "column" : 0,
                 "type" : "INTEGER"
               }, {
-                "column" : 9,
+                "column" : 2,
                 "type" : "INTEGER"
               } ],
               "source" : {
@@ -37,10 +39,10 @@
                   "condition" : {
                     "operator" : "=",
                     "operand" : [ {
-                      "column" : 7,
+                      "column" : 1,
                       "type" : "INTEGER"
                     }, {
-                      "column" : 9,
+                      "column" : 2,
                       "type" : "INTEGER"
                     } ],
                     "type" : "BOOLEAN"
@@ -93,7 +95,7 @@
                     "column" : 1,
                     "type" : "INTEGER"
                   }, {
-                    "column" : 10,
+                    "column" : 3,
                     "type" : "INTEGER"
                   } ],
                   "source" : {
@@ -102,10 +104,10 @@
                       "condition" : {
                         "operator" : "=",
                         "operand" : [ {
-                          "column" : 8,
+                          "column" : 2,
                           "type" : "INTEGER"
                         }, {
-                          "column" : 10,
+                          "column" : 3,
                           "type" : "INTEGER"
                         } ],
                         "type" : "BOOLEAN"
@@ -150,7 +152,7 @@
                         "column" : 0,
                         "type" : "INTEGER"
                       }, {
-                        "column" : 9,
+                        "column" : 2,
                         "type" : "INTEGER"
                       } ],
                       "source" : {
@@ -159,10 +161,10 @@
                           "condition" : {
                             "operator" : "=",
                             "operand" : [ {
-                              "column" : 7,
+                              "column" : 1,
                               "type" : "INTEGER"
                             }, {
-                              "column" : 9,
+                              "column" : 2,
                               "type" : "INTEGER"
                             } ],
                             "type" : "BOOLEAN"
@@ -218,7 +220,7 @@
                             "column" : 2,
                             "type" : "INTEGER"
                           }, {
-                            "column" : 11,
+                            "column" : 4,
                             "type" : "INTEGER"
                           } ],
                           "source" : {
@@ -227,10 +229,10 @@
                               "condition" : {
                                 "operator" : "=",
                                 "operand" : [ {
-                                  "column" : 9,
+                                  "column" : 3,
                                   "type" : "INTEGER"
                                 }, {
-                                  "column" : 11,
+                                  "column" : 4,
                                   "type" : "INTEGER"
                                 } ],
                                 "type" : "BOOLEAN"
@@ -303,7 +305,7 @@
                             "column" : 1,
                             "type" : "INTEGER"
                           }, {
-                            "column" : 10,
+                            "column" : 3,
                             "type" : "INTEGER"
                           } ],
                           "source" : {
@@ -312,10 +314,10 @@
                               "condition" : {
                                 "operator" : "=",
                                 "operand" : [ {
-                                  "column" : 8,
+                                  "column" : 2,
                                   "type" : "INTEGER"
                                 }, {
-                                  "column" : 10,
+                                  "column" : 3,
                                   "type" : "INTEGER"
                                 } ],
                                 "type" : "BOOLEAN"
@@ -371,7 +373,7 @@
                                 "column" : 3,
                                 "type" : "INTEGER"
                               }, {
-                                "column" : 12,
+                                "column" : 5,
                                 "type" : "INTEGER"
                               } ],
                               "source" : {
@@ -380,10 +382,10 @@
                                   "condition" : {
                                     "operator" : "=",
                                     "operand" : [ {
-                                      "column" : 10,
+                                      "column" : 4,
                                       "type" : "INTEGER"
                                     }, {
-                                      "column" : 12,
+                                      "column" : 5,
                                       "type" : "INTEGER"
                                     } ],
                                     "type" : "BOOLEAN"
@@ -410,5 +412,5 @@
       } ]
     }
   } ],
-  "help" : [ "LogicalAggregate(group=[{0}], EXPR$1=[COUNT()], EXPR$2=[AVG(DISTINCT $1)])\r\n  LogicalProject(EMPNO=[$0], DEPTNO0=[$9])\r\n    LogicalJoin(condition=[=($7, $9)], joinType=[inner])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalAggregate(group=[{0}], EXPR$1=[$SUM0($2)], EXPR$2=[AVG($1)])\r\n  LogicalAggregate(group=[{0, 1}], EXPR$1=[COUNT()])\r\n    LogicalProject(EMPNO=[$0], DEPTNO0=[$9])\r\n      LogicalJoin(condition=[=($7, $9)], joinType=[inner])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+  "help" : [ "LogicalAggregate(group=[{0}], EXPR$1=[COUNT()], EXPR$2=[AVG(DISTINCT $1)])\r\n  LogicalProject(EMPNO=[$0], DEPTNO0=[$2])\r\n    LogicalJoin(condition=[=($1, $2)], joinType=[inner])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalAggregate(group=[{0}], EXPR$1=[$SUM0($2)], EXPR$2=[AVG($1)])\r\n  LogicalAggregate(group=[{0, 1}], EXPR$1=[COUNT()])\r\n    LogicalProject(EMPNO=[$0], DEPTNO0=[$2])\r\n      LogicalJoin(condition=[=($1, $2)], joinType=[inner])\r\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
 }

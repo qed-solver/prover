@@ -12,7 +12,7 @@
   (package
     (inherit z3)
     (name "z3")
-    (version "4.8.17")
+    (version "4.11.2")
     (home-page "https://github.com/Z3Prover/z3")
     (source (origin
               (method git-fetch)
@@ -21,7 +21,7 @@
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1vvb09q7w7zd29qc4qjysrrhyylszm1wf6azkff004ixwn026b05"))))
+                "0dsni9zqs0ad0fxzd897zv7892bvsw3zivmbkjqh2ayj5fs31v9q"))))
     (arguments
      (substitute-keyword-arguments (package-arguments z3)
        ((#:strip-binaries? strip-binaries? #f) '#f)))))
@@ -31,12 +31,12 @@
 (define cvc5
   (package
    (name "cvc5")
-   (version "1.0.0")
+   (version "1.0.2")
    (source (origin
             (method url-fetch)
             (uri (string-append "https://github.com/cvc5/cvc5/releases/download/cvc5-" version "/cvc5-Linux"))
             (file-name (string-append name "-Linux"))
-            (sha256 "0192llkzah60b3phprp0zq1m4ly8w1sgp2yqp4r5iwxy88n05c77")))
+            (sha256 "08rdqf7wkk3vhapj7j30qcxhgzal9q7f8pmx05m70bq3n66lywzq")))
    (build-system copy-build-system)
    (arguments
     `(#:install-plan `(("cvc5-Linux" "bin/cvc5"))

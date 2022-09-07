@@ -1,67 +1,52 @@
 {
   "schemas" : [ {
     "name" : "DEPT",
-    "fields" : [ "DEPTNO", "NAME" ],
-    "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "fields" : [ "DEPTNO" ],
+    "types" : [ "INTEGER" ],
+    "nullable" : [ false ],
     "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "foreign" : [ ],
+    "guaranteed" : [ ]
   } ],
   "queries" : [ {
-    "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "INTEGER"
-      } ],
-      "source" : {
-        "filter" : {
-          "condition" : {
-            "operator" : "NOT",
+    "filter" : {
+      "condition" : {
+        "operator" : "NOT",
+        "operand" : [ {
+          "operator" : "AND",
+          "operand" : [ {
+            "operator" : "=",
             "operand" : [ {
-              "operator" : "AND",
-              "operand" : [ {
-                "operator" : "=",
-                "operand" : [ {
-                  "column" : 0,
-                  "type" : "INTEGER"
-                }, {
-                  "operator" : "7",
-                  "operand" : [ ],
-                  "type" : "INTEGER"
-                } ],
-                "type" : "BOOLEAN"
-              }, {
-                "operator" : "=",
-                "operand" : [ {
-                  "column" : 0,
-                  "type" : "INTEGER"
-                }, {
-                  "operator" : "8",
-                  "operand" : [ ],
-                  "type" : "INTEGER"
-                } ],
-                "type" : "BOOLEAN"
-              } ],
-              "type" : "BOOLEAN"
+              "column" : 0,
+              "type" : "INTEGER"
+            }, {
+              "operator" : "7",
+              "operand" : [ ],
+              "type" : "INTEGER"
             } ],
             "type" : "BOOLEAN"
-          },
-          "source" : {
-            "scan" : 0
-          }
-        }
-      }
-    }
-  }, {
-    "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "INTEGER"
-      } ],
+          }, {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            }, {
+              "operator" : "8",
+              "operand" : [ ],
+              "type" : "INTEGER"
+            } ],
+            "type" : "BOOLEAN"
+          } ],
+          "type" : "BOOLEAN"
+        } ],
+        "type" : "BOOLEAN"
+      },
       "source" : {
         "scan" : 0
       }
     }
+  }, {
+    "scan" : 0
   } ],
-  "help" : [ "LogicalProject(DEPTNO=[$0])\r\n  LogicalFilter(condition=[NOT(AND(=($0, 7), =($0, 8)))])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(DEPTNO=[$0])\r\n  LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+  "help" : [ "LogicalFilter(condition=[NOT(AND(=($0, 7), =($0, 8)))])\r\n  LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
 }
