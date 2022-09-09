@@ -36,7 +36,7 @@ fn vars(level: usize, types: Vector<DataType>) -> Vector<syntax::Expr> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "camelCase")]
 pub enum Relation {
 	Singleton,
 	Scan(VL),
@@ -65,7 +65,7 @@ pub enum Relation {
 	},
 	Aggregate {
 		#[serde(alias = "function")]
-		columns: Vec<Expr>,
+		columns: Vec<AggCall>,
 		source: Box<Relation>,
 	},
 	Sort {
@@ -83,9 +83,12 @@ impl Relation {
 			Singleton => Vector::new(),
 			Scan(table) => schemas[table.0].types.clone().into(),
 			Filter { source, .. } => source.scope(schemas),
-			Project { columns, .. } | Aggregate { columns, .. } => {
+			Project { columns, .. } => {
 				columns.iter().map(|expr| expr.ty()).collect()
 			},
+			Aggregate { columns, .. } => {
+				columns.iter().map(|agg| agg.ty.clone()).collect()
+			}
 			Join { left, kind: JoinKind::Semi | JoinKind::Anti, .. } => left.scope(schemas),
 			Join { left, right, .. } | Correlate(left, right) => {
 				left.scope(schemas) + right.scope(schemas)
@@ -298,7 +301,7 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 				let cols = vars
 					.into_iter()
 					.zip(columns)
-					.map(|(v, agg)| Pred(Logic::Eq(v, agg.eval_agg(&source, env))));
+					.map(|(v, agg)| Pred(Logic::Eq(v, env.eval((agg, *source.clone())))));
 				Rel::lam(scopes, Mul(cols.collect()))
 			},
 			Sort { mut collation, offset, limit, source } => {
@@ -332,7 +335,48 @@ pub enum JoinKind {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "camelCase")]
+pub struct AggCall {
+	#[serde(rename = "operator")]
+	op: String,
+	#[serde(rename = "operand")]
+	args: Vec<Expr>,
+	distinct: bool,
+	ignore_nulls: bool,
+	#[serde(alias = "type")]
+	ty: DataType,
+}
+
+impl Eval<(AggCall, Relation), syntax::Expr> for Env<'_> {
+	fn eval(self, (agg, rel): (AggCall, Relation)) -> syntax::Expr {
+		let tys = agg.args.iter().map(|arg| arg.ty()).collect_vec();
+		let args = agg.args;
+		let source = match agg.op.as_str() {
+			"COUNT" if args.is_empty() => rel,
+			_ => Relation::Project { columns: args, source: rel.into() },
+		};
+		let source = if agg.distinct { Relation::Distinct(source.into()) } else { source };
+		let source = if agg.ignore_nulls {
+			let conditions = tys.into_iter().enumerate().map(|(i, ty)| Expr::Op {
+				op: "IS NOT NULL".into(),
+				args: vec![Expr::Col { column: VL(i), ty }],
+				ty: DataType::Boolean,
+			}).collect_vec();
+			let condition = Expr::Op {
+				op: "AND".into(),
+				args: conditions,
+				ty: DataType::Boolean,
+			};
+			Relation::Filter { condition, source: source.into() }
+		} else {
+			source
+		};
+		syntax::Expr::HOp(agg.op, vec![], Box::new(self.eval(source)), agg.ty)
+	}
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[serde(untagged)]
 pub enum Expr {
 	Col {
@@ -375,19 +419,6 @@ impl Expr {
 			self
 		} else {
 			Expr::Op { op: "CAST".to_string(), args: vec![self], ty: DataType::Real }
-		}
-	}
-
-	fn eval_agg(self, source: &Relation, env: Env) -> syntax::Expr {
-		use shared::Expr::*;
-		if let Expr::Op { op, args, ty } = self {
-			let source = match op.as_str() {
-				"COUNT" if args.is_empty() => source.clone(),
-				_ => Relation::Project { columns: args, source: Box::new(source.clone()) },
-			};
-			HOp(op, vec![], Box::new(env.eval(source)), ty)
-		} else {
-			panic!()
 		}
 	}
 }
