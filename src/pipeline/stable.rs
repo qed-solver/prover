@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use std::time::Duration;
 
 use imbl::{HashSet, Vector};
 use itertools::Itertools;
@@ -7,7 +6,7 @@ use z3::ast::Ast;
 use z3::SatResult;
 
 use super::normal::Z3Env;
-use super::shared::{DataType, Eval, Lambda, Terms};
+use super::shared::{DataType, Eval, Lambda, Terms, Ctx};
 use crate::pipeline::normal;
 use crate::pipeline::shared::{self, VL};
 
@@ -183,7 +182,7 @@ impl<'c> Eval<normal::Term, Option<Term<'c>>> for &Env<'c> {
 			let p = crossbeam::sync::Parker::new();
 			let u = p.unparker().clone();
 			s.spawn(move |_| {
-				p.park_timeout(Duration::from_secs(10));
+				p.park_timeout(Ctx::timeout());
 				if !checked.load() {
 					handle.interrupt();
 				}

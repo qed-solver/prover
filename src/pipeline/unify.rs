@@ -213,8 +213,9 @@ pub(crate) fn smt<'c>(solver: &'c z3::Solver, pred: Bool<'c>) -> bool {
 		.replace("(* ", "(* 1 ")
 		.replace("(+ ", "(+ 0 ");
 	let smt = smt.strip_prefix("; \n(set-info :status )").unwrap_or(smt.as_str());
+	let timeout = "--tlimit=".to_string() + &Ctx::timeout().as_millis().to_string();
 	let mut child = Command::new("cvc5")
-		.args(["--tlimit=10000", "--strings-exp"])
+		.args([&timeout, "--strings-exp"])
 		.stdin(Stdio::piped())
 		.stdout(Stdio::piped())
 		.spawn()

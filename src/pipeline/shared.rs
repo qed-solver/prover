@@ -3,6 +3,7 @@ use std::fmt::{Debug, Display, Formatter, Write};
 use std::hash::Hash;
 use std::iter::FromIterator;
 use std::ops::{Add, Mul, Not};
+use std::time::Duration;
 
 use anyhow::bail;
 use imbl::vector::{ConsumingIter, Iter};
@@ -508,5 +509,13 @@ impl<'c> Ctx<'c> {
 		let range = if nullable { self.sort(range) } else { self.strict_sort(range) };
 		let f = FuncDecl::new(ctx, name, &domain.iter().collect_vec(), &range);
 		f.apply(&args)
+	}
+	
+	pub fn timeout() -> Duration {
+		if let Some(t) = std::env::var("COSETTE_SMT_TIMEOUT").ok().and_then(|t| t.parse::<u64>().ok()) {
+			Duration::from_millis(t)
+		} else {
+			Duration::from_secs(10)
+		}
 	}
 }

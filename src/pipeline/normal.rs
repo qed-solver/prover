@@ -356,8 +356,7 @@ impl Unify<partial::UExpr> for &Env {
 		let Env(context, _) = self;
 		let t1: UExpr = self.eval(t1);
 		let t2: UExpr = self.eval(t2);
-		let mut config = Config::new();
-		config.set_timeout_msec(2000);
+		let config = Config::new();
 		let z3_ctx = Context::new(&config);
 		let ctx = Rc::new(Ctx::new(Solver::new(&z3_ctx)));
 		let h_ops = Rc::new(RefCell::new(HashMap::new()));
