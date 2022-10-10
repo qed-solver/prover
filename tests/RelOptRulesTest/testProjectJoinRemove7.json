@@ -1,52 +1,80 @@
 {
-  "schemas" : [ {
-    "name" : "DEPT",
-    "fields" : [ "DEPTNO" ],
-    "types" : [ "INTEGER" ],
-    "nullable" : [ false ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ],
-    "guaranteed" : [ ]
-  }, {
-    "name" : "EMP",
-    "fields" : [ "DEPTNO" ],
-    "types" : [ "INTEGER" ],
-    "nullable" : [ false ],
-    "key" : [ ],
-    "foreign" : [ ],
-    "guaranteed" : [ ]
-  } ],
-  "queries" : [ {
-    "project" : {
-      "target" : [ {
-        "column" : 1,
-        "type" : "INTEGER"
-      } ],
-      "source" : {
-        "join" : {
-          "kind" : "RIGHT",
-          "condition" : {
-            "operator" : "=",
-            "operand" : [ {
-              "column" : 1,
-              "type" : "INTEGER"
-            }, {
-              "column" : 0,
-              "type" : "INTEGER"
-            } ],
-            "type" : "BOOLEAN"
-          },
-          "left" : {
-            "scan" : 0
-          },
-          "right" : {
-            "scan" : 1
+  "schemas": [
+    {
+      "name": "DEPT",
+      "fields": [
+        "DEPTNO"
+      ],
+      "types": [
+        "INTEGER"
+      ],
+      "nullable": [
+        false
+      ],
+      "key": [
+        [
+          0
+        ]
+      ],
+      "guaranteed": []
+    },
+    {
+      "name": "EMP",
+      "fields": [
+        "DEPTNO"
+      ],
+      "types": [
+        "INTEGER"
+      ],
+      "nullable": [
+        false
+      ],
+      "key": [],
+      "guaranteed": []
+    }
+  ],
+  "queries": [
+    {
+      "project": {
+        "target": [
+          {
+            "column": 1,
+            "type": "INTEGER"
+          }
+        ],
+        "source": {
+          "join": {
+            "kind": "RIGHT",
+            "condition": {
+              "operator": "=",
+              "operand": [
+                {
+                  "column": 1,
+                  "type": "INTEGER"
+                },
+                {
+                  "column": 0,
+                  "type": "INTEGER"
+                }
+              ],
+              "type": "BOOLEAN"
+            },
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 1
+            }
           }
         }
       }
+    },
+    {
+      "scan": 1
     }
-  }, {
-    "scan" : 1
-  } ],
-  "help" : [ "LogicalProject(DEPTNO=[$1])\r\n  LogicalJoin(condition=[=($1, $0)], joinType=[right])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  ],
+  "help": [
+    "LogicalProject(DEPTNO=[$1])\r\n  LogicalJoin(condition=[=($1, $0)], joinType=[right])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n",
+    "LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n"
+  ]
 }

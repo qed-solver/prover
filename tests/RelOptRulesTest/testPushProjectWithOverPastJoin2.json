@@ -1,141 +1,209 @@
 {
-  "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "ENAME", "SAL", "DEPTNO" ],
-    "types" : [ "VARCHAR", "INTEGER", "INTEGER" ],
-    "nullable" : [ false, false, false ],
-    "key" : [ ],
-    "foreign" : [ ],
-    "guaranteed" : [ ]
-  }, {
-    "name" : "BONUS",
-    "fields" : [ "ENAME", "JOB", "SAL", "COMM" ],
-    "types" : [ "VARCHAR", "VARCHAR", "INTEGER", "INTEGER" ],
-    "nullable" : [ false, false, false, false ],
-    "key" : [ ],
-    "foreign" : [ ],
-    "guaranteed" : [ ]
-  } ],
-  "queries" : [ {
-    "project" : {
-      "target" : [ {
-        "operator" : "+",
-        "operand" : [ {
-          "column" : 1,
-          "type" : "INTEGER"
-        }, {
-          "column" : 6,
-          "type" : "INTEGER"
-        } ],
-        "type" : "INTEGER"
-      }, {
-        "error" : "Not implemented: COUNT"
-      } ],
-      "source" : {
-        "join" : {
-          "kind" : "INNER",
-          "condition" : {
-            "operator" : "AND",
-            "operand" : [ {
-              "operator" : "=",
-              "operand" : [ {
-                "column" : 0,
-                "type" : "VARCHAR"
-              }, {
-                "column" : 3,
-                "type" : "VARCHAR"
-              } ],
-              "type" : "BOOLEAN"
-            }, {
-              "operator" : "=",
-              "operand" : [ {
-                "column" : 2,
-                "type" : "INTEGER"
-              }, {
-                "operator" : "10",
-                "operand" : [ ],
-                "type" : "INTEGER"
-              } ],
-              "type" : "BOOLEAN"
-            } ],
-            "type" : "BOOLEAN"
-          },
-          "left" : {
-            "scan" : 0
-          },
-          "right" : {
-            "scan" : 1
-          }
-        }
-      }
+  "schemas": [
+    {
+      "name": "EMP",
+      "fields": [
+        "ENAME",
+        "SAL",
+        "DEPTNO"
+      ],
+      "types": [
+        "VARCHAR",
+        "INTEGER",
+        "INTEGER"
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "key": [],
+      "guaranteed": []
+    },
+    {
+      "name": "BONUS",
+      "fields": [
+        "ENAME",
+        "JOB",
+        "SAL",
+        "COMM"
+      ],
+      "types": [
+        "VARCHAR",
+        "VARCHAR",
+        "INTEGER",
+        "INTEGER"
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "key": [],
+      "guaranteed": []
     }
-  }, {
-    "project" : {
-      "target" : [ {
-        "operator" : "+",
-        "operand" : [ {
-          "column" : 1,
-          "type" : "INTEGER"
-        }, {
-          "column" : 6,
-          "type" : "INTEGER"
-        } ],
-        "type" : "INTEGER"
-      }, {
-        "error" : "Not implemented: COUNT"
-      } ],
-      "source" : {
-        "join" : {
-          "kind" : "INNER",
-          "condition" : {
-            "operator" : "AND",
-            "operand" : [ {
-              "operator" : "=",
-              "operand" : [ {
-                "column" : 0,
-                "type" : "VARCHAR"
-              }, {
-                "column" : 3,
-                "type" : "VARCHAR"
-              } ],
-              "type" : "BOOLEAN"
-            }, {
-              "column" : 2,
-              "type" : "BOOLEAN"
-            } ],
-            "type" : "BOOLEAN"
-          },
-          "left" : {
-            "project" : {
-              "target" : [ {
-                "column" : 0,
-                "type" : "VARCHAR"
-              }, {
-                "column" : 1,
-                "type" : "INTEGER"
-              }, {
-                "operator" : "=",
-                "operand" : [ {
-                  "column" : 2,
-                  "type" : "INTEGER"
-                }, {
-                  "operator" : "10",
-                  "operand" : [ ],
-                  "type" : "INTEGER"
-                } ],
-                "type" : "BOOLEAN"
-              } ],
-              "source" : {
-                "scan" : 0
+  ],
+  "queries": [
+    {
+      "project": {
+        "target": [
+          {
+            "operator": "+",
+            "operand": [
+              {
+                "column": 1,
+                "type": "INTEGER"
+              },
+              {
+                "column": 6,
+                "type": "INTEGER"
               }
-            }
+            ],
+            "type": "INTEGER"
           },
-          "right" : {
-            "scan" : 1
+          {
+            "error": "Not implemented: COUNT"
+          }
+        ],
+        "source": {
+          "join": {
+            "kind": "INNER",
+            "condition": {
+              "operator": "AND",
+              "operand": [
+                {
+                  "operator": "=",
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "VARCHAR"
+                    },
+                    {
+                      "column": 3,
+                      "type": "VARCHAR"
+                    }
+                  ],
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operator": "=",
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "INTEGER"
+                    },
+                    {
+                      "operator": "10",
+                      "operand": [],
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "type": "BOOLEAN"
+                }
+              ],
+              "type": "BOOLEAN"
+            },
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "project": {
+        "target": [
+          {
+            "operator": "+",
+            "operand": [
+              {
+                "column": 1,
+                "type": "INTEGER"
+              },
+              {
+                "column": 6,
+                "type": "INTEGER"
+              }
+            ],
+            "type": "INTEGER"
+          },
+          {
+            "error": "Not implemented: COUNT"
+          }
+        ],
+        "source": {
+          "join": {
+            "kind": "INNER",
+            "condition": {
+              "operator": "AND",
+              "operand": [
+                {
+                  "operator": "=",
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "VARCHAR"
+                    },
+                    {
+                      "column": 3,
+                      "type": "VARCHAR"
+                    }
+                  ],
+                  "type": "BOOLEAN"
+                },
+                {
+                  "column": 2,
+                  "type": "BOOLEAN"
+                }
+              ],
+              "type": "BOOLEAN"
+            },
+            "left": {
+              "project": {
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "VARCHAR"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INTEGER"
+                  },
+                  {
+                    "operator": "=",
+                    "operand": [
+                      {
+                        "column": 2,
+                        "type": "INTEGER"
+                      },
+                      {
+                        "operator": "10",
+                        "operand": [],
+                        "type": "INTEGER"
+                      }
+                    ],
+                    "type": "BOOLEAN"
+                  }
+                ],
+                "source": {
+                  "scan": 0
+                }
+              }
+            },
+            "right": {
+              "scan": 1
+            }
           }
         }
       }
     }
-  } ],
-  "help" : [ "LogicalProject(EXPR$0=[+($1, $6)], EXPR$1=[COUNT($5) OVER (PARTITION BY $4)])\r\n  LogicalJoin(condition=[AND(=($0, $3), =($2, 10))], joinType=[inner])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, BONUS]])\r\n", "LogicalProject(EXPR$0=[+($1, $6)], EXPR$1=[COUNT($5) OVER (PARTITION BY $4)])\r\n  LogicalJoin(condition=[AND(=($0, $3), $2)], joinType=[inner])\r\n    LogicalProject(ENAME=[$0], SAL=[$1], EXPR$0=[=($2, 10)])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, BONUS]])\r\n" ]
+  ],
+  "help": [
+    "LogicalProject(EXPR$0=[+($1, $6)], EXPR$1=[COUNT($5) OVER (PARTITION BY $4)])\r\n  LogicalJoin(condition=[AND(=($0, $3), =($2, 10))], joinType=[inner])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, BONUS]])\r\n",
+    "LogicalProject(EXPR$0=[+($1, $6)], EXPR$1=[COUNT($5) OVER (PARTITION BY $4)])\r\n  LogicalJoin(condition=[AND(=($0, $3), $2)], joinType=[inner])\r\n    LogicalProject(ENAME=[$0], SAL=[$1], EXPR$0=[=($2, 10)])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, BONUS]])\r\n"
+  ]
 }

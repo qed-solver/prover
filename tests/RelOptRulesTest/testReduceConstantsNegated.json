@@ -1,63 +1,103 @@
 {
-  "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO" ],
-    "types" : [ "INTEGER" ],
-    "nullable" : [ false ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ],
-    "guaranteed" : [ ]
-  } ],
-  "queries" : [ {
-    "filter" : {
-      "condition" : {
-        "operator" : "AND",
-        "operand" : [ {
-          "operator" : "=",
-          "operand" : [ {
-            "column" : 0,
-            "type" : "INTEGER"
-          }, {
-            "operator" : "10",
-            "operand" : [ ],
-            "type" : "INTEGER"
-          } ],
-          "type" : "BOOLEAN"
-        }, {
-          "operator" : "NOT",
-          "operand" : [ {
-            "operator" : "=",
-            "operand" : [ {
-              "column" : 0,
-              "type" : "INTEGER"
-            }, {
-              "operator" : "10",
-              "operand" : [ ],
-              "type" : "INTEGER"
-            } ],
-            "type" : "BOOLEAN"
-          } ],
-          "type" : "BOOLEAN"
-        } ],
-        "type" : "BOOLEAN"
-      },
-      "source" : {
-        "scan" : 0
-      }
+  "schemas": [
+    {
+      "name": "EMP",
+      "fields": [
+        "EMPNO"
+      ],
+      "types": [
+        "INTEGER"
+      ],
+      "nullable": [
+        false
+      ],
+      "key": [
+        [
+          0
+        ]
+      ],
+      "guaranteed": []
     }
-  }, {
-    "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "INTEGER"
-      } ],
-      "source" : {
-        "values" : {
-          "schema" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-          "content" : [ ]
+  ],
+  "queries": [
+    {
+      "filter": {
+        "condition": {
+          "operator": "AND",
+          "operand": [
+            {
+              "operator": "=",
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INTEGER"
+                },
+                {
+                  "operator": "10",
+                  "operand": [],
+                  "type": "INTEGER"
+                }
+              ],
+              "type": "BOOLEAN"
+            },
+            {
+              "operator": "NOT",
+              "operand": [
+                {
+                  "operator": "=",
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INTEGER"
+                    },
+                    {
+                      "operator": "10",
+                      "operand": [],
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "type": "BOOLEAN"
+                }
+              ],
+              "type": "BOOLEAN"
+            }
+          ],
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "scan": 0
+        }
+      }
+    },
+    {
+      "project": {
+        "target": [
+          {
+            "column": 0,
+            "type": "INTEGER"
+          }
+        ],
+        "source": {
+          "values": {
+            "schema": [
+              "INTEGER",
+              "VARCHAR",
+              "VARCHAR",
+              "INTEGER",
+              "TIMESTAMP",
+              "INTEGER",
+              "INTEGER",
+              "INTEGER",
+              "BOOLEAN"
+            ],
+            "content": []
+          }
         }
       }
     }
-  } ],
-  "help" : [ "LogicalFilter(condition=[AND(=($0, 10), NOT(=($0, 10)))])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EMPNO=[$0])\r\n  LogicalValues(tuples=[[]])\r\n" ]
+  ],
+  "help": [
+    "LogicalFilter(condition=[AND(=($0, 10), NOT(=($0, 10)))])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n",
+    "LogicalProject(EMPNO=[$0])\r\n  LogicalValues(tuples=[[]])\r\n"
+  ]
 }

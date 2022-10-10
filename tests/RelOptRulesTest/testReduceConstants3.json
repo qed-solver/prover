@@ -1,132 +1,176 @@
 {
-  "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "MGR" ],
-    "types" : [ "INTEGER" ],
-    "nullable" : [ true ],
-    "key" : [ ],
-    "foreign" : [ ],
-    "guaranteed" : [ ]
-  } ],
-  "queries" : [ {
-    "project" : {
-      "target" : [ {
-        "operator" : "OR",
-        "operand" : [ {
-          "operator" : "AND",
-          "operand" : [ {
-            "operator" : "IS NULL",
-            "operand" : [ {
-              "column" : 0,
-              "type" : "INTEGER"
-            } ],
-            "type" : "BOOLEAN"
-          }, {
-            "operator" : "IS NULL",
-            "operand" : [ {
-              "column" : 1,
-              "type" : "INTEGER"
-            } ],
-            "type" : "BOOLEAN"
-          } ],
-          "type" : "BOOLEAN"
-        }, {
-          "operator" : "IS TRUE",
-          "operand" : [ {
-            "operator" : "=",
-            "operand" : [ {
-              "column" : 0,
-              "type" : "INTEGER"
-            }, {
-              "column" : 1,
-              "type" : "INTEGER"
-            } ],
-            "type" : "BOOLEAN"
-          } ],
-          "type" : "BOOLEAN"
-        } ],
-        "type" : "BOOLEAN"
-      } ],
-      "source" : {
-        "filter" : {
-          "condition" : {
-            "operator" : "IS NULL",
-            "operand" : [ {
-              "column" : 0,
-              "type" : "INTEGER"
-            } ],
-            "type" : "BOOLEAN"
-          },
-          "source" : {
-            "join" : {
-              "kind" : "INNER",
-              "condition" : {
-                "operator" : "=",
-                "operand" : [ {
-                  "column" : 0,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 1,
-                  "type" : "INTEGER"
-                } ],
-                "type" : "BOOLEAN"
+  "schemas": [
+    {
+      "name": "EMP",
+      "fields": [
+        "MGR"
+      ],
+      "types": [
+        "INTEGER"
+      ],
+      "nullable": [
+        true
+      ],
+      "key": [],
+      "guaranteed": []
+    }
+  ],
+  "queries": [
+    {
+      "project": {
+        "target": [
+          {
+            "operator": "OR",
+            "operand": [
+              {
+                "operator": "AND",
+                "operand": [
+                  {
+                    "operator": "IS NULL",
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "INTEGER"
+                      }
+                    ],
+                    "type": "BOOLEAN"
+                  },
+                  {
+                    "operator": "IS NULL",
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "INTEGER"
+                      }
+                    ],
+                    "type": "BOOLEAN"
+                  }
+                ],
+                "type": "BOOLEAN"
               },
-              "left" : {
-                "scan" : 0
-              },
-              "right" : {
-                "scan" : 0
+              {
+                "operator": "IS TRUE",
+                "operand": [
+                  {
+                    "operator": "=",
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "INTEGER"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INTEGER"
+                      }
+                    ],
+                    "type": "BOOLEAN"
+                  }
+                ],
+                "type": "BOOLEAN"
+              }
+            ],
+            "type": "BOOLEAN"
+          }
+        ],
+        "source": {
+          "filter": {
+            "condition": {
+              "operator": "IS NULL",
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INTEGER"
+                }
+              ],
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "join": {
+                "kind": "INNER",
+                "condition": {
+                  "operator": "=",
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INTEGER"
+                    },
+                    {
+                      "column": 1,
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "type": "BOOLEAN"
+                },
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "scan": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "project": {
+        "target": [
+          {
+            "operator": "IS NULL",
+            "operand": [
+              {
+                "column": 1,
+                "type": "INTEGER"
+              }
+            ],
+            "type": "BOOLEAN"
+          }
+        ],
+        "source": {
+          "filter": {
+            "condition": {
+              "operator": "IS NULL",
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INTEGER"
+                }
+              ],
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "join": {
+                "kind": "INNER",
+                "condition": {
+                  "operator": "=",
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INTEGER"
+                    },
+                    {
+                      "column": 1,
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "type": "BOOLEAN"
+                },
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "scan": 0
+                }
               }
             }
           }
         }
       }
     }
-  }, {
-    "project" : {
-      "target" : [ {
-        "operator" : "IS NULL",
-        "operand" : [ {
-          "column" : 1,
-          "type" : "INTEGER"
-        } ],
-        "type" : "BOOLEAN"
-      } ],
-      "source" : {
-        "filter" : {
-          "condition" : {
-            "operator" : "IS NULL",
-            "operand" : [ {
-              "column" : 0,
-              "type" : "INTEGER"
-            } ],
-            "type" : "BOOLEAN"
-          },
-          "source" : {
-            "join" : {
-              "kind" : "INNER",
-              "condition" : {
-                "operator" : "=",
-                "operand" : [ {
-                  "column" : 0,
-                  "type" : "INTEGER"
-                }, {
-                  "column" : 1,
-                  "type" : "INTEGER"
-                } ],
-                "type" : "BOOLEAN"
-              },
-              "left" : {
-                "scan" : 0
-              },
-              "right" : {
-                "scan" : 0
-              }
-            }
-          }
-        }
-      }
-    }
-  } ],
-  "help" : [ "LogicalProject(EXPR$0=[OR(AND(IS NULL($0), IS NULL($1)), IS TRUE(=($0, $1)))])\r\n  LogicalFilter(condition=[IS NULL($0)])\r\n    LogicalJoin(condition=[=($0, $1)], joinType=[inner])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n", "LogicalProject(EXPR$0=[IS NULL($1)])\r\n  LogicalFilter(condition=[IS NULL($0)])\r\n    LogicalJoin(condition=[=($0, $1)], joinType=[inner])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  ],
+  "help": [
+    "LogicalProject(EXPR$0=[OR(AND(IS NULL($0), IS NULL($1)), IS TRUE(=($0, $1)))])\r\n  LogicalFilter(condition=[IS NULL($0)])\r\n    LogicalJoin(condition=[=($0, $1)], joinType=[inner])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n",
+    "LogicalProject(EXPR$0=[IS NULL($1)])\r\n  LogicalFilter(condition=[IS NULL($0)])\r\n    LogicalJoin(condition=[=($0, $1)], joinType=[inner])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n"
+  ]
 }

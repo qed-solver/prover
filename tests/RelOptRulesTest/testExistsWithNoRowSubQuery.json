@@ -1,47 +1,74 @@
 {
-  "schemas" : [ {
-    "name" : "DEPT",
-    "fields" : [ "DEPTNO", "NAME" ],
-    "types" : [ "INTEGER", "VARCHAR" ],
-    "nullable" : [ false, false ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ],
-    "guaranteed" : [ ]
-  } ],
-  "queries" : [ {
-    "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "INTEGER"
-      }, {
-        "column" : 1,
-        "type" : "VARCHAR"
-      } ],
-      "source" : {
-        "filter" : {
-          "condition" : {
-            "operator" : "NOT",
-            "operand" : [ {
-              "operator" : "EXISTS",
-              "operand" : [ ],
-              "query" : {
-                "values" : {
-                  "schema" : [ "BIGINT" ],
-                  "content" : [ ]
-                }
-              },
-              "type" : "BOOLEAN"
-            } ],
-            "type" : "BOOLEAN"
+  "schemas": [
+    {
+      "name": "DEPT",
+      "fields": [
+        "DEPTNO",
+        "NAME"
+      ],
+      "types": [
+        "INTEGER",
+        "VARCHAR"
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "key": [
+        [
+          0
+        ]
+      ],
+      "guaranteed": []
+    }
+  ],
+  "queries": [
+    {
+      "project": {
+        "target": [
+          {
+            "column": 0,
+            "type": "INTEGER"
           },
-          "source" : {
-            "scan" : 0
+          {
+            "column": 1,
+            "type": "VARCHAR"
+          }
+        ],
+        "source": {
+          "filter": {
+            "condition": {
+              "operator": "NOT",
+              "operand": [
+                {
+                  "operator": "EXISTS",
+                  "operand": [],
+                  "query": {
+                    "values": {
+                      "schema": [
+                        "BIGINT"
+                      ],
+                      "content": []
+                    }
+                  },
+                  "type": "BOOLEAN"
+                }
+              ],
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
           }
         }
       }
+    },
+    {
+      "scan": 0
     }
-  }, {
-    "scan" : 0
-  } ],
-  "help" : [ "LogicalProject(DEPTNO=[$0], NAME=[$1])\r\n  LogicalFilter(condition=[NOT(EXISTS({\nLogicalValues(tuples=[[]])\r\n}))])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+  ],
+  "help": [
+    "LogicalProject(DEPTNO=[$0], NAME=[$1])\r\n  LogicalFilter(condition=[NOT(EXISTS({\nLogicalValues(tuples=[[]])\r\n}))])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n",
+    "LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n"
+  ]
 }
