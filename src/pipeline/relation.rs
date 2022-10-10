@@ -1,11 +1,13 @@
-use std::ops::{Add, Mul, Not};
+use std::iter::once;
+use std::ops::{Mul, Not};
 
 use imbl::{vector, Vector};
+use itertools::{Either, Itertools};
 use serde::{Deserialize, Serialize};
 
-use crate::pipeline::shared::{Constraint, DataType, Eval, Schema, VL};
-use crate::pipeline::syntax::{AppHead, UExpr};
-use crate::pipeline::{shared, syntax as syn};
+use crate::pipeline::shared::{DataType, Eval, Schema, VL};
+use crate::pipeline::syntax::{Logic, UExpr};
+use crate::pipeline::{shared, syntax};
 use crate::solver::Payload;
 
 #[derive(Serialize, Deserialize)]
@@ -27,14 +29,14 @@ impl From<Input> for Payload {
 }
 
 #[derive(Copy, Clone)]
-struct Env<'e>(&'e [Schema], &'e Vector<syn::Expr>, usize);
+struct Env<'e>(&'e [Schema], &'e Vector<syntax::Expr>, usize);
 
-fn vars(level: usize, types: Vector<DataType>) -> Vector<syn::Expr> {
-	types.into_iter().enumerate().map(|(i, ty)| syn::Expr::Var(VL(level + i), ty)).collect()
+fn vars(level: usize, types: Vector<DataType>) -> Vector<syntax::Expr> {
+	types.into_iter().enumerate().map(|(i, ty)| syntax::Expr::Var(VL(level + i), ty)).collect()
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "camelCase")]
 pub enum Relation {
 	Singleton,
 	Scan(VL),
@@ -63,7 +65,7 @@ pub enum Relation {
 	},
 	Aggregate {
 		#[serde(alias = "function")]
-		columns: Vec<Expr>,
+		columns: Vec<AggCall>,
 		source: Box<Relation>,
 	},
 	Sort {
@@ -75,56 +77,79 @@ pub enum Relation {
 }
 
 impl Relation {
-	fn scopes(&self, schemas: &[Schema]) -> Vector<DataType> {
+	fn scope(&self, schemas: &[Schema]) -> Vector<DataType> {
 		use Relation::*;
 		match self {
 			Singleton => Vector::new(),
 			Scan(table) => schemas[table.0].types.clone().into(),
-			Filter { source, .. } => source.scopes(schemas),
-			Project { columns, .. } | Aggregate { columns, .. } => {
+			Filter { source, .. } => source.scope(schemas),
+			Project { columns, .. } => {
 				columns.iter().map(|expr| expr.ty()).collect()
 			},
-			Join { left, kind: JoinKind::Semi | JoinKind::Anti, .. } => left.scopes(schemas),
+			Aggregate { columns, .. } => {
+				columns.iter().map(|agg| agg.ty.clone()).collect()
+			}
+			Join { left, kind: JoinKind::Semi | JoinKind::Anti, .. } => left.scope(schemas),
 			Join { left, right, .. } | Correlate(left, right) => {
-				left.scopes(schemas) + right.scopes(schemas)
+				left.scope(schemas) + right.scope(schemas)
 			},
-			Union(rel1, _) | Except(rel1, _) => rel1.scopes(schemas),
-			Distinct(rel) => rel.scopes(schemas),
+			Union(rel1, _) | Except(rel1, _) => rel1.scope(schemas),
+			Distinct(rel) => rel.scope(schemas),
 			Values { schema, .. } => schema.clone().into(),
-			Sort { source, .. } => source.scopes(schemas),
+			Sort { source, .. } => source.scope(schemas),
 		}
 	}
 }
 
-impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
-	fn eval(self, source: Relation) -> syn::Relation {
-		use shared::Predicate::*;
-		use syn::Relation as Rel;
+impl Eval<Relation, syntax::Relation> for Env<'_> {
+	fn eval(self, source: Relation) -> syntax::Relation {
+		use syntax::Relation as Rel;
+		use syntax::UExpr::*;
 		use Relation::*;
 		let Env(schemas, subst, lvl) = self;
-		let scopes = source.scopes(schemas);
+		let scopes = source.scope(schemas);
 		match source {
-			Singleton => Rel::new(vector![], UExpr::One),
-			Scan(table) => {
-				let head = AppHead::Var(table);
+			Singleton => Rel::lam(vector![], UExpr::one()),
+			Scan(VL(t)) => {
 				let vars = vars(lvl, scopes.clone());
-				let conds = schemas[table.0]
+				let schema = &schemas[t];
+				let conds = schema
 					.guaranteed
 					.iter()
-					.map(|cond| Env(schemas, &vars, lvl + scopes.len()).eval(cond.to_pred()));
-				let body = schemas[table.0]
-					.constraints
-					.iter()
-					.zip(vars.clone())
-					.filter_map(|(constr, v)| match constr {
-						Constraint::NotNullable => {
-							Some(UExpr::Not(UExpr::Pred(shared::Predicate::null(v)).into()))
-						},
-						_ => None,
-					})
-					.chain(conds)
-					.fold(UExpr::App(head, vars.clone()), UExpr::mul);
-				Rel::new(scopes, body)
+					.map(|cond| Pred(Env(schemas, &vars, lvl + scopes.len()).eval(cond.clone())));
+				let constraints =
+					schema.nullabilities.iter().zip(vars.clone()).map(|(nullable, v)| {
+						if !*nullable {
+							Pred(!Logic::is_null(v))
+						} else {
+							UExpr::one()
+						}
+					});
+				let app = if schema.primary.is_empty() {
+					App(Rel::Var(VL(t)), vars.clone())
+				} else {
+					let key_constraints =
+						schema.primary.iter().enumerate().flat_map(|(j, cols)| {
+							use shared::Expr::*;
+							let (keys, args): (Vec<_>, Vec<_>) =
+								vars.iter().cloned().enumerate().partition_map(|(i, v)| {
+									if cols.contains(&i) {
+										Either::Left(v)
+									} else {
+										Either::Right(v)
+									}
+								});
+							let pk = Logic::Pred(format!("rpk!{}-{}", t, j), keys.clone());
+							let pa = args.into_iter().enumerate().map(move |(i, arg)| {
+								let f =
+									Op(format!("rpn!{}-{}-{}", t, i, j), keys.clone(), arg.ty());
+								Logic::Eq(arg, f)
+							});
+							pa.chain(once(pk))
+						});
+					Pred(Logic::And(key_constraints.collect()))
+				};
+				Rel::lam(scopes.clone(), app * Mul(constraints.collect()) * Mul(conds.collect()))
 			},
 			// Filter R(x, y) by P[x, y]
 			// λ x, y. [P[x, y]] × R(x, y)
@@ -132,15 +157,15 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 				let vars = vars(lvl, scopes.clone());
 				let body_lvl = lvl + scopes.len();
 				let cond_subst = subst + &vars;
-				let condition = Env(schemas, &cond_subst, body_lvl).eval(condition.to_pred());
+				let condition = UExpr::Pred(Env(schemas, &cond_subst, body_lvl).eval(condition));
 				let source = Env(schemas, subst, body_lvl).eval(*source);
-				Rel::new(scopes, condition * source.app(vars))
+				Rel::lam(scopes, condition * UExpr::App(source, vars))
 			},
 			// Project f[x, y] from R(x, y)
 			// λ a. ∑ x, y. [a = f[x, y]] × R(x, y)
 			Project { columns, source } => {
 				let proj_vars = vars(lvl, scopes.clone());
-				let inner_scopes = source.scopes(schemas);
+				let inner_scopes = source.scope(schemas);
 				let inner_vars = vars(lvl + scopes.len(), inner_scopes.clone());
 				let inner_lvl = lvl + scopes.len() + inner_scopes.len();
 				let source = Env(schemas, subst, inner_lvl).eval(*source);
@@ -149,28 +174,28 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 				let body = proj_vars
 					.into_iter()
 					.zip(columns)
-					.map(|(var, col)| UExpr::Pred(Eq(var, cols_env.eval(col))))
-					.fold(source.app(inner_vars), UExpr::mul);
-				Rel::new(scopes, UExpr::sum(inner_scopes, body))
+					.map(|(var, col)| Pred(Logic::Eq(var, cols_env.eval(col))))
+					.fold(UExpr::App(source, inner_vars), UExpr::mul);
+				Rel::lam(scopes, UExpr::sum(inner_scopes, body))
 			},
 			// R(x) semi join S(y) on P[x, y]
 			// λ x. R(x) × ‖∑ y. [P[x, y]] × S(y)‖
 			Join { condition, left, right, kind: kind @ (JoinKind::Semi | JoinKind::Anti) } => {
 				let left_vars = vars(lvl, scopes.clone());
 				let body_lvl = lvl + scopes.len();
-				let inner_scopes = right.scopes(schemas);
+				let inner_scopes = right.scope(schemas);
 				let inner_lvl = body_lvl + inner_scopes.len();
 				let right_vars = vars(body_lvl, inner_scopes.clone());
 				let cond_subst = subst + &(&left_vars + &right_vars);
-				let cond = Env(schemas, &cond_subst, inner_lvl).eval(condition.to_pred());
-				let right_body = Env(schemas, subst, inner_lvl).eval(*right).app(right_vars);
-				let left_body = Env(schemas, subst, body_lvl).eval(*left).app(left_vars);
+				let cond = Pred(Env(schemas, &cond_subst, inner_lvl).eval(condition));
+				let right_body = App(Env(schemas, subst, inner_lvl).eval(*right), right_vars);
+				let left_body = App(Env(schemas, subst, body_lvl).eval(*left), left_vars);
 				let wrapper = match kind {
 					JoinKind::Semi => UExpr::squash,
 					JoinKind::Anti => UExpr::not,
 					_ => unreachable!(),
 				};
-				Rel::new(scopes, left_body * wrapper(UExpr::sum(inner_scopes, cond * right_body)))
+				Rel::lam(scopes, left_body * wrapper(UExpr::sum(inner_scopes, cond * right_body)))
 			},
 			// R(x) inner join S(y) on P[x, y]
 			// λ x, y. [P[x, y]] × R(x) × S(y)
@@ -179,55 +204,57 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 			//        + ¬(∑ x'. P[x', y] × R(x')) × Null(x) × S(y)
 			//        + ¬(∑ y'. P[x, y'] × S(y')) × Null(y) × R(x)
 			Join { condition, left, right, kind } => {
-				let left_scopes = left.scopes(schemas);
-				let right_scopes = right.scopes(schemas);
+				let left_scopes = left.scope(schemas);
+				let right_scopes = right.scope(schemas);
 				let right_vars = &vars(lvl + left_scopes.len(), right_scopes);
 				let left_vars = &vars(lvl, left_scopes);
 				let body_lvl = lvl + scopes.len();
 				let body_env = Env(schemas, subst, body_lvl);
-				let left_body = body_env.eval(*left.clone()).app(left_vars.clone());
-				let right_body = body_env.eval(*right.clone()).app(right_vars.clone());
+				let left_body = UExpr::App(body_env.eval(*left.clone()), left_vars.clone());
+				let right_body = UExpr::App(body_env.eval(*right.clone()), right_vars.clone());
 				let cond_subst = subst + &(left_vars + right_vars);
 				let cond_env = Env(schemas, &cond_subst, body_lvl);
-				let cond = condition.to_pred();
-				let matching = cond_env.eval(cond.clone()) * left_body.clone() * right_body.clone();
+				let matching = UExpr::Pred(cond_env.eval(condition.clone()))
+					* left_body.clone() * right_body.clone();
 				let miss = |miss_left| {
 					let missing = *if miss_left { left.clone() } else { right.clone() };
-					let inner_scopes = missing.scopes(schemas);
+					let inner_scopes = missing.scope(schemas);
 					let inner_vars = vars(body_lvl, inner_scopes.clone());
 					let inner_lvl = body_lvl + inner_scopes.len();
 					let inner_cond_vars =
 						if miss_left { &inner_vars + right_vars } else { left_vars + &inner_vars };
 					let inner_cond_subst = subst + &inner_cond_vars;
-					let inner_cond = Env(schemas, &inner_cond_subst, inner_lvl).eval(cond.clone());
+					let inner_cond = UExpr::Pred(
+						Env(schemas, &inner_cond_subst, inner_lvl).eval(condition.clone()),
+					);
 					let missing = Env(schemas, subst, inner_lvl).eval(missing);
-					let inner_body = inner_cond * missing.app(inner_vars);
+					let inner_body = inner_cond * UExpr::App(missing, inner_vars);
 					let other_body = if miss_left { right_body.clone() } else { left_body.clone() };
 					if miss_left { left_vars } else { right_vars }
 						.iter()
-						.map(|v| UExpr::Pred(shared::Predicate::null(v.clone())))
+						.map(|v| UExpr::Pred(Logic::is_null(v.clone())))
 						.fold(other_body * !UExpr::sum(inner_scopes, inner_body), UExpr::mul)
 				};
 				match kind {
-					JoinKind::Inner => Rel::new(scopes, matching),
-					JoinKind::Left => Rel::new(scopes, matching + miss(false)),
-					JoinKind::Right => Rel::new(scopes, matching + miss(true)),
-					JoinKind::Full => Rel::new(scopes, matching + miss(true) + miss(false)),
+					JoinKind::Inner => Rel::lam(scopes, matching),
+					JoinKind::Left => Rel::lam(scopes, matching + miss(false)),
+					JoinKind::Right => Rel::lam(scopes, matching + miss(true)),
+					JoinKind::Full => Rel::lam(scopes, matching + miss(true) + miss(false)),
 					_ => unreachable!(),
 				}
 			},
 			// R(x) correlate join S[x](y)
 			// λx, y. R(x) × S[x](y)
 			Correlate(left, right) => {
-				let left_scopes = left.scopes(schemas);
-				let right_scopes = right.scopes(schemas);
+				let left_scopes = left.scope(schemas);
+				let right_scopes = right.scope(schemas);
 				let right_vars = vars(lvl + left_scopes.len(), right_scopes);
 				let left_vars = vars(lvl, left_scopes);
 				let body_lvl = lvl + scopes.len();
 				let left = Env(schemas, subst, body_lvl).eval(*left);
 				let right_subst = subst + &left_vars;
 				let right = Env(schemas, &right_subst, body_lvl).eval(*right);
-				Rel::new(scopes, left.app(left_vars) * right.app(right_vars))
+				Rel::lam(scopes, UExpr::App(left, left_vars) * UExpr::App(right, right_vars))
 			},
 			// R(x) union S(y)
 			// λx. R(x) + S(x)
@@ -236,7 +263,7 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 				let vars = vars(lvl, scopes.clone());
 				let left = Env(schemas, subst, body_lvl).eval(*left);
 				let right = Env(schemas, subst, body_lvl).eval(*right);
-				Rel::new(scopes, left.app(vars.clone()) + right.app(vars))
+				Rel::lam(scopes, UExpr::App(left, vars.clone()) + UExpr::App(right, vars))
 			},
 			// R(x) except S(y)
 			// λx. R(x) × ¬S(x)
@@ -245,29 +272,25 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 				let vars = vars(lvl, scopes.clone());
 				let left = Env(schemas, subst, body_lvl).eval(*left);
 				let right = Env(schemas, subst, body_lvl).eval(*right);
-				Rel::new(scopes, left.app(vars.clone()) * !right.app(vars))
+				Rel::lam(scopes, UExpr::App(left, vars.clone()) * !UExpr::App(right, vars))
 			},
 			// Distinct R(x)
 			// λx. ‖R(x)‖
 			Distinct(source) => {
-				let source = Env(schemas, subst, lvl + scopes.len()).eval(source);
-				Rel::new(scopes.clone(), UExpr::squash(source.app(vars(lvl, scopes))))
+				let source = Env(schemas, subst, lvl + scopes.len()).eval(*source);
+				Rel::lam(scopes.clone(), UExpr::squash(UExpr::App(source, vars(lvl, scopes))))
 			},
 			// Values ((a1, b1), (a2, b2), (a3, b3))
 			// λx, y. [x = a1] × [y = b1] + [x = a2] × [y = b2] + [x = a3] × [y = b3]
 			Values { schema, content } => {
 				let vars = vars(lvl, scopes.clone());
 				let env = Env(schemas, subst, lvl + scopes.len());
-				let body = content
-					.into_iter()
-					.map(|row| {
-						vars.iter()
-							.zip(row)
-							.map(|(v, e)| UExpr::Pred(Eq(v.clone(), env.eval(e))))
-							.fold(UExpr::One, UExpr::mul)
-					})
-					.fold(UExpr::Zero, UExpr::add);
-				Rel::new(scopes, body)
+				let rows = content.into_iter().map(|row| {
+					let cols =
+						vars.iter().zip(row).map(|(v, e)| Pred(Logic::Eq(v.clone(), env.eval(e))));
+					UExpr::Mul(cols.collect())
+				});
+				Rel::lam(scopes, UExpr::Add(rows.collect()))
 			},
 			// Agg1(f[x, y]), Agg2(g[x, y]) on R(x, y)
 			// λa, b. [a = Agg1(λc. ∑x, y. [c = f[x, y]] × R(x, y))]
@@ -275,35 +298,26 @@ impl<'e> Eval<Relation, syn::Relation> for Env<'e> {
 			Aggregate { columns, source } => {
 				let vars = vars(lvl, scopes.clone());
 				let env = Env(schemas, subst, lvl + scopes.len());
-				let new_body = vars
+				let cols = vars
 					.into_iter()
 					.zip(columns)
-					.map(|(v, agg)| UExpr::Pred(Eq(v, agg.eval_agg(&source, env))))
-					.fold(UExpr::One, UExpr::mul);
-				Rel::new(scopes, new_body)
+					.map(|(v, agg)| Pred(Logic::Eq(v, env.eval((agg, *source.clone())))));
+				Rel::lam(scopes, Mul(cols.collect()))
 			},
 			Sort { mut collation, offset, limit, source } => {
 				// TODO: Better way to handle multiple sort columns.
-				let env = Env(schemas, subst, lvl + scopes.len());
-				let head = if let Some((col, _, ord)) = collation.pop() {
-					let col = col.into();
-					let ord = ord.into();
-					AppHead::HOp(
-						"sort".to_string(),
-						vec![col, ord],
-						env.eval(Sort { collation, offset, limit, source }.into()),
-					)
+				if let Some((col, _, ord)) = collation.pop() {
+					let body = self.eval(Sort { collation, offset, limit, source }.into());
+					Rel::HOp("sort".to_string(), vec![col.into(), ord.into()], body)
 				} else {
-					let source = env.eval(source);
-					let offset = offset.map(|n| env.eval(n)).unwrap_or(0u32.into());
+					let source = self.eval(source);
+					let offset = offset.map(|n| self.eval(n)).unwrap_or(0u32.into());
 					if let Some(count) = limit {
-						AppHead::HOp("limit".to_string(), vec![env.eval(count), offset], source)
+						Rel::HOp("limit".to_string(), vec![self.eval(count), offset], source)
 					} else {
-						AppHead::HOp("offset".to_string(), vec![offset], source)
+						Rel::HOp("offset".to_string(), vec![offset], source)
 					}
-				};
-				let vars = vars(lvl, scopes.clone());
-				Rel::new(scopes, UExpr::App(head, vars))
+				}
 			},
 		}
 	}
@@ -321,7 +335,48 @@ pub enum JoinKind {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "camelCase")]
+pub struct AggCall {
+	#[serde(rename = "operator")]
+	op: String,
+	#[serde(rename = "operand")]
+	args: Vec<Expr>,
+	distinct: bool,
+	ignore_nulls: bool,
+	#[serde(alias = "type")]
+	ty: DataType,
+}
+
+impl Eval<(AggCall, Relation), syntax::Expr> for Env<'_> {
+	fn eval(self, (agg, rel): (AggCall, Relation)) -> syntax::Expr {
+		let tys = agg.args.iter().map(|arg| arg.ty()).collect_vec();
+		let args = agg.args;
+		let source = match agg.op.as_str() {
+			"COUNT" if args.is_empty() => rel,
+			_ => Relation::Project { columns: args, source: rel.into() },
+		};
+		let source = if agg.distinct { Relation::Distinct(source.into()) } else { source };
+		let source = if agg.ignore_nulls {
+			let conditions = tys.into_iter().enumerate().map(|(i, ty)| Expr::Op {
+				op: "IS NOT NULL".into(),
+				args: vec![Expr::Col { column: VL(i), ty }],
+				ty: DataType::Boolean,
+			}).collect_vec();
+			let condition = Expr::Op {
+				op: "AND".into(),
+				args: conditions,
+				ty: DataType::Boolean,
+			};
+			Relation::Filter { condition, source: source.into() }
+		} else {
+			source
+		};
+		syntax::Expr::HOp(agg.op, vec![], Box::new(self.eval(source)), agg.ty)
+	}
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[serde(untagged)]
 pub enum Expr {
 	Col {
@@ -359,106 +414,58 @@ impl Expr {
 		.clone()
 	}
 
-	fn eval_agg(self, source: &Relation, env: Env) -> syn::Expr {
-		use shared::Expr::*;
-		if let Expr::Op { op, args, ty } = self {
-			let source = match op.as_str() {
-				"COUNT" if args.is_empty() => source.clone(),
-				_ => Relation::Project { columns: args, source: Box::new(source.clone()) },
-			};
-			HOp(op, vec![], Box::new(env.eval(source)), ty)
+	fn into_real(self) -> Expr {
+		if self.ty() == DataType::Real {
+			self
 		} else {
-			panic!()
-		}
-	}
-
-	fn to_pred(&self) -> Predicate {
-		use Predicate::*;
-		match self {
-			Expr::Op { op, args, ty: DataType::Boolean } => match op.as_str() {
-				"TRUE" => True,
-				"FALSE" => False,
-				"=" => Eq(args[0].clone(), args[1].clone()),
-				"<>" => Not(Box::new(Eq(args[0].clone(), args[1].clone()))),
-				"AND" => And(args.iter().map(|arg| arg.to_pred()).collect()),
-				"OR" => Or(args.iter().map(|arg| arg.to_pred()).collect()),
-				"NOT" => Not(Box::new(args[0].to_pred())),
-				"IS NULL" => Null(args[0].clone()),
-				"IS NOT NULL" => Not(Box::new(Null(args[0].clone()))),
-				op => Pred(op.to_string(), args.clone()),
-			},
-			expr @ Expr::Col { ty: DataType::Boolean, .. } => Bool(expr.clone()),
-			expr @ Expr::HOp { op, args, rel, ty: DataType::Boolean } => match op.as_str() {
-				"IN" => In(args.clone(), rel.clone()),
-				"EXISTS" => Exists(rel.clone()),
-				_ => Bool(expr.clone()),
-			},
-			_ => panic!("wrong type for predicate"),
+			Expr::Op { op: "CAST".to_string(), args: vec![self], ty: DataType::Real }
 		}
 	}
 }
 
-impl<'e> Eval<Expr, syn::Expr> for Env<'e> {
-	fn eval(self, source: Expr) -> syn::Expr {
+impl Eval<Expr, syntax::Expr> for Env<'_> {
+	fn eval(self, source: Expr) -> syntax::Expr {
 		use shared::Expr::*;
 		match source {
 			Expr::Col { column, ty } => self.1[column.0].clone(),
-			Expr::Op { op, args, ty } if op == "CAST" && args.len() == 1 => {
-				let args = self.eval(args);
-				if args[0].ty() == ty {
-					args[0].clone()
-				} else {
-					Op(op, args, ty)
-				}
+			Expr::Op { op, args, ty } => {
+				let cast = matches!(op.as_str(), "+" | "-" | "*" | "/" if &ty == &DataType::Real)
+					|| matches!(op.as_str(), ">" | "<" | ">=" | "<=" | "=" if args.iter().any(|e| e.ty() == DataType::Real));
+				let args =
+					if cast { args.into_iter().map(Expr::into_real).collect() } else { args };
+				Op(op, self.eval(args), ty)
 			},
-			Expr::Op { op, args, ty } => Op(op, self.eval(args), ty),
 			Expr::HOp { op, args, rel, ty } => HOp(op, self.eval(args), self.eval(rel), ty),
 		}
 	}
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Predicate {
-	True,
-	False,
-	Null(Expr),
-	Bool(Expr),
-	Eq(Expr, Expr),
-	Like(Expr, String),
-	Exists(Box<Relation>),
-	In(Vec<Expr>, Box<Relation>),
-	Pred(String, Vec<Expr>),
-	And(Vec<Predicate>),
-	Or(Vec<Predicate>),
-	Not(Box<Predicate>),
-}
-
-impl<'e> Eval<Predicate, UExpr> for Env<'e> {
-	fn eval(self, source: Predicate) -> UExpr {
-		use shared::Predicate as Pred;
-		use Predicate::*;
-		let Env(schemas, subst, lvl) = self;
-		match source {
-			True => UExpr::One,
-			False => UExpr::Zero,
-			Null(e) => UExpr::Pred(Pred::null(self.eval(e))),
-			Bool(e) => UExpr::Pred(Pred::Bool(self.eval(e))),
-			Eq(e1, e2) => UExpr::Pred(Pred::Eq(self.eval(e1), self.eval(e2))),
-			Like(e, pat) => UExpr::Pred(Pred::Like(self.eval(e), pat)),
-			Exists(rel) => {
-				let scopes = rel.scopes(schemas);
-				let rel = Env(schemas, subst, lvl + scopes.len()).eval(*rel);
-				UExpr::squash(UExpr::sum(scopes.clone(), UExpr::app(rel, vars(lvl, scopes))))
+impl Eval<Expr, Logic> for Env<'_> {
+	fn eval(self, source: Expr) -> Logic {
+		match source.clone() {
+			Expr::Op { op, args, ty: DataType::Boolean } => match op.to_uppercase().as_str() {
+				"TRUE" => Logic::tt(),
+				"FALSE" => Logic::ff(),
+				"=" if args.iter().any(|a| a.ty() == DataType::Real) => {
+					let args = args.into_iter().map(Expr::into_real).collect_vec();
+					Logic::Eq(self.eval(args[0].clone()), self.eval(args[1].clone()))
+				},
+				"=" => Logic::Eq(self.eval(args[0].clone()), self.eval(args[1].clone())),
+				"<>" => !Logic::Eq(self.eval(args[0].clone()), self.eval(args[1].clone())),
+				"AND" => Logic::And(args.into_iter().map(|arg| self.eval(arg)).collect()),
+				"OR" => Logic::Or(args.into_iter().map(|arg| self.eval(arg)).collect()),
+				"NOT" => Logic::not(self.eval(args[0].clone())),
+				"IS NULL" => Logic::is_null(self.eval(args[0].clone())),
+				"IS NOT NULL" => !Logic::is_null(self.eval(args[0].clone())),
+				_ => Logic::Bool(self.eval(source)),
 			},
-			In(vals, rel) => UExpr::squash(UExpr::app(self.eval(*rel), self.eval(vals).into())),
-			Pred(op, args) => {
-				UExpr::Pred(Pred::Bool(self.eval(Expr::Op { op, args, ty: DataType::Boolean })))
+			Expr::Col { ty: DataType::Boolean, .. } => Logic::Bool(self.eval(source)),
+			Expr::HOp { op, args, rel, ty: DataType::Boolean } => match op.as_str() {
+				"IN" => Logic::App(syntax::Application(self.eval(*rel), self.eval(args).into())),
+				"EXISTS" => Logic::Exists(self.eval(*rel)),
+				_ => Logic::Bool(self.eval(source)),
 			},
-			And(ps) => ps.into_iter().map(|p| self.eval(p)).fold(UExpr::One, UExpr::mul),
-			Or(ps) => {
-				UExpr::squash(ps.into_iter().map(|p| self.eval(p)).fold(UExpr::Zero, UExpr::add))
-			},
-			Not(p) => !self.eval(*p),
+			_ => panic!("wrong type for predicate"),
 		}
 	}
 }

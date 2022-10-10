@@ -1,64 +1,87 @@
 {
-  "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
-    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
-  }, {
-    "name" : "DEPT",
-    "fields" : [ "DEPTNO", "NAME" ],
-    "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
-  } ],
-  "queries" : [ {
-    "project" : {
-      "target" : [ {
-        "column" : 7,
-        "type" : "INTEGER"
-      }, {
-        "column" : 8,
-        "type" : "BOOLEAN"
-      } ],
-      "source" : {
-        "join" : {
-          "kind" : "LEFT",
-          "condition" : {
-            "operator" : "=",
-            "operand" : [ {
-              "column" : 7,
-              "type" : "INTEGER"
-            }, {
-              "column" : 9,
-              "type" : "INTEGER"
-            } ],
-            "type" : "BOOLEAN"
+  "schemas": [
+    {
+      "name": "EMP",
+      "fields": [
+        "DEPTNO",
+        "SLACKER"
+      ],
+      "types": [
+        "INTEGER",
+        "BOOLEAN"
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "key": [],
+      "guaranteed": []
+    },
+    {
+      "name": "DEPT",
+      "fields": [
+        "DEPTNO"
+      ],
+      "types": [
+        "INTEGER"
+      ],
+      "nullable": [
+        false
+      ],
+      "key": [
+        [
+          0
+        ]
+      ],
+      "guaranteed": []
+    }
+  ],
+  "queries": [
+    {
+      "project": {
+        "target": [
+          {
+            "column": 0,
+            "type": "INTEGER"
           },
-          "left" : {
-            "scan" : 0
-          },
-          "right" : {
-            "scan" : 1
+          {
+            "column": 1,
+            "type": "BOOLEAN"
+          }
+        ],
+        "source": {
+          "join": {
+            "kind": "LEFT",
+            "condition": {
+              "operator": "=",
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INTEGER"
+                },
+                {
+                  "column": 2,
+                  "type": "INTEGER"
+                }
+              ],
+              "type": "BOOLEAN"
+            },
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 1
+            }
           }
         }
       }
+    },
+    {
+      "scan": 0
     }
-  }, {
-    "project" : {
-      "target" : [ {
-        "column" : 7,
-        "type" : "INTEGER"
-      }, {
-        "column" : 8,
-        "type" : "BOOLEAN"
-      } ],
-      "source" : {
-        "scan" : 0
-      }
-    }
-  } ],
-  "help" : [ "LogicalProject(DEPTNO=[$7], SLACKER=[$8])\r\n  LogicalJoin(condition=[=($7, $9)], joinType=[left])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(DEPTNO=[$7], SLACKER=[$8])\r\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n" ]
+  ],
+  "help": [
+    "LogicalProject(DEPTNO=[$0], SLACKER=[$1])\r\n  LogicalJoin(condition=[=($0, $2)], joinType=[left])\r\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n",
+    "LogicalTableScan(table=[[CATALOG, SALES, EMP]])\r\n"
+  ]
 }

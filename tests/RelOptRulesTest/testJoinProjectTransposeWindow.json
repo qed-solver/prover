@@ -1,164 +1,126 @@
 {
-  "schemas" : [ {
-    "name" : "DEPT",
-    "fields" : [ "DEPTNO", "NAME" ],
-    "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
-  } ],
-  "queries" : [ {
-    "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "INTEGER"
-      }, {
-        "column" : 1,
-        "type" : "VARCHAR"
-      }, {
-        "column" : 3,
-        "type" : "BIGINT"
-      }, {
-        "column" : 4,
-        "type" : "INTEGER"
-      } ],
-      "source" : {
-        "join" : {
-          "kind" : "INNER",
-          "condition" : {
-            "operator" : "=",
-            "operand" : [ {
-              "column" : 2,
-              "type" : "BIGINT"
-            }, {
-              "column" : 3,
-              "type" : "BIGINT"
-            } ],
-            "type" : "BOOLEAN"
-          },
-          "left" : {
-            "project" : {
-              "target" : [ {
-                "column" : 0,
-                "type" : "INTEGER"
-              }, {
-                "column" : 1,
-                "type" : "VARCHAR"
-              }, {
-                "operator" : "CAST",
-                "operand" : [ {
-                  "column" : 1,
-                  "type" : "VARCHAR"
-                } ],
-                "type" : "BIGINT"
-              } ],
-              "source" : {
-                "scan" : 0
-              }
-            }
-          },
-          "right" : {
-            "project" : {
-              "target" : [ {
-                "error" : "Not implemented: RANK"
-              }, {
-                "operator" : "+",
-                "operand" : [ {
-                  "operator" : "1",
-                  "operand" : [ ],
-                  "type" : "INTEGER"
-                }, {
-                  "operator" : "1",
-                  "operand" : [ ],
-                  "type" : "INTEGER"
-                } ],
-                "type" : "INTEGER"
-              } ],
-              "source" : {
-                "scan" : 0
-              }
-            }
-          }
-        }
-      }
+  "schemas": [
+    {
+      "name": "DEPT",
+      "fields": [
+        "DEPTNO",
+        "NAME"
+      ],
+      "types": [
+        "INTEGER",
+        "VARCHAR"
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "key": [
+        [
+          0
+        ]
+      ],
+      "guaranteed": []
     }
-  }, {
-    "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "INTEGER"
-      }, {
-        "column" : 1,
-        "type" : "VARCHAR"
-      }, {
-        "column" : 3,
-        "type" : "BIGINT"
-      }, {
-        "column" : 4,
-        "type" : "INTEGER"
-      } ],
-      "source" : {
-        "project" : {
-          "target" : [ {
-            "column" : 0,
-            "type" : "INTEGER"
-          }, {
-            "column" : 1,
-            "type" : "VARCHAR"
-          }, {
-            "operator" : "CAST",
-            "operand" : [ {
-              "column" : 1,
-              "type" : "VARCHAR"
-            } ],
-            "type" : "BIGINT"
-          }, {
-            "column" : 2,
-            "type" : "BIGINT"
-          }, {
-            "column" : 3,
-            "type" : "INTEGER"
-          } ],
-          "source" : {
-            "join" : {
-              "kind" : "INNER",
-              "condition" : {
-                "operator" : "=",
-                "operand" : [ {
-                  "operator" : "CAST",
-                  "operand" : [ {
-                    "column" : 1,
-                    "type" : "VARCHAR"
-                  } ],
-                  "type" : "BIGINT"
-                }, {
-                  "column" : 2,
-                  "type" : "BIGINT"
-                } ],
-                "type" : "BOOLEAN"
-              },
-              "left" : {
-                "scan" : 0
-              },
-              "right" : {
-                "project" : {
-                  "target" : [ {
-                    "error" : "Not implemented: RANK"
-                  }, {
-                    "operator" : "+",
-                    "operand" : [ {
-                      "operator" : "1",
-                      "operand" : [ ],
-                      "type" : "INTEGER"
-                    }, {
-                      "operator" : "1",
-                      "operand" : [ ],
-                      "type" : "INTEGER"
-                    } ],
-                    "type" : "INTEGER"
-                  } ],
-                  "source" : {
-                    "scan" : 0
+  ],
+  "queries": [
+    {
+      "project": {
+        "target": [
+          {
+            "column": 0,
+            "type": "INTEGER"
+          },
+          {
+            "column": 1,
+            "type": "VARCHAR"
+          },
+          {
+            "column": 3,
+            "type": "BIGINT"
+          },
+          {
+            "column": 4,
+            "type": "INTEGER"
+          }
+        ],
+        "source": {
+          "join": {
+            "kind": "INNER",
+            "condition": {
+              "operator": "=",
+              "operand": [
+                {
+                  "column": 2,
+                  "type": "BIGINT"
+                },
+                {
+                  "column": 3,
+                  "type": "BIGINT"
+                }
+              ],
+              "type": "BOOLEAN"
+            },
+            "left": {
+              "project": {
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INTEGER"
+                  },
+                  {
+                    "column": 1,
+                    "type": "VARCHAR"
+                  },
+                  {
+                    "operator": "CAST",
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "VARCHAR"
+                      }
+                    ],
+                    "type": "BIGINT"
+                  }
+                ],
+                "source": {
+                  "scan": 0
+                }
+              }
+            },
+            "right": {
+              "project": {
+                "target": [
+                  {
+                    "error": "Not implemented: RANK"
+                  },
+                  {
+                    "operator": "+",
+                    "operand": [
+                      {
+                        "operator": "1",
+                        "operand": [],
+                        "type": "INTEGER"
+                      },
+                      {
+                        "operator": "1",
+                        "operand": [],
+                        "type": "INTEGER"
+                      }
+                    ],
+                    "type": "INTEGER"
+                  }
+                ],
+                "source": {
+                  "project": {
+                    "target": [
+                      {
+                        "column": 1,
+                        "type": "VARCHAR"
+                      }
+                    ],
+                    "source": {
+                      "scan": 0
+                    }
                   }
                 }
               }
@@ -166,7 +128,76 @@
           }
         }
       }
+    },
+    {
+      "join": {
+        "kind": "INNER",
+        "condition": {
+          "operator": "=",
+          "operand": [
+            {
+              "operator": "CAST",
+              "operand": [
+                {
+                  "column": 1,
+                  "type": "VARCHAR"
+                }
+              ],
+              "type": "BIGINT"
+            },
+            {
+              "column": 2,
+              "type": "BIGINT"
+            }
+          ],
+          "type": "BOOLEAN"
+        },
+        "left": {
+          "scan": 0
+        },
+        "right": {
+          "project": {
+            "target": [
+              {
+                "error": "Not implemented: RANK"
+              },
+              {
+                "operator": "+",
+                "operand": [
+                  {
+                    "operator": "1",
+                    "operand": [],
+                    "type": "INTEGER"
+                  },
+                  {
+                    "operator": "1",
+                    "operand": [],
+                    "type": "INTEGER"
+                  }
+                ],
+                "type": "INTEGER"
+              }
+            ],
+            "source": {
+              "project": {
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "VARCHAR"
+                  }
+                ],
+                "source": {
+                  "scan": 0
+                }
+              }
+            }
+          }
+        }
+      }
     }
-  } ],
-  "help" : [ "LogicalProject(DEPTNO=[$0], NAME=[$1], R=[$3], EXPR$1=[$4])\r\n  LogicalJoin(condition=[=($2, $3)], joinType=[inner])\r\n    LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[CAST($1):BIGINT NOT NULL])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalProject(R=[RANK() OVER (ORDER BY $1)], EXPR$1=[+(1, 1)])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n", "LogicalProject(DEPTNO=[$0], NAME=[$1], R=[$3], EXPR$1=[$4])\r\n  LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[CAST($1):BIGINT NOT NULL], R=[$2], EXPR$1=[$3])\r\n    LogicalJoin(condition=[=(CAST($1):BIGINT NOT NULL, $2)], joinType=[inner])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n      LogicalProject(R=[RANK() OVER (ORDER BY $1)], EXPR$1=[+(1, 1)])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n" ]
+  ],
+  "help": [
+    "LogicalProject(DEPTNO=[$0], NAME=[$1], R=[$3], EXPR$1=[$4])\r\n  LogicalJoin(condition=[=($2, $3)], joinType=[inner])\r\n    LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[CAST($1):BIGINT NOT NULL])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n    LogicalProject(R=[RANK() OVER (ORDER BY $0)], EXPR$1=[+(1, 1)])\r\n      LogicalProject(NAME=[$1])\r\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n",
+    "LogicalJoin(condition=[=(CAST($1):BIGINT NOT NULL, $2)], joinType=[inner])\r\n  LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n  LogicalProject(R=[RANK() OVER (ORDER BY $0)], EXPR$1=[+(1, 1)])\r\n    LogicalProject(NAME=[$1])\r\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\r\n"
+  ]
 }

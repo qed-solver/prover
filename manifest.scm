@@ -13,12 +13,12 @@
 (define cvc5
   (package
    (name "cvc5")
-   (version "1.0.0")
+   (version "1.0.2")
    (source (origin
             (method url-fetch)
             (uri (string-append "https://github.com/cvc5/cvc5/releases/download/cvc5-" version "/cvc5-Linux"))
             (file-name (string-append name "-Linux"))
-            (sha256 "0192llkzah60b3phprp0zq1m4ly8w1sgp2yqp4r5iwxy88n05c77")))
+            (sha256 "08rdqf7wkk3vhapj7j30qcxhgzal9q7f8pmx05m70bq3n66lywzq")))
    (build-system copy-build-system)
    (arguments
     `(#:install-plan `(("cvc5-Linux" "bin/cvc5"))

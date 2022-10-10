@@ -1,20 +1,18 @@
-#![feature(type_ascription)]
 #![feature(derive_default_enum)]
 #![feature(map_first_last)]
 #![feature(slice_as_chunks)]
-extern crate core;
-
 use std::any::Any;
 use std::collections::BTreeMap;
 use std::fs::File;
+use std::io;
 use std::io::{BufReader, Read, Write};
 use std::os::unix::fs::MetadataExt;
 use std::path::Path;
 use std::time::Instant;
-use std::{fs, io};
 
 use env_logger::{Builder, Env, Target};
 use itertools::Itertools;
+use walkdir::WalkDir;
 
 use crate::pipeline::relation::Input;
 use crate::solver::Payload;
@@ -23,22 +21,14 @@ mod pipeline;
 mod solver;
 
 fn visit<P: AsRef<Path>>(dir: P, mut cb: impl FnMut(usize, &Path)) -> io::Result<()> {
-	let path = dir.as_ref();
-	let mut i = 0;
-	if path.is_dir() {
-		for entry in fs::read_dir(path)?
-			.sorted_by_cached_key(|entry| entry.as_ref().unwrap().metadata().unwrap().size())
-		{
-			let entry = entry?;
-			let path = entry.path();
-			if path.is_file() && path.extension() == Some("json".as_ref()) {
-				cb(i, path.as_path());
-				i += 1;
-			}
-		}
-	} else if path.is_file() && path.extension() == Some("json".as_ref()) {
-		cb(i, path);
-	}
+	WalkDir::new(dir)
+		.into_iter()
+		.filter_map(|f| {
+			f.ok().filter(|f| f.path().is_file() && f.path().extension() == Some("json".as_ref()))
+		})
+		.sorted_by_cached_key(|e| e.metadata().unwrap().size())
+		.enumerate()
+		.for_each(|(i, e)| cb(i, e.path()));
 	Ok(())
 }
 
@@ -62,8 +52,7 @@ fn main() -> io::Result<()> {
 			let file = File::open(&path).unwrap();
 			let mut buf_reader = BufReader::new(file);
 			let mut contents = String::new();
-			let name = path.file_name().unwrap().to_str().unwrap().to_owned();
-			println!("#{}: {}", i, path.to_str().unwrap());
+			println!("#{}: {}", i, path.to_string_lossy().as_ref());
 			let old_time = Instant::now();
 			buf_reader.read_to_string(&mut contents).unwrap();
 			let result =
@@ -102,7 +91,7 @@ fn main() -> io::Result<()> {
 				matches!(result, CosetteResult::Provable),
 				duration.as_secs_f32()
 			);
-			stats.insert(name, result);
+			stats.insert(path.to_string_lossy().to_string(), result);
 		})?;
 	}
 	println!("\n\nSTATISTICS");

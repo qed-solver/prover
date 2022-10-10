@@ -1,114 +1,223 @@
 {
-  "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
-    "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
-    "key" : [ [ 0 ], [ 1 ] ],
-    "foreign" : [ ]
-  }, {
-    "name" : "DEPT",
-    "fields" : [ "DEPTNO", "DNAME", "LOC" ],
-    "types" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE" ],
-    "key" : [ [ 0 ], [ 1 ], [ 2 ] ],
-    "foreign" : [ ]
-  }, {
-    "name" : "BONUS",
-    "fields" : [ "ENAME", "JOB", "SAL", "COMM" ],
-    "types" : [ "VARCHAR", "VARCHAR", "DECIMAL", "DECIMAL" ],
-    "strategy" : [ "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
-    "key" : [ [ 0 ], [ 1 ], [ 2 ], [ 3 ] ],
-    "foreign" : [ ]
-  } ],
-  "queries" : [ {
-    "join" : {
-      "kind" : "INNER",
-      "condition" : {
-        "operator" : "=",
-        "operand" : [ {
-          "column" : 2,
-          "type" : "VARCHAR"
-        }, {
-          "column" : 12,
-          "type" : "VARCHAR"
-        } ],
-        "type" : "BOOLEAN"
-      },
-      "left" : {
-        "join" : {
-          "kind" : "INNER",
-          "condition" : {
-            "operator" : "=",
-            "operand" : [ {
-              "column" : 7,
-              "type" : "TINYINT"
-            }, {
-              "column" : 8,
-              "type" : "TINYINT"
-            } ],
-            "type" : "BOOLEAN"
-          },
-          "left" : {
-            "scan" : 0
-          },
-          "right" : {
-            "scan" : 1
+  "schemas": [
+    {
+      "name": "EMP",
+      "fields": [
+        "EMPNO",
+        "ENAME",
+        "JOB",
+        "MGR",
+        "HIREDATE",
+        "SAL",
+        "COMM",
+        "DEPTNO"
+      ],
+      "types": [
+        "SMALLINT",
+        "VARCHAR",
+        "VARCHAR",
+        "SMALLINT",
+        "DATE",
+        "DECIMAL",
+        "DECIMAL",
+        "TINYINT"
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "key": [
+        [
+          0
+        ],
+        [
+          1
+        ]
+      ],
+      "guaranteed": []
+    },
+    {
+      "name": "DEPT",
+      "fields": [
+        "DEPTNO",
+        "DNAME",
+        "LOC"
+      ],
+      "types": [
+        "TINYINT",
+        "VARCHAR",
+        "VARCHAR"
+      ],
+      "nullable": [
+        false,
+        true,
+        true
+      ],
+      "key": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "guaranteed": []
+    },
+    {
+      "name": "BONUS",
+      "fields": [
+        "ENAME",
+        "JOB",
+        "SAL",
+        "COMM"
+      ],
+      "types": [
+        "VARCHAR",
+        "VARCHAR",
+        "DECIMAL",
+        "DECIMAL"
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "key": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "guaranteed": []
+    }
+  ],
+  "queries": [
+    {
+      "join": {
+        "kind": "INNER",
+        "condition": {
+          "operator": "=",
+          "operand": [
+            {
+              "column": 2,
+              "type": "VARCHAR"
+            },
+            {
+              "column": 12,
+              "type": "VARCHAR"
+            }
+          ],
+          "type": "BOOLEAN"
+        },
+        "left": {
+          "join": {
+            "kind": "INNER",
+            "condition": {
+              "operator": "=",
+              "operand": [
+                {
+                  "column": 7,
+                  "type": "TINYINT"
+                },
+                {
+                  "column": 8,
+                  "type": "TINYINT"
+                }
+              ],
+              "type": "BOOLEAN"
+            },
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 1
+            }
+          }
+        },
+        "right": {
+          "scan": 2
+        }
+      }
+    },
+    {
+      "join": {
+        "kind": "INNER",
+        "condition": {
+          "operator": "AND",
+          "operand": [
+            {
+              "operator": "=",
+              "operand": [
+                {
+                  "column": 2,
+                  "type": "VARCHAR"
+                },
+                {
+                  "column": 12,
+                  "type": "VARCHAR"
+                }
+              ],
+              "type": "BOOLEAN"
+            },
+            {
+              "operator": "=",
+              "operand": [
+                {
+                  "column": 7,
+                  "type": "TINYINT"
+                },
+                {
+                  "column": 8,
+                  "type": "TINYINT"
+                }
+              ],
+              "type": "BOOLEAN"
+            }
+          ],
+          "type": "BOOLEAN"
+        },
+        "left": {
+          "scan": 0
+        },
+        "right": {
+          "join": {
+            "kind": "INNER",
+            "condition": {
+              "operator": "true",
+              "operand": [],
+              "type": "BOOLEAN"
+            },
+            "left": {
+              "scan": 1
+            },
+            "right": {
+              "scan": 2
+            }
           }
         }
-      },
-      "right" : {
-        "scan" : 2
       }
     }
-  }, {
-    "join" : {
-      "kind" : "INNER",
-      "condition" : {
-        "operator" : "AND",
-        "operand" : [ {
-          "operator" : "=",
-          "operand" : [ {
-            "column" : 2,
-            "type" : "VARCHAR"
-          }, {
-            "column" : 12,
-            "type" : "VARCHAR"
-          } ],
-          "type" : "BOOLEAN"
-        }, {
-          "operator" : "=",
-          "operand" : [ {
-            "column" : 7,
-            "type" : "TINYINT"
-          }, {
-            "column" : 8,
-            "type" : "TINYINT"
-          } ],
-          "type" : "BOOLEAN"
-        } ],
-        "type" : "BOOLEAN"
-      },
-      "left" : {
-        "scan" : 0
-      },
-      "right" : {
-        "join" : {
-          "kind" : "INNER",
-          "condition" : {
-            "operator" : "true",
-            "operand" : [ ],
-            "type" : "BOOLEAN"
-          },
-          "left" : {
-            "scan" : 1
-          },
-          "right" : {
-            "scan" : 2
-          }
-        }
-      }
-    }
-  } ],
-  "help" : [ "LogicalJoin(condition=[=($2, $12)], joinType=[inner])\r\n  LogicalJoin(condition=[=($7, $8)], joinType=[inner])\r\n    LogicalTableScan(table=[[scott, EMP]])\r\n    LogicalTableScan(table=[[scott, DEPT]])\r\n  LogicalTableScan(table=[[scott, BONUS]])\r\n", "LogicalJoin(condition=[AND(=($2, $12), =($7, $8))], joinType=[inner])\r\n  LogicalTableScan(table=[[scott, EMP]])\r\n  LogicalJoin(condition=[true], joinType=[inner])\r\n    LogicalTableScan(table=[[scott, DEPT]])\r\n    LogicalTableScan(table=[[scott, BONUS]])\r\n" ]
+  ],
+  "help": [
+    "LogicalJoin(condition=[=($2, $12)], joinType=[inner])\r\n  LogicalJoin(condition=[=($7, $8)], joinType=[inner])\r\n    LogicalTableScan(table=[[scott, EMP]])\r\n    LogicalTableScan(table=[[scott, DEPT]])\r\n  LogicalTableScan(table=[[scott, BONUS]])\r\n",
+    "LogicalJoin(condition=[AND(=($2, $12), =($7, $8))], joinType=[inner])\r\n  LogicalTableScan(table=[[scott, EMP]])\r\n  LogicalJoin(condition=[true], joinType=[inner])\r\n    LogicalTableScan(table=[[scott, DEPT]])\r\n    LogicalTableScan(table=[[scott, BONUS]])\r\n"
+  ]
 }

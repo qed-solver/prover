@@ -1,57 +1,98 @@
 {
-  "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
-    "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
-    "key" : [ [ 0 ], [ 1 ] ],
-    "foreign" : [ ]
-  } ],
-  "queries" : [ {
-    "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "SMALLINT"
-      } ],
-      "source" : {
-        "join" : {
-          "kind" : "SEMI",
-          "condition" : {
-            "operator" : "=",
-            "operand" : [ {
-              "column" : 7,
-              "type" : "TINYINT"
-            }, {
-              "column" : 8,
-              "type" : "TINYINT"
-            } ],
-            "type" : "BOOLEAN"
-          },
-          "left" : {
-            "scan" : 0
-          },
-          "right" : {
-            "values" : {
-              "schema" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
-              "content" : [ ]
+  "schemas": [
+    {
+      "name": "EMP",
+      "fields": [
+        "EMPNO",
+        "DEPTNO"
+      ],
+      "types": [
+        "SMALLINT",
+        "TINYINT"
+      ],
+      "nullable": [
+        false,
+        true
+      ],
+      "key": [
+        [
+          0
+        ]
+      ],
+      "guaranteed": []
+    }
+  ],
+  "queries": [
+    {
+      "project": {
+        "target": [
+          {
+            "column": 0,
+            "type": "SMALLINT"
+          }
+        ],
+        "source": {
+          "join": {
+            "kind": "SEMI",
+            "condition": {
+              "operator": "=",
+              "operand": [
+                {
+                  "column": 1,
+                  "type": "TINYINT"
+                },
+                {
+                  "column": 2,
+                  "type": "TINYINT"
+                }
+              ],
+              "type": "BOOLEAN"
+            },
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "values": {
+                "schema": [
+                  "TINYINT",
+                  "VARCHAR",
+                  "VARCHAR"
+                ],
+                "content": []
+              }
             }
           }
         }
       }
-    }
-  }, {
-    "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "SMALLINT"
-      } ],
-      "source" : {
-        "values" : {
-          "schema" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
-          "content" : [ ]
+    },
+    {
+      "project": {
+        "target": [
+          {
+            "column": 0,
+            "type": "SMALLINT"
+          }
+        ],
+        "source": {
+          "values": {
+            "schema": [
+              "SMALLINT",
+              "VARCHAR",
+              "VARCHAR",
+              "SMALLINT",
+              "DATE",
+              "DECIMAL",
+              "DECIMAL",
+              "TINYINT"
+            ],
+            "content": []
+          }
         }
       }
     }
-  } ],
-  "help" : [ "LogicalProject(EMPNO=[$0])\r\n  LogicalJoin(condition=[=($7, $8)], joinType=[semi])\r\n    LogicalTableScan(table=[[scott, EMP]])\r\n    LogicalValues(tuples=[[]])\r\n", "LogicalProject(EMPNO=[$0])\r\n  LogicalValues(tuples=[[]])\r\n" ]
+  ],
+  "help": [
+    "LogicalProject(EMPNO=[$0])\r\n  LogicalJoin(condition=[=($1, $2)], joinType=[semi])\r\n    LogicalTableScan(table=[[scott, EMP]])\r\n    LogicalValues(tuples=[[]])\r\n",
+    "LogicalProject(EMPNO=[$0])\r\n  LogicalValues(tuples=[[]])\r\n"
+  ]
 }

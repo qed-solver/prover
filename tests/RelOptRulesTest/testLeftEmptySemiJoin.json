@@ -1,57 +1,100 @@
 {
-  "schemas" : [ {
-    "name" : "DEPT",
-    "fields" : [ "DEPTNO", "DNAME", "LOC" ],
-    "types" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE" ],
-    "key" : [ [ 0 ], [ 1 ], [ 2 ] ],
-    "foreign" : [ ]
-  } ],
-  "queries" : [ {
-    "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "SMALLINT"
-      } ],
-      "source" : {
-        "join" : {
-          "kind" : "SEMI",
-          "condition" : {
-            "operator" : "=",
-            "operand" : [ {
-              "column" : 7,
-              "type" : "TINYINT"
-            }, {
-              "column" : 8,
-              "type" : "TINYINT"
-            } ],
-            "type" : "BOOLEAN"
-          },
-          "left" : {
-            "values" : {
-              "schema" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
-              "content" : [ ]
+  "schemas": [
+    {
+      "name": "DEPT",
+      "fields": [
+        "DEPTNO"
+      ],
+      "types": [
+        "TINYINT"
+      ],
+      "nullable": [
+        false
+      ],
+      "key": [
+        [
+          0
+        ]
+      ],
+      "guaranteed": []
+    }
+  ],
+  "queries": [
+    {
+      "project": {
+        "target": [
+          {
+            "column": 0,
+            "type": "SMALLINT"
+          }
+        ],
+        "source": {
+          "join": {
+            "kind": "SEMI",
+            "condition": {
+              "operator": "=",
+              "operand": [
+                {
+                  "column": 7,
+                  "type": "TINYINT"
+                },
+                {
+                  "column": 8,
+                  "type": "TINYINT"
+                }
+              ],
+              "type": "BOOLEAN"
+            },
+            "left": {
+              "values": {
+                "schema": [
+                  "SMALLINT",
+                  "VARCHAR",
+                  "VARCHAR",
+                  "SMALLINT",
+                  "DATE",
+                  "DECIMAL",
+                  "DECIMAL",
+                  "TINYINT"
+                ],
+                "content": []
+              }
+            },
+            "right": {
+              "scan": 0
             }
-          },
-          "right" : {
-            "scan" : 0
+          }
+        }
+      }
+    },
+    {
+      "project": {
+        "target": [
+          {
+            "column": 0,
+            "type": "SMALLINT"
+          }
+        ],
+        "source": {
+          "values": {
+            "schema": [
+              "SMALLINT",
+              "VARCHAR",
+              "VARCHAR",
+              "SMALLINT",
+              "DATE",
+              "DECIMAL",
+              "DECIMAL",
+              "TINYINT"
+            ],
+            "content": []
           }
         }
       }
     }
-  }, {
-    "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "SMALLINT"
-      } ],
-      "source" : {
-        "values" : {
-          "schema" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
-          "content" : [ ]
-        }
-      }
-    }
-  } ],
-  "help" : [ "LogicalProject(EMPNO=[$0])\r\n  LogicalJoin(condition=[=($7, $8)], joinType=[semi])\r\n    LogicalValues(tuples=[[]])\r\n    LogicalTableScan(table=[[scott, DEPT]])\r\n", "LogicalProject(EMPNO=[$0])\r\n  LogicalValues(tuples=[[]])\r\n" ]
+  ],
+  "help": [
+    "LogicalProject(EMPNO=[$0])\r\n  LogicalJoin(condition=[=($7, $8)], joinType=[semi])\r\n    LogicalValues(tuples=[[]])\r\n    LogicalTableScan(table=[[scott, DEPT]])\r\n",
+    "LogicalProject(EMPNO=[$0])\r\n  LogicalValues(tuples=[[]])\r\n"
+  ]
 }

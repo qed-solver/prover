@@ -2,7 +2,8 @@ use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display, Formatter, Write};
 use std::hash::Hash;
 use std::iter::FromIterator;
-use std::ops::{Add, Mul};
+use std::ops::{Add, Mul, Not};
+use std::time::Duration;
 
 use anyhow::bail;
 use imbl::vector::{ConsumingIter, Iter};
@@ -12,6 +13,10 @@ use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use z3::ast::{Ast, Datatype, Dynamic};
 use z3::{Context, FuncDecl, Sort};
+
+pub trait Eval<S, T> {
+	fn eval(self, source: S) -> T;
+}
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
@@ -23,6 +28,21 @@ impl Display for VL {
 	}
 }
 
+#[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub struct Schema {
+	pub types: Vec<DataType>,
+	#[serde(rename = "key")]
+	pub primary: Vec<HashSet<usize>>,
+	#[serde(skip)]
+	#[serde(rename = "foreign_key")]
+	pub foreign: HashMap<usize, VL>,
+	#[serde(rename = "nullable")]
+	#[serde(default)]
+	pub nullabilities: Vec<bool>,
+	#[serde(default)]
+	pub guaranteed: Vec<super::relation::Expr>,
+}
+
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum Expr<R> {
 	Var(VL, DataType),
@@ -30,14 +50,128 @@ pub enum Expr<R> {
 	HOp(String, Vec<Expr<R>>, Box<R>, DataType),
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct Lambda<U>(pub Vector<DataType>, pub U);
+
+impl<U: Display> Display for Lambda<U> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		writeln!(f, "(λ {:?}", self.0)?;
+		writeln!(indented(f).with_str("\t"), "{})", self.1)
+	}
+}
+
+#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub enum Logic<R, L, A> {
+	Bool(Expr<R>),
+	Eq(Expr<R>, Expr<R>),
+	Pred(String, Vec<Expr<R>>),
+	Neg(Box<Logic<R, L, A>>),
+	And(Vector<Logic<R, L, A>>),
+	Or(Vector<Logic<R, L, A>>),
+	App(A),
+	Exists(L),
+}
+
+impl<R, L, A> Logic<R, L, A> {
+	pub fn tt() -> Self {
+		Logic::And(vector![])
+	}
+
+	pub fn ff() -> Self {
+		Logic::Or(vector![])
+	}
+
+	pub fn is_null(expr: Expr<R>) -> Self {
+		let ty = expr.ty();
+		Self::Eq(expr, Expr::Op("NULL".to_string(), vec![], ty))
+	}
+}
+
+impl<R: Clone, L: Clone, A: Clone> Mul for Logic<R, L, A> {
+	type Output = Self;
+
+	fn mul(self, rhs: Self) -> Self::Output {
+		use Logic::*;
+		match (self, rhs) {
+			(And(ls1), And(ls2)) => And(ls1 + ls2),
+			(And(ls1), l2) => And(ls1 + vector![l2]),
+			(l1, And(ls2)) => And(vector![l1] + ls2),
+			(l1, l2) => And(vector![l1, l2]),
+		}
+	}
+}
+
+impl<R: Clone, L: Clone, A: Clone> Add for Logic<R, L, A> {
+	type Output = Self;
+
+	fn add(self, rhs: Self) -> Self::Output {
+		use Logic::*;
+		match (self, rhs) {
+			(Or(ls1), Or(ls2)) => Or(ls1 + ls2),
+			(Or(ls1), l2) => Or(ls1 + vector![l2]),
+			(l1, Or(ls2)) => Or(vector![l1] + ls2),
+			(l1, l2) => Or(vector![l1, l2]),
+		}
+	}
+}
+
+impl<R, L, A> Not for Logic<R, L, A> {
+	type Output = Self;
+
+	fn not(self) -> Self::Output {
+		Logic::Neg(Box::new(self))
+	}
+}
+
+impl<R: Display, L: Display, A: Display> Display for Logic<R, L, A> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		use Logic::*;
+		match self {
+			Bool(e) => write!(f, "{}", e),
+			Eq(e1, e2) => write!(f, "({} = {})", e1, e2),
+			Pred(p, args) => write!(f, "{}({})", p, args.iter().join(", ")),
+			Neg(l) => write!(f, "¬{}", l),
+			And(ls) if ls.is_empty() => write!(f, "true"),
+			And(ls) => write!(f, "({})", ls.iter().format(" ∧ ")),
+			Or(ls) if ls.is_empty() => write!(f, "false"),
+			Or(ls) => write!(f, "({})", ls.iter().format(" ∨ ")),
+			App(app) => write!(f, "{}", app),
+			Exists(rel) => write!(f, "∃({})", rel),
+		}
+	}
+}
+
+impl<E, S, T, L, M, A, B> Eval<Logic<S, L, A>, Logic<T, M, B>> for E
+where
+	E: Eval<Expr<S>, Expr<T>> + Eval<L, M> + Eval<A, Logic<T, M, B>> + Clone,
+	S: Clone,
+	T: Clone,
+	L: Clone,
+	M: Clone,
+	A: Clone,
+	B: Clone,
+{
+	fn eval(self, source: Logic<S, L, A>) -> Logic<T, M, B> {
+		use Logic::*;
+		match source {
+			Bool(e) => Bool(self.eval(e)),
+			Eq(e1, e2) => Eq(self.clone().eval(e1), self.eval(e2)),
+			Pred(p, args) => Pred(p, self.eval(args)),
+			Neg(l) => Neg(self.eval(l)),
+			And(ls) => And(self.eval(ls)),
+			Or(ls) => Or(self.eval(ls)),
+			App(app) => self.eval(app),
+			Exists(rel) => Exists(self.eval(rel)),
+		}
+	}
+}
+
 impl<R> Expr<R> {
 	pub fn ty(&self) -> DataType {
+		use Expr::*;
 		match self {
-			Expr::Var(_, ty) => ty,
-			Expr::Op(_, _, ty) => ty,
-			Expr::HOp(_, _, _, ty) => ty,
+			Var(_, ty) | Op(_, _, ty) | HOp(_, _, _, ty) => ty.clone(),
 		}
-		.clone()
 	}
 }
 
@@ -47,7 +181,7 @@ impl<R: Clone> Expr<R> {
 	}
 }
 
-impl<U: Display> Display for Expr<U> {
+impl<R: Display> Display for Expr<R> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
 			Expr::Var(v, _) => write!(f, "{}", v),
@@ -78,62 +212,6 @@ impl<U> From<String> for Expr<U> {
 	}
 }
 
-#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub enum Predicate<R> {
-	Eq(Expr<R>, Expr<R>),
-	Pred(String, Vec<Expr<R>>),
-	Like(Expr<R>, String),
-	Bool(Expr<R>),
-}
-
-impl<R> Predicate<R> {
-	pub fn null(expr: Expr<R>) -> Self {
-		let ty = expr.ty();
-		Self::Eq(expr, Expr::Op("NULL".to_string(), vec![], ty))
-	}
-}
-
-impl<R: Display> Display for Predicate<R> {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		match self {
-			Predicate::Eq(e1, e2) => write!(f, "{} = {}", e1, e2),
-			Predicate::Pred(p, args) => {
-				write!(f, "{}({})", p, args.iter().join(", "))
-			},
-			Predicate::Like(e, pat) => write!(f, "Like({}, {})", e, pat),
-			Predicate::Bool(e) => write!(f, "{}", e),
-		}
-	}
-}
-
-#[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Schema {
-	pub types: Vec<DataType>,
-	#[serde(rename = "key")]
-	pub primary: Vec<HashSet<usize>>,
-	#[serde(skip)]
-	#[serde(rename = "foreign_key")]
-	pub foreign: HashMap<usize, VL>,
-	#[serde(rename = "strategy")]
-	#[serde(default)]
-	pub constraints: Vec<Constraint>,
-	#[serde(default)]
-	pub guaranteed: Vec<super::relation::Expr>,
-}
-
-#[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum Constraint {
-	NotNullable,
-	#[default]
-	#[serde(other)]
-	Nullable,
-}
-
-pub trait Eval<S, T> {
-	fn eval(self, source: S) -> T;
-}
-
 impl<E, S, T> Eval<Expr<S>, Expr<T>> for E
 where E: Eval<(VL, DataType), Expr<T>> + Eval<S, T> + Clone
 {
@@ -147,98 +225,18 @@ where E: Eval<(VL, DataType), Expr<T>> + Eval<S, T> + Clone
 	}
 }
 
-impl<E, S, T> Eval<Predicate<S>, Predicate<T>> for E
-where E: Eval<Expr<S>, Expr<T>> + Clone
+impl<E, S: Clone, T: Clone> Eval<Neutral<S>, Neutral<T>> for E
+where E: Eval<Head<S>, Head<T>> + Eval<Vector<Expr<S>>, Vector<Expr<T>>> + Clone
 {
-	fn eval(self, source: Predicate<S>) -> Predicate<T> {
-		use Predicate::*;
-		match source {
-			Eq(v1, v2) => Eq(self.clone().eval(v1), self.eval(v2)),
-			Pred(r, args) => Pred(r, args.into_iter().map(|v| self.clone().eval(v)).collect()),
-			Like(v, s) => Like(self.eval(v), s),
-			Bool(v) => Bool(self.eval(v)),
-		}
-	}
-}
-
-impl<E, S: Clone, T: Clone> Eval<AppHead<S>, AppHead<T>> for E
-where E: Eval<Vec<Expr<S>>, Vec<Expr<T>>> + Eval<Box<S>, Box<T>> + Clone
-{
-	fn eval(self, source: AppHead<S>) -> AppHead<T> {
-		use AppHead::*;
-		match source {
-			Var(v) => Var(v),
-			HOp(op, args, rel) => HOp(op, self.clone().eval(args), self.eval(rel)),
-		}
-	}
-}
-
-impl<E, S: Clone, T: Clone> Eval<Application<S>, Application<T>> for E
-where E: Eval<AppHead<S>, AppHead<T>> + Eval<Vector<Expr<S>>, Vector<Expr<T>>> + Clone
-{
-	fn eval(self, source: Application<S>) -> Application<T> {
+	fn eval(self, source: Neutral<S>) -> Neutral<T> {
 		let head = self.clone().eval(source.head);
 		let args = self.eval(source.args);
-		Application { head, args }
-	}
-}
-
-impl<E, S: Clone, T: Clone> Eval<Vector<S>, Vector<T>> for E
-where E: Eval<S, T> + Clone
-{
-	fn eval(self, source: Vector<S>) -> Vector<T> {
-		source.into_iter().map(|item| self.clone().eval(item)).collect()
-	}
-}
-
-impl<'a, E, S: Clone, T: Clone> Eval<&'a Vector<S>, Vector<T>> for E
-where E: Eval<&'a S, T> + Clone
-{
-	fn eval(self, source: &'a Vector<S>) -> Vector<T> {
-		source.iter().map(|item| self.clone().eval(item)).collect()
-	}
-}
-
-impl<E, S, T> Eval<Vec<S>, Vec<T>> for E
-where E: Eval<S, T> + Clone
-{
-	fn eval(self, source: Vec<S>) -> Vec<T> {
-		source.into_iter().map(|item| self.clone().eval(item)).collect()
-	}
-}
-
-impl<E, S, T> Eval<Box<S>, Box<T>> for E
-where E: Eval<S, T>
-{
-	fn eval(self, source: Box<S>) -> Box<T> {
-		self.eval(*source).into()
-	}
-}
-
-impl<E, S, T> Eval<Option<S>, Option<T>> for E
-where E: Eval<S, T>
-{
-	fn eval(self, source: Option<S>) -> Option<T> {
-		source.map(|item| self.eval(item))
-	}
-}
-
-impl<E, S: Clone, T: Clone> Eval<Terms<S>, Terms<T>> for E
-where E: Eval<S, T> + Clone
-{
-	fn eval(self, source: Terms<S>) -> Terms<T> {
-		source.into_iter().map(|item| self.clone().eval(item)).collect()
+		Neutral { head, args }
 	}
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Relation<U>(pub Vector<DataType>, pub Box<U>);
-
-impl<U> Relation<U> {
-	pub fn new(scopes: Vector<DataType>, body: U) -> Self {
-		Relation(scopes, Box::new(body))
-	}
-}
 
 impl<U: Display> Display for Relation<U> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -248,26 +246,49 @@ impl<U: Display> Display for Relation<U> {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub enum AppHead<R> {
+pub enum Head<R> {
 	Var(VL),
 	HOp(String, Vec<Expr<R>>, Box<R>),
 }
 
+impl<R: Display> Display for Head<R> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Head::Var(VL(l)) => write!(f, "#{}", l),
+			Head::HOp(op, op_args, rel) => {
+				writeln!(f, "#{}({}, {})", op, op_args.iter().format(", "), rel)
+			},
+		}
+	}
+}
+
+impl<E, S: Clone, T: Clone> Eval<Head<S>, Head<T>> for E
+where E: Eval<Vec<Expr<S>>, Vec<Expr<T>>> + Eval<Box<S>, Box<T>> + Clone
+{
+	fn eval(self, source: Head<S>) -> Head<T> {
+		use Head::*;
+		match source {
+			Var(v) => Var(v),
+			HOp(op, args, rel) => HOp(op, self.clone().eval(args), self.eval(rel)),
+		}
+	}
+}
+
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct Application<R> {
-	pub head: AppHead<R>,
+pub struct Neutral<R> {
+	pub head: Head<R>,
 	pub args: Vector<Expr<R>>,
 }
 
-impl<R: Display> Display for Application<R> {
+impl<R> Neutral<R> {
+	pub fn new(head: Head<R>, args: Vector<Expr<R>>) -> Self {
+		Neutral { head, args }
+	}
+}
+
+impl<R: Display> Display for Neutral<R> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		let args = self.args.iter().join(", ");
-		match &self.head {
-			AppHead::Var(VL(l)) => write!(f, "#{}({})", l, args),
-			AppHead::HOp(op, op_args, rel) => {
-				writeln!(f, "{}({}, {})({})", op, op_args.iter().join(", "), rel, args)
-			},
-		}
+		write!(f, "{}({})", self.head, self.args.iter().format(", "))
 	}
 }
 
@@ -389,6 +410,46 @@ impl<T: Display> Display for Terms<T> {
 	}
 }
 
+impl<E, S: Clone, T: Clone> Eval<Vector<S>, Vector<T>> for E
+where E: Eval<S, T> + Clone
+{
+	fn eval(self, source: Vector<S>) -> Vector<T> {
+		source.into_iter().map(|item| self.clone().eval(item)).collect()
+	}
+}
+
+impl<'a, E, S: Clone, T: Clone> Eval<&'a Vector<S>, Vector<T>> for E
+where E: Eval<&'a S, T> + Clone
+{
+	fn eval(self, source: &'a Vector<S>) -> Vector<T> {
+		source.iter().map(|item| self.clone().eval(item)).collect()
+	}
+}
+
+impl<E, S, T> Eval<Vec<S>, Vec<T>> for E
+where E: Eval<S, T> + Clone
+{
+	fn eval(self, source: Vec<S>) -> Vec<T> {
+		source.into_iter().map(|item| self.clone().eval(item)).collect()
+	}
+}
+
+impl<E, S, T> Eval<Box<S>, Box<T>> for E
+where E: Eval<S, T>
+{
+	fn eval(self, source: Box<S>) -> Box<T> {
+		self.eval(*source).into()
+	}
+}
+
+impl<E, S, T> Eval<Option<S>, Option<T>> for E
+where E: Eval<S, T>
+{
+	fn eval(self, source: Option<S>) -> Option<T> {
+		source.map(|item| self.eval(item))
+	}
+}
+
 pub use super::null::Ctx;
 
 impl<'c> Ctx<'c> {
@@ -448,5 +509,13 @@ impl<'c> Ctx<'c> {
 		let range = if nullable { self.sort(range) } else { self.strict_sort(range) };
 		let f = FuncDecl::new(ctx, name, &domain.iter().collect_vec(), &range);
 		f.apply(&args)
+	}
+	
+	pub fn timeout() -> Duration {
+		if let Some(t) = std::env::var("COSETTE_SMT_TIMEOUT").ok().and_then(|t| t.parse::<u64>().ok()) {
+			Duration::from_millis(t)
+		} else {
+			Duration::from_secs(10)
+		}
 	}
 }
