@@ -58,7 +58,19 @@ Now ~200 out of all ~380 cases are actually provable.
 
 ## Reproducible environment
 
-If fortunately you can use the Guix package manager with `direnv`, we provide all the necessary files to ensure maximal reproducibility of the exact development environment.
+### With Nix
+
+The project contains a Nix flake for easy reproducibility.
+Simply use `nix run . -- <inputs>` to run the prover.
+For `direnv` user, create the `.envrc` file in the project root directory with the content
+```
+use flake
+```
+(NOTICE: For first-time use, you need to explicitly trust the `.envrc` file, and execute `direnv allow .` to proceed with the build)
+Now simply `cd` into the project directory, and `direnv` will try to reproduce the development environment.
+
+### With GNU Guix
+
 All the development dependencies are declared in `manifest.scm`, with packages drawn from `channels.scm`.
 The `channels.lock` file is then derived from `channels.scm` to pin down channels to their exact Git commit hashes.
 Finally, one can use `direnv` to automatically reproduce the declared environment after entering the project directory.
@@ -76,5 +88,15 @@ use_guix-shell() {
 	fi
 }
 ```
-Now simply `cd` into the project directory, and `direnv` will try to build the development environment.
-(NOTICE: For first-time use, you need to inspect and trust the `.envrc` file, and execute `direnv allow .` to proceed with the build)
+And create the `.envrc` file under the project root directory with content
+```
+use guix-shell
+```
+(NOTICE: For first-time use, you need to explicitly trust the `.envrc` file, and execute `direnv allow .` to proceed with the build)
+Now simply `cd` into the project directory, and `direnv` will try to reproduce the development environment.
+
+Within the development envrionment created by `direnv`, one can then use the convensional
+```
+cargo run --release -- <inputs>
+```
+to run the Cosette prover.
