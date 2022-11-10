@@ -34,12 +34,16 @@
           postInstall = with pkgs; "wrapProgram $out/bin/cosette-prover --prefix PATH : ${cvc5}/bin";
         });
       in {
-        defaultPackage = cosette-prover;
+        packages.default = cosette-prover;
 
-        devShell = pkgs.mkShell {
+        devShells.default = pkgs.mkShell {
           inputsFrom = [ cosette-prover ];
           packages = with pkgs; [ rust-analyzer ];
         };
-      }
-    );
+      });
+
+  nixConfig = {
+    extra-substituters = [ "https://cosette.cachix.org" ];
+    extra-trusted-public-keys = [ "cosette.cachix.org-1:d2Pfpw41eAAEZsDLXMnSMjjCpaemLAAxIrLCJaMIEWk=" ];
+  };
 }
