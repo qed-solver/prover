@@ -23,10 +23,9 @@
         craneLib = crane.lib.${system}.overrideToolchain fenix.packages.${system}.minimal.toolchain;
         packageDef = with pkgs; {
           src = craneLib.cleanCargoSource ./.;
-          buildInputs = [ cvc5 ];
-          nativeBuildInputs = [ llvmPackages.clang llvmPackages.libclang.lib z3.dev makeWrapper ]
+          buildInputs = with pkgs; [ z3 ];
+          nativeBuildInputs = with pkgs; [ rustPlatform.bindgenHook makeWrapper ]
             ++ lib.optionals stdenv.isDarwin [ libiconv ];
-          LIBCLANG_PATH = "${llvmPackages.libclang.lib}/lib";
         };
         cargoArtifacts = craneLib.buildDepsOnly packageDef;
         cosette-prover = craneLib.buildPackage (packageDef // {

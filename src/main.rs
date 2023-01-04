@@ -1,5 +1,3 @@
-#![feature(derive_default_enum)]
-#![feature(map_first_last)]
 #![feature(slice_as_chunks)]
 use std::any::Any;
 use std::collections::BTreeMap;
