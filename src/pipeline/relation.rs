@@ -58,6 +58,7 @@ pub enum Relation {
 	Correlate(Box<Relation>, Box<Relation>),
 	Union(Box<Relation>, Box<Relation>),
 	Except(Box<Relation>, Box<Relation>),
+	Intersect(Box<Relation>, Box<Relation>),
 	Distinct(Box<Relation>),
 	Values {
 		schema: Vec<DataType>,
@@ -93,7 +94,7 @@ impl Relation {
 			Join { left, right, .. } | Correlate(left, right) => {
 				left.scope(schemas) + right.scope(schemas)
 			},
-			Union(rel1, _) | Except(rel1, _) => rel1.scope(schemas),
+			Union(rel1, _) | Except(rel1, _) | Intersect(rel1, _) => rel1.scope(schemas),
 			Distinct(rel) => rel.scope(schemas),
 			Values { schema, .. } => schema.clone().into(),
 			Sort { source, .. } => source.scope(schemas),
@@ -256,7 +257,7 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 				let right = Env(schemas, &right_subst, body_lvl).eval(*right);
 				Rel::lam(scopes, UExpr::App(left, left_vars) * UExpr::App(right, right_vars))
 			},
-			// R(x) union S(y)
+			// R(x) union all S(y)
 			// λx. R(x) + S(x)
 			Union(left, right) => {
 				let body_lvl = lvl + scopes.len();
@@ -265,14 +266,23 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 				let right = Env(schemas, subst, body_lvl).eval(*right);
 				Rel::lam(scopes, UExpr::App(left, vars.clone()) + UExpr::App(right, vars))
 			},
+			// R(x) intersect S(y)
+			// λx. ‖R(x) × S(x)‖
+			Intersect(left, right) => {
+				let body_lvl = lvl + scopes.len();
+				let vars = vars(lvl, scopes.clone());
+				let left = Env(schemas, subst, body_lvl).eval(*left);
+				let right = Env(schemas, subst, body_lvl).eval(*right);
+				Rel::lam(scopes, UExpr::squash(UExpr::App(left, vars.clone()) * UExpr::App(right, vars)))
+			},
 			// R(x) except S(y)
-			// λx. R(x) × ¬S(x)
+			// λx. ‖R(x) × ¬S(x)‖
 			Except(left, right) => {
 				let body_lvl = lvl + scopes.len();
 				let vars = vars(lvl, scopes.clone());
 				let left = Env(schemas, subst, body_lvl).eval(*left);
 				let right = Env(schemas, subst, body_lvl).eval(*right);
-				Rel::lam(scopes, UExpr::App(left, vars.clone()) * !UExpr::App(right, vars))
+				Rel::lam(scopes, UExpr::squash(UExpr::App(left, vars.clone()) * !UExpr::App(right, vars)))
 			},
 			// Distinct R(x)
 			// λx. ‖R(x)‖
