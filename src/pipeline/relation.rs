@@ -127,7 +127,8 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 						}
 					});
 				let app = if schema.primary.is_empty() {
-					App(Rel::Var(VL(t)), vars.clone())
+					let app = App(Rel::Var(VL(t)), vars.clone());
+					app.clone() * UExpr::squash(app)
 				} else {
 					let key_constraints =
 						schema.primary.iter().enumerate().flat_map(|(j, cols)| {
