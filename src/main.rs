@@ -88,7 +88,8 @@ fn main() -> io::Result<()> {
 				"{}\n{}",
 				matches!(result, CosetteResult::Provable),
 				duration.as_secs_f32()
-			);
+			)
+			.unwrap();
 			stats.insert(path.to_string_lossy().to_string(), result);
 		})?;
 	}

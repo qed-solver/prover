@@ -8,10 +8,10 @@ use crate::pipeline::shared::{DataType, Eval, Terms, VL};
 use crate::pipeline::unify::Unify;
 use crate::pipeline::{normal, shared, syntax};
 
-pub type Expr = shared::Expr<Relation>;
-pub type Head = shared::Head<Relation>;
-pub type Neutral = shared::Neutral<Relation>;
-pub type Logic = shared::Logic<Relation, LogicRel, Neutral>;
+pub type Expr = shared::Expr<Relation, UExpr>;
+pub type Head = shared::Head<Relation, UExpr>;
+pub type Neutral = shared::Neutral<Relation, UExpr>;
+pub type Logic = shared::Logic<Relation, UExpr>;
 
 impl Head {
 	pub fn app(self, args: Vector<Expr>, env: &normal::Env) -> Either<Neutral, UExpr> {
@@ -29,22 +29,6 @@ impl Head {
 			_ => Either::Left(Neutral::new(self, args)),
 		}
 	}
-
-	pub fn app_logic(self, args: Vector<Expr>, env: &normal::Env) -> Either<Neutral, Logic> {
-		use shared::Head::*;
-		match self {
-			HOp(op, args, _) if op == "limit" && args[0] == 0u32.into() => {
-				Either::Right(Logic::ff())
-			},
-			HOp(op, h_args, rel)
-				if ((op == "limit" && h_args[0] == 1u32.into()) && rel.degen(env))
-					|| (op == "offset" && h_args[0] == 0u32.into()) =>
-			{
-				Either::Right(rel.app_logic(args))
-			},
-			_ => Either::Left(Neutral::new(self, args)),
-		}
-	}
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -53,37 +37,12 @@ pub enum Relation {
 	Lam(Vector<DataType>, Env, syntax::UExpr),
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum LogicRel {
-	Rigid(Head),
-	Lam(Vector<DataType>, Env, syntax::Logic),
-}
-
-impl LogicRel {
-	pub fn scope(&self, schemas: &Vector<Schema>) -> Vector<DataType> {
-		use LogicRel::*;
-		match self {
-			Rigid(Head::Var(l)) => schemas[l.0].types.clone().into(),
-			Rigid(Head::HOp(_, _, rel)) => rel.scope(schemas),
-			Lam(scopes, _, _) => scopes.clone(),
-		}
-	}
-}
-
 impl Relation {
 	pub fn app(self, args: Vector<Expr>) -> UExpr {
 		use Relation::*;
 		match self {
 			Rigid(head) => UExpr::apply(head, args),
 			Lam(_, env, body) => (&env.append(args)).eval(body),
-		}
-	}
-
-	pub fn app_logic(self, args: Vector<Expr>) -> Logic {
-		use Relation::*;
-		match self {
-			Rigid(head) => Logic::App(Neutral::new(head, args)),
-			Lam(_, env, body) => (&env.append(args)).eval(body.as_logic()),
 		}
 	}
 
@@ -97,12 +56,7 @@ impl Relation {
 	}
 
 	fn degen(&self, env: &normal::Env) -> bool {
-		use Relation::*;
-		let lrel = match self.clone() {
-			Rigid(head) => LogicRel::Rigid(head),
-			Lam(scope, env, body) => LogicRel::Lam(scope, env, body.as_logic()),
-		};
-		env.unify(UExpr::sum(self.clone()), UExpr::logic(Logic::Exists(lrel)))
+		env.unify(UExpr::sum(self.clone()), UExpr::logic(Logic::Exists(self.clone())))
 	}
 }
 
@@ -166,27 +120,13 @@ impl Eval<syntax::UExpr, UExpr> for &Env {
 		match source {
 			Add(us) => us.into_iter().flat_map(|u| self.eval(u)).collect(),
 			Mul(us) => us.into_iter().map(|u| self.eval(u)).fold(UExpr::one(), UExpr::mul),
-			u @ (Squash(_) | Not(_)) => UExpr::logic(self.eval(u.as_logic())),
+			Squash(u) => UExpr::logic(Logic::squash(self.eval(*u))),
+			Not(u) => UExpr::logic(!Logic::squash(self.eval(*u))),
 			Sum(scopes, body) => UExpr::sum(Relation::Lam(scopes, self.clone(), *body)),
 			Pred(logic) => UExpr::logic(self.eval(logic)),
 			App(table, args) => {
 				let rel: Relation = self.eval(table);
 				rel.app(self.eval(args))
-			},
-		}
-	}
-}
-
-impl Eval<syntax::Application, Logic> for &Env {
-	fn eval(self, syntax::Application(table, args): syntax::Application) -> Logic {
-		use syntax::Relation::*;
-		let args = self.eval(args);
-		match table {
-			Var(l) => Logic::App(Neutral::new(Head::Var(l), args)),
-			Lam(_, body) => (&self.append(args)).eval(body.as_logic()),
-			HOp(op, hop_args, rel) => {
-				let head = Head::HOp(op, self.eval(hop_args), self.eval(rel));
-				Logic::App(Neutral::new(head, args))
 			},
 		}
 	}
@@ -208,19 +148,6 @@ impl Eval<syntax::Relation, Relation> for &Env {
 				Relation::Rigid(Head::HOp(name, self.eval(args), self.eval(rel)))
 			},
 			Lam(scopes, body) => Relation::Lam(scopes, self.clone(), *body),
-		}
-	}
-}
-
-impl Eval<syntax::Relation, LogicRel> for &Env {
-	fn eval(self, source: syntax::Relation) -> LogicRel {
-		use syntax::Relation::*;
-		match source {
-			Var(t) => LogicRel::Rigid(Head::Var(t)),
-			HOp(name, args, rel) => {
-				LogicRel::Rigid(Head::HOp(name, self.eval(args), self.eval(rel)))
-			},
-			Lam(scopes, body) => LogicRel::Lam(scopes, self.clone(), body.as_logic()),
 		}
 	}
 }

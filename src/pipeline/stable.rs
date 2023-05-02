@@ -6,15 +6,13 @@ use z3::ast::Ast;
 use z3::SatResult;
 
 use super::normal::Z3Env;
-use super::shared::{DataType, Eval, Lambda, Terms, Ctx};
+use super::shared::{Ctx, DataType, Eval, Lambda, Terms};
 use crate::pipeline::normal;
 use crate::pipeline::shared::{self, VL};
 
-pub type Expr<'c> = shared::Expr<Relation<'c>>;
-#[derive(Clone)]
-pub struct LogicRel<'c>(pub Vector<DataType>, pub Env<'c>, pub normal::Logic);
-pub type Neutral<'c> = shared::Neutral<Relation<'c>>;
-pub type Logic<'c> = shared::Logic<Relation<'c>, LogicRel<'c>, Neutral<'c>>;
+pub type Expr<'c> = shared::Expr<Relation<'c>, UExpr<'c>>;
+pub type Neutral<'c> = shared::Neutral<Relation<'c>, UExpr<'c>>;
+pub type Logic<'c> = shared::Logic<Relation<'c>, UExpr<'c>>;
 
 #[derive(Clone)]
 pub struct Relation<'c>(pub Vector<DataType>, pub Env<'c>, pub normal::UExpr);
@@ -53,34 +51,9 @@ impl<'c> Eval<normal::Relation, Relation<'c>> for &Env<'c> {
 	}
 }
 
-impl<'c> Eval<normal::LogicRel, LogicRel<'c>> for &Env<'c> {
-	fn eval(self, normal::LogicRel(scope, body): normal::LogicRel) -> LogicRel<'c> {
-		LogicRel(scope, self.clone(), *body)
-	}
-}
-
-impl<'c> Eval<normal::Neutral, Logic<'c>> for &Env<'c> {
-	fn eval(self, source: normal::Neutral) -> Logic<'c> {
-		Logic::App(self.eval(source))
-	}
-}
-
 impl<'c> Eval<normal::UExpr, UExpr<'c>> for &Env<'c> {
 	fn eval(self, source: normal::UExpr) -> UExpr<'c> {
 		source.into_iter().filter_map(|term| self.eval(term)).collect()
-	}
-}
-
-fn exprs(logic: &normal::Logic) -> Vec<&normal::Expr> {
-	use shared::Logic::*;
-	match logic {
-		Bool(_) | Pred(_, _) => vec![],
-		Eq(e1, e2) => vec![e1, e2],
-		Neg(l) => exprs(l),
-		And(ls) => ls.iter().flat_map(exprs).collect(),
-		Or(ls) => ls.iter().flat_map(exprs).collect(),
-		App(_) => vec![],
-		Exists(normal::LogicRel(_, l)) => exprs(l),
 	}
 }
 
@@ -168,7 +141,7 @@ impl<'c> Eval<normal::Term, Option<Term<'c>>> for &Env<'c> {
 		let vars = shared::Expr::vars(subst.len(), source.scope.clone());
 		let exprs = vars
 			.iter()
-			.chain(exprs(&source.logic))
+			.chain(source.logic.exprs())
 			.filter(|e| e.in_scope(subst.len() + source.scope.len()))
 			.collect_vec();
 		let z3_asts = exprs.iter().map(|&e| (&z3_env).eval(e)).collect_vec();
@@ -177,20 +150,27 @@ impl<'c> Eval<normal::Term, Option<Term<'c>>> for &Env<'c> {
 		solver.assert(&constraint);
 		let handle = solver.get_context().handle();
 		let checked = crossbeam::atomic::AtomicCell::new(false);
+		let interrupted = crossbeam::atomic::AtomicCell::new(false);
 		let (ids, res) = crossbeam::thread::scope(|s| {
 			let checked = &checked;
+			let interrupted = &interrupted;
 			let p = crossbeam::sync::Parker::new();
 			let u = p.unparker().clone();
 			s.spawn(move |_| {
 				p.park_timeout(Ctx::timeout());
 				if !checked.load() {
 					handle.interrupt();
+					interrupted.store(true);
 				}
 			});
 			let (ids, res) = solver.get_implied_equalities(z3_asts.as_slice());
 			checked.store(true);
 			u.unpark();
-			(ids, res)
+			if interrupted.load() {
+				(vec![], SatResult::Unknown)
+			} else {
+				(ids, res)
+			}
 		})
 		.unwrap();
 		solver.pop(1);

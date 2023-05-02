@@ -1,12 +1,11 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::io::Write;
+use std::io::{Read, Write};
 use std::ops::Deref;
 use std::process::{Command, Stdio};
 use std::rc::Rc;
 
 use imbl::Vector;
-use isoperm::wrapper::Isoperm;
 use itertools::Itertools;
 use z3::ast::{Ast, Bool, Dynamic, Int};
 use z3::SatResult;
@@ -14,7 +13,7 @@ use z3::SatResult;
 use super::normal::Term;
 use super::shared::{self, Ctx};
 use crate::pipeline::normal::{Expr, HOpMap, RelHOpMap, Relation, UExpr, Z3Env};
-use crate::pipeline::shared::{DataType, Eval, Head, VL};
+use crate::pipeline::shared::{DataType, Eval};
 
 pub trait Unify<T> {
 	fn unify(self, t1: T, t2: T) -> bool;
@@ -114,6 +113,37 @@ fn perm_equiv<T: Ord + Clone>(v1: &Vector<T>, v2: &Vector<T>) -> bool {
 	}
 }
 
+fn perms<T, V>(types: Vec<T>, vars: Vec<V>) -> impl Iterator<Item = Vec<V>>
+where
+	T: Ord + PartialEq + Clone,
+	V: Clone,
+{
+	use itertools::Either;
+	let sort_perm = permutation::sort(types.as_slice());
+	let sorted_scopes = sort_perm.apply_slice(types.as_slice());
+	let sorted_vars = sort_perm.apply_slice(vars.as_slice());
+	let groups = sorted_scopes.iter().group_by(|a| *a);
+	let group_lengths = if types.is_empty() {
+		Either::Left(std::iter::once(0))
+	} else {
+		Either::Right(groups.into_iter().map(|(_, group)| group.count()))
+	};
+	let mut level = 0;
+	let inv_sort_perm = sort_perm.inverse();
+	group_lengths
+		.map(|length| {
+			let perms = (level..level + length).permutations(length);
+			level += length;
+			perms
+		})
+		.multi_cartesian_product()
+		.map(move |perms| {
+			let perm_vec = perms.into_iter().flatten().collect_vec();
+			let permute = &inv_sort_perm * &permutation::Permutation::from_vec(perm_vec);
+			permute.apply_slice(sorted_vars.as_slice())
+		})
+}
+
 impl<'c> Unify<&Term> for &UnifyEnv<'c> {
 	fn unify(self, t1: &Term, t2: &Term) -> bool {
 		if !perm_equiv(&t1.scope, &t2.scope) {
@@ -121,87 +151,34 @@ impl<'c> Unify<&Term> for &UnifyEnv<'c> {
 		}
 		log::info!("Unifying\n{}\n{}", t1, t2);
 		let UnifyEnv(ctx, subst1, subst2) = self;
-		type Var<'e, 'c> = isoperm::wrapper::Var<usize, &'e Dynamic<'c>, &'e Expr>;
-		fn extract<'v, 'c>(
-			t: &'v Term,
-			subst: &'v Vector<Dynamic<'c>>,
-		) -> (Vec<(usize, Vec<Var<'v, 'c>>)>, HashMap<Var<'v, 'c>, DataType>) {
-			let scope = subst.len()..subst.len() + t.scope.len();
-			let mut args: HashMap<_, _> =
-				scope.clone().map(Var::Local).zip(t.scope.clone()).collect();
-			let constraints = t
-				.apps
-				.iter()
-				.filter_map(|app| {
-					let translate = |arg: &'v Expr| match arg {
-						Expr::Var(VL(l), _) if scope.contains(l) => Var::Local(*l),
-						Expr::Var(VL(l), ty) => {
-							let v = &subst[*l];
-							args.insert(Var::Global(v), ty.clone());
-							Var::Global(v)
-						},
-						arg => {
-							args.insert(Var::Expr(arg), arg.ty());
-							Var::Expr(arg)
-						},
-					};
-					match &app.head {
-						&Head::Var(VL(t)) => Some((t, app.args.iter().map(translate).collect())),
-						Head::HOp(_, _, _) => None,
-					}
-				})
-				.collect();
-			(constraints, args)
-		}
-		let (constraints1, args1) = extract(t1, subst1);
-		let (constraints2, args2) = extract(t2, subst2);
 		let z3_ctx = ctx.z3_ctx();
 		let vars1 = t1.scope.iter().map(|ty| ctx.var(ty, "v")).collect();
 		let subst1 = subst1 + &vars1;
-		if let Ok(mut perm) = Isoperm::new(constraints1, args1, constraints2, args2) {
-			perm.result()
-				.map(|bij| {
-					bij.into_iter()
-						.filter_map(|(v1, v2)| match (v1, v2) {
-							(&Var::Local(l1), &Var::Local(l2)) => Some((l2, subst1[l1].clone())),
-							_ => None,
-						})
-						.sorted_by_key(|(l, _)| *l)
-						.map(|(_, v)| v)
-						.collect_vec()
-				})
-				.take(24)
-				.any(|vars2| {
-					assert_eq!(vars2.len(), t2.scope.len());
-					log::info!("Permutation: {:?}", vars2);
-					let subst2 = subst2 + &vars2.into();
-					let h_ops = Rc::new(RefCell::new(HashMap::new()));
-					let rel_h_ops = Rc::new(RefCell::new(HashMap::new()));
-					let env1 =
-						&Z3Env(ctx.clone(), subst1.clone(), h_ops.clone(), rel_h_ops.clone());
-					let env2 =
-						&Z3Env(ctx.clone(), subst2.clone(), h_ops.clone(), rel_h_ops.clone());
-					let (logic1, apps1): (_, Int<'c>) = (env1.eval(&t1.logic), env1.eval(&t1.apps));
-					let (logic2, apps2) = (env2.eval(&t2.logic), env2.eval(&t2.apps));
-					let apps_equiv = apps1._eq(&apps2);
-					let equiv = Bool::and(z3_ctx, &[&logic1.iff(&logic2), &apps_equiv]);
-					let solver = &ctx.solver;
-					solver.push();
-					solver.assert(&logic1);
-					solver.assert(&logic2);
-					let h_ops_equiv = extract_equiv(
-						ctx.clone(),
-						h_ops.borrow().deref(),
-						rel_h_ops.borrow().deref(),
-					);
-					solver.pop(1);
-					log::info!("{}", equiv);
-					log::info!("{}", h_ops_equiv);
-					smt(solver, h_ops_equiv.implies(&equiv))
-				})
-		} else {
-			false
-		}
+		perms(t1.scope.iter().cloned().collect(), vars1.into_iter().collect()).take(24).any(
+			|vars2| {
+				assert_eq!(vars2.len(), t2.scope.len());
+				log::info!("Permutation: {:?}", vars2);
+				let subst2 = subst2 + &vars2.into();
+				let h_ops = Rc::new(RefCell::new(HashMap::new()));
+				let rel_h_ops = Rc::new(RefCell::new(HashMap::new()));
+				let env1 = &Z3Env(ctx.clone(), subst1.clone(), h_ops.clone(), rel_h_ops.clone());
+				let env2 = &Z3Env(ctx.clone(), subst2.clone(), h_ops.clone(), rel_h_ops.clone());
+				let (logic1, apps1): (_, Int<'c>) = (env1.eval(&t1.logic), env1.eval(&t1.apps));
+				let (logic2, apps2) = (env2.eval(&t2.logic), env2.eval(&t2.apps));
+				let equiv = logic1
+					.ite(&apps1, &Int::from_i64(z3_ctx, 0))
+					._eq(&logic2.ite(&apps2, &Int::from_i64(z3_ctx, 0)));
+				let solver = &ctx.solver;
+				solver.push();
+				solver.assert(&Bool::or(z3_ctx, &[&logic1, &logic2]));
+				let h_ops_equiv =
+					extract_equiv(ctx.clone(), h_ops.borrow().deref(), rel_h_ops.borrow().deref());
+				solver.pop(1);
+				log::info!("{}", equiv);
+				log::info!("{}", h_ops_equiv);
+				smt(solver, h_ops_equiv.implies(&equiv))
+			},
+		)
 	}
 }
 
@@ -210,21 +187,62 @@ pub(crate) fn smt<'c>(solver: &'c z3::Solver, pred: Bool<'c>) -> bool {
 		.dump_smtlib(pred.not())
 		.replace(" and", " true")
 		.replace(" or", " false")
+		.replace(")and", ") true")
+		.replace(")or", ") false")
 		.replace("(* ", "(* 1 ")
 		.replace("(+ ", "(+ 0 ");
 	let smt = smt.strip_prefix("; \n(set-info :status )").unwrap_or(smt.as_str());
-	let timeout = "--tlimit=".to_string() + &Ctx::timeout().as_millis().to_string();
-	let mut child = Command::new("cvc5")
-		.args([&timeout, "--strings-exp"])
-		.stdin(Stdio::piped())
-		.stdout(Stdio::piped())
-		.spawn()
-		.expect("Failed to spawn child process");
-	let mut stdin = child.stdin.take().expect("Failed to open stdin");
-	stdin.write_all("(set-logic ALL)".as_bytes()).unwrap();
-	stdin.write_all(smt.as_bytes()).unwrap();
-	drop(stdin);
-	let output = child.wait_with_output().expect("Failed to read stdout");
-	let result = String::from_utf8(output.stdout).unwrap();
-	dbg!(result).ends_with("unsat\n")
+	let res = crossbeam::atomic::AtomicCell::new(false);
+	crossbeam::thread::scope(|s| {
+		let res = &res;
+		let p = crossbeam::sync::Parker::new();
+		let u1 = p.unparker().clone();
+		let u2 = p.unparker().clone();
+		let mut z3_cmd = Command::new("z3")
+			.args(["-in"])
+			.stdin(Stdio::piped())
+			.stdout(Stdio::piped())
+			.spawn()
+			.expect("Failed to spawn child process for z3.");
+		let mut z3_in = z3_cmd.stdin.take().expect("Failed to open stdin.");
+		let mut z3_out = z3_cmd.stdout.take().expect("Failed to read stdout");
+		let mut cvc5_cmd = Command::new("cvc5")
+			.args(["--strings-exp"])
+			.stdin(Stdio::piped())
+			.stdout(Stdio::piped())
+			.spawn()
+			.expect("Failed to spawn child process for cvc5.");
+		let mut cvc5_in = cvc5_cmd.stdin.take().expect("Failed to open stdin.");
+		let mut cvc5_out = cvc5_cmd.stdout.take().expect("Failed to capture stdout");
+		s.spawn(move |_| {
+			z3_in.write_all(smt.as_bytes()).unwrap();
+			drop(z3_in);
+			let mut result = String::new();
+			z3_out.read_to_string(&mut result).expect("Failed to read stdout.");
+			let provable = dbg!(&result).starts_with("unsat\n");
+			res.fetch_or(provable);
+			if !result.starts_with("unknown\n") {
+				u1.unpark();
+			}
+		});
+		s.spawn(move |_| {
+			cvc5_in.write_all("(set-logic ALL)".as_bytes()).unwrap();
+			cvc5_in.write_all(smt.as_bytes()).unwrap();
+			drop(cvc5_in);
+			let mut result = String::new();
+			cvc5_out.read_to_string(&mut result).expect("Failed to read stdout.");
+			let provable = dbg!(&result).ends_with("unsat\n");
+			res.fetch_or(provable);
+			if !result.ends_with("unknown\n") {
+				u2.unpark();
+			}
+		});
+		p.park_timeout(Ctx::timeout());
+		z3_cmd.kill().unwrap();
+		z3_cmd.wait().unwrap();
+		cvc5_cmd.kill().unwrap();
+		cvc5_cmd.wait().unwrap();
+		res.load()
+	})
+	.unwrap()
 }

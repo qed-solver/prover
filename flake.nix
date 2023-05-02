@@ -20,17 +20,17 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         # Switch to nightly toolchain
-        craneLib = crane.lib.${system}.overrideToolchain fenix.packages.${system}.minimal.toolchain;
+        craneLib = crane.lib.${system}.overrideToolchain fenix.packages.${system}.complete.toolchain;
         packageDef = with pkgs; {
           src = craneLib.cleanCargoSource ./.;
-          buildInputs = with pkgs; [ z3 ];
+          buildInputs = with pkgs; [ z3_4_11 cvc5 ];
           nativeBuildInputs = with pkgs; [ rustPlatform.bindgenHook makeWrapper ]
             ++ lib.optionals stdenv.isDarwin [ libiconv ];
         };
         cargoArtifacts = craneLib.buildDepsOnly packageDef;
         cosette-prover = craneLib.buildPackage (packageDef // {
           inherit cargoArtifacts;
-          postInstall = with pkgs; "wrapProgram $out/bin/cosette-prover --prefix PATH : ${cvc5}/bin";
+          postInstall = with pkgs; "wrapProgram $out/bin/cosette-prover --set PATH ${lib.makeBinPath [ cvc5 z3_4_11 ]}";
         });
       in {
         packages.default = cosette-prover;

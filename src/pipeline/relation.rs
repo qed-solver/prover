@@ -56,9 +56,9 @@ pub enum Relation {
 		kind: JoinKind,
 	},
 	Correlate(Box<Relation>, Box<Relation>),
-	Union(Box<Relation>, Box<Relation>),
+	Union(Vec<Relation>),
+	Intersect(Vec<Relation>),
 	Except(Box<Relation>, Box<Relation>),
-	Intersect(Box<Relation>, Box<Relation>),
 	Distinct(Box<Relation>),
 	Values {
 		schema: Vec<DataType>,
@@ -84,17 +84,14 @@ impl Relation {
 			Singleton => Vector::new(),
 			Scan(table) => schemas[table.0].types.clone().into(),
 			Filter { source, .. } => source.scope(schemas),
-			Project { columns, .. } => {
-				columns.iter().map(|expr| expr.ty()).collect()
-			},
-			Aggregate { columns, .. } => {
-				columns.iter().map(|agg| agg.ty.clone()).collect()
-			}
+			Project { columns, .. } => columns.iter().map(|expr| expr.ty()).collect(),
+			Aggregate { columns, .. } => columns.iter().map(|agg| agg.ty.clone()).collect(),
 			Join { left, kind: JoinKind::Semi | JoinKind::Anti, .. } => left.scope(schemas),
 			Join { left, right, .. } | Correlate(left, right) => {
 				left.scope(schemas) + right.scope(schemas)
 			},
-			Union(rel1, _) | Except(rel1, _) | Intersect(rel1, _) => rel1.scope(schemas),
+			Union(rels) | Intersect(rels) => rels[0].scope(schemas),
+			Except(rel1, _) => rel1.scope(schemas),
 			Distinct(rel) => rel.scope(schemas),
 			Values { schema, .. } => schema.clone().into(),
 			Sort { source, .. } => source.scope(schemas),
@@ -260,21 +257,29 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 			},
 			// R(x) union all S(y)
 			// λx. R(x) + S(x)
-			Union(left, right) => {
+			Union(sources) => {
 				let body_lvl = lvl + scopes.len();
 				let vars = vars(lvl, scopes.clone());
-				let left = Env(schemas, subst, body_lvl).eval(*left);
-				let right = Env(schemas, subst, body_lvl).eval(*right);
-				Rel::lam(scopes, UExpr::App(left, vars.clone()) + UExpr::App(right, vars))
+				let sum = sources
+					.into_iter()
+					.map(|source| {
+						UExpr::App(Env(schemas, subst, body_lvl).eval(source), vars.clone())
+					})
+					.collect();
+				Rel::lam(scopes, UExpr::Add(sum))
 			},
 			// R(x) intersect S(y)
 			// λx. ‖R(x) × S(x)‖
-			Intersect(left, right) => {
+			Intersect(sources) => {
 				let body_lvl = lvl + scopes.len();
 				let vars = vars(lvl, scopes.clone());
-				let left = Env(schemas, subst, body_lvl).eval(*left);
-				let right = Env(schemas, subst, body_lvl).eval(*right);
-				Rel::lam(scopes, UExpr::squash(UExpr::App(left, vars.clone()) * UExpr::App(right, vars)))
+				let prod = sources
+					.into_iter()
+					.map(|source| {
+						UExpr::App(Env(schemas, subst, body_lvl).eval(source), vars.clone())
+					})
+					.collect();
+				Rel::lam(scopes, UExpr::squash(UExpr::Mul(prod)))
 			},
 			// R(x) except S(y)
 			// λx. ‖R(x) × ¬S(x)‖
@@ -283,7 +288,10 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 				let vars = vars(lvl, scopes.clone());
 				let left = Env(schemas, subst, body_lvl).eval(*left);
 				let right = Env(schemas, subst, body_lvl).eval(*right);
-				Rel::lam(scopes, UExpr::squash(UExpr::App(left, vars.clone()) * !UExpr::App(right, vars)))
+				Rel::lam(
+					scopes,
+					UExpr::squash(UExpr::App(left, vars.clone()) * !UExpr::App(right, vars)),
+				)
 			},
 			// Distinct R(x)
 			// λx. ‖R(x)‖
@@ -352,10 +360,20 @@ pub struct AggCall {
 	op: String,
 	#[serde(rename = "operand")]
 	args: Vec<Expr>,
+	#[serde(default = "default_distinct")]
 	distinct: bool,
+	#[serde(default = "default_ignore_nulls")]
 	ignore_nulls: bool,
 	#[serde(alias = "type")]
 	ty: DataType,
+}
+
+fn default_distinct() -> bool {
+	false
+}
+
+fn default_ignore_nulls() -> bool {
+	true
 }
 
 impl Eval<(AggCall, Relation), syntax::Expr> for Env<'_> {
@@ -368,16 +386,16 @@ impl Eval<(AggCall, Relation), syntax::Expr> for Env<'_> {
 		};
 		let source = if agg.distinct { Relation::Distinct(source.into()) } else { source };
 		let source = if agg.ignore_nulls {
-			let conditions = tys.into_iter().enumerate().map(|(i, ty)| Expr::Op {
-				op: "IS NOT NULL".into(),
-				args: vec![Expr::Col { column: VL(i), ty }],
-				ty: DataType::Boolean,
-			}).collect_vec();
-			let condition = Expr::Op {
-				op: "AND".into(),
-				args: conditions,
-				ty: DataType::Boolean,
-			};
+			let conditions = tys
+				.into_iter()
+				.enumerate()
+				.map(|(i, ty)| Expr::Op {
+					op: "IS NOT NULL".into(),
+					args: vec![Expr::Col { column: VL(i), ty }],
+					ty: DataType::Boolean,
+				})
+				.collect_vec();
+			let condition = Expr::Op { op: "AND".into(), args: conditions, ty: DataType::Boolean };
 			Relation::Filter { condition, source: source.into() }
 		} else {
 			source
@@ -446,6 +464,7 @@ impl Eval<Expr, syntax::Expr> for Env<'_> {
 					if cast { args.into_iter().map(Expr::into_real).collect() } else { args };
 				Op(op, self.eval(args), ty)
 			},
+			Expr::HOp { ref op, .. } if op == "EXISTS" => Log(Box::new(self.eval(source))),
 			Expr::HOp { op, args, rel, ty } => HOp(op, self.eval(args), self.eval(rel), ty),
 		}
 	}
@@ -457,22 +476,21 @@ impl Eval<Expr, Logic> for Env<'_> {
 			Expr::Op { op, args, ty: DataType::Boolean } => match op.to_uppercase().as_str() {
 				"TRUE" => Logic::tt(),
 				"FALSE" => Logic::ff(),
-				"=" if args.iter().any(|a| a.ty() == DataType::Real) => {
+				"<=>" => Logic::Eq(self.eval(args[0].clone()), self.eval(args[1].clone())),
+				"=" | "<>" | "!=" if args.iter().any(|a| a.ty() == DataType::Real) => {
 					let args = args.into_iter().map(Expr::into_real).collect_vec();
-					Logic::Eq(self.eval(args[0].clone()), self.eval(args[1].clone()))
+					Logic::Bool(self.eval(Expr::Op { op, args, ty: DataType::Boolean }))
 				},
-				"=" => Logic::Eq(self.eval(args[0].clone()), self.eval(args[1].clone())),
-				"<>" => !Logic::Eq(self.eval(args[0].clone()), self.eval(args[1].clone())),
 				"AND" => Logic::And(args.into_iter().map(|arg| self.eval(arg)).collect()),
 				"OR" => Logic::Or(args.into_iter().map(|arg| self.eval(arg)).collect()),
-				"NOT" => Logic::not(self.eval(args[0].clone())),
+				// "NOT" => Logic::not(self.eval(args[0].clone())),
 				"IS NULL" => Logic::is_null(self.eval(args[0].clone())),
 				"IS NOT NULL" => !Logic::is_null(self.eval(args[0].clone())),
 				_ => Logic::Bool(self.eval(source)),
 			},
 			Expr::Col { ty: DataType::Boolean, .. } => Logic::Bool(self.eval(source)),
 			Expr::HOp { op, args, rel, ty: DataType::Boolean } => match op.as_str() {
-				"IN" => Logic::App(syntax::Application(self.eval(*rel), self.eval(args).into())),
+				// "IN" => Logic::squash(UExpr::App(self.eval(*rel), self.eval(args).into())),
 				"EXISTS" => Logic::Exists(self.eval(*rel)),
 				_ => Logic::Bool(self.eval(source)),
 			},

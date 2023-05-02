@@ -15,7 +15,7 @@ use crate::pipeline::shared::DataType;
 /// when having the explict definition.
 /// Here the lambda term uses a vector of data types to bind every components of the input tuple.
 /// That is, each component is treated as a unique variable that might appear in the function body.
-pub type Expr = shared::Expr<Relation>;
+pub type Expr = shared::Expr<Relation, UExpr>;
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Application(pub Relation, pub Vector<Expr>);
 
@@ -26,7 +26,7 @@ pub enum Relation {
 	Lam(Vector<DataType>, Box<UExpr>),
 }
 
-pub type Logic = shared::Logic<Relation, Relation, Application>;
+pub type Logic = shared::Logic<Relation, UExpr>;
 
 impl Relation {
 	pub fn lam(scopes: Vector<DataType>, body: impl Into<Box<UExpr>>) -> Relation {
@@ -86,18 +86,6 @@ impl UExpr {
 
 	pub fn squash(body: impl Into<Box<UExpr>>) -> Self {
 		Squash(body.into())
-	}
-
-	pub fn as_logic(self) -> Logic {
-		match self {
-			Add(us) => Logic::Or(us.into_iter().map(UExpr::as_logic).collect()),
-			Mul(us) => Logic::And(us.into_iter().map(UExpr::as_logic).collect()),
-			Squash(u) => u.as_logic(),
-			Not(u) => !u.as_logic(),
-			Sum(scopes, body) => Logic::Exists(Relation::Lam(scopes, body)),
-			Pred(logic) => logic,
-			App(table, args) => Logic::App(Application(table, args)),
-		}
 	}
 }
 
