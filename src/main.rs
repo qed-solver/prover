@@ -12,11 +12,9 @@ use env_logger::{Builder, Env, Target};
 use itertools::Itertools;
 use walkdir::WalkDir;
 
-use crate::pipeline::relation::Input;
-use crate::solver::Payload;
+use crate::pipeline::{unify, Input};
 
 mod pipeline;
-mod solver;
 
 fn visit<P: AsRef<Path>>(dir: P, mut cb: impl FnMut(usize, &Path)) -> io::Result<()> {
 	WalkDir::new(dir)
@@ -47,7 +45,7 @@ fn main() -> io::Result<()> {
 	for arg in std::env::args() {
 		visit(arg, |i, path| {
 			use CosetteResult::*;
-			let file = File::open(&path).unwrap();
+			let file = File::open(path).unwrap();
 			let mut buf_reader = BufReader::new(file);
 			let mut contents = String::new();
 			println!("#{}: {}", i, path.to_string_lossy().as_ref());
@@ -56,8 +54,7 @@ fn main() -> io::Result<()> {
 			let result =
 				std::panic::catch_unwind(|| match serde_json::from_str::<Input>(&contents) {
 					Ok(rel) => {
-						let payload = Payload::from(rel);
-						let provable = payload.check();
+						let provable = unify(rel);
 						println!(
 							"Equivalence is {}provable for {}",
 							if provable { "" } else { "not " },

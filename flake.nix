@@ -37,7 +37,7 @@
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [ cosette-prover ];
-          packages = with pkgs; [ rust-analyzer ];
+          packages = with pkgs; [ rust-analyzer julia-bin ] ++ lib.optionals stdenv.isLinux [ linuxPackages.perf ];
         };
       });
 

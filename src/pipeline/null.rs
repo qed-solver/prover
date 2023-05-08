@@ -230,19 +230,19 @@ impl<'c> Ctx<'c> {
 			// NULL, b
 			&self.bool.variants[0].tester.apply(&[e2]).as_bool().unwrap().ite(
 				// NULL, NULL
-				&e2,
+				e2,
 				// NULL, Some(b)
 				&self.bool.variants[1].accessors[0].apply(&[e2]).as_bool().unwrap().ite(
 					// NULL, Some(True)
 					&self.bool_none(),
 					// NULL, Some(False)
-					&e2,
+					e2,
 				),
 			),
 			// Some(a), b
 			&self.bool.variants[1].accessors[0].apply(&[e1]).as_bool().unwrap().ite(
 				// Some(True), b
-				&e2,
+				e2,
 				// Some(False), b
 				&self.bool_some(Bool::from_bool(ctx, false)),
 			),
@@ -255,11 +255,11 @@ impl<'c> Ctx<'c> {
 			// NULL, b
 			&self.bool.variants[0].tester.apply(&[e2]).as_bool().unwrap().ite(
 				// NULL, NULL
-				&e2,
+				e2,
 				// NULL, Some(b)
 				&self.bool.variants[1].accessors[0].apply(&[e2]).as_bool().unwrap().ite(
 					// NULL, Some(True)
-					&e2,
+					e2,
 					// NULL, Some(False)
 					&self.bool_none(),
 				),
@@ -269,7 +269,7 @@ impl<'c> Ctx<'c> {
 				// Some(True), b
 				&self.bool_some(Bool::from_bool(ctx, true)),
 				// Some(False), b
-				&e2,
+				e2,
 			),
 		)
 	}

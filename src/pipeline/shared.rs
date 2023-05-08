@@ -12,7 +12,7 @@ use indenter::indented;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
-use z3::ast::{Ast, Datatype, Dynamic};
+use z3::ast::{Ast, Dynamic};
 use z3::{Context, FuncDecl, Sort};
 
 pub trait Eval<S, T> {
@@ -497,7 +497,7 @@ impl<'c> Ctx<'c> {
 	}
 
 	pub fn var(&self, ty: &DataType, prefix: &str) -> Dynamic<'c> {
-		Dynamic::fresh_const(self.solver.get_context(), prefix, &self.sort(ty)).into()
+		Dynamic::fresh_const(self.solver.get_context(), prefix, &self.sort(ty))
 	}
 
 	pub fn app(

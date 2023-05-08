@@ -8,28 +8,9 @@ use serde::{Deserialize, Serialize};
 use crate::pipeline::shared::{DataType, Eval, Schema, VL};
 use crate::pipeline::syntax::{Logic, UExpr};
 use crate::pipeline::{shared, syntax};
-use crate::solver::Payload;
-
-#[derive(Serialize, Deserialize)]
-pub struct Input {
-	schemas: Vec<Schema>,
-	queries: (Relation, Relation),
-	help: (String, String),
-}
-
-impl From<Input> for Payload {
-	fn from(input: Input) -> Self {
-		let Input { schemas, queries: (r1, r2), help } = input;
-		let subst = vector![];
-		let env = Env(&schemas, &subst, 0);
-		log::info!("Schemas:\n{:?}", schemas);
-		log::info!("Input:\n{}\n{}", help.0, help.1);
-		Payload(schemas.clone(), env.eval(r1), env.eval(r2))
-	}
-}
 
 #[derive(Copy, Clone)]
-struct Env<'e>(&'e [Schema], &'e Vector<syntax::Expr>, usize);
+pub struct Env<'e>(pub &'e [Schema], pub &'e Vector<syntax::Expr>, pub usize);
 
 fn vars(level: usize, types: Vector<DataType>) -> Vector<syntax::Expr> {
 	types.into_iter().enumerate().map(|(i, ty)| syntax::Expr::Var(VL(level + i), ty)).collect()
@@ -301,7 +282,7 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 			},
 			// Values ((a1, b1), (a2, b2), (a3, b3))
 			// λx, y. [x = a1] × [y = b1] + [x = a2] × [y = b2] + [x = a3] × [y = b3]
-			Values { schema, content } => {
+			Values { schema: _, content } => {
 				let vars = vars(lvl, scopes.clone());
 				let env = Env(schemas, subst, lvl + scopes.len());
 				let rows = content.into_iter().map(|row| {
@@ -456,9 +437,9 @@ impl Eval<Expr, syntax::Expr> for Env<'_> {
 	fn eval(self, source: Expr) -> syntax::Expr {
 		use shared::Expr::*;
 		match source {
-			Expr::Col { column, ty } => self.1[column.0].clone(),
+			Expr::Col { column, ty: _ } => self.1[column.0].clone(),
 			Expr::Op { op, args, ty } => {
-				let cast = matches!(op.as_str(), "+" | "-" | "*" | "/" if &ty == &DataType::Real)
+				let cast = matches!(op.as_str(), "+" | "-" | "*" | "/" if ty == DataType::Real)
 					|| matches!(op.as_str(), ">" | "<" | ">=" | "<=" | "=" if args.iter().any(|e| e.ty() == DataType::Real));
 				let args =
 					if cast { args.into_iter().map(Expr::into_real).collect() } else { args };
@@ -489,7 +470,7 @@ impl Eval<Expr, Logic> for Env<'_> {
 				_ => Logic::Bool(self.eval(source)),
 			},
 			Expr::Col { ty: DataType::Boolean, .. } => Logic::Bool(self.eval(source)),
-			Expr::HOp { op, args, rel, ty: DataType::Boolean } => match op.as_str() {
+			Expr::HOp { op, args: _, rel, ty: DataType::Boolean } => match op.as_str() {
 				// "IN" => Logic::squash(UExpr::App(self.eval(*rel), self.eval(args).into())),
 				"EXISTS" => Logic::Exists(self.eval(*rel)),
 				_ => Logic::Bool(self.eval(source)),

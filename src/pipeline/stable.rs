@@ -113,21 +113,20 @@ fn var_elim<'c>(
 
 	fn prune<'c>(
 		v: VL,
-		keys: &HashSet<VL>,
 		deps_map: &mut BTreeMap<VL, HashSet<VL>>,
 		var_subst: &mut Vector<Option<Expr<'c>>>,
 		exprs: &Vec<normal::Expr>,
 		env: &Env<'c>,
 	) {
 		if let Some((v, deps)) = deps_map.remove_entry(&v) {
-			deps.into_iter().for_each(|w| prune(w, keys, deps_map, var_subst, exprs, env));
+			deps.into_iter().for_each(|w| prune(w, deps_map, var_subst, exprs, env));
 			let i = v.0 - env.0.len();
 			var_subst[i] = Some((&env.append(var_subst.clone())).eval(exprs[i].clone()));
 		};
 	}
 
 	while let Some((&v, _)) = deps_map.first_key_value() {
-		prune(v, &keys, &mut deps_map, &mut var_subst, &exprs, env);
+		prune(v, &mut deps_map, &mut var_subst, &exprs, env);
 	}
 	(scope, var_subst)
 }

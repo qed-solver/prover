@@ -268,7 +268,7 @@ impl Eval<partial::Relation, Relation> for &Env {
 				Either::Right(uexpr) => env.eval(uexpr),
 			},
 			Lam(scope, clos_env, body) => {
-				let vars = shared::Expr::vars(context.len(), scope.clone());
+				let vars = shared::Expr::vars(context.len(), scope);
 				let body: partial::UExpr = (&clos_env.append(vars)).eval(body);
 				env.eval(body)
 			},
