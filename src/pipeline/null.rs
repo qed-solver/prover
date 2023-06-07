@@ -144,8 +144,6 @@ ctx_impl!(
 	};
 	Bool {
 		not(x) -> Bool;
-		// and[x, y] -> Bool;
-		// or[x, y] -> Bool;
 		_eq(x, y) -> Bool;
 	};
 	String {
@@ -204,9 +202,7 @@ impl<'c> Ctx<'c> {
 		let ctx = self.solver.get_context();
 		self.bool.variants[0].tester.apply(&[expr]).as_bool().unwrap().ite(
 			&Bool::from_bool(ctx, false),
-			&self.bool.variants[1].accessors[0]
-				.apply(&[expr])
-				._eq(&Bool::from_bool(ctx, true).into()),
+			&self.bool.variants[1].accessors[0].apply(&[expr]).as_bool().unwrap(),
 		)
 	}
 

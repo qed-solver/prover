@@ -45,11 +45,33 @@ pub struct Schema {
 }
 
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub enum Expr<R, U> {
+pub enum Expr<U, R, A> {
 	Var(VL, DataType),
-	Log(Box<Logic<R, U>>),
-	Op(String, Vec<Expr<R, U>>, DataType),
-	HOp(String, Vec<Expr<R, U>>, Box<R>, DataType),
+	Log(Box<Logic<U, Expr<U, R, A>>>),
+	Agg(A),
+	Op(String, Vec<Expr<U, R, A>>, DataType),
+	HOp(String, Vec<Expr<U, R, A>>, Box<R>, DataType),
+}
+
+pub trait Typed {
+	fn ty(&self) -> DataType;
+}
+
+impl<U, R, A: Typed> Typed for Expr<U, R, A> {
+	fn ty(&self) -> DataType {
+		use Expr::*;
+		match self {
+			Var(_, ty) | Op(_, _, ty) | HOp(_, _, _, ty) => ty.clone(),
+			Log(_) => DataType::Boolean,
+			Agg(agg) => agg.ty(),
+		}
+	}
+}
+
+impl<U, R, A: Typed> Expr<U, R, A> {
+	pub fn is_null(self) -> Logic<U, Self> {
+		Logic::Eq(Self::Op("NULL".to_string(), vec![], self.ty()), self)
+	}
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -62,19 +84,29 @@ impl<U: Display> Display for Lambda<U> {
 	}
 }
 
-#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub enum Logic<R, U> {
-	Bool(Expr<R, U>),
-	Eq(Expr<R, U>, Expr<R, U>),
-	Pred(String, Vec<Expr<R, U>>),
-	Neg(Box<Logic<R, U>>),
-	And(Vector<Logic<R, U>>),
-	Or(Vector<Logic<R, U>>),
-	Squash(Box<U>),
-	Exists(R),
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct Sigma<U>(pub Vector<DataType>, pub U);
+
+impl<U: Display> Display for Sigma<U> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		writeln!(f, "∑ {:?} {{", self.0)?;
+		writeln!(indented(f).with_str("\t"), "{}", self.1)?;
+		writeln!(f, "}}")
+	}
 }
 
-impl<R, U> Logic<R, U> {
+#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub enum Logic<U, E> {
+	Bool(E),
+	Eq(E, E),
+	Pred(String, Vec<E>),
+	Neg(Box<Logic<U, E>>),
+	And(Vector<Logic<U, E>>),
+	Or(Vector<Logic<U, E>>),
+	Squash(Box<U>),
+}
+
+impl<U, E> Logic<U, E> {
 	pub fn tt() -> Self {
 		Logic::And(vector![])
 	}
@@ -83,17 +115,12 @@ impl<R, U> Logic<R, U> {
 		Logic::Or(vector![])
 	}
 
-	pub fn is_null(expr: Expr<R, U>) -> Self {
-		let ty = expr.ty();
-		Self::Eq(expr, Expr::Op("NULL".to_string(), vec![], ty))
-	}
-
-	pub fn squash(uexpr: impl Into<Box<U>>) -> Self {
-		Self::Squash(uexpr.into())
+	pub fn squash(u: impl Into<Box<U>>) -> Self {
+		Logic::Squash(u.into())
 	}
 }
 
-impl<R: Clone, U: Clone> Mul for Logic<R, U> {
+impl<U: Clone, E: Clone> Mul for Logic<U, E> {
 	type Output = Self;
 
 	fn mul(self, rhs: Self) -> Self::Output {
@@ -107,7 +134,7 @@ impl<R: Clone, U: Clone> Mul for Logic<R, U> {
 	}
 }
 
-impl<R: Clone, U: Clone> Add for Logic<R, U> {
+impl<U: Clone, E: Clone> Add for Logic<U, E> {
 	type Output = Self;
 
 	fn add(self, rhs: Self) -> Self::Output {
@@ -121,7 +148,7 @@ impl<R: Clone, U: Clone> Add for Logic<R, U> {
 	}
 }
 
-impl<R, U> Not for Logic<R, U> {
+impl<U, E> Not for Logic<U, E> {
 	type Output = Self;
 
 	fn not(self) -> Self::Output {
@@ -129,7 +156,7 @@ impl<R, U> Not for Logic<R, U> {
 	}
 }
 
-impl<R: Display, U: Display> Display for Logic<R, U> {
+impl<E: Display, U: Display> Display for Logic<U, E> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		use Logic::*;
 		match self {
@@ -142,20 +169,14 @@ impl<R: Display, U: Display> Display for Logic<R, U> {
 			Or(ls) if ls.is_empty() => write!(f, "false"),
 			Or(ls) => write!(f, "({})", ls.iter().format(" ∨ ")),
 			Squash(u) => write!(f, "{}", u),
-			Exists(rel) => write!(f, "∃({})", rel),
 		}
 	}
 }
 
-impl<E, S, T, U, V> Eval<Logic<S, U>, Logic<T, V>> for E
-where
-	E: Eval<Expr<S, U>, Expr<T, V>> + Eval<S, T> + Eval<U, V> + Clone,
-	S: Clone,
-	T: Clone,
-	U: Clone,
-	V: Clone,
+impl<Env, U: Clone, V: Clone, S: Clone, T: Clone> Eval<Logic<U, S>, Logic<V, T>> for Env
+where Env: Eval<S, T> + Eval<U, V> + Clone
 {
-	fn eval(self, source: Logic<S, U>) -> Logic<T, V> {
+	fn eval(self, source: Logic<U, S>) -> Logic<V, T> {
 		use Logic::*;
 		match source {
 			Bool(e) => Bool(self.eval(e)),
@@ -165,32 +186,22 @@ where
 			And(ls) => And(self.eval(ls)),
 			Or(ls) => Or(self.eval(ls)),
 			Squash(u) => Squash(self.eval(u)),
-			Exists(rel) => Exists(self.eval(rel)),
 		}
 	}
 }
 
-impl<R, U> Expr<R, U> {
-	pub fn ty(&self) -> DataType {
-		use Expr::*;
-		match self {
-			Var(_, ty) | Op(_, _, ty) | HOp(_, _, _, ty) => ty.clone(),
-			Log(_) => DataType::Boolean,
-		}
+impl<U: Clone, R: Clone, A: Clone> Expr<U, R, A> {
+	pub fn vars(level: usize, scope: Vector<DataType>) -> Vector<Self> {
+		scope.into_iter().enumerate().map(|(l, ty)| Expr::Var(VL(level + l), ty)).collect()
 	}
 }
 
-impl<R: Clone, U: Clone> Expr<R, U> {
-	pub fn vars(level: usize, scopes: Vector<DataType>) -> Vector<Expr<R, U>> {
-		scopes.into_iter().enumerate().map(|(l, ty)| Expr::Var(VL(level + l), ty)).collect()
-	}
-}
-
-impl<R: Display, U: Display> Display for Expr<R, U> {
+impl<U: Display, R: Display, A: Display> Display for Expr<U, R, A> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
 			Expr::Var(v, _) => write!(f, "{}", v),
 			Expr::Log(u) => write!(f, "‖{}‖", u),
+			Expr::Agg(agg) => write!(f, "{}", agg),
 			Expr::Op(op, args, _) if args.is_empty() => write!(f, "\"{}\"", op),
 			Expr::Op(op, args, _) => {
 				write!(f, "{}({})", op, args.iter().join(", "))
@@ -200,70 +211,51 @@ impl<R: Display, U: Display> Display for Expr<R, U> {
 	}
 }
 
-impl<R, U> From<u32> for Expr<R, U> {
+impl<U, R, A> From<u32> for Expr<U, R, A> {
 	fn from(n: u32) -> Self {
 		Expr::Op(n.to_string(), vec![], DataType::Integer)
 	}
 }
 
-impl<R, U> From<usize> for Expr<R, U> {
+impl<U, R, A> From<usize> for Expr<U, R, A> {
 	fn from(n: usize) -> Self {
 		Expr::Op(n.to_string(), vec![], DataType::Integer)
 	}
 }
 
-impl<R, U> From<String> for Expr<R, U> {
+impl<U, R, A> From<String> for Expr<U, R, A> {
 	fn from(s: String) -> Self {
 		Expr::Op(s, vec![], DataType::String)
 	}
 }
 
-impl<E, S, T, U, V> Eval<Expr<S, U>, Expr<T, V>> for E
-where
-	E: Eval<(VL, DataType), Expr<T, V>> + Eval<S, T> + Eval<U, V> + Clone,
-	S: Clone,
-	T: Clone,
-	U: Clone,
-	V: Clone,
+impl<Env, U: Clone, V: Clone, R: Clone, S: Clone, A: Clone, B: Clone>
+	Eval<Expr<U, R, A>, Expr<V, S, B>> for Env
+where Env: Eval<(VL, DataType), Expr<V, S, B>>
+		+ Eval<U, V>
+		+ Eval<R, S>
+		+ Eval<A, Expr<V, S, B>>
+		+ Clone
 {
-	fn eval(self, source: Expr<S, U>) -> Expr<T, V> {
+	fn eval(self, source: Expr<U, R, A>) -> Expr<V, S, B> {
 		use Expr::*;
 		match source {
 			Var(l, ty) => self.eval((l, ty)),
-			Log(l) => Log(Box::new(self.eval(*l))),
+			Log(l) => Log(self.eval(l)),
+			Agg(agg) => self.eval(agg),
 			Op(f, args, ty) => Op(f, self.eval(args), ty),
 			HOp(f, args, rel, ty) => HOp(f, self.clone().eval(args), self.eval(rel), ty),
 		}
 	}
 }
 
-impl<E, S: Clone, T: Clone, U: Clone, V: Clone> Eval<Neutral<S, U>, Neutral<T, V>> for E
-where E: Eval<Head<S, U>, Head<T, V>> + Eval<Vector<Expr<S, U>>, Vector<Expr<T, V>>> + Clone
-{
-	fn eval(self, source: Neutral<S, U>) -> Neutral<T, V> {
-		let head = self.clone().eval(source.head);
-		let args = self.eval(source.args);
-		Neutral { head, args }
-	}
-}
-
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct Relation<U>(pub Vector<DataType>, pub Box<U>);
-
-impl<U: Display> Display for Relation<U> {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		writeln!(f, "λ {:?}", self.0)?;
-		writeln!(indented(f).with_str("\t"), "{}", self.1)
-	}
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub enum Head<R, U> {
+pub enum Head<R, E> {
 	Var(VL),
-	HOp(String, Vec<Expr<R, U>>, Box<R>),
+	HOp(String, Vec<E>, Box<R>),
 }
 
-impl<R: Display, U: Display> Display for Head<R, U> {
+impl<R: Display, E: Display> Display for Head<R, E> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
 			Head::Var(VL(l)) => write!(f, "#{}", l),
@@ -274,33 +266,34 @@ impl<R: Display, U: Display> Display for Head<R, U> {
 	}
 }
 
-impl<E, S: Clone, T: Clone, U: Clone, V: Clone> Eval<Head<S, U>, Head<T, V>> for E
-where E: Eval<Vec<Expr<S, U>>, Vec<Expr<T, V>>> + Eval<Box<S>, Box<T>> + Clone
+impl<Env, R: Clone, S: Clone, E: Clone, F: Clone> Eval<Head<R, E>, Head<S, F>> for Env
+where Env: Eval<R, S> + Eval<Vec<E>, Vec<F>> + Clone
 {
-	fn eval(self, source: Head<S, U>) -> Head<T, V> {
+	fn eval(self, source: Head<R, E>) -> Head<S, F> {
 		use Head::*;
 		match source {
 			Var(v) => Var(v),
-			HOp(op, args, rel) => HOp(op, self.clone().eval(args), self.eval(rel)),
+			HOp(op, args, rel) => HOp(op, self.clone().eval(args), self.eval(*rel).into()),
 		}
 	}
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct Neutral<R, U> {
-	pub head: Head<R, U>,
-	pub args: Vector<Expr<R, U>>,
-}
+pub struct Neutral<R, E>(pub Head<R, E>, pub Vector<E>);
 
-impl<R, U> Neutral<R, U> {
-	pub fn new(head: Head<R, U>, args: Vector<Expr<R, U>>) -> Self {
-		Neutral { head, args }
+impl<R: Display, E: Display> Display for Neutral<R, E> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}({})", self.0, self.1.iter().format(", "))
 	}
 }
 
-impl<R: Display, U: Display> Display for Neutral<R, U> {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{}({})", self.head, self.args.iter().format(", "))
+impl<Env, R: Clone, S: Clone, E: Clone, F: Clone> Eval<Neutral<R, E>, Neutral<S, F>> for Env
+where Env: Eval<Head<R, E>, Head<S, F>> + Eval<Vector<E>, Vector<F>> + Clone
+{
+	fn eval(self, Neutral(head, args): Neutral<R, E>) -> Neutral<S, F> {
+		let head = self.clone().eval(head);
+		let args = self.eval(args);
+		Neutral(head, args)
 	}
 }
 

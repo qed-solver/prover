@@ -43,7 +43,7 @@ pub fn unify(Input { schemas, queries: (rel1, rel2), help }: Input) -> bool {
 	}
 	log::info!("Syntax left:\n{}", rel1);
 	log::info!("Syntax right:\n{}", rel2);
-	let nom_env = &normal::Env(vector![], schemas.clone().into());
+	let nom_env = &vector![];
 	let eval_nom = |rel: syntax::Relation| -> normal::Relation {
 		let rel = (&partial::Env::default()).eval(rel);
 		nom_env.eval(rel)
@@ -55,14 +55,17 @@ pub fn unify(Input { schemas, queries: (rel1, rel2), help }: Input) -> bool {
 	if rel1 == rel2 {
 		return true;
 	}
+	let config = Config::new();
+	let z3_ctx = &Context::new(&config);
+	let ctx = Rc::new(Ctx::new(Solver::new(z3_ctx)));
+	let h_ops = Rc::new(RefCell::new(HashMap::new()));
+	let agg_ops = Rc::new(RefCell::new(HashMap::new()));
+	let rel_h_ops = Rc::new(RefCell::new(HashMap::new()));
 	let eval_stb = |nom: normal::Relation| -> normal::Relation {
-		let mut config = Config::new();
-		config.set_timeout_msec(2000);
-		let z3_ctx = &Context::new(&config);
-		let ctx = Rc::new(Ctx::new(Solver::new(z3_ctx)));
-		let h_ops = Rc::new(RefCell::new(HashMap::new()));
-		let rel_h_ops = Rc::new(RefCell::new(HashMap::new()));
-		let env = &stable::Env(vector![], 0, Z3Env(ctx, vector![], h_ops, rel_h_ops));
+		let env = &stable::Env(vector![], {
+			let subst = vector![];
+			Z3Env(ctx.clone(), subst, h_ops.clone(), agg_ops.clone(), rel_h_ops.clone())
+		});
 		let stb = env.eval(nom);
 		nom_env.eval(stb)
 	};
@@ -73,10 +76,6 @@ pub fn unify(Input { schemas, queries: (rel1, rel2), help }: Input) -> bool {
 	if rel1 == rel2 {
 		return true;
 	}
-	let mut config = Config::new();
-	config.set_timeout_msec(4000);
-	let z3_ctx = Context::new(&config);
-	let ctx = Rc::new(Ctx::new(Solver::new(&z3_ctx)));
 	let env = UnifyEnv(ctx, vector![], vector![]);
 	env.unify(&rel1, &rel2)
 }
