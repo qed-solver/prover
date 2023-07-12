@@ -25,6 +25,7 @@ pub mod unify;
 pub struct Input {
 	schemas: Vec<Schema>,
 	queries: (relation::Relation, relation::Relation),
+	#[serde(default)]
 	help: (String, String),
 }
 
@@ -34,6 +35,7 @@ pub fn unify(Input { schemas, queries: (rel1, rel2), help }: Input) -> bool {
 	log::info!("Schemas:\n{:?}", schemas);
 	log::info!("Input:\n{}\n{}", help.0, help.1);
 	if rel1 == rel2 {
+		println!("Trivially true!");
 		return true;
 	}
 	let rel1 = env.eval(rel1);

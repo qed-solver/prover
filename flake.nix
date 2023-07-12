@@ -23,13 +23,14 @@
         craneLib = crane.lib.${system}.overrideToolchain fenix.packages.${system}.complete.toolchain;
         packageDef = with pkgs; {
           src = craneLib.cleanCargoSource ./.;
-          buildInputs = with pkgs; [ z3_4_11 cvc5 ];
+          buildInputs = with pkgs; [ z3_4_12 cvc5 ];
           nativeBuildInputs = with pkgs; [ rustPlatform.bindgenHook makeWrapper ]
             ++ lib.optionals stdenv.isDarwin [ libiconv ];
         };
         cargoArtifacts = craneLib.buildDepsOnly packageDef;
         cosette-prover = craneLib.buildPackage (packageDef // {
           inherit cargoArtifacts;
+          doNotLinkInheritedArtifacts = true;
           postInstall = with pkgs; "wrapProgram $out/bin/cosette-prover --set PATH ${lib.makeBinPath [ cvc5 z3_4_11 ]}";
         });
       in {

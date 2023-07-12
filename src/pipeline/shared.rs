@@ -311,6 +311,7 @@ pub enum DataType {
 	#[serde(alias = "FLOAT", alias = "DOUBLE", alias = "DECIMAL")]
 	Real,
 	/// Boolean
+	#[serde(alias = "BOOL")]
 	Boolean,
 	/// String
 	#[serde(alias = "VARCHAR", alias = "CHAR", alias = "TEXT")]

@@ -342,9 +342,9 @@ pub enum JoinKind {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AggCall {
-	#[serde(rename = "operator")]
+	#[serde(alias = "operator")]
 	op: String,
-	#[serde(rename = "operand")]
+	#[serde(alias = "operand")]
 	args: Vec<Expr>,
 	#[serde(default = "default_distinct")]
 	distinct: bool,
@@ -379,9 +379,11 @@ impl Eval<(AggCall, Relation), syntax::Expr> for Env<'_> {
 					op: "IS NOT NULL".into(),
 					args: vec![Expr::Col { column: VL(i), ty }],
 					ty: DataType::Boolean,
+					rel: None,
 				})
 				.collect_vec();
-			let condition = Expr::Op { op: "AND".into(), args: conditions, ty: DataType::Boolean };
+			let condition =
+				Expr::Op { op: "AND".into(), args: conditions, ty: DataType::Boolean, rel: None };
 			Relation::Filter { condition, source: source.into() }
 		} else {
 			source
@@ -409,23 +411,15 @@ pub enum Expr {
 		#[serde(alias = "type")]
 		ty: DataType,
 	},
-	HOp {
-		#[serde(rename = "operator")]
-		op: String,
-		#[serde(rename = "operand")]
-		args: Vec<Expr>,
-		#[serde(rename = "query")]
-		rel: Box<Relation>,
-		#[serde(alias = "type")]
-		ty: DataType,
-	},
 	Op {
-		#[serde(rename = "operator")]
+		#[serde(alias = "operator")]
 		op: String,
-		#[serde(rename = "operand")]
+		#[serde(alias = "operand")]
 		args: Vec<Expr>,
 		#[serde(alias = "type")]
 		ty: DataType,
+		#[serde(alias = "query")]
+		rel: Option<Box<Relation>>,
 	},
 }
 
@@ -434,7 +428,6 @@ impl Expr {
 		match self {
 			Expr::Col { ty, .. } => ty,
 			Expr::Op { ty, .. } => ty,
-			Expr::HOp { ty, .. } => ty,
 		}
 		.clone()
 	}
@@ -443,53 +436,73 @@ impl Expr {
 		if self.ty() == DataType::Real {
 			self
 		} else {
-			Expr::Op { op: "CAST".to_string(), args: vec![self], ty: DataType::Real }
+			Expr::Op { op: "CAST".to_string(), args: vec![self], ty: DataType::Real, rel: None }
 		}
 	}
+}
+
+pub fn num_op(op: &str) -> bool {
+	matches!(
+		op,
+		"+" | "PLUS" | "UNARY PLUS" | "-" | "MINUS" | "UNARY MINUS" | "*" | "MULT" | "/" | "DIV"
+	)
+}
+
+pub fn num_cmp(op: &str) -> bool {
+	matches!(op, |">"| "GT"
+		| "<" | "LT"
+		| ">=" | "GE"
+		| "<=" | "LE"
+		| "=" | "EQ"
+		| "<>" | "!="
+		| "NE")
 }
 
 impl Eval<Expr, syntax::Expr> for Env<'_> {
 	fn eval(self, source: Expr) -> syntax::Expr {
 		use shared::Expr::*;
-		self.eval_logic(&source).map(|l| Log(l.into())).unwrap_or_else(|| {
-			match source {
-				Expr::Col { column, ty: _ } => self.1[column.0].clone(),
-				Expr::Op { op, args, ty } => {
-					let cast = matches!(op.as_str(), "+" | "-" | "*" | "/" if ty == DataType::Real)
-						|| matches!(op.as_str(), ">" | "<" | ">=" | "<=" | "=" | "<>" | "!=" if args.iter().any(|e| e.ty() == DataType::Real));
-					let args =
-						if cast { args.into_iter().map(Expr::into_real).collect() } else { args };
-					Op(op, self.eval(args), ty)
-				},
-				Expr::HOp { op, args, rel, ty } => HOp(op, self.eval(args), self.eval(*rel).into(), ty),
-			}
-		})
+		match source {
+			e if let Some(l) = self.eval_logic(&e) => Log(l.into()),
+			Expr::Col { column, ty: _ } => self.1[column.0].clone(),
+			Expr::Op { op, args, ty, rel: None } => {
+				let cast = (num_op(&op) && ty == DataType::Real)
+					|| (num_cmp(&op) && args.iter().any(|e| e.ty() == DataType::Real));
+				let args =
+					if cast { args.into_iter().map(Expr::into_real).collect() } else { args };
+				Op(op, self.eval(args), ty)
+			},
+			Expr::Op { op, args, rel: Some(rel), ty } => {
+				HOp(op, self.eval(args), self.eval(*rel).into(), ty)
+			},
+		}
 	}
 }
 
 impl Env<'_> {
 	fn eval_logic(self, source: &Expr) -> Option<Logic> {
 		match source {
-			Expr::Op { op, args, ty: DataType::Boolean } => match op.to_uppercase().as_str() {
-				"TRUE" => Some(Logic::tt()),
-				"FALSE" => Some(Logic::ff()),
-				"<=>" | "IS NOT DISTINCT FROM" => {
-					Some(Logic::Eq(self.eval(args[0].clone()), self.eval(args[1].clone())))
-				},
-				"IS DISTINCT FROM" => {
-					Some(!Logic::Eq(self.eval(args[0].clone()), self.eval(args[1].clone())))
-				},
-				"IS NULL" => {
-					let e: syntax::Expr = self.eval(args[0].clone());
-					Some(e.is_null())
-				},
-				"IS NOT NULL" => {
-					let e: syntax::Expr = self.eval(args[0].clone());
-					Some(!e.is_null())
-				},
-				_ => None,
+			Expr::Op { op, args, ty: DataType::Boolean, rel: None } => {
+				match op.to_uppercase().as_str() {
+					"TRUE" => Some(Logic::tt()),
+					"FALSE" => Some(Logic::ff()),
+					"<=>" | "IS" | "IS NOT DISTINCT FROM" => {
+						Some(Logic::Eq(self.eval(args[0].clone()), self.eval(args[1].clone())))
+					},
+					"IS NOT" | "IS DISTINCT FROM" => {
+						Some(!Logic::Eq(self.eval(args[0].clone()), self.eval(args[1].clone())))
+					},
+					"IS NULL" => {
+						let e: syntax::Expr = self.eval(args[0].clone());
+						Some(e.is_null())
+					},
+					"IS NOT NULL" => {
+						let e: syntax::Expr = self.eval(args[0].clone());
+						Some(!e.is_null())
+					},
+					_ => None,
+				}
 			},
-			Expr::HOp { op, args: _, rel, ty: DataType::Boolean } => match op.as_str() {
+			Expr::Op { op, args: _, rel: Some(rel), ty: DataType::Boolean } => match op.as_str() {
 				"EXISTS" => {
 					let Env(schemas, subst, lvl) = self;
 					let scope = rel.scope(schemas);
@@ -507,13 +520,14 @@ impl Env<'_> {
 impl Eval<Expr, Logic> for Env<'_> {
 	fn eval(self, source: Expr) -> Logic {
 		assert_eq!(source.ty(), DataType::Boolean, "wrong type for predicate");
-		self.eval_logic(&source).unwrap_or_else(|| match source.clone() {
+		match source.clone() {
+			e if let Some(l) = self.eval_logic(&e) => l,
 			Expr::Op { op, args, .. } => match op.to_uppercase().as_str() {
 				"AND" => Logic::And(args.into_iter().map(|arg| self.eval(arg)).collect()),
 				"OR" => Logic::Or(args.into_iter().map(|arg| self.eval(arg)).collect()),
 				_ => Logic::Bool(self.eval(source)),
 			},
-			Expr::Col { .. } | Expr::HOp { .. } => Logic::Bool(self.eval(source)),
-		})
+			Expr::Col { .. } => Logic::Bool(self.eval(source)),
+		}
 	}
 }

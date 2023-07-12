@@ -253,7 +253,7 @@ pub(crate) fn smt<'c>(solver: &'c z3::Solver, pred: Bool<'c>) -> bool {
 			log::info!("Z3 result: {}", result);
 			let provable = result.starts_with("unsat\n");
 			res.fetch_or(provable);
-			if !result.starts_with("unknown\n") {
+			if result.starts_with("unsat\n") || result.starts_with("sat\n") {
 				u1.unpark();
 			}
 		});
@@ -266,7 +266,7 @@ pub(crate) fn smt<'c>(solver: &'c z3::Solver, pred: Bool<'c>) -> bool {
 			log::info!("CVC5 result: {}", result);
 			let provable = result.ends_with("unsat\n");
 			res.fetch_or(provable);
-			if !result.ends_with("unknown\n") {
+			if result.starts_with("unsat\n") || result.starts_with("sat\n") {
 				u2.unpark();
 			}
 		});

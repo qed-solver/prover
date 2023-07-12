@@ -15,6 +15,7 @@ use z3::{Config, Context, Solver};
 use super::shared::{Ctx, Lambda, Sigma, Typed};
 use super::stable::{self, stablize};
 use super::unify::{Unify, UnifyEnv};
+use crate::pipeline::relation::num_op;
 use crate::pipeline::shared::{DataType, Eval, Neutral as Neut, Terms, VL};
 use crate::pipeline::{partial, shared};
 
@@ -118,7 +119,10 @@ impl Expr {
 	fn exprs(&self) -> Vector<&Expr> {
 		match self {
 			Expr::Log(l) => l.exprs(),
-			Expr::Op(op, es, ty) if op == "=" && es.len() == 2 && ty == &DataType::Boolean => {
+			Expr::Op(op, es, ty)
+				if matches!(op.as_str(), "=" | "EQ")
+					&& es.len() == 2 && ty == &DataType::Boolean =>
+			{
 				es.iter().collect()
 			},
 			Expr::Op(_, es, _) | Expr::HOp(_, es, _, _) => {
@@ -562,57 +566,72 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 		match source {
 			Expr::Var(VL(l), _) => subst[*l].clone(),
 			Expr::Log(l) => ctx.bool_some(self.eval(l.as_ref())),
-			Expr::Op(op, args, ty) if args.is_empty() => parse(ctx.as_ref(), op, ty)
-				.unwrap_or_else(|_| ctx.app(&format!("f!{}", op), &[], ty, true)),
+			Expr::Op(op, args, ty) if args.is_empty() && let Ok(exp) = parse(ctx.as_ref(), op, ty) => exp,
 			Expr::Op(op, expr_args, ty) => {
 				let args = expr_args.iter().map(|a| self.eval(a)).collect_vec();
 				let args = args.iter().collect_vec();
 				match op.as_str() {
-					num_op @ ("+" | "-" | "*" | "/" | "%" /*| "POWER" */) if ty == &Integer => {
-						match num_op {
-							"+" => ctx.int_add_v(&args),
-							"-" => ctx.int_sub_v(&args),
-							"*" => ctx.int_mul_v(&args),
-							"/" => ctx.int_div(args[0], args[1]),
-							"%" => ctx.int_modulo(args[0], args[1]),
-							// "POWER" => ctx.int_power(args[0], args[1]),
-							_ => unreachable!(),
-						}
+					op if num_op(op) && ty == &Integer => match op {
+						"+" | "PLUS" | "UNARY PLUS" => ctx.int_add_v(&args),
+						"-" | "MINUS" | "UNARY MINUS" => ctx.int_sub_v(&args),
+						"*" | "MULT" => ctx.int_mul_v(&args),
+						"/" | "DIV" => ctx.int_div(args[0], args[1]),
+						"%" => ctx.int_modulo(args[0], args[1]),
+						// "POWER" => ctx.int_power(args[0], args[1]),
+						_ => unreachable!(),
 					},
-					num_op @ ("+" | "-" | "*" | "/" /*| "POWER" */) if ty == &Real => match num_op {
-						"+" => ctx.real_add_v(&args),
-						"-" => ctx.real_sub_v(&args),
-						"*" => ctx.real_mul_v(&args),
-						"/" => ctx.real_div(args[0], args[1]),
+					op if num_op(op) && ty == &Real => match op {
+						"+" | "PLUS" | "UNARY PLUS" => ctx.real_add_v(&args),
+						"-" | "MINUS" | "UNARY MINUS" => ctx.real_sub_v(&args),
+						"*" | "MULT" => ctx.real_mul_v(&args),
+						"/" | "DIV" => ctx.real_div(args[0], args[1]),
 						// "POWER" => ctx.real_power(args[0], args[1]),
 						_ => unreachable!(),
 					},
-					cmp @ (">" | "<" | ">=" | "<=") if expr_args[0].ty() == Integer => match cmp {
-						">" => ctx.int_gt(args[0], args[1]),
-						"<" => ctx.int_lt(args[0], args[1]),
-						">=" => ctx.int_ge(args[0], args[1]),
-						"<=" => ctx.int_le(args[0], args[1]),
-						_ => unreachable!(),
+					cmp @ (">" | "GT" | "<" | "LT" | ">=" | "GE" | "<=" | "LE")
+						if expr_args[0].ty() == Integer =>
+					{
+						match cmp {
+							">" | "GT" => ctx.int_gt(args[0], args[1]),
+							"<" | "LT" => ctx.int_lt(args[0], args[1]),
+							">=" | "GE" => ctx.int_ge(args[0], args[1]),
+							"<=" | "LE" => ctx.int_le(args[0], args[1]),
+							_ => unreachable!(),
+						}
 					},
-					cmp @ (">" | "<" | ">=" | "<=") if expr_args[0].ty() == Real => match cmp {
-						">" => ctx.real_gt(args[0], args[1]),
-						"<" => ctx.real_lt(args[0], args[1]),
-						">=" => ctx.real_ge(args[0], args[1]),
-						"<=" => ctx.real_le(args[0], args[1]),
-						_ => unreachable!(),
+					cmp @ (">" | "GT" | "<" | "LT" | ">=" | "GE" | "<=" | "LE")
+						if expr_args[0].ty() == Real =>
+					{
+						match cmp {
+							">" | "GT" => ctx.real_gt(args[0], args[1]),
+							"<" | "LT" => ctx.real_lt(args[0], args[1]),
+							">=" | "GE" => ctx.real_ge(args[0], args[1]),
+							"<=" | "LE" => ctx.real_le(args[0], args[1]),
+							_ => unreachable!(),
+						}
 					},
-					cmp @ ("=" | "<>" | "!=") => {
+					cmp @ ("=" | "EQ" | "<>" | "!=" | "NE") => {
 						let (a1, a2) = (args[0], args[1]);
-						assert_eq!(a1.get_sort(), a2.get_sort(), "{} and {} have different types.", expr_args[0], expr_args[1]);
+						assert_eq!(
+							a1.get_sort(),
+							a2.get_sort(),
+							"{} and {} have different types.",
+							expr_args[0],
+							expr_args[1]
+						);
 						let eq = match expr_args[0].ty() {
-					        Integer => ctx.int__eq(a1, a2),
-					        Real => ctx.real__eq(a1, a2),
-					        Boolean => ctx.bool__eq(a1, a2),
-					        String => ctx.string__eq(a1, a2),
-					        Custom(_) => todo!("Cannot compare between arbitrary types yet."),
-					    };
-						if cmp == "=" { eq } else { ctx.bool_not(&eq) }
-					}
+							Integer => ctx.int__eq(a1, a2),
+							Real => ctx.real__eq(a1, a2),
+							Boolean => ctx.bool__eq(a1, a2),
+							String => ctx.string__eq(a1, a2),
+							Custom(_) => todo!("Cannot compare between arbitrary types yet."),
+						};
+						if cmp == "=" || cmp == "EQ" {
+							eq
+						} else {
+							ctx.bool_not(&eq)
+						}
+					},
 					"NOT" if args.len() == 1 => ctx.bool_not(args[0]),
 					"AND" => ctx.bool_and_v(&args),
 					"OR" => ctx.bool_or_v(&args),
@@ -622,19 +641,19 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 							ctx.bool_is_true(cond).ite(body, &rem)
 						})
 					},
-					"CAST" if ty == &expr_args[0].ty() => {
-						args[0].clone()
-					},
+					"CAST" if ty == &expr_args[0].ty() => args[0].clone(),
 					"CAST" if ty == &Real && expr_args[0].ty() == Integer => {
 						ctx.int_to_real(args[0])
 					},
+					"CAST" if let Expr::Op(op, args, _) = &expr_args[0] && args.is_empty()
+						&& let Ok(exp) = parse(ctx.as_ref(), op, ty) => exp,
 					"COUNT" | "SUM" | "MIN" | "MAX" => {
 						if args.len() == 1 {
 							args[0].clone()
 						} else {
 							ctx.app(&format!("f{}!{}", args.len(), op), &args, ty, true)
 						}
-					}
+					},
 					op => ctx.app(&format!("f!{}", op), &args, ty, true),
 				}
 			},

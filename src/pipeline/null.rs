@@ -165,7 +165,7 @@ impl<'c> Ctx<'c> {
 	pub fn int_sub_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
 		match *args {
 			[] => self.int_some(Int::from_i64(self.solver.get_context(), 0)),
-			[arg] => arg.clone(),
+			[arg] => self.int_unary_minus(arg),
 			[arg, ref args @ ..] => args.iter().fold(arg.clone(), |a, b| self.int_sub(&a, b)),
 		}
 	}
@@ -186,7 +186,7 @@ impl<'c> Ctx<'c> {
 	pub fn real_sub_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
 		match *args {
 			[] => self.real_some(Real::from_real(self.solver.get_context(), 0, 1)),
-			[arg] => arg.clone(),
+			[arg] => self.real_unary_minus(arg),
 			[arg, ref args @ ..] => args.iter().fold(arg.clone(), |a, b| self.real_sub(&a, b)),
 		}
 	}
