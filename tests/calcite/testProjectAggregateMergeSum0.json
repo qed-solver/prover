@@ -1,0 +1,143 @@
+{
+  "schemas" : [ {
+    "name" : "EMP",
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ {
+        "operator" : "CASE",
+        "operand" : [ {
+          "operator" : "IS NOT NULL",
+          "operand" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          } ],
+          "type" : "BOOLEAN"
+        }, {
+          "operator" : "CAST",
+          "operand" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          } ],
+          "type" : "INTEGER"
+        }, {
+          "operator" : "0",
+          "operand" : [ ],
+          "type" : "INTEGER"
+        } ],
+        "type" : "INTEGER"
+      } ],
+      "source" : {
+        "distinct" : {
+          "correlate" : [ {
+            "project" : {
+              "target" : [ ],
+              "source" : {
+                "project" : {
+                  "target" : [ {
+                    "column" : 5,
+                    "type" : "INTEGER"
+                  } ],
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              }
+            }
+          }, {
+            "aggregate" : {
+              "function" : [ {
+                "operator" : "SUM",
+                "operand" : [ {
+                  "column" : 0,
+                  "type" : "INTEGER"
+                } ],
+                "distinct" : false,
+                "ignoreNulls" : false,
+                "type" : "INTEGER"
+              } ],
+              "source" : {
+                "filter" : {
+                  "condition" : {
+                    "operator" : "AND",
+                    "operand" : [ ],
+                    "type" : "BOOLEAN"
+                  },
+                  "source" : {
+                    "project" : {
+                      "target" : [ {
+                        "column" : 5,
+                        "type" : "INTEGER"
+                      } ],
+                      "source" : {
+                        "scan" : 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          } ]
+        }
+      }
+    }
+  }, {
+    "distinct" : {
+      "correlate" : [ {
+        "project" : {
+          "target" : [ ],
+          "source" : {
+            "project" : {
+              "target" : [ {
+                "column" : 5,
+                "type" : "INTEGER"
+              } ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      }, {
+        "aggregate" : {
+          "function" : [ {
+            "operator" : "$SUM0",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            } ],
+            "distinct" : false,
+            "ignoreNulls" : false,
+            "type" : "INTEGER"
+          } ],
+          "source" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "AND",
+                "operand" : [ ],
+                "type" : "BOOLEAN"
+              },
+              "source" : {
+                "project" : {
+                  "target" : [ {
+                    "column" : 5,
+                    "type" : "INTEGER"
+                  } ],
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      } ]
+    }
+  } ],
+  "help" : [ "LogicalProject(SS0=[CASE(IS NOT NULL($0), CAST($0):INTEGER NOT NULL, 0)])\n  LogicalAggregate(group=[{}], SUM_SAL=[SUM($0)])\n    LogicalProject(SAL=[$5])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalAggregate(group=[{}], agg#0=[$SUM0($0)])\n  LogicalProject(SAL=[$5])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ]
+}

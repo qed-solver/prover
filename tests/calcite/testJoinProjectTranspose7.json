@@ -1,0 +1,104 @@
+{
+  "schemas" : [ {
+    "name" : "DEPT",
+    "fields" : [ "DEPTNO", "NAME" ],
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 2,
+        "type" : "VARCHAR"
+      } ],
+      "source" : {
+        "join" : {
+          "kind" : "LEFT",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 1,
+              "type" : "VARCHAR"
+            }, {
+              "column" : 2,
+              "type" : "VARCHAR"
+            } ],
+            "type" : "BOOLEAN"
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "project" : {
+              "target" : [ {
+                "column" : 1,
+                "type" : "VARCHAR"
+              } ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 2,
+        "type" : "VARCHAR"
+      } ],
+      "source" : {
+        "project" : {
+          "target" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "column" : 1,
+            "type" : "VARCHAR"
+          }, {
+            "column" : 3,
+            "type" : "VARCHAR"
+          } ],
+          "source" : {
+            "join" : {
+              "kind" : "LEFT",
+              "condition" : {
+                "operator" : "=",
+                "operand" : [ {
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                }, {
+                  "column" : 3,
+                  "type" : "VARCHAR"
+                } ],
+                "type" : "BOOLEAN"
+              },
+              "left" : {
+                "scan" : 0
+              },
+              "right" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[$2])\n  LogicalJoin(condition=[=($1, $2)], joinType=[left])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n    LogicalProject(NAME=[$1])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[$2])\n  LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[$3])\n    LogicalJoin(condition=[=($1, $3)], joinType=[left])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ]
+}

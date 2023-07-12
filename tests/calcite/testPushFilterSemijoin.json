@@ -1,0 +1,108 @@
+{
+  "schemas" : [ {
+    "name" : "DEPT",
+    "fields" : [ "DEPTNO", "DNAME", "LOC" ],
+    "types" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE" ],
+    "key" : [ [ 0 ], [ 1 ], [ 2 ] ],
+    "foreign" : [ ]
+  }, {
+    "name" : "EMP",
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
+    "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
+    "key" : [ [ 0 ], [ 1 ] ],
+    "foreign" : [ ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ],
+      "source" : {
+        "join" : {
+          "kind" : "SEMI",
+          "condition" : {
+            "operator" : "AND",
+            "operand" : [ {
+              "operator" : "=",
+              "operand" : [ {
+                "column" : 0,
+                "type" : "TINYINT"
+              }, {
+                "column" : 10,
+                "type" : "TINYINT"
+              } ],
+              "type" : "BOOLEAN"
+            }, {
+              "operator" : "=",
+              "operand" : [ {
+                "column" : 8,
+                "type" : "DECIMAL"
+              }, {
+                "operator" : "100",
+                "operand" : [ ],
+                "type" : "INTEGER"
+              } ],
+              "type" : "BOOLEAN"
+            } ],
+            "type" : "BOOLEAN"
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "scan" : 1
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ],
+      "source" : {
+        "join" : {
+          "kind" : "SEMI",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "TINYINT"
+            }, {
+              "column" : 10,
+              "type" : "TINYINT"
+            } ],
+            "type" : "BOOLEAN"
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "=",
+                "operand" : [ {
+                  "column" : 5,
+                  "type" : "DECIMAL"
+                }, {
+                  "operator" : "100",
+                  "operand" : [ ],
+                  "type" : "INTEGER"
+                } ],
+                "type" : "BOOLEAN"
+              },
+              "source" : {
+                "scan" : 1
+              }
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(DNAME=[$1])\n  LogicalJoin(condition=[AND(=($0, $10), =($8, 100))], joinType=[semi])\n    LogicalTableScan(table=[[scott, DEPT]])\n    LogicalTableScan(table=[[scott, EMP]])\n", "LogicalProject(DNAME=[$1])\n  LogicalJoin(condition=[=($0, $10)], joinType=[semi])\n    LogicalTableScan(table=[[scott, DEPT]])\n    LogicalFilter(condition=[=($5, 100)])\n      LogicalTableScan(table=[[scott, EMP]])\n" ]
+}

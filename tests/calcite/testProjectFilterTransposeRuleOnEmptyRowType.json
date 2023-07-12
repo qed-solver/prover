@@ -1,0 +1,66 @@
+{
+  "schemas" : [ {
+    "name" : "EMP",
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
+    "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
+    "key" : [ [ 0 ], [ 1 ] ],
+    "foreign" : [ ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 7,
+              "type" : "TINYINT"
+            }, {
+              "operator" : "20",
+              "operand" : [ ],
+              "type" : "INTEGER"
+            } ],
+            "type" : "BOOLEAN"
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "TINYINT"
+            }, {
+              "operator" : "20",
+              "operand" : [ ],
+              "type" : "INTEGER"
+            } ],
+            "type" : "BOOLEAN"
+          },
+          "source" : {
+            "project" : {
+              "target" : [ {
+                "column" : 7,
+                "type" : "TINYINT"
+              } ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject\n  LogicalFilter(condition=[=($7, 20)])\n    LogicalTableScan(table=[[scott, EMP]])\n", "LogicalProject\n  LogicalFilter(condition=[=($0, 20)])\n    LogicalProject(DEPTNO=[$7])\n      LogicalTableScan(table=[[scott, EMP]])\n" ]
+}

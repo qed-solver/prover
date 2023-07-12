@@ -1,0 +1,212 @@
+{
+  "schemas" : [ {
+    "name" : "EMP",
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "INTEGER"
+      } ],
+      "source" : {
+        "join" : {
+          "kind" : "INNER",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            }, {
+              "column" : 1,
+              "type" : "INTEGER"
+            } ],
+            "type" : "BOOLEAN"
+          },
+          "left" : {
+            "project" : {
+              "target" : [ {
+                "column" : 7,
+                "type" : "INTEGER"
+              } ],
+              "source" : {
+                "filter" : {
+                  "condition" : {
+                    "operator" : "<",
+                    "operand" : [ {
+                      "column" : 7,
+                      "type" : "INTEGER"
+                    }, {
+                      "operator" : "4",
+                      "operand" : [ ],
+                      "type" : "INTEGER"
+                    } ],
+                    "type" : "BOOLEAN"
+                  },
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              }
+            }
+          },
+          "right" : {
+            "union" : [ {
+              "project" : {
+                "target" : [ {
+                  "column" : 7,
+                  "type" : "INTEGER"
+                } ],
+                "source" : {
+                  "filter" : {
+                    "condition" : {
+                      "operator" : ">",
+                      "operand" : [ {
+                        "column" : 7,
+                        "type" : "INTEGER"
+                      }, {
+                        "operator" : "7",
+                        "operand" : [ ],
+                        "type" : "INTEGER"
+                      } ],
+                      "type" : "BOOLEAN"
+                    },
+                    "source" : {
+                      "scan" : 0
+                    }
+                  }
+                }
+              }
+            }, {
+              "project" : {
+                "target" : [ {
+                  "column" : 7,
+                  "type" : "INTEGER"
+                } ],
+                "source" : {
+                  "scan" : 0
+                }
+              }
+            } ]
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "INTEGER"
+      } ],
+      "source" : {
+        "join" : {
+          "kind" : "INNER",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            }, {
+              "column" : 1,
+              "type" : "INTEGER"
+            } ],
+            "type" : "BOOLEAN"
+          },
+          "left" : {
+            "project" : {
+              "target" : [ {
+                "column" : 7,
+                "type" : "INTEGER"
+              } ],
+              "source" : {
+                "filter" : {
+                  "condition" : {
+                    "operator" : "<",
+                    "operand" : [ {
+                      "column" : 7,
+                      "type" : "INTEGER"
+                    }, {
+                      "operator" : "4",
+                      "operand" : [ ],
+                      "type" : "INTEGER"
+                    } ],
+                    "type" : "BOOLEAN"
+                  },
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              }
+            }
+          },
+          "right" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "<",
+                "operand" : [ {
+                  "column" : 0,
+                  "type" : "INTEGER"
+                }, {
+                  "operator" : "4",
+                  "operand" : [ ],
+                  "type" : "INTEGER"
+                } ],
+                "type" : "BOOLEAN"
+              },
+              "source" : {
+                "union" : [ {
+                  "project" : {
+                    "target" : [ {
+                      "column" : 7,
+                      "type" : "INTEGER"
+                    } ],
+                    "source" : {
+                      "filter" : {
+                        "condition" : {
+                          "operator" : ">",
+                          "operand" : [ {
+                            "column" : 7,
+                            "type" : "INTEGER"
+                          }, {
+                            "operator" : "7",
+                            "operand" : [ ],
+                            "type" : "INTEGER"
+                          } ],
+                          "type" : "BOOLEAN"
+                        },
+                        "source" : {
+                          "scan" : 0
+                        }
+                      }
+                    }
+                  }
+                }, {
+                  "project" : {
+                    "target" : [ {
+                      "column" : 7,
+                      "type" : "INTEGER"
+                    } ],
+                    "source" : {
+                      "scan" : 0
+                    }
+                  }
+                } ]
+              }
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(DEPTNO=[$0], DEPTNO0=[$1])\n  LogicalJoin(condition=[=($0, $1)], joinType=[inner])\n    LogicalProject(DEPTNO=[$7])\n      LogicalFilter(condition=[<($7, 4)])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalUnion(all=[true])\n      LogicalProject(DEPTNO=[$7])\n        LogicalFilter(condition=[>($7, 7)])\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n      LogicalProject(DEPTNO=[$7])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(DEPTNO=[$0], DEPTNO0=[$1])\n  LogicalJoin(condition=[=($0, $1)], joinType=[inner])\n    LogicalProject(DEPTNO=[$7])\n      LogicalFilter(condition=[<($7, 4)])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalFilter(condition=[<($0, 4)])\n      LogicalUnion(all=[true])\n        LogicalProject(DEPTNO=[$7])\n          LogicalFilter(condition=[>($7, 7)])\n            LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n        LogicalProject(DEPTNO=[$7])\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ]
+}

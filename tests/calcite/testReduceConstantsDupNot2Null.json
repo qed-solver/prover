@@ -1,0 +1,105 @@
+{
+  "schemas" : [ {
+    "name" : "EMP",
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      } ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "NOT",
+            "operand" : [ {
+              "operator" : "AND",
+              "operand" : [ {
+                "operator" : "=",
+                "operand" : [ {
+                  "column" : 3,
+                  "type" : "INTEGER"
+                }, {
+                  "operator" : "7",
+                  "operand" : [ ],
+                  "type" : "INTEGER"
+                } ],
+                "type" : "BOOLEAN"
+              }, {
+                "operator" : "=",
+                "operand" : [ {
+                  "column" : 7,
+                  "type" : "INTEGER"
+                }, {
+                  "operator" : "8",
+                  "operand" : [ ],
+                  "type" : "INTEGER"
+                } ],
+                "type" : "BOOLEAN"
+              }, {
+                "operator" : "=",
+                "operand" : [ {
+                  "column" : 3,
+                  "type" : "INTEGER"
+                }, {
+                  "operator" : "8",
+                  "operand" : [ ],
+                  "type" : "INTEGER"
+                } ],
+                "type" : "BOOLEAN"
+              } ],
+              "type" : "BOOLEAN"
+            } ],
+            "type" : "BOOLEAN"
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      } ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "operator" : "OR",
+            "operand" : [ {
+              "operator" : "IS NOT NULL",
+              "operand" : [ {
+                "column" : 3,
+                "type" : "INTEGER"
+              } ],
+              "type" : "BOOLEAN"
+            }, {
+              "operator" : "<>",
+              "operand" : [ {
+                "column" : 7,
+                "type" : "INTEGER"
+              }, {
+                "operator" : "8",
+                "operand" : [ ],
+                "type" : "INTEGER"
+              } ],
+              "type" : "BOOLEAN"
+            } ],
+            "type" : "BOOLEAN"
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(EMPNO=[$0])\n  LogicalFilter(condition=[NOT(AND(=($3, 7), =($7, 8), =($3, 8)))])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(EMPNO=[$0])\n  LogicalFilter(condition=[OR(IS NOT NULL($3), <>($7, 8))])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ]
+}

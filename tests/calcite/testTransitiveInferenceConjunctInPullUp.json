@@ -1,0 +1,120 @@
+{
+  "schemas" : [ {
+    "name" : "EMP",
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
+    "key" : [ [ 0 ] ],
+    "foreign" : [ ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ {
+        "operator" : "1",
+        "operand" : [ ],
+        "type" : "INTEGER"
+      } ],
+      "source" : {
+        "join" : {
+          "kind" : "INNER",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 7,
+              "type" : "INTEGER"
+            }, {
+              "column" : 16,
+              "type" : "INTEGER"
+            } ],
+            "type" : "BOOLEAN"
+          },
+          "left" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "SEARCH",
+                "operand" : [ {
+                  "column" : 7,
+                  "type" : "INTEGER"
+                }, {
+                  "operator" : "Sarg[7, 9, (10..+∞)]",
+                  "operand" : [ ],
+                  "type" : "INTEGER"
+                } ],
+                "type" : "BOOLEAN"
+              },
+              "source" : {
+                "scan" : 0
+              }
+            }
+          },
+          "right" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ {
+        "operator" : "1",
+        "operand" : [ ],
+        "type" : "INTEGER"
+      } ],
+      "source" : {
+        "join" : {
+          "kind" : "INNER",
+          "condition" : {
+            "operator" : "=",
+            "operand" : [ {
+              "column" : 7,
+              "type" : "INTEGER"
+            }, {
+              "column" : 16,
+              "type" : "INTEGER"
+            } ],
+            "type" : "BOOLEAN"
+          },
+          "left" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "SEARCH",
+                "operand" : [ {
+                  "column" : 7,
+                  "type" : "INTEGER"
+                }, {
+                  "operator" : "Sarg[7, 9, (10..+∞)]",
+                  "operand" : [ ],
+                  "type" : "INTEGER"
+                } ],
+                "type" : "BOOLEAN"
+              },
+              "source" : {
+                "scan" : 0
+              }
+            }
+          },
+          "right" : {
+            "filter" : {
+              "condition" : {
+                "operator" : "SEARCH",
+                "operand" : [ {
+                  "column" : 7,
+                  "type" : "INTEGER"
+                }, {
+                  "operator" : "Sarg[7, 9, (10..+∞)]",
+                  "operand" : [ ],
+                  "type" : "INTEGER"
+                } ],
+                "type" : "BOOLEAN"
+              },
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(EXPR$0=[1])\n  LogicalJoin(condition=[=($7, $16)], joinType=[inner])\n    LogicalFilter(condition=[SEARCH($7, Sarg[7, 9, (10..+∞)])])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(EXPR$0=[1])\n  LogicalJoin(condition=[=($7, $16)], joinType=[inner])\n    LogicalFilter(condition=[SEARCH($7, Sarg[7, 9, (10..+∞)])])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalFilter(condition=[SEARCH($7, Sarg[7, 9, (10..+∞)])])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ]
+}

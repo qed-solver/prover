@@ -1,0 +1,69 @@
+{
+  "schemas" : [ {
+    "name" : "EMP",
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
+    "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
+    "key" : [ [ 0 ], [ 1 ] ],
+    "foreign" : [ ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "target" : [ {
+        "column" : 0,
+        "type" : "SMALLINT"
+      } ],
+      "source" : {
+        "join" : {
+          "kind" : "ANTI",
+          "condition" : {
+            "operator" : "AND",
+            "operand" : [ {
+              "operator" : "=",
+              "operand" : [ {
+                "column" : 7,
+                "type" : "TINYINT"
+              }, {
+                "column" : 8,
+                "type" : "TINYINT"
+              } ],
+              "type" : "BOOLEAN"
+            }, {
+              "operator" : "=",
+              "operand" : [ {
+                "column" : 5,
+                "type" : "DECIMAL"
+              }, {
+                "operator" : "2000",
+                "operand" : [ ],
+                "type" : "INTEGER"
+              } ],
+              "type" : "BOOLEAN"
+            } ],
+            "type" : "BOOLEAN"
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "right" : {
+            "values" : {
+              "schema" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
+              "content" : [ ]
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "target" : [ {
+        "column" : 0,
+        "type" : "SMALLINT"
+      } ],
+      "source" : {
+        "scan" : 0
+      }
+    }
+  } ],
+  "help" : [ "LogicalProject(EMPNO=[$0])\n  LogicalJoin(condition=[AND(=($7, $8), =($5, 2000))], joinType=[anti])\n    LogicalTableScan(table=[[scott, EMP]])\n    LogicalValues(tuples=[[]])\n", "LogicalProject(EMPNO=[$0])\n  LogicalTableScan(table=[[scott, EMP]])\n" ]
+}

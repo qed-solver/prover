@@ -1,0 +1,48 @@
+{
+  "schemas" : [ {
+    "name" : "EMP",
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
+    "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
+    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
+    "key" : [ [ 0 ], [ 1 ] ],
+    "foreign" : [ ]
+  } ],
+  "queries" : [ {
+    "filter" : {
+      "condition" : {
+        "operator" : "IS NOT DISTINCT FROM",
+        "operand" : [ {
+          "column" : 7,
+          "type" : "TINYINT"
+        }, {
+          "operator" : "20",
+          "operand" : [ ],
+          "type" : "INTEGER"
+        } ],
+        "type" : "BOOLEAN"
+      },
+      "source" : {
+        "scan" : 0
+      }
+    }
+  }, {
+    "filter" : {
+      "condition" : {
+        "operator" : "=",
+        "operand" : [ {
+          "column" : 7,
+          "type" : "TINYINT"
+        }, {
+          "operator" : "20",
+          "operand" : [ ],
+          "type" : "INTEGER"
+        } ],
+        "type" : "BOOLEAN"
+      },
+      "source" : {
+        "scan" : 0
+      }
+    }
+  } ],
+  "help" : [ "LogicalFilter(condition=[IS NOT DISTINCT FROM($7, 20)])\n  LogicalTableScan(table=[[scott, EMP]])\n", "LogicalFilter(condition=[=($7, 20)])\n  LogicalTableScan(table=[[scott, EMP]])\n" ]
+}
