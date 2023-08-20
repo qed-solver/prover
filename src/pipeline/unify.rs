@@ -224,8 +224,10 @@ pub(crate) fn smt<'c>(solver: &'c z3::Solver, pred: Bool<'c>) -> bool {
 		.replace("(+ ", "(+ 0 ");
 	let smt = smt.strip_prefix("; \n(set-info :status )").unwrap_or(smt.as_str());
 	let res = crossbeam::atomic::AtomicCell::new(false);
+	let last = crossbeam::atomic::AtomicCell::new(false);
 	crossbeam::thread::scope(|s| {
 		let res = &res;
+		let last = &last;
 		let p = crossbeam::sync::Parker::new();
 		let u1 = p.unparker().clone();
 		let u2 = p.unparker().clone();
@@ -253,7 +255,7 @@ pub(crate) fn smt<'c>(solver: &'c z3::Solver, pred: Bool<'c>) -> bool {
 			log::info!("Z3 result: {}", result);
 			let provable = result.starts_with("unsat\n");
 			res.fetch_or(provable);
-			if result.starts_with("unsat\n") || result.starts_with("sat\n") {
+			if result.starts_with("unsat\n") || result.starts_with("sat\n") || last.fetch_or(true) {
 				u1.unpark();
 			}
 		});
@@ -266,7 +268,7 @@ pub(crate) fn smt<'c>(solver: &'c z3::Solver, pred: Bool<'c>) -> bool {
 			log::info!("CVC5 result: {}", result);
 			let provable = result.ends_with("unsat\n");
 			res.fetch_or(provable);
-			if result.starts_with("unsat\n") || result.starts_with("sat\n") {
+			if result.starts_with("unsat\n") || result.starts_with("sat\n") || last.fetch_or(true) {
 				u2.unpark();
 			}
 		});

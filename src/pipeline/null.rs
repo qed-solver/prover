@@ -151,6 +151,10 @@ ctx_impl!(
 		contains(x, y) -> Bool;
 		prefix(x, y) -> Bool;
 		suffix(x, y) -> Bool;
+		lt(x, y) -> Bool;
+		le(x, y) -> Bool;
+		gt(x, y) -> Bool;
+		ge(x, y) -> Bool;
 		_eq(x, y) -> Bool;
 	};
 );

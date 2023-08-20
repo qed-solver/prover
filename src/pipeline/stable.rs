@@ -208,8 +208,9 @@ pub fn stablize<'c>(
 	let vars = shared::Expr::vars(subst.len(), scope.clone());
 	let exprs = vars
 		.iter()
-		.chain(logic.exprs())
+		.chain(logic.exprs().into_iter().unique())
 		.filter(|e| e.in_scope(subst.len() + scope.len()))
+		.unique()
 		.collect_vec();
 	let z3_asts = exprs.iter().map(|&e| z3_env.eval(e)).collect_vec();
 	let z3_asts = z3_asts.iter().map(|e| e as &dyn Ast).collect_vec();
@@ -217,29 +218,21 @@ pub fn stablize<'c>(
 	solver.assert(&constraint);
 	let handle = solver.get_context().handle();
 	let checked = crossbeam::atomic::AtomicCell::new(false);
-	let interrupted = crossbeam::atomic::AtomicCell::new(false);
-	let (ids, res) = crossbeam::thread::scope(|s| {
+	let (ids, res) = std::thread::scope(|s| {
 		let checked = &checked;
-		let interrupted = &interrupted;
 		let p = crossbeam::sync::Parker::new();
 		let u = p.unparker().clone();
-		s.spawn(move |_| {
+		s.spawn(move || {
 			p.park_timeout(Ctx::timeout());
 			if !checked.load() {
 				handle.interrupt();
-				interrupted.store(true);
 			}
 		});
 		let (ids, res) = solver.get_implied_equalities(z3_asts.as_slice());
 		checked.store(true);
 		u.unpark();
-		if interrupted.load() {
-			(vec![], SatResult::Unknown)
-		} else {
-			(ids, res)
-		}
-	})
-	.unwrap();
+		(ids, res)
+	});
 	solver.pop(1);
 	match res {
 		SatResult::Unsat => None,

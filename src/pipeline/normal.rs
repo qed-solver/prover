@@ -120,8 +120,10 @@ impl Expr {
 		match self {
 			Expr::Log(l) => l.exprs(),
 			Expr::Op(op, es, ty)
-				if matches!(op.as_str(), "=" | "EQ")
-					&& es.len() == 2 && ty == &DataType::Boolean =>
+				if matches!(
+					op.as_str(),
+					"=" | "EQ" | "<=" | "LE" | "<" | "LT" | ">=" | "GE" | ">" | "GT"
+				) && es.len() == 2 && ty == &DataType::Boolean =>
 			{
 				es.iter().collect()
 			},
@@ -607,6 +609,17 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 							"<" | "LT" => ctx.real_lt(args[0], args[1]),
 							">=" | "GE" => ctx.real_ge(args[0], args[1]),
 							"<=" | "LE" => ctx.real_le(args[0], args[1]),
+							_ => unreachable!(),
+						}
+					},
+					cmp @ (">" | "GT" | "<" | "LT" | ">=" | "GE" | "<=" | "LE")
+						if expr_args[0].ty() == String =>
+					{
+						match cmp {
+							">" | "GT" => ctx.string_gt(args[0], args[1]),
+							"<" | "LT" => ctx.string_lt(args[0], args[1]),
+							">=" | "GE" => ctx.string_ge(args[0], args[1]),
+							"<=" | "LE" => ctx.string_le(args[0], args[1]),
 							_ => unreachable!(),
 						}
 					},
