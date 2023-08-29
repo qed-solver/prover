@@ -208,7 +208,7 @@ pub fn stablize<'c>(
 	let vars = shared::Expr::vars(subst.len(), scope.clone());
 	let exprs = vars
 		.iter()
-		.chain(logic.exprs().into_iter().unique())
+		.chain(logic.exprs())
 		.filter(|e| e.in_scope(subst.len() + scope.len()))
 		.unique()
 		.collect_vec();

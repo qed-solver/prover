@@ -637,7 +637,7 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 							Real => ctx.real__eq(a1, a2),
 							Boolean => ctx.bool__eq(a1, a2),
 							String => ctx.string__eq(a1, a2),
-							Custom(_) => todo!("Cannot compare between arbitrary types yet."),
+							Custom(ty) => ctx.generic_eq(ty, a1, a2),
 						};
 						if cmp == "=" || cmp == "EQ" {
 							eq

@@ -273,4 +273,20 @@ impl<'c> Ctx<'c> {
 			),
 		)
 	}
+
+	pub fn generic_none(&self, ty: impl ToString) -> Dynamic<'c> {
+		Dynamic::new_const(
+			self.solver.get_context(),
+			format!("null!{}", ty.to_string()),
+			&self.generic_sort(ty),
+		)
+	}
+
+	pub fn generic_eq(&self, ty: impl ToString, e1: &Dynamic<'c>, e2: &Dynamic<'c>) -> Dynamic<'c> {
+		let none = self.generic_none(ty);
+		none._eq(e1).ite(
+			&self.bool_none(),
+			&none._eq(e2).ite(&self.bool_none(), &self.bool_some(e1._eq(e2))),
+		)
+	}
 }

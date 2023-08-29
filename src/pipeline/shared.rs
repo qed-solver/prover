@@ -467,15 +467,18 @@ impl<'c> Ctx<'c> {
 	}
 
 	pub fn sort(&self, ty: &DataType) -> Sort<'c> {
-		let z3_ctx = self.z3_ctx();
 		use DataType::*;
 		match ty {
 			Boolean => self.bool.sort.clone(),
 			String => self.string.sort.clone(),
 			Integer => self.int.sort.clone(),
 			Real => self.real.sort.clone(),
-			Custom(ty) => Sort::uninterpreted(z3_ctx, z3::Symbol::String(ty.clone())),
+			Custom(ty) => self.generic_sort(ty),
 		}
+	}
+
+	pub fn generic_sort(&self, ty: impl ToString) -> Sort<'c> {
+		Sort::uninterpreted(self.z3_ctx(), z3::Symbol::String(ty.to_string()))
 	}
 
 	pub fn strict_sort(&self, ty: &DataType) -> Sort<'c> {
