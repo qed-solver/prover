@@ -1,78 +1,78 @@
 {
+  "help" : [ "LogicalProject(DEPTNO=[$0])\n  LogicalFilter(condition=[NOT(AND(=($0, 7), =($1, 'foo'), =($0, 8)))])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(DEPTNO=[$0])\n  LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ],
   "schemas" : [ {
-    "name" : "DEPT",
-    "fields" : [ "DEPTNO", "NAME" ],
     "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "INTEGER"
-      } ],
       "source" : {
         "filter" : {
           "condition" : {
-            "operator" : "NOT",
+            "type" : "BOOLEAN",
             "operand" : [ {
-              "operator" : "AND",
+              "type" : "BOOLEAN",
               "operand" : [ {
-                "operator" : "=",
+                "type" : "BOOLEAN",
                 "operand" : [ {
                   "column" : 0,
                   "type" : "INTEGER"
                 }, {
-                  "operator" : "7",
+                  "type" : "INTEGER",
                   "operand" : [ ],
-                  "type" : "INTEGER"
+                  "operator" : "7"
                 } ],
-                "type" : "BOOLEAN"
+                "operator" : "="
               }, {
-                "operator" : "=",
+                "type" : "BOOLEAN",
                 "operand" : [ {
                   "column" : 1,
                   "type" : "VARCHAR"
                 }, {
-                  "operator" : "_ISO-8859-1'foo'",
+                  "type" : "VARCHAR",
                   "operand" : [ ],
-                  "type" : "VARCHAR"
+                  "operator" : "_ISO-8859-1'foo'"
                 } ],
-                "type" : "BOOLEAN"
+                "operator" : "="
               }, {
-                "operator" : "=",
+                "type" : "BOOLEAN",
                 "operand" : [ {
                   "column" : 0,
                   "type" : "INTEGER"
                 }, {
-                  "operator" : "8",
+                  "type" : "INTEGER",
                   "operand" : [ ],
-                  "type" : "INTEGER"
+                  "operator" : "8"
                 } ],
-                "type" : "BOOLEAN"
+                "operator" : "="
               } ],
-              "type" : "BOOLEAN"
+              "operator" : "AND"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "NOT"
           },
           "source" : {
             "scan" : 0
           }
         }
-      }
-    }
-  }, {
-    "project" : {
+      },
       "target" : [ {
         "column" : 0,
         "type" : "INTEGER"
-      } ],
+      } ]
+    }
+  }, {
+    "project" : {
       "source" : {
         "scan" : 0
-      }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalProject(DEPTNO=[$0])\n  LogicalFilter(condition=[NOT(AND(=($0, 7), =($1, 'foo'), =($0, 8)))])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(DEPTNO=[$0])\n  LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ]
+  } ]
 }

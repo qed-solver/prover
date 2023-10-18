@@ -1,30 +1,26 @@
 {
+  "help" : [ "LogicalProject(DEPTNO=[$7])\n  LogicalJoin(condition=[=($7, $9)], joinType=[left])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(DEPTNO=[$7])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
   "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
   }, {
-    "name" : "DEPT",
-    "fields" : [ "DEPTNO", "NAME" ],
     "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "column" : 7,
-        "type" : "INTEGER"
-      } ],
       "source" : {
         "join" : {
-          "kind" : "LEFT",
           "condition" : {
-            "operator" : "=",
+            "type" : "BOOLEAN",
             "operand" : [ {
               "column" : 7,
               "type" : "INTEGER"
@@ -32,27 +28,31 @@
               "column" : 9,
               "type" : "INTEGER"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "="
           },
           "left" : {
             "scan" : 0
           },
+          "kind" : "LEFT",
           "right" : {
             "scan" : 1
           }
         }
-      }
-    }
-  }, {
-    "project" : {
+      },
       "target" : [ {
         "column" : 7,
         "type" : "INTEGER"
-      } ],
+      } ]
+    }
+  }, {
+    "project" : {
       "source" : {
         "scan" : 0
-      }
+      },
+      "target" : [ {
+        "column" : 7,
+        "type" : "INTEGER"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalProject(DEPTNO=[$7])\n  LogicalJoin(condition=[=($7, $9)], joinType=[left])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(DEPTNO=[$7])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ]
+  } ]
 }

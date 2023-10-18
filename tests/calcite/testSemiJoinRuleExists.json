@@ -1,33 +1,26 @@
 {
+  "help" : [ "LogicalProject(DEPTNO=[$0], NAME=[$1])\n  LogicalJoin(condition=[=($0, $2)], joinType=[inner])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n    LogicalAggregate(group=[{0}])\n      LogicalProject(DEPTNO=[$7])\n        LogicalFilter(condition=[>($5, 100)])\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalJoin(condition=[=($0, $2)], joinType=[semi])\n  LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n  LogicalProject(DEPTNO=[$7])\n    LogicalFilter(condition=[>($5, 100)])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
   "schemas" : [ {
-    "name" : "DEPT",
-    "fields" : [ "DEPTNO", "NAME" ],
     "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
   }, {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "INTEGER"
-      }, {
-        "column" : 1,
-        "type" : "VARCHAR"
-      } ],
       "source" : {
         "join" : {
-          "kind" : "INNER",
           "condition" : {
-            "operator" : "=",
+            "type" : "BOOLEAN",
             "operand" : [ {
               "column" : 0,
               "type" : "INTEGER"
@@ -35,108 +28,62 @@
               "column" : 2,
               "type" : "INTEGER"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "="
           },
           "left" : {
             "scan" : 0
           },
+          "kind" : "INNER",
           "right" : {
-            "distinct" : {
-              "correlate" : [ {
+            "group" : {
+              "keys" : [ {
+                "column" : 0,
+                "type" : "INTEGER"
+              } ],
+              "function" : [ ],
+              "source" : {
                 "project" : {
-                  "target" : [ {
-                    "column" : 0,
-                    "type" : "INTEGER"
-                  } ],
-                  "source" : {
-                    "project" : {
-                      "target" : [ {
-                        "column" : 7,
-                        "type" : "INTEGER"
-                      } ],
-                      "source" : {
-                        "filter" : {
-                          "condition" : {
-                            "operator" : ">",
-                            "operand" : [ {
-                              "column" : 5,
-                              "type" : "INTEGER"
-                            }, {
-                              "operator" : "100",
-                              "operand" : [ ],
-                              "type" : "INTEGER"
-                            } ],
-                            "type" : "BOOLEAN"
-                          },
-                          "source" : {
-                            "scan" : 1
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }, {
-                "aggregate" : {
-                  "function" : [ ],
                   "source" : {
                     "filter" : {
                       "condition" : {
-                        "operator" : "AND",
+                        "type" : "BOOLEAN",
                         "operand" : [ {
-                          "operator" : "=",
-                          "operand" : [ {
-                            "column" : 0,
-                            "type" : "INTEGER"
-                          }, {
-                            "column" : 1,
-                            "type" : "INTEGER"
-                          } ],
-                          "type" : "BOOLEAN"
+                          "column" : 5,
+                          "type" : "INTEGER"
+                        }, {
+                          "type" : "INTEGER",
+                          "operand" : [ ],
+                          "operator" : "100"
                         } ],
-                        "type" : "BOOLEAN"
+                        "operator" : ">"
                       },
                       "source" : {
-                        "project" : {
-                          "target" : [ {
-                            "column" : 8,
-                            "type" : "INTEGER"
-                          } ],
-                          "source" : {
-                            "filter" : {
-                              "condition" : {
-                                "operator" : ">",
-                                "operand" : [ {
-                                  "column" : 6,
-                                  "type" : "INTEGER"
-                                }, {
-                                  "operator" : "100",
-                                  "operand" : [ ],
-                                  "type" : "INTEGER"
-                                } ],
-                                "type" : "BOOLEAN"
-                              },
-                              "source" : {
-                                "scan" : 1
-                              }
-                            }
-                          }
-                        }
+                        "scan" : 1
                       }
                     }
-                  }
+                  },
+                  "target" : [ {
+                    "column" : 7,
+                    "type" : "INTEGER"
+                  } ]
                 }
-              } ]
+              }
             }
           }
         }
-      }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ]
     }
   }, {
     "join" : {
-      "kind" : "SEMI",
       "condition" : {
-        "operator" : "=",
+        "type" : "BOOLEAN",
         "operand" : [ {
           "column" : 0,
           "type" : "INTEGER"
@@ -144,39 +91,39 @@
           "column" : 2,
           "type" : "INTEGER"
         } ],
-        "type" : "BOOLEAN"
+        "operator" : "="
       },
       "left" : {
         "scan" : 0
       },
+      "kind" : "SEMI",
       "right" : {
         "project" : {
-          "target" : [ {
-            "column" : 7,
-            "type" : "INTEGER"
-          } ],
           "source" : {
             "filter" : {
               "condition" : {
-                "operator" : ">",
+                "type" : "BOOLEAN",
                 "operand" : [ {
                   "column" : 5,
                   "type" : "INTEGER"
                 }, {
-                  "operator" : "100",
+                  "type" : "INTEGER",
                   "operand" : [ ],
-                  "type" : "INTEGER"
+                  "operator" : "100"
                 } ],
-                "type" : "BOOLEAN"
+                "operator" : ">"
               },
               "source" : {
                 "scan" : 1
               }
             }
-          }
+          },
+          "target" : [ {
+            "column" : 7,
+            "type" : "INTEGER"
+          } ]
         }
       }
     }
-  } ],
-  "help" : [ "LogicalProject(DEPTNO=[$0], NAME=[$1])\n  LogicalJoin(condition=[=($0, $2)], joinType=[inner])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n    LogicalAggregate(group=[{0}])\n      LogicalProject(DEPTNO=[$7])\n        LogicalFilter(condition=[>($5, 100)])\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalJoin(condition=[=($0, $2)], joinType=[semi])\n  LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n  LogicalProject(DEPTNO=[$7])\n    LogicalFilter(condition=[>($5, 100)])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ]
+  } ]
 }

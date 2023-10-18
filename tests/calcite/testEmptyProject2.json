@@ -1,31 +1,14 @@
 {
+  "help" : [ "LogicalProject(EXPR$0=[+(+($0, $1), $0)])\n  LogicalFilter(condition=[>(+($0, $1), 50)])\n    LogicalValues(tuples=[[{ 10, 1 }, { 30, 3 }]])\n", "LogicalValues(tuples=[[]])\n" ],
   "schemas" : [ ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "operator" : "+",
-        "operand" : [ {
-          "operator" : "+",
-          "operand" : [ {
-            "column" : 0,
-            "type" : "INTEGER"
-          }, {
-            "column" : 1,
-            "type" : "INTEGER"
-          } ],
-          "type" : "INTEGER"
-        }, {
-          "column" : 0,
-          "type" : "INTEGER"
-        } ],
-        "type" : "INTEGER"
-      } ],
       "source" : {
         "filter" : {
           "condition" : {
-            "operator" : ">",
+            "type" : "BOOLEAN",
             "operand" : [ {
-              "operator" : "+",
+              "type" : "INTEGER",
               "operand" : [ {
                 "column" : 0,
                 "type" : "INTEGER"
@@ -33,44 +16,61 @@
                 "column" : 1,
                 "type" : "INTEGER"
               } ],
-              "type" : "INTEGER"
+              "operator" : "+"
             }, {
-              "operator" : "50",
+              "type" : "INTEGER",
               "operand" : [ ],
-              "type" : "INTEGER"
+              "operator" : "50"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : ">"
           },
           "source" : {
             "values" : {
               "schema" : [ "INTEGER", "INTEGER" ],
               "content" : [ [ {
-                "operator" : "10",
+                "type" : "INTEGER",
                 "operand" : [ ],
-                "type" : "INTEGER"
+                "operator" : "10"
               }, {
-                "operator" : "1",
+                "type" : "INTEGER",
                 "operand" : [ ],
-                "type" : "INTEGER"
+                "operator" : "1"
               } ], [ {
-                "operator" : "30",
+                "type" : "INTEGER",
                 "operand" : [ ],
-                "type" : "INTEGER"
+                "operator" : "30"
               }, {
-                "operator" : "3",
+                "type" : "INTEGER",
                 "operand" : [ ],
-                "type" : "INTEGER"
+                "operator" : "3"
               } ] ]
             }
           }
         }
-      }
+      },
+      "target" : [ {
+        "type" : "INTEGER",
+        "operand" : [ {
+          "type" : "INTEGER",
+          "operand" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "column" : 1,
+            "type" : "INTEGER"
+          } ],
+          "operator" : "+"
+        }, {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "+"
+      } ]
     }
   }, {
     "values" : {
       "schema" : [ "INTEGER" ],
       "content" : [ ]
     }
-  } ],
-  "help" : [ "LogicalProject(EXPR$0=[+(+($0, $1), $0)])\n  LogicalFilter(condition=[>(+($0, $1), 50)])\n    LogicalValues(tuples=[[{ 10, 1 }, { 30, 3 }]])\n", "LogicalValues(tuples=[[]])\n" ]
+  } ]
 }

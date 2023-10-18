@@ -177,7 +177,7 @@ impl Term {
 	}
 
 	fn exprs(&self) -> Vector<&Expr> {
-		let Sigma(scope, Inner { logic, apps }) = self;
+		let Sigma(_, Inner { logic, apps }) = self;
 		logic.exprs() + apps.iter().flat_map(Neutral::exprs).collect()
 	}
 }
@@ -654,6 +654,13 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 							ctx.bool_is_true(cond).ite(body, &rem)
 						})
 					},
+					"CASE" if args.len() >= 2 && args.len() % 2 == 0 => {
+						let input = args[0].clone();
+						let (chunks, remainder) = args[1..].as_chunks();
+						chunks.iter().rfold(remainder[0].clone(), |rem, [val, body]| {
+							input._eq(val).ite(body, &rem)
+						})
+					},
 					"CAST" if ty == &expr_args[0].ty() => args[0].clone(),
 					"CAST" if ty == &Real && expr_args[0].ty() == Integer => {
 						ctx.int_to_real(args[0])
@@ -667,7 +674,7 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 							ctx.app(&format!("f{}!{}", args.len(), op), &args, ty, true)
 						}
 					},
-					op => ctx.app(&format!("f!{}", op), &args, ty, true),
+					op => ctx.app(&format!("f!{}", op.replace("'", "\"")), &args, ty, true),
 				}
 			},
 			Expr::HOp(f, args, rel, DataType::Boolean) if f == "IN" => {

@@ -1,88 +1,136 @@
 {
+  "help" : [ "LogicalAggregate(group=[{}], EXPR$0=[AVG($0)], EXPR$1=[AVG($0) WITHIN DISTINCT ($1)])\n  LogicalProject(SAL=[$5], DEPTNO=[$7])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(EXPR$0=[$0], EXPR$1=[CAST(/($1, $2)):INTEGER])\n  LogicalProject(EXPR$0=[$0], $f1=[CASE(=($2, 0), null:INTEGER, $1)], $f2=[$2])\n    LogicalAggregate(group=[{}], EXPR$0=[AVG($0)], agg#1=[$SUM0($0) WITHIN DISTINCT ($1)], agg#2=[COUNT() WITHIN DISTINCT ($1)])\n      LogicalProject(SAL=[$5], DEPTNO=[$7])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
   "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
-    "distinct" : {
-      "correlate" : [ {
-        "project" : {
-          "target" : [ ],
-          "source" : {
-            "project" : {
-              "target" : [ {
-                "column" : 5,
-                "type" : "INTEGER"
-              }, {
-                "column" : 7,
-                "type" : "INTEGER"
-              } ],
-              "source" : {
-                "scan" : 0
-              }
-            }
-          }
-        }
+    "group" : {
+      "keys" : [ ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "AVG",
+        "ignoreNulls" : false
       }, {
-        "aggregate" : {
-          "function" : [ {
-            "operator" : "AVG",
-            "operand" : [ {
-              "column" : 0,
-              "type" : "INTEGER"
-            } ],
-            "distinct" : false,
-            "ignoreNulls" : false,
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "AVG",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "project" : {
+          "source" : {
+            "scan" : 0
+          },
+          "target" : [ {
+            "column" : 5,
             "type" : "INTEGER"
           }, {
-            "operator" : "AVG",
-            "operand" : [ {
-              "column" : 0,
-              "type" : "INTEGER"
-            } ],
-            "distinct" : false,
-            "ignoreNulls" : false,
+            "column" : 7,
             "type" : "INTEGER"
-          } ],
+          } ]
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "project" : {
           "source" : {
-            "filter" : {
-              "condition" : {
-                "operator" : "AND",
+            "group" : {
+              "keys" : [ ],
+              "function" : [ {
+                "distinct" : false,
+                "type" : "INTEGER",
+                "operand" : [ {
+                  "column" : 0,
+                  "type" : "INTEGER"
+                } ],
+                "operator" : "AVG",
+                "ignoreNulls" : false
+              }, {
+                "distinct" : false,
+                "type" : "INTEGER",
+                "operand" : [ {
+                  "column" : 0,
+                  "type" : "INTEGER"
+                } ],
+                "operator" : "$SUM0",
+                "ignoreNulls" : false
+              }, {
+                "distinct" : false,
+                "type" : "BIGINT",
                 "operand" : [ ],
-                "type" : "BOOLEAN"
-              },
+                "operator" : "COUNT",
+                "ignoreNulls" : false
+              } ],
               "source" : {
                 "project" : {
+                  "source" : {
+                    "scan" : 0
+                  },
                   "target" : [ {
                     "column" : 5,
                     "type" : "INTEGER"
                   }, {
                     "column" : 7,
                     "type" : "INTEGER"
-                  } ],
-                  "source" : {
-                    "scan" : 0
-                  }
+                  } ]
                 }
               }
             }
-          }
+          },
+          "target" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "type" : "INTEGER",
+            "operand" : [ {
+              "type" : "BOOLEAN",
+              "operand" : [ {
+                "column" : 2,
+                "type" : "BIGINT"
+              }, {
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "0"
+              } ],
+              "operator" : "="
+            }, {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "NULL"
+            }, {
+              "column" : 1,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "CASE"
+          }, {
+            "column" : 2,
+            "type" : "BIGINT"
+          } ]
         }
-      } ]
-    }
-  }, {
-    "project" : {
+      },
       "target" : [ {
         "column" : 0,
         "type" : "INTEGER"
       }, {
-        "operator" : "CAST",
+        "type" : "INTEGER",
         "operand" : [ {
-          "operator" : "/",
+          "type" : "BIGINT",
           "operand" : [ {
             "column" : 1,
             "type" : "INTEGER"
@@ -90,118 +138,10 @@
             "column" : 2,
             "type" : "BIGINT"
           } ],
-          "type" : "BIGINT"
+          "operator" : "/"
         } ],
-        "type" : "INTEGER"
-      } ],
-      "source" : {
-        "project" : {
-          "target" : [ {
-            "column" : 0,
-            "type" : "INTEGER"
-          }, {
-            "operator" : "CASE",
-            "operand" : [ {
-              "operator" : "=",
-              "operand" : [ {
-                "column" : 2,
-                "type" : "BIGINT"
-              }, {
-                "operator" : "0",
-                "operand" : [ ],
-                "type" : "INTEGER"
-              } ],
-              "type" : "BOOLEAN"
-            }, {
-              "operator" : "NULL",
-              "operand" : [ ],
-              "type" : "INTEGER"
-            }, {
-              "column" : 1,
-              "type" : "INTEGER"
-            } ],
-            "type" : "INTEGER"
-          }, {
-            "column" : 2,
-            "type" : "BIGINT"
-          } ],
-          "source" : {
-            "distinct" : {
-              "correlate" : [ {
-                "project" : {
-                  "target" : [ ],
-                  "source" : {
-                    "project" : {
-                      "target" : [ {
-                        "column" : 5,
-                        "type" : "INTEGER"
-                      }, {
-                        "column" : 7,
-                        "type" : "INTEGER"
-                      } ],
-                      "source" : {
-                        "scan" : 0
-                      }
-                    }
-                  }
-                }
-              }, {
-                "aggregate" : {
-                  "function" : [ {
-                    "operator" : "AVG",
-                    "operand" : [ {
-                      "column" : 0,
-                      "type" : "INTEGER"
-                    } ],
-                    "distinct" : false,
-                    "ignoreNulls" : false,
-                    "type" : "INTEGER"
-                  }, {
-                    "operator" : "$SUM0",
-                    "operand" : [ {
-                      "column" : 0,
-                      "type" : "INTEGER"
-                    } ],
-                    "distinct" : false,
-                    "ignoreNulls" : false,
-                    "type" : "INTEGER"
-                  }, {
-                    "operator" : "COUNT",
-                    "operand" : [ ],
-                    "distinct" : false,
-                    "ignoreNulls" : false,
-                    "type" : "BIGINT"
-                  } ],
-                  "source" : {
-                    "filter" : {
-                      "condition" : {
-                        "operator" : "AND",
-                        "operand" : [ ],
-                        "type" : "BOOLEAN"
-                      },
-                      "source" : {
-                        "project" : {
-                          "target" : [ {
-                            "column" : 5,
-                            "type" : "INTEGER"
-                          }, {
-                            "column" : 7,
-                            "type" : "INTEGER"
-                          } ],
-                          "source" : {
-                            "scan" : 0
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              } ]
-            }
-          }
-        }
-      }
+        "operator" : "CAST"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalAggregate(group=[{}], EXPR$0=[AVG($0)], EXPR$1=[AVG($0) WITHIN DISTINCT ($1)])\n  LogicalProject(SAL=[$5], DEPTNO=[$7])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(EXPR$0=[$0], EXPR$1=[CAST(/($1, $2)):INTEGER])\n  LogicalProject(EXPR$0=[$0], $f1=[CASE(=($2, 0), null:INTEGER, $1)], $f2=[$2])\n    LogicalAggregate(group=[{}], EXPR$0=[AVG($0)], agg#1=[$SUM0($0) WITHIN DISTINCT ($1)], agg#2=[COUNT() WITHIN DISTINCT ($1)])\n      LogicalProject(SAL=[$5], DEPTNO=[$7])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ]
+  } ]
 }

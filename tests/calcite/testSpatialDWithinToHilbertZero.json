@@ -1,48 +1,33 @@
 {
+  "help" : [ "LogicalProject(NAME=[$0], LATITUDE=[$1], LONGITUDE=[$2], CUISINE=[$3], HILBERT=[$4])\n  LogicalFilter(condition=[ST_DWITHIN(ST_POINT(10.0:DECIMAL(3, 1), 20.0:DECIMAL(3, 1)), ST_POINT($2, $1), 0)])\n    LogicalTableScan(table=[[CATALOG, GEO, RESTAURANTS]])\n", "LogicalProject(NAME=[$0], LATITUDE=[$1], LONGITUDE=[$2], CUISINE=[$3], HILBERT=[$4])\n  LogicalFilter(condition=[AND(=($4, 33139), =(POINT (10 20), ST_POINT($2, $1)))])\n    LogicalTableScan(table=[[CATALOG, GEO, RESTAURANTS]])\n" ],
   "schemas" : [ {
-    "name" : "RESTAURANTS",
-    "fields" : [ "NAME", "LATITUDE", "LONGITUDE", "CUISINE", "HILBERT" ],
     "types" : [ "VARCHAR", "INTEGER", "INTEGER", "VARCHAR", "BIGINT" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false, false, false, false ],
+    "name" : "CATALOG.GEO.RESTAURANTS",
+    "guaranteed" : [ ],
+    "fields" : [ "NAME", "LATITUDE", "LONGITUDE", "CUISINE", "HILBERT" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "VARCHAR"
-      }, {
-        "column" : 1,
-        "type" : "INTEGER"
-      }, {
-        "column" : 2,
-        "type" : "INTEGER"
-      }, {
-        "column" : 3,
-        "type" : "VARCHAR"
-      }, {
-        "column" : 4,
-        "type" : "BIGINT"
-      } ],
       "source" : {
         "filter" : {
           "condition" : {
-            "operator" : "ST_DWITHIN",
+            "type" : "BOOLEAN",
             "operand" : [ {
-              "operator" : "ST_POINT",
+              "type" : "GEOMETRY",
               "operand" : [ {
-                "operator" : "10.0",
+                "type" : "DECIMAL",
                 "operand" : [ ],
-                "type" : "DECIMAL"
+                "operator" : "10.0"
               }, {
-                "operator" : "20.0",
+                "type" : "DECIMAL",
                 "operand" : [ ],
-                "type" : "DECIMAL"
+                "operator" : "20.0"
               } ],
-              "type" : "GEOMETRY"
+              "operator" : "ST_POINT"
             }, {
-              "operator" : "ST_POINT",
+              "type" : "GEOMETRY",
               "operand" : [ {
                 "column" : 2,
                 "type" : "INTEGER"
@@ -50,22 +35,19 @@
                 "column" : 1,
                 "type" : "INTEGER"
               } ],
-              "type" : "GEOMETRY"
+              "operator" : "ST_POINT"
             }, {
-              "operator" : "0",
+              "type" : "INTEGER",
               "operand" : [ ],
-              "type" : "INTEGER"
+              "operator" : "0"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "ST_DWITHIN"
           },
           "source" : {
             "scan" : 0
           }
         }
-      }
-    }
-  }, {
-    "project" : {
+      },
       "target" : [ {
         "column" : 0,
         "type" : "VARCHAR"
@@ -81,30 +63,33 @@
       }, {
         "column" : 4,
         "type" : "BIGINT"
-      } ],
+      } ]
+    }
+  }, {
+    "project" : {
       "source" : {
         "filter" : {
           "condition" : {
-            "operator" : "AND",
+            "type" : "BOOLEAN",
             "operand" : [ {
-              "operator" : "=",
+              "type" : "BOOLEAN",
               "operand" : [ {
                 "column" : 4,
                 "type" : "BIGINT"
               }, {
-                "operator" : "33139",
+                "type" : "INTEGER",
                 "operand" : [ ],
-                "type" : "INTEGER"
+                "operator" : "33139"
               } ],
-              "type" : "BOOLEAN"
+              "operator" : "="
             }, {
-              "operator" : "=",
+              "type" : "BOOLEAN",
               "operand" : [ {
-                "operator" : "POINT (10 20)",
+                "type" : "GEOMETRY",
                 "operand" : [ ],
-                "type" : "GEOMETRY"
+                "operator" : "POINT (10 20)"
               }, {
-                "operator" : "ST_POINT",
+                "type" : "GEOMETRY",
                 "operand" : [ {
                   "column" : 2,
                   "type" : "INTEGER"
@@ -112,18 +97,33 @@
                   "column" : 1,
                   "type" : "INTEGER"
                 } ],
-                "type" : "GEOMETRY"
+                "operator" : "ST_POINT"
               } ],
-              "type" : "BOOLEAN"
+              "operator" : "="
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "AND"
           },
           "source" : {
             "scan" : 0
           }
         }
-      }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 1,
+        "type" : "INTEGER"
+      }, {
+        "column" : 2,
+        "type" : "INTEGER"
+      }, {
+        "column" : 3,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 4,
+        "type" : "BIGINT"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalProject(NAME=[$0], LATITUDE=[$1], LONGITUDE=[$2], CUISINE=[$3], HILBERT=[$4])\n  LogicalFilter(condition=[ST_DWITHIN(ST_POINT(10.0:DECIMAL(3, 1), 20.0:DECIMAL(3, 1)), ST_POINT($2, $1), 0)])\n    LogicalTableScan(table=[[CATALOG, GEO, RESTAURANTS]])\n", "LogicalProject(NAME=[$0], LATITUDE=[$1], LONGITUDE=[$2], CUISINE=[$3], HILBERT=[$4])\n  LogicalFilter(condition=[AND(=($4, 33139), =(POINT (10 20), ST_POINT($2, $1)))])\n    LogicalTableScan(table=[[CATALOG, GEO, RESTAURANTS]])\n" ]
+  } ]
 }

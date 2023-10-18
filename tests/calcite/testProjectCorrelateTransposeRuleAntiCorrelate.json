@@ -1,104 +1,112 @@
 {
+  "help" : [ "LogicalProject(f=[$0])\n  LogicalCorrelate(correlation=[$cor0], joinType=[anti], requiredColumns=[{0}])\n    LogicalValues(tuples=[[{ '1', '2' }]])\n    LogicalProject(f3=[$0], $f1=[$cor0.f])\n      LogicalValues(tuples=[[{ '1', '2' }]])\n", "LogicalCorrelate(correlation=[$cor0], joinType=[anti], requiredColumns=[{0}])\n  LogicalProject(f=[$0])\n    LogicalValues(tuples=[[{ '1', '2' }]])\n  LogicalProject\n    LogicalProject(f3=[$0], $f1=[$cor0.f])\n      LogicalValues(tuples=[[{ '1', '2' }]])\n" ],
   "schemas" : [ ],
   "queries" : [ {
     "project" : {
+      "source" : {
+        "correlate" : {
+          "left" : {
+            "values" : {
+              "schema" : [ "CHAR", "CHAR" ],
+              "content" : [ [ {
+                "type" : "CHAR",
+                "operand" : [ ],
+                "operator" : "_ISO-8859-1'1'"
+              }, {
+                "type" : "CHAR",
+                "operand" : [ ],
+                "operator" : "_ISO-8859-1'2'"
+              } ] ]
+            }
+          },
+          "kind" : "ANTI",
+          "right" : {
+            "project" : {
+              "source" : {
+                "values" : {
+                  "schema" : [ "CHAR", "CHAR" ],
+                  "content" : [ [ {
+                    "type" : "CHAR",
+                    "operand" : [ ],
+                    "operator" : "_ISO-8859-1'1'"
+                  }, {
+                    "type" : "CHAR",
+                    "operand" : [ ],
+                    "operator" : "_ISO-8859-1'2'"
+                  } ] ]
+                }
+              },
+              "target" : [ {
+                "column" : 2,
+                "type" : "CHAR"
+              }, {
+                "column" : 0,
+                "type" : "CHAR"
+              } ]
+            }
+          }
+        }
+      },
       "target" : [ {
         "column" : 0,
         "type" : "CHAR"
-      } ],
-      "source" : {
-        "correlate" : [ {
-          "values" : {
-            "schema" : [ "CHAR", "CHAR" ],
-            "content" : [ [ {
-              "operator" : "_ISO-8859-1'1'",
-              "operand" : [ ],
-              "type" : "CHAR"
-            }, {
-              "operator" : "_ISO-8859-1'2'",
-              "operand" : [ ],
-              "type" : "CHAR"
-            } ] ]
-          }
-        }, {
-          "project" : {
-            "target" : [ {
-              "column" : 2,
-              "type" : "CHAR"
-            }, {
-              "column" : 0,
-              "type" : "CHAR"
-            } ],
-            "source" : {
-              "values" : {
-                "schema" : [ "CHAR", "CHAR" ],
-                "content" : [ [ {
-                  "operator" : "_ISO-8859-1'1'",
-                  "operand" : [ ],
-                  "type" : "CHAR"
-                }, {
-                  "operator" : "_ISO-8859-1'2'",
-                  "operand" : [ ],
-                  "type" : "CHAR"
-                } ] ]
-              }
-            }
-          }
-        } ]
-      }
+      } ]
     }
   }, {
-    "correlate" : [ {
-      "project" : {
-        "target" : [ {
-          "column" : 0,
-          "type" : "CHAR"
-        } ],
-        "source" : {
-          "values" : {
-            "schema" : [ "CHAR", "CHAR" ],
-            "content" : [ [ {
-              "operator" : "_ISO-8859-1'1'",
-              "operand" : [ ],
-              "type" : "CHAR"
-            }, {
-              "operator" : "_ISO-8859-1'2'",
-              "operand" : [ ],
-              "type" : "CHAR"
-            } ] ]
-          }
-        }
-      }
-    }, {
-      "project" : {
-        "target" : [ ],
-        "source" : {
-          "project" : {
-            "target" : [ {
-              "column" : 1,
-              "type" : "CHAR"
-            }, {
-              "column" : 0,
-              "type" : "CHAR"
-            } ],
-            "source" : {
-              "values" : {
-                "schema" : [ "CHAR", "CHAR" ],
-                "content" : [ [ {
-                  "operator" : "_ISO-8859-1'1'",
-                  "operand" : [ ],
-                  "type" : "CHAR"
-                }, {
-                  "operator" : "_ISO-8859-1'2'",
-                  "operand" : [ ],
-                  "type" : "CHAR"
-                } ] ]
-              }
+    "correlate" : {
+      "left" : {
+        "project" : {
+          "source" : {
+            "values" : {
+              "schema" : [ "CHAR", "CHAR" ],
+              "content" : [ [ {
+                "type" : "CHAR",
+                "operand" : [ ],
+                "operator" : "_ISO-8859-1'1'"
+              }, {
+                "type" : "CHAR",
+                "operand" : [ ],
+                "operator" : "_ISO-8859-1'2'"
+              } ] ]
             }
-          }
+          },
+          "target" : [ {
+            "column" : 0,
+            "type" : "CHAR"
+          } ]
+        }
+      },
+      "kind" : "ANTI",
+      "right" : {
+        "project" : {
+          "source" : {
+            "project" : {
+              "source" : {
+                "values" : {
+                  "schema" : [ "CHAR", "CHAR" ],
+                  "content" : [ [ {
+                    "type" : "CHAR",
+                    "operand" : [ ],
+                    "operator" : "_ISO-8859-1'1'"
+                  }, {
+                    "type" : "CHAR",
+                    "operand" : [ ],
+                    "operator" : "_ISO-8859-1'2'"
+                  } ] ]
+                }
+              },
+              "target" : [ {
+                "column" : 1,
+                "type" : "CHAR"
+              }, {
+                "column" : 0,
+                "type" : "CHAR"
+              } ]
+            }
+          },
+          "target" : [ ]
         }
       }
-    } ]
-  } ],
-  "help" : [ "LogicalProject(f=[$0])\n  LogicalCorrelate(correlation=[$cor0], joinType=[anti], requiredColumns=[{0}])\n    LogicalValues(tuples=[[{ '1', '2' }]])\n    LogicalProject(f3=[$0], $f1=[$cor0.f])\n      LogicalValues(tuples=[[{ '1', '2' }]])\n", "LogicalCorrelate(correlation=[$cor0], joinType=[anti], requiredColumns=[{0}])\n  LogicalProject(f=[$0])\n    LogicalValues(tuples=[[{ '1', '2' }]])\n  LogicalProject\n    LogicalProject(f3=[$0], $f1=[$cor0.f])\n      LogicalValues(tuples=[[{ '1', '2' }]])\n" ]
+    }
+  } ]
 }

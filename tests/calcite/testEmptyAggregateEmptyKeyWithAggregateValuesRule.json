@@ -1,66 +1,44 @@
 {
+  "help" : [ "LogicalAggregate(group=[{}], EXPR$0=[COUNT()], EXPR$1=[SUM($0)])\n  LogicalValues(tuples=[[]])\n", "LogicalValues(tuples=[[{ 0, null }]])\n" ],
   "schemas" : [ ],
   "queries" : [ {
-    "distinct" : {
-      "correlate" : [ {
-        "project" : {
-          "target" : [ ],
-          "source" : {
-            "values" : {
-              "schema" : [ "INTEGER" ],
-              "content" : [ ]
-            }
-          }
-        }
+    "group" : {
+      "keys" : [ ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "BIGINT",
+        "operand" : [ ],
+        "operator" : "COUNT",
+        "ignoreNulls" : false
       }, {
-        "aggregate" : {
-          "function" : [ {
-            "operator" : "COUNT",
-            "operand" : [ ],
-            "distinct" : false,
-            "ignoreNulls" : false,
-            "type" : "BIGINT"
-          }, {
-            "operator" : "SUM",
-            "operand" : [ {
-              "column" : 0,
-              "type" : "INTEGER"
-            } ],
-            "distinct" : false,
-            "ignoreNulls" : false,
-            "type" : "INTEGER"
-          } ],
-          "source" : {
-            "filter" : {
-              "condition" : {
-                "operator" : "AND",
-                "operand" : [ ],
-                "type" : "BOOLEAN"
-              },
-              "source" : {
-                "values" : {
-                  "schema" : [ "INTEGER" ],
-                  "content" : [ ]
-                }
-              }
-            }
-          }
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "SUM",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "values" : {
+          "schema" : [ "INTEGER" ],
+          "content" : [ ]
         }
-      } ]
+      }
     }
   }, {
     "values" : {
       "schema" : [ "BIGINT", "INTEGER" ],
       "content" : [ [ {
-        "operator" : "0",
+        "type" : "BIGINT",
         "operand" : [ ],
-        "type" : "BIGINT"
+        "operator" : "0"
       }, {
-        "operator" : "NULL",
+        "type" : "INTEGER",
         "operand" : [ ],
-        "type" : "INTEGER"
+        "operator" : "NULL"
       } ] ]
     }
-  } ],
-  "help" : [ "LogicalAggregate(group=[{}], EXPR$0=[COUNT()], EXPR$1=[SUM($0)])\n  LogicalValues(tuples=[[]])\n", "LogicalValues(tuples=[[{ 0, null }]])\n" ]
+  } ]
 }

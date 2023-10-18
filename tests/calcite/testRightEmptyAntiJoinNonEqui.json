@@ -1,25 +1,21 @@
 {
+  "help" : [ "LogicalProject(EMPNO=[$0])\n  LogicalJoin(condition=[AND(=($7, $8), =($5, 2000))], joinType=[anti])\n    LogicalTableScan(table=[[scott, EMP]])\n    LogicalValues(tuples=[[]])\n", "LogicalProject(EMPNO=[$0])\n  LogicalTableScan(table=[[scott, EMP]])\n" ],
   "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
     "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
-    "key" : [ [ 0 ], [ 1 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, true, true, true, true, true, true, true ],
+    "name" : "scott.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
+    "key" : [ [ 0 ], [ 1 ] ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "SMALLINT"
-      } ],
       "source" : {
         "join" : {
-          "kind" : "ANTI",
           "condition" : {
-            "operator" : "AND",
+            "type" : "BOOLEAN",
             "operand" : [ {
-              "operator" : "=",
+              "type" : "BOOLEAN",
               "operand" : [ {
                 "column" : 7,
                 "type" : "TINYINT"
@@ -27,24 +23,25 @@
                 "column" : 8,
                 "type" : "TINYINT"
               } ],
-              "type" : "BOOLEAN"
+              "operator" : "="
             }, {
-              "operator" : "=",
+              "type" : "BOOLEAN",
               "operand" : [ {
                 "column" : 5,
                 "type" : "DECIMAL"
               }, {
-                "operator" : "2000",
+                "type" : "INTEGER",
                 "operand" : [ ],
-                "type" : "INTEGER"
+                "operator" : "2000"
               } ],
-              "type" : "BOOLEAN"
+              "operator" : "="
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "AND"
           },
           "left" : {
             "scan" : 0
           },
+          "kind" : "ANTI",
           "right" : {
             "values" : {
               "schema" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
@@ -52,18 +49,21 @@
             }
           }
         }
-      }
-    }
-  }, {
-    "project" : {
+      },
       "target" : [ {
         "column" : 0,
         "type" : "SMALLINT"
-      } ],
+      } ]
+    }
+  }, {
+    "project" : {
       "source" : {
         "scan" : 0
-      }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "SMALLINT"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalProject(EMPNO=[$0])\n  LogicalJoin(condition=[AND(=($7, $8), =($5, 2000))], joinType=[anti])\n    LogicalTableScan(table=[[scott, EMP]])\n    LogicalValues(tuples=[[]])\n", "LogicalProject(EMPNO=[$0])\n  LogicalTableScan(table=[[scott, EMP]])\n" ]
+  } ]
 }

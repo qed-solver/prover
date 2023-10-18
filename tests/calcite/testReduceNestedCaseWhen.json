@@ -1,126 +1,126 @@
 {
+  "help" : [ "LogicalProject(SAL=[$5])\n  LogicalFilter(condition=[IS TRUE(CASE(=($5, 1000), IS NULL(CASE(=($5, 1000), null:INTEGER, 1)), IS NULL(CASE(=($5, 2000), null:INTEGER, 1))))])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(SAL=[$5])\n  LogicalFilter(condition=[SEARCH($5, Sarg[1000, 2000])])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
   "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "column" : 5,
-        "type" : "INTEGER"
-      } ],
       "source" : {
         "filter" : {
           "condition" : {
-            "operator" : "IS TRUE",
+            "type" : "BOOLEAN",
             "operand" : [ {
-              "operator" : "CASE",
+              "type" : "BOOLEAN",
               "operand" : [ {
-                "operator" : "=",
+                "type" : "BOOLEAN",
                 "operand" : [ {
                   "column" : 5,
                   "type" : "INTEGER"
                 }, {
-                  "operator" : "1000",
+                  "type" : "INTEGER",
                   "operand" : [ ],
-                  "type" : "INTEGER"
+                  "operator" : "1000"
                 } ],
-                "type" : "BOOLEAN"
+                "operator" : "="
               }, {
-                "operator" : "IS NULL",
+                "type" : "BOOLEAN",
                 "operand" : [ {
-                  "operator" : "CASE",
+                  "type" : "INTEGER",
                   "operand" : [ {
-                    "operator" : "=",
+                    "type" : "BOOLEAN",
                     "operand" : [ {
                       "column" : 5,
                       "type" : "INTEGER"
                     }, {
-                      "operator" : "1000",
+                      "type" : "INTEGER",
                       "operand" : [ ],
-                      "type" : "INTEGER"
+                      "operator" : "1000"
                     } ],
-                    "type" : "BOOLEAN"
+                    "operator" : "="
                   }, {
-                    "operator" : "NULL",
+                    "type" : "INTEGER",
                     "operand" : [ ],
-                    "type" : "INTEGER"
+                    "operator" : "NULL"
                   }, {
-                    "operator" : "1",
+                    "type" : "INTEGER",
                     "operand" : [ ],
-                    "type" : "INTEGER"
+                    "operator" : "1"
                   } ],
-                  "type" : "INTEGER"
+                  "operator" : "CASE"
                 } ],
-                "type" : "BOOLEAN"
+                "operator" : "IS NULL"
               }, {
-                "operator" : "IS NULL",
+                "type" : "BOOLEAN",
                 "operand" : [ {
-                  "operator" : "CASE",
+                  "type" : "INTEGER",
                   "operand" : [ {
-                    "operator" : "=",
+                    "type" : "BOOLEAN",
                     "operand" : [ {
                       "column" : 5,
                       "type" : "INTEGER"
                     }, {
-                      "operator" : "2000",
+                      "type" : "INTEGER",
                       "operand" : [ ],
-                      "type" : "INTEGER"
+                      "operator" : "2000"
                     } ],
-                    "type" : "BOOLEAN"
+                    "operator" : "="
                   }, {
-                    "operator" : "NULL",
+                    "type" : "INTEGER",
                     "operand" : [ ],
-                    "type" : "INTEGER"
+                    "operator" : "NULL"
                   }, {
-                    "operator" : "1",
+                    "type" : "INTEGER",
                     "operand" : [ ],
-                    "type" : "INTEGER"
+                    "operator" : "1"
                   } ],
-                  "type" : "INTEGER"
+                  "operator" : "CASE"
                 } ],
-                "type" : "BOOLEAN"
+                "operator" : "IS NULL"
               } ],
-              "type" : "BOOLEAN"
+              "operator" : "CASE"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "IS TRUE"
           },
           "source" : {
             "scan" : 0
           }
         }
-      }
-    }
-  }, {
-    "project" : {
+      },
       "target" : [ {
         "column" : 5,
         "type" : "INTEGER"
-      } ],
+      } ]
+    }
+  }, {
+    "project" : {
       "source" : {
         "filter" : {
           "condition" : {
-            "operator" : "SEARCH",
+            "type" : "BOOLEAN",
             "operand" : [ {
               "column" : 5,
               "type" : "INTEGER"
             }, {
-              "operator" : "Sarg[1000, 2000]",
+              "type" : "INTEGER",
               "operand" : [ ],
-              "type" : "INTEGER"
+              "operator" : "Sarg[1000, 2000]"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "SEARCH"
           },
           "source" : {
             "scan" : 0
           }
         }
-      }
+      },
+      "target" : [ {
+        "column" : 5,
+        "type" : "INTEGER"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalProject(SAL=[$5])\n  LogicalFilter(condition=[IS TRUE(CASE(=($5, 1000), IS NULL(CASE(=($5, 1000), null:INTEGER, 1)), IS NULL(CASE(=($5, 2000), null:INTEGER, 1))))])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(SAL=[$5])\n  LogicalFilter(condition=[SEARCH($5, Sarg[1000, 2000])])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ]
+  } ]
 }

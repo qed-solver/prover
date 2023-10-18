@@ -37,7 +37,12 @@ pub enum Relation {
 		right: Box<Relation>,
 		kind: JoinKind,
 	},
-	Correlate(Box<Relation>, Box<Relation>),
+	Correlate {
+		// TODO: Add condition?
+		left: Box<Relation>,
+		right: Box<Relation>,
+		kind: JoinKind,
+	},
 	Union(Vec<Relation>),
 	Intersect(Vec<Relation>),
 	Except(Box<Relation>, Box<Relation>),
@@ -47,6 +52,12 @@ pub enum Relation {
 		content: Vec<Vec<Expr>>,
 	},
 	Aggregate {
+		#[serde(alias = "function")]
+		columns: Vec<AggCall>,
+		source: Box<Relation>,
+	},
+	Group {
+		keys: Vec<Expr>,
 		#[serde(alias = "function")]
 		columns: Vec<AggCall>,
 		source: Box<Relation>,
@@ -61,6 +72,7 @@ pub enum Relation {
 
 impl Relation {
 	fn scope(&self, schemas: &[Schema]) -> Vector<DataType> {
+		use JoinKind::*;
 		use Relation::*;
 		match self {
 			Singleton => Vector::new(),
@@ -68,8 +80,15 @@ impl Relation {
 			Filter { source, .. } => source.scope(schemas),
 			Project { columns, .. } => columns.iter().map(|expr| expr.ty()).collect(),
 			Aggregate { columns, .. } => columns.iter().map(|agg| agg.ty.clone()).collect(),
-			Join { left, kind: JoinKind::Semi | JoinKind::Anti, .. } => left.scope(schemas),
-			Join { left, right, .. } | Correlate(left, right) => {
+			Group { columns, keys: key, .. } => key
+				.iter()
+				.map(|expr| expr.ty())
+				.chain(columns.iter().map(|agg| agg.ty.clone()))
+				.collect(),
+			Join { left, kind: Semi | Anti, .. } | Correlate { left, kind: Semi | Anti, .. } => {
+				left.scope(schemas)
+			},
+			Join { left, right, .. } | Correlate { left, right, .. } => {
 				left.scope(schemas) + right.scope(schemas)
 			},
 			Union(rels) | Intersect(rels) => rels[0].scope(schemas),
@@ -84,6 +103,7 @@ impl Relation {
 impl Eval<Relation, syntax::Relation> for Env<'_> {
 	fn eval(self, source: Relation) -> syntax::Relation {
 		use syntax::UExpr::*;
+		use JoinKind::*;
 		use Relation::*;
 		let Env(schemas, subst, lvl) = self;
 		let scope = source.scope(schemas);
@@ -143,23 +163,23 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 			// Project f[x, y] from R(x, y)
 			// λ a. ∑ x, y. [a = f[x, y]] × R(x, y)
 			Project { columns, source } => {
-				let proj_vars = vars(lvl, scope.clone());
 				let inner_scope = source.scope(schemas);
 				let inner_vars = vars(lvl + scope.len(), inner_scope.clone());
 				let inner_lvl = lvl + scope.len() + inner_scope.len();
 				let source = Env(schemas, subst, inner_lvl).eval(*source);
 				let cols_subst = subst + &inner_vars;
-				let cols_env = Env(schemas, &(cols_subst), inner_lvl);
-				let body = proj_vars
+				let cols_env = Env(schemas, &cols_subst, inner_lvl);
+				let matches = vars(lvl, scope.clone())
 					.into_iter()
 					.zip(columns)
-					.map(|(var, col)| UExpr::pred(Logic::Eq(var, cols_env.eval(col))))
-					.fold(UExpr::app(source, inner_vars), UExpr::mul);
-				Lambda(scope, UExpr::sum(inner_scope, body))
+					.map(|(var, col)| Logic::Eq(var, cols_env.eval(col)))
+					.collect();
+				let app = UExpr::app(source, inner_vars);
+				Lambda(scope, UExpr::sum(inner_scope, UExpr::pred(Logic::And(matches)) * app))
 			},
 			// R(x) semi join S(y) on P[x, y]
 			// λ x. R(x) × ‖∑ y. [P[x, y]] × S(y)‖
-			Join { condition, left, right, kind: kind @ (JoinKind::Semi | JoinKind::Anti) } => {
+			Join { condition, left, right, kind: kind @ (Semi | Anti) } => {
 				let left_vars = vars(lvl, scope.clone());
 				let body_lvl = lvl + scope.len();
 				let inner_scope = right.scope(schemas);
@@ -171,8 +191,8 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 					UExpr::app(Env(schemas, subst, inner_lvl).eval(*right), right_vars);
 				let left_body = UExpr::app(Env(schemas, subst, body_lvl).eval(*left), left_vars);
 				let wrapper = match kind {
-					JoinKind::Semi => UExpr::squash,
-					JoinKind::Anti => UExpr::not,
+					Semi => UExpr::squash,
+					Anti => UExpr::not,
 					_ => unreachable!(),
 				};
 				Lambda(scope, left_body * wrapper(UExpr::sum(inner_scope, cond * right_body)))
@@ -216,25 +236,54 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 						.fold(other_body * !UExpr::sum(inner_scope, inner_body), UExpr::mul)
 				};
 				match kind {
-					JoinKind::Inner => Lambda(scope, matching),
-					JoinKind::Left => Lambda(scope, matching + miss(false)),
-					JoinKind::Right => Lambda(scope, matching + miss(true)),
-					JoinKind::Full => Lambda(scope, matching + miss(true) + miss(false)),
+					Inner => Lambda(scope, matching),
+					Left => Lambda(scope, matching + miss(false)),
+					Right => Lambda(scope, matching + miss(true)),
+					Full => Lambda(scope, matching + miss(true) + miss(false)),
 					_ => unreachable!(),
 				}
 			},
 			// R(x) correlated join S[x](y)
 			// λx, y. R(x) × S[x](y)
-			Correlate(left, right) => {
+			// R(x) left correlated join S[x](y)
+			// λx, y. R(x) × S[x](y) + R(x) × Null(y) × ¬(∑ y'. S[x](y'))
+			// R(x) semi correlated join S[x](y)
+			// λx. R(x) × ‖∑ y. S[x](y)‖
+			Correlate { kind, left, right } => {
 				let left_scope = left.scope(schemas);
 				let right_scope = right.scope(schemas);
-				let right_vars = vars(lvl + left_scope.len(), right_scope);
-				let left_vars = vars(lvl, left_scope);
-				let body_lvl = lvl + scope.len();
-				let left = Env(schemas, subst, body_lvl).eval(*left);
+				let left_vars = vars(lvl, left_scope.clone());
 				let right_subst = subst + &left_vars;
-				let right = Env(schemas, &right_subst, body_lvl).eval(*right);
-				Lambda(scope, UExpr::app(left, left_vars) * UExpr::app(right, right_vars))
+				let body_lvl = lvl + scope.len();
+				let inner = |positive| {
+					let inner_app = UExpr::app(
+						Env(schemas, &right_subst, body_lvl + right_scope.len())
+							.eval(*right.clone()),
+						vars(body_lvl, right_scope.clone()),
+					);
+					let wrapper = if positive { UExpr::squash } else { UExpr::not };
+					wrapper(UExpr::sum(right_scope.clone(), inner_app))
+				};
+				let left_app = UExpr::app(Env(schemas, subst, body_lvl).eval(*left), left_vars);
+				let right_vars = vars(lvl + left_scope.len(), right_scope.clone());
+				let right_app = UExpr::app(
+					Env(schemas, &right_subst, body_lvl).eval(*right.clone()),
+					right_vars.clone(),
+				);
+				match kind {
+					Inner => Lambda(scope, left_app * right_app),
+					Left => {
+						let nulls = right_vars.iter().map(|v| v.clone().is_null()).collect();
+						Lambda(
+							scope,
+							left_app.clone() * right_app
+								+ left_app * UExpr::pred(Logic::And(nulls)) * inner(false),
+						)
+					},
+					Semi => Lambda(scope, left_app * inner(true)),
+					Anti => Lambda(scope, left_app * inner(false)),
+					_ => panic!("Unsupported join type in correlated join."),
+				}
 			},
 			// R(x) union all S(y)
 			// λx. R(x) + S(x)
@@ -306,6 +355,66 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 					.map(|(v, agg)| UExpr::pred(Logic::Eq(v, env.eval((agg, *source.clone())))));
 				Lambda(scope, Mul(cols.collect()))
 			},
+			// Agg(f[x, y]) on R(x, y) group by g[x, y]
+			// λk, a. ‖∑x, y. [k = g[x, y]] × R(x, y)‖ × [a = Agg(λa'. ∑x, y. [a' = f[x, y]] × [k = g[x, y]] × R(x, y))]
+			Group { keys: key, columns, source } => {
+				let source_scope = source.scope(schemas);
+				let (key_vars, agg_vars) = vars(lvl, scope.clone()).split_at(key.len());
+				let grouped = |lvl, vars| {
+					let key_subst = subst + &vars;
+					let key_env = Env(schemas, &key_subst, lvl);
+					let matches = key_vars
+						.iter()
+						.zip(key.clone())
+						.map(|(v, k)| Logic::Eq(v.clone(), key_env.eval(k)));
+					let app = UExpr::app(Env(schemas, subst, lvl).eval(source.clone()), vars);
+					UExpr::pred(Logic::And(matches.collect())) * app
+				};
+				let body_lvl = lvl + scope.len();
+				let source_vars = vars(body_lvl, source_scope.clone());
+				let agged = |agg: AggCall| {
+					let inner_scope: Vector<_> = agg.args.iter().map(|e| e.ty()).collect();
+					let inner_lvl = body_lvl + inner_scope.len();
+					let source_vars = vars(inner_lvl, source_scope.clone());
+					let arg_subst = subst + &source_vars;
+					let arg_env = Env(schemas, &arg_subst, inner_lvl + source_scope.len());
+					let inner_vars = vars(body_lvl, inner_scope.clone());
+					let matches = inner_vars
+						.iter()
+						.zip(agg.args)
+						.map(|(v, arg)| Logic::Eq(v.clone(), arg_env.eval(arg)));
+					let body = UExpr::sum(
+						source_scope.clone(),
+						UExpr::pred(Logic::And(matches.collect()))
+							* grouped(inner_lvl + source_scope.len(), source_vars),
+					);
+					let body = if agg.ignore_nulls {
+						let condition = inner_vars.iter().map(|v| !v.clone().is_null());
+						UExpr::pred(Logic::And(condition.collect())) * body
+					} else {
+						body
+					};
+					let body = if agg.distinct { UExpr::squash(body) } else { body };
+					use shared::Expr::{Agg, HOp};
+					match agg.op.as_str() {
+						"COUNT" => Agg(Aggr(agg.op, inner_scope, body, Box::new(1u32.into()))),
+						_ if inner_scope.len() == 1 => {
+							Agg(Aggr(agg.op, inner_scope, body, inner_vars[0].clone().into()))
+						},
+						_ => HOp(agg.op, vec![], Lambda(inner_scope, body).into(), agg.ty),
+					}
+				};
+				let aggs = agg_vars
+					.into_iter()
+					.zip(columns)
+					.map(|(v, agg)| Logic::Eq(v, agged(agg)))
+					.collect();
+				let left = UExpr::squash(UExpr::sum(
+					source_scope.clone(),
+					grouped(body_lvl + source_scope.len(), source_vars),
+				));
+				Lambda(scope, left * UExpr::pred(Logic::And(aggs)))
+			},
 			Sort { mut collation, offset, limit, source } => {
 				// TODO: Better way to handle multiple sort columns.
 				let vars = vars(lvl, scope.clone());
@@ -364,32 +473,20 @@ fn default_ignore_nulls() -> bool {
 
 impl Eval<(AggCall, Relation), syntax::Expr> for Env<'_> {
 	fn eval(self, (agg, rel): (AggCall, Relation)) -> syntax::Expr {
-		let tys = agg.args.iter().map(|arg| arg.ty()).collect_vec();
 		let args = agg.args;
 		let source = match agg.op.as_str() {
 			"COUNT" if args.is_empty() => rel,
 			_ => Relation::Project { columns: args, source: rel.into() },
 		};
-		let source = if agg.distinct { Relation::Distinct(source.into()) } else { source };
-		let source = if agg.ignore_nulls {
-			let conditions = tys
-				.into_iter()
-				.enumerate()
-				.map(|(i, ty)| Expr::Op {
-					op: "IS NOT NULL".into(),
-					args: vec![Expr::Col { column: VL(i), ty }],
-					ty: DataType::Boolean,
-					rel: None,
-				})
-				.collect_vec();
-			let condition =
-				Expr::Op { op: "AND".into(), args: conditions, ty: DataType::Boolean, rel: None };
-			Relation::Filter { condition, source: source.into() }
-		} else {
-			source
-		};
 		let Env(_, _, lvl) = self;
 		let Lambda(scope, body) = self.eval(source);
+		let body = if agg.ignore_nulls {
+			let condition = vars(lvl, scope.clone()).into_iter().map(|v| !v.is_null());
+			UExpr::pred(Logic::And(condition.collect())) * body
+		} else {
+			body
+		};
+		let body = if agg.distinct { UExpr::squash(body) } else { body };
 		// TODO: Handle various agg calls.
 		match agg.op.as_str() {
 			"COUNT" => syntax::Expr::Agg(Aggr(agg.op, scope, body, Box::new(1u32.into()))),
@@ -499,6 +596,8 @@ impl Env<'_> {
 						let e: syntax::Expr = self.eval(args[0].clone());
 						Some(!e.is_null())
 					},
+					"IS TRUE" => Some(Logic::Bool(self.eval(args[0].clone()))),
+					"IS NOT TRUE" => Some(!Logic::Bool(self.eval(args[0].clone()))),
 					_ => None,
 				}
 			},

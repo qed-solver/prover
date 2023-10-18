@@ -1,22 +1,26 @@
 {
+  "help" : [ "LogicalSort(sort0=[$7], dir0=[ASC], fetch=[0])\n  LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalValues(tuples=[[]])\n" ],
   "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "sort" : {
-      "collation" : [ [ 7, "INTEGER", "ASC" ] ],
+      "offset" : null,
       "limit" : {
-        "operator" : "0",
+        "type" : "INTEGER",
         "operand" : [ ],
-        "type" : "INTEGER"
+        "operator" : "0"
       },
       "source" : {
         "project" : {
+          "source" : {
+            "scan" : 0
+          },
           "target" : [ {
             "column" : 0,
             "type" : "INTEGER"
@@ -44,18 +48,15 @@
           }, {
             "column" : 8,
             "type" : "BOOLEAN"
-          } ],
-          "source" : {
-            "scan" : 0
-          }
+          } ]
         }
-      }
+      },
+      "collation" : [ [ 7, "INTEGER", "ASCENDING" ] ]
     }
   }, {
     "values" : {
       "schema" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
       "content" : [ ]
     }
-  } ],
-  "help" : [ "LogicalSort(sort0=[$7], dir0=[ASC], fetch=[0])\n  LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalValues(tuples=[[]])\n" ]
+  } ]
 }

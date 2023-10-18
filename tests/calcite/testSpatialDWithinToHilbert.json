@@ -1,48 +1,33 @@
 {
+  "help" : [ "LogicalProject(NAME=[$0], LATITUDE=[$1], LONGITUDE=[$2], CUISINE=[$3], HILBERT=[$4])\n  LogicalFilter(condition=[ST_DWITHIN(ST_POINT(10.0:DECIMAL(3, 1), 20.0:DECIMAL(3, 1)), ST_POINT($2, $1), 10)])\n    LogicalTableScan(table=[[CATALOG, GEO, RESTAURANTS]])\n", "LogicalProject(NAME=[$0], LATITUDE=[$1], LONGITUDE=[$2], CUISINE=[$3], HILBERT=[$4])\n  LogicalFilter(condition=[AND(SEARCH($4, Sarg[[28988..28989], [28991..28994], [29006..29009], [29011..29014], [32426..32429], [32431..32434], [32446..32449], [32451..32454], [32506..32509], [32511..32514], [32526..32527], [32929..32930], [32942..32949], [32951..32953], [32955..32970], [32973..32975], [33009..33011], [33014..33185], [33187..33190], [33205..33207], [33209..33211], [33226..33229], [33231..33265], [33267..33270], [36392..36401], [36403..36404], [36421..36423], [36425..36427], [36442..36445], [36447..36548], [36556..36568]]), ST_DWITHIN(POINT (10 20):GEOMETRY, ST_POINT($2, $1), 10))])\n    LogicalTableScan(table=[[CATALOG, GEO, RESTAURANTS]])\n" ],
   "schemas" : [ {
-    "name" : "RESTAURANTS",
-    "fields" : [ "NAME", "LATITUDE", "LONGITUDE", "CUISINE", "HILBERT" ],
     "types" : [ "VARCHAR", "INTEGER", "INTEGER", "VARCHAR", "BIGINT" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false, false, false, false ],
+    "name" : "CATALOG.GEO.RESTAURANTS",
+    "guaranteed" : [ ],
+    "fields" : [ "NAME", "LATITUDE", "LONGITUDE", "CUISINE", "HILBERT" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "VARCHAR"
-      }, {
-        "column" : 1,
-        "type" : "INTEGER"
-      }, {
-        "column" : 2,
-        "type" : "INTEGER"
-      }, {
-        "column" : 3,
-        "type" : "VARCHAR"
-      }, {
-        "column" : 4,
-        "type" : "BIGINT"
-      } ],
       "source" : {
         "filter" : {
           "condition" : {
-            "operator" : "ST_DWITHIN",
+            "type" : "BOOLEAN",
             "operand" : [ {
-              "operator" : "ST_POINT",
+              "type" : "GEOMETRY",
               "operand" : [ {
-                "operator" : "10.0",
+                "type" : "DECIMAL",
                 "operand" : [ ],
-                "type" : "DECIMAL"
+                "operator" : "10.0"
               }, {
-                "operator" : "20.0",
+                "type" : "DECIMAL",
                 "operand" : [ ],
-                "type" : "DECIMAL"
+                "operator" : "20.0"
               } ],
-              "type" : "GEOMETRY"
+              "operator" : "ST_POINT"
             }, {
-              "operator" : "ST_POINT",
+              "type" : "GEOMETRY",
               "operand" : [ {
                 "column" : 2,
                 "type" : "INTEGER"
@@ -50,22 +35,19 @@
                 "column" : 1,
                 "type" : "INTEGER"
               } ],
-              "type" : "GEOMETRY"
+              "operator" : "ST_POINT"
             }, {
-              "operator" : "10",
+              "type" : "INTEGER",
               "operand" : [ ],
-              "type" : "INTEGER"
+              "operator" : "10"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "ST_DWITHIN"
           },
           "source" : {
             "scan" : 0
           }
         }
-      }
-    }
-  }, {
-    "project" : {
+      },
       "target" : [ {
         "column" : 0,
         "type" : "VARCHAR"
@@ -81,30 +63,33 @@
       }, {
         "column" : 4,
         "type" : "BIGINT"
-      } ],
+      } ]
+    }
+  }, {
+    "project" : {
       "source" : {
         "filter" : {
           "condition" : {
-            "operator" : "AND",
+            "type" : "BOOLEAN",
             "operand" : [ {
-              "operator" : "SEARCH",
+              "type" : "BOOLEAN",
               "operand" : [ {
                 "column" : 4,
                 "type" : "BIGINT"
               }, {
-                "operator" : "Sarg[[28988..28989], [28991..28994], [29006..29009], [29011..29014], [32426..32429], [32431..32434], [32446..32449], [32451..32454], [32506..32509], [32511..32514], [32526..32527], [32929..32930], [32942..32949], [32951..32953], [32955..32970], [32973..32975], [33009..33011], [33014..33185], [33187..33190], [33205..33207], [33209..33211], [33226..33229], [33231..33265], [33267..33270], [36392..36401], [36403..36404], [36421..36423], [36425..36427], [36442..36445], [36447..36548], [36556..36568]]",
+                "type" : "INTEGER",
                 "operand" : [ ],
-                "type" : "INTEGER"
+                "operator" : "Sarg[[28988..28989], [28991..28994], [29006..29009], [29011..29014], [32426..32429], [32431..32434], [32446..32449], [32451..32454], [32506..32509], [32511..32514], [32526..32527], [32929..32930], [32942..32949], [32951..32953], [32955..32970], [32973..32975], [33009..33011], [33014..33185], [33187..33190], [33205..33207], [33209..33211], [33226..33229], [33231..33265], [33267..33270], [36392..36401], [36403..36404], [36421..36423], [36425..36427], [36442..36445], [36447..36548], [36556..36568]]"
               } ],
-              "type" : "BOOLEAN"
+              "operator" : "SEARCH"
             }, {
-              "operator" : "ST_DWITHIN",
+              "type" : "BOOLEAN",
               "operand" : [ {
-                "operator" : "POINT (10 20)",
+                "type" : "GEOMETRY",
                 "operand" : [ ],
-                "type" : "GEOMETRY"
+                "operator" : "POINT (10 20)"
               }, {
-                "operator" : "ST_POINT",
+                "type" : "GEOMETRY",
                 "operand" : [ {
                   "column" : 2,
                   "type" : "INTEGER"
@@ -112,22 +97,37 @@
                   "column" : 1,
                   "type" : "INTEGER"
                 } ],
-                "type" : "GEOMETRY"
+                "operator" : "ST_POINT"
               }, {
-                "operator" : "10",
+                "type" : "INTEGER",
                 "operand" : [ ],
-                "type" : "INTEGER"
+                "operator" : "10"
               } ],
-              "type" : "BOOLEAN"
+              "operator" : "ST_DWITHIN"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "AND"
           },
           "source" : {
             "scan" : 0
           }
         }
-      }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 1,
+        "type" : "INTEGER"
+      }, {
+        "column" : 2,
+        "type" : "INTEGER"
+      }, {
+        "column" : 3,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 4,
+        "type" : "BIGINT"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalProject(NAME=[$0], LATITUDE=[$1], LONGITUDE=[$2], CUISINE=[$3], HILBERT=[$4])\n  LogicalFilter(condition=[ST_DWITHIN(ST_POINT(10.0:DECIMAL(3, 1), 20.0:DECIMAL(3, 1)), ST_POINT($2, $1), 10)])\n    LogicalTableScan(table=[[CATALOG, GEO, RESTAURANTS]])\n", "LogicalProject(NAME=[$0], LATITUDE=[$1], LONGITUDE=[$2], CUISINE=[$3], HILBERT=[$4])\n  LogicalFilter(condition=[AND(SEARCH($4, Sarg[[28988..28989], [28991..28994], [29006..29009], [29011..29014], [32426..32429], [32431..32434], [32446..32449], [32451..32454], [32506..32509], [32511..32514], [32526..32527], [32929..32930], [32942..32949], [32951..32953], [32955..32970], [32973..32975], [33009..33011], [33014..33185], [33187..33190], [33205..33207], [33209..33211], [33226..33229], [33231..33265], [33267..33270], [36392..36401], [36403..36404], [36421..36423], [36425..36427], [36442..36445], [36447..36548], [36556..36568]]), ST_DWITHIN(POINT (10 20):GEOMETRY, ST_POINT($2, $1), 10))])\n    LogicalTableScan(table=[[CATALOG, GEO, RESTAURANTS]])\n" ]
+  } ]
 }

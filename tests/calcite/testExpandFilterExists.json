@@ -1,73 +1,147 @@
 {
+  "help" : [ "LogicalProject(EMPNO=[$0])\n  LogicalFilter(condition=[OR(EXISTS({\nLogicalFilter(condition=[<($0, 20)])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n}), <($5, 100))])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(EMPNO=[$0])\n  LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n    LogicalFilter(condition=[OR(IS NOT NULL($9), <($5, 100))])\n      LogicalJoin(condition=[true], joinType=[left])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n        LogicalAggregate(group=[{0}])\n          LogicalProject(i=[true])\n            LogicalFilter(condition=[<($0, 20)])\n              LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
   "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "INTEGER"
-      } ],
       "source" : {
         "filter" : {
           "condition" : {
-            "operator" : "OR",
+            "type" : "BOOLEAN",
             "operand" : [ {
-              "operator" : "EXISTS",
-              "operand" : [ ],
               "query" : {
                 "filter" : {
                   "condition" : {
-                    "operator" : "<",
+                    "type" : "BOOLEAN",
                     "operand" : [ {
                       "column" : 9,
                       "type" : "INTEGER"
                     }, {
-                      "operator" : "20",
+                      "type" : "INTEGER",
                       "operand" : [ ],
-                      "type" : "INTEGER"
+                      "operator" : "20"
                     } ],
-                    "type" : "BOOLEAN"
+                    "operator" : "<"
                   },
                   "source" : {
                     "scan" : 0
                   }
                 }
               },
-              "type" : "BOOLEAN"
+              "type" : "BOOLEAN",
+              "operand" : [ ],
+              "operator" : "EXISTS"
             }, {
-              "operator" : "<",
+              "type" : "BOOLEAN",
               "operand" : [ {
                 "column" : 5,
                 "type" : "INTEGER"
               }, {
-                "operator" : "100",
+                "type" : "INTEGER",
                 "operand" : [ ],
-                "type" : "INTEGER"
+                "operator" : "100"
               } ],
-              "type" : "BOOLEAN"
+              "operator" : "<"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "OR"
           },
           "source" : {
             "scan" : 0
           }
         }
-      }
-    }
-  }, {
-    "project" : {
+      },
       "target" : [ {
         "column" : 0,
         "type" : "INTEGER"
-      } ],
+      } ]
+    }
+  }, {
+    "project" : {
       "source" : {
         "project" : {
+          "source" : {
+            "filter" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "type" : "BOOLEAN",
+                  "operand" : [ {
+                    "column" : 9,
+                    "type" : "BOOLEAN"
+                  } ],
+                  "operator" : "IS NOT NULL"
+                }, {
+                  "type" : "BOOLEAN",
+                  "operand" : [ {
+                    "column" : 5,
+                    "type" : "INTEGER"
+                  }, {
+                    "type" : "INTEGER",
+                    "operand" : [ ],
+                    "operator" : "100"
+                  } ],
+                  "operator" : "<"
+                } ],
+                "operator" : "OR"
+              },
+              "source" : {
+                "join" : {
+                  "condition" : {
+                    "type" : "BOOLEAN",
+                    "operand" : [ ],
+                    "operator" : "true"
+                  },
+                  "left" : {
+                    "scan" : 0
+                  },
+                  "kind" : "LEFT",
+                  "right" : {
+                    "group" : {
+                      "keys" : [ {
+                        "column" : 0,
+                        "type" : "BOOLEAN"
+                      } ],
+                      "function" : [ ],
+                      "source" : {
+                        "project" : {
+                          "source" : {
+                            "filter" : {
+                              "condition" : {
+                                "type" : "BOOLEAN",
+                                "operand" : [ {
+                                  "column" : 0,
+                                  "type" : "INTEGER"
+                                }, {
+                                  "type" : "INTEGER",
+                                  "operand" : [ ],
+                                  "operator" : "20"
+                                } ],
+                                "operator" : "<"
+                              },
+                              "source" : {
+                                "scan" : 0
+                              }
+                            }
+                          },
+                          "target" : [ {
+                            "type" : "BOOLEAN",
+                            "operand" : [ ],
+                            "operator" : "true"
+                          } ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
           "target" : [ {
             "column" : 0,
             "type" : "INTEGER"
@@ -95,141 +169,13 @@
           }, {
             "column" : 8,
             "type" : "BOOLEAN"
-          } ],
-          "source" : {
-            "filter" : {
-              "condition" : {
-                "operator" : "OR",
-                "operand" : [ {
-                  "operator" : "IS NOT NULL",
-                  "operand" : [ {
-                    "column" : 9,
-                    "type" : "BOOLEAN"
-                  } ],
-                  "type" : "BOOLEAN"
-                }, {
-                  "operator" : "<",
-                  "operand" : [ {
-                    "column" : 5,
-                    "type" : "INTEGER"
-                  }, {
-                    "operator" : "100",
-                    "operand" : [ ],
-                    "type" : "INTEGER"
-                  } ],
-                  "type" : "BOOLEAN"
-                } ],
-                "type" : "BOOLEAN"
-              },
-              "source" : {
-                "join" : {
-                  "kind" : "LEFT",
-                  "condition" : {
-                    "operator" : "true",
-                    "operand" : [ ],
-                    "type" : "BOOLEAN"
-                  },
-                  "left" : {
-                    "scan" : 0
-                  },
-                  "right" : {
-                    "distinct" : {
-                      "correlate" : [ {
-                        "project" : {
-                          "target" : [ {
-                            "column" : 0,
-                            "type" : "BOOLEAN"
-                          } ],
-                          "source" : {
-                            "project" : {
-                              "target" : [ {
-                                "operator" : "true",
-                                "operand" : [ ],
-                                "type" : "BOOLEAN"
-                              } ],
-                              "source" : {
-                                "filter" : {
-                                  "condition" : {
-                                    "operator" : "<",
-                                    "operand" : [ {
-                                      "column" : 0,
-                                      "type" : "INTEGER"
-                                    }, {
-                                      "operator" : "20",
-                                      "operand" : [ ],
-                                      "type" : "INTEGER"
-                                    } ],
-                                    "type" : "BOOLEAN"
-                                  },
-                                  "source" : {
-                                    "scan" : 0
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }, {
-                        "aggregate" : {
-                          "function" : [ ],
-                          "source" : {
-                            "filter" : {
-                              "condition" : {
-                                "operator" : "AND",
-                                "operand" : [ {
-                                  "operator" : "=",
-                                  "operand" : [ {
-                                    "column" : 0,
-                                    "type" : "BOOLEAN"
-                                  }, {
-                                    "column" : 1,
-                                    "type" : "BOOLEAN"
-                                  } ],
-                                  "type" : "BOOLEAN"
-                                } ],
-                                "type" : "BOOLEAN"
-                              },
-                              "source" : {
-                                "project" : {
-                                  "target" : [ {
-                                    "operator" : "true",
-                                    "operand" : [ ],
-                                    "type" : "BOOLEAN"
-                                  } ],
-                                  "source" : {
-                                    "filter" : {
-                                      "condition" : {
-                                        "operator" : "<",
-                                        "operand" : [ {
-                                          "column" : 1,
-                                          "type" : "INTEGER"
-                                        }, {
-                                          "operator" : "20",
-                                          "operand" : [ ],
-                                          "type" : "INTEGER"
-                                        } ],
-                                        "type" : "BOOLEAN"
-                                      },
-                                      "source" : {
-                                        "scan" : 0
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      } ]
-                    }
-                  }
-                }
-              }
-            }
-          }
+          } ]
         }
-      }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalProject(EMPNO=[$0])\n  LogicalFilter(condition=[OR(EXISTS({\nLogicalFilter(condition=[<($0, 20)])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n}), <($5, 100))])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(EMPNO=[$0])\n  LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n    LogicalFilter(condition=[OR(IS NOT NULL($9), <($5, 100))])\n      LogicalJoin(condition=[true], joinType=[left])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n        LogicalAggregate(group=[{0}])\n          LogicalProject(i=[true])\n            LogicalFilter(condition=[<($0, 20)])\n              LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ]
+  } ]
 }

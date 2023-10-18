@@ -1,32 +1,32 @@
 {
+  "help" : [ "LogicalProject(SAL=[$5])\n  LogicalJoin(condition=[true], joinType=[inner])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalUnion(all=[true])\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(SAL=[$5])\n  LogicalUnion(all=[true])\n    LogicalJoin(condition=[true], joinType=[inner])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalJoin(condition=[true], joinType=[inner])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
   "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "column" : 5,
-        "type" : "INTEGER"
-      } ],
       "source" : {
         "join" : {
-          "kind" : "INNER",
           "condition" : {
-            "operator" : "true",
+            "type" : "BOOLEAN",
             "operand" : [ ],
-            "type" : "BOOLEAN"
+            "operator" : "true"
           },
           "left" : {
             "scan" : 0
           },
+          "kind" : "INNER",
           "right" : {
             "union" : [ {
               "project" : {
+                "source" : {
+                  "scan" : 0
+                },
                 "target" : [ {
                   "column" : 0,
                   "type" : "INTEGER"
@@ -54,13 +54,13 @@
                 }, {
                   "column" : 8,
                   "type" : "BOOLEAN"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
+                } ]
               }
             }, {
               "project" : {
+                "source" : {
+                  "scan" : 0
+                },
                 "target" : [ {
                   "column" : 0,
                   "type" : "INTEGER"
@@ -88,36 +88,36 @@
                 }, {
                   "column" : 8,
                   "type" : "BOOLEAN"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
+                } ]
               }
             } ]
           }
         }
-      }
-    }
-  }, {
-    "project" : {
+      },
       "target" : [ {
         "column" : 5,
         "type" : "INTEGER"
-      } ],
+      } ]
+    }
+  }, {
+    "project" : {
       "source" : {
         "union" : [ {
           "join" : {
-            "kind" : "INNER",
             "condition" : {
-              "operator" : "true",
+              "type" : "BOOLEAN",
               "operand" : [ ],
-              "type" : "BOOLEAN"
+              "operator" : "true"
             },
             "left" : {
               "scan" : 0
             },
+            "kind" : "INNER",
             "right" : {
               "project" : {
+                "source" : {
+                  "scan" : 0
+                },
                 "target" : [ {
                   "column" : 0,
                   "type" : "INTEGER"
@@ -145,26 +145,26 @@
                 }, {
                   "column" : 8,
                   "type" : "BOOLEAN"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
+                } ]
               }
             }
           }
         }, {
           "join" : {
-            "kind" : "INNER",
             "condition" : {
-              "operator" : "true",
+              "type" : "BOOLEAN",
               "operand" : [ ],
-              "type" : "BOOLEAN"
+              "operator" : "true"
             },
             "left" : {
               "scan" : 0
             },
+            "kind" : "INNER",
             "right" : {
               "project" : {
+                "source" : {
+                  "scan" : 0
+                },
                 "target" : [ {
                   "column" : 0,
                   "type" : "INTEGER"
@@ -192,16 +192,16 @@
                 }, {
                   "column" : 8,
                   "type" : "BOOLEAN"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
+                } ]
               }
             }
           }
         } ]
-      }
+      },
+      "target" : [ {
+        "column" : 5,
+        "type" : "INTEGER"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalProject(SAL=[$5])\n  LogicalJoin(condition=[true], joinType=[inner])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalUnion(all=[true])\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(SAL=[$5])\n  LogicalUnion(all=[true])\n    LogicalJoin(condition=[true], joinType=[inner])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalJoin(condition=[true], joinType=[inner])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ]
+  } ]
 }

@@ -1,23 +1,19 @@
 {
+  "help" : [ "LogicalProject(EMPNO=[$0])\n  LogicalJoin(condition=[=($7, $8)], joinType=[semi])\n    LogicalTableScan(table=[[scott, EMP]])\n    LogicalValues(tuples=[[]])\n", "LogicalProject(EMPNO=[$0])\n  LogicalValues(tuples=[[]])\n" ],
   "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
     "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
-    "key" : [ [ 0 ], [ 1 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, true, true, true, true, true, true, true ],
+    "name" : "scott.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
+    "key" : [ [ 0 ], [ 1 ] ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "SMALLINT"
-      } ],
       "source" : {
         "join" : {
-          "kind" : "SEMI",
           "condition" : {
-            "operator" : "=",
+            "type" : "BOOLEAN",
             "operand" : [ {
               "column" : 7,
               "type" : "TINYINT"
@@ -25,11 +21,12 @@
               "column" : 8,
               "type" : "TINYINT"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "="
           },
           "left" : {
             "scan" : 0
           },
+          "kind" : "SEMI",
           "right" : {
             "values" : {
               "schema" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
@@ -37,21 +34,24 @@
             }
           }
         }
-      }
-    }
-  }, {
-    "project" : {
+      },
       "target" : [ {
         "column" : 0,
         "type" : "SMALLINT"
-      } ],
+      } ]
+    }
+  }, {
+    "project" : {
       "source" : {
         "values" : {
           "schema" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
           "content" : [ ]
         }
-      }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "SMALLINT"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalProject(EMPNO=[$0])\n  LogicalJoin(condition=[=($7, $8)], joinType=[semi])\n    LogicalTableScan(table=[[scott, EMP]])\n    LogicalValues(tuples=[[]])\n", "LogicalProject(EMPNO=[$0])\n  LogicalValues(tuples=[[]])\n" ]
+  } ]
 }

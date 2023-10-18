@@ -1,84 +1,92 @@
 {
+  "help" : [ "LogicalSort(sort0=[$0], dir0=[ASC])\n  LogicalProject(NAME=[$0])\n    LogicalUnion(all=[true])\n      LogicalProject(NAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n      LogicalProject(NAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalSort(sort0=[$0], dir0=[ASC])\n  LogicalUnion(all=[true])\n    LogicalSort(sort0=[$0], dir0=[ASC])\n      LogicalProject(NAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n    LogicalSort(sort0=[$0], dir0=[ASC])\n      LogicalProject(NAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ],
   "schemas" : [ {
-    "name" : "DEPT",
-    "fields" : [ "DEPTNO", "NAME" ],
     "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "sort" : {
-      "collation" : [ [ 0, "VARCHAR", "ASC" ] ],
+      "offset" : null,
+      "limit" : null,
       "source" : {
         "project" : {
-          "target" : [ {
-            "column" : 0,
-            "type" : "VARCHAR"
-          } ],
           "source" : {
             "union" : [ {
               "project" : {
+                "source" : {
+                  "scan" : 0
+                },
                 "target" : [ {
                   "column" : 1,
                   "type" : "VARCHAR"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
+                } ]
               }
             }, {
               "project" : {
+                "source" : {
+                  "scan" : 0
+                },
                 "target" : [ {
                   "column" : 1,
                   "type" : "VARCHAR"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
+                } ]
               }
             } ]
-          }
+          },
+          "target" : [ {
+            "column" : 0,
+            "type" : "VARCHAR"
+          } ]
         }
-      }
+      },
+      "collation" : [ [ 0, "VARCHAR", "ASCENDING" ] ]
     }
   }, {
     "sort" : {
-      "collation" : [ [ 0, "VARCHAR", "ASC" ] ],
+      "offset" : null,
+      "limit" : null,
       "source" : {
         "union" : [ {
           "sort" : {
-            "collation" : [ [ 0, "VARCHAR", "ASC" ] ],
+            "offset" : null,
+            "limit" : null,
             "source" : {
               "project" : {
+                "source" : {
+                  "scan" : 0
+                },
                 "target" : [ {
                   "column" : 1,
                   "type" : "VARCHAR"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
+                } ]
               }
-            }
+            },
+            "collation" : [ [ 0, "VARCHAR", "ASCENDING" ] ]
           }
         }, {
           "sort" : {
-            "collation" : [ [ 0, "VARCHAR", "ASC" ] ],
+            "offset" : null,
+            "limit" : null,
             "source" : {
               "project" : {
+                "source" : {
+                  "scan" : 0
+                },
                 "target" : [ {
                   "column" : 1,
                   "type" : "VARCHAR"
-                } ],
-                "source" : {
-                  "scan" : 0
-                }
+                } ]
               }
-            }
+            },
+            "collation" : [ [ 0, "VARCHAR", "ASCENDING" ] ]
           }
         } ]
-      }
+      },
+      "collation" : [ [ 0, "VARCHAR", "ASCENDING" ] ]
     }
-  } ],
-  "help" : [ "LogicalSort(sort0=[$0], dir0=[ASC])\n  LogicalProject(NAME=[$0])\n    LogicalUnion(all=[true])\n      LogicalProject(NAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n      LogicalProject(NAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalSort(sort0=[$0], dir0=[ASC])\n  LogicalUnion(all=[true])\n    LogicalSort(sort0=[$0], dir0=[ASC])\n      LogicalProject(NAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n    LogicalSort(sort0=[$0], dir0=[ASC])\n      LogicalProject(NAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ]
+  } ]
 }

@@ -1,95 +1,41 @@
 {
+  "help" : [ "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], EMPNO0=[$9], ENAME0=[$10], JOB0=[$11], MGR0=[$12], HIREDATE0=[$13], SAL0=[$14], COMM0=[$15], DEPTNO0=[$16], SLACKER0=[$17])\n  LogicalFilter(condition=[OR(AND(IS NULL($1), IS NULL($10)), IS TRUE(=($1, $10)))])\n    LogicalJoin(condition=[=($7, $16)], joinType=[inner])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], EMPNO0=[$9], ENAME0=[$10], JOB0=[$11], MGR0=[$12], HIREDATE0=[$13], SAL0=[$14], COMM0=[$15], DEPTNO0=[$16], SLACKER0=[$17])\n  LogicalJoin(condition=[AND(=($7, $16), IS NOT DISTINCT FROM($1, $10))], joinType=[inner])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
   "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "INTEGER"
-      }, {
-        "column" : 1,
-        "type" : "VARCHAR"
-      }, {
-        "column" : 2,
-        "type" : "VARCHAR"
-      }, {
-        "column" : 3,
-        "type" : "INTEGER"
-      }, {
-        "column" : 4,
-        "type" : "TIMESTAMP"
-      }, {
-        "column" : 5,
-        "type" : "INTEGER"
-      }, {
-        "column" : 6,
-        "type" : "INTEGER"
-      }, {
-        "column" : 7,
-        "type" : "INTEGER"
-      }, {
-        "column" : 8,
-        "type" : "BOOLEAN"
-      }, {
-        "column" : 9,
-        "type" : "INTEGER"
-      }, {
-        "column" : 10,
-        "type" : "VARCHAR"
-      }, {
-        "column" : 11,
-        "type" : "VARCHAR"
-      }, {
-        "column" : 12,
-        "type" : "INTEGER"
-      }, {
-        "column" : 13,
-        "type" : "TIMESTAMP"
-      }, {
-        "column" : 14,
-        "type" : "INTEGER"
-      }, {
-        "column" : 15,
-        "type" : "INTEGER"
-      }, {
-        "column" : 16,
-        "type" : "INTEGER"
-      }, {
-        "column" : 17,
-        "type" : "BOOLEAN"
-      } ],
       "source" : {
         "filter" : {
           "condition" : {
-            "operator" : "OR",
+            "type" : "BOOLEAN",
             "operand" : [ {
-              "operator" : "AND",
+              "type" : "BOOLEAN",
               "operand" : [ {
-                "operator" : "IS NULL",
+                "type" : "BOOLEAN",
                 "operand" : [ {
                   "column" : 1,
                   "type" : "VARCHAR"
                 } ],
-                "type" : "BOOLEAN"
+                "operator" : "IS NULL"
               }, {
-                "operator" : "IS NULL",
+                "type" : "BOOLEAN",
                 "operand" : [ {
                   "column" : 10,
                   "type" : "VARCHAR"
                 } ],
-                "type" : "BOOLEAN"
+                "operator" : "IS NULL"
               } ],
-              "type" : "BOOLEAN"
+              "operator" : "AND"
             }, {
-              "operator" : "IS TRUE",
+              "type" : "BOOLEAN",
               "operand" : [ {
-                "operator" : "=",
+                "type" : "BOOLEAN",
                 "operand" : [ {
                   "column" : 1,
                   "type" : "VARCHAR"
@@ -97,17 +43,16 @@
                   "column" : 10,
                   "type" : "VARCHAR"
                 } ],
-                "type" : "BOOLEAN"
+                "operator" : "="
               } ],
-              "type" : "BOOLEAN"
+              "operator" : "IS TRUE"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "OR"
           },
           "source" : {
             "join" : {
-              "kind" : "INNER",
               "condition" : {
-                "operator" : "=",
+                "type" : "BOOLEAN",
                 "operand" : [ {
                   "column" : 7,
                   "type" : "INTEGER"
@@ -115,21 +60,19 @@
                   "column" : 16,
                   "type" : "INTEGER"
                 } ],
-                "type" : "BOOLEAN"
+                "operator" : "="
               },
               "left" : {
                 "scan" : 0
               },
+              "kind" : "INNER",
               "right" : {
                 "scan" : 0
               }
             }
           }
         }
-      }
-    }
-  }, {
-    "project" : {
+      },
       "target" : [ {
         "column" : 0,
         "type" : "INTEGER"
@@ -184,14 +127,16 @@
       }, {
         "column" : 17,
         "type" : "BOOLEAN"
-      } ],
+      } ]
+    }
+  }, {
+    "project" : {
       "source" : {
         "join" : {
-          "kind" : "INNER",
           "condition" : {
-            "operator" : "AND",
+            "type" : "BOOLEAN",
             "operand" : [ {
-              "operator" : "=",
+              "type" : "BOOLEAN",
               "operand" : [ {
                 "column" : 7,
                 "type" : "INTEGER"
@@ -199,9 +144,9 @@
                 "column" : 16,
                 "type" : "INTEGER"
               } ],
-              "type" : "BOOLEAN"
+              "operator" : "="
             }, {
-              "operator" : "IS NOT DISTINCT FROM",
+              "type" : "BOOLEAN",
               "operand" : [ {
                 "column" : 1,
                 "type" : "VARCHAR"
@@ -209,19 +154,74 @@
                 "column" : 10,
                 "type" : "VARCHAR"
               } ],
-              "type" : "BOOLEAN"
+              "operator" : "IS NOT DISTINCT FROM"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "AND"
           },
           "left" : {
             "scan" : 0
           },
+          "kind" : "INNER",
           "right" : {
             "scan" : 0
           }
         }
-      }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 2,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 3,
+        "type" : "INTEGER"
+      }, {
+        "column" : 4,
+        "type" : "TIMESTAMP"
+      }, {
+        "column" : 5,
+        "type" : "INTEGER"
+      }, {
+        "column" : 6,
+        "type" : "INTEGER"
+      }, {
+        "column" : 7,
+        "type" : "INTEGER"
+      }, {
+        "column" : 8,
+        "type" : "BOOLEAN"
+      }, {
+        "column" : 9,
+        "type" : "INTEGER"
+      }, {
+        "column" : 10,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 11,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 12,
+        "type" : "INTEGER"
+      }, {
+        "column" : 13,
+        "type" : "TIMESTAMP"
+      }, {
+        "column" : 14,
+        "type" : "INTEGER"
+      }, {
+        "column" : 15,
+        "type" : "INTEGER"
+      }, {
+        "column" : 16,
+        "type" : "INTEGER"
+      }, {
+        "column" : 17,
+        "type" : "BOOLEAN"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], EMPNO0=[$9], ENAME0=[$10], JOB0=[$11], MGR0=[$12], HIREDATE0=[$13], SAL0=[$14], COMM0=[$15], DEPTNO0=[$16], SLACKER0=[$17])\n  LogicalFilter(condition=[OR(AND(IS NULL($1), IS NULL($10)), IS TRUE(=($1, $10)))])\n    LogicalJoin(condition=[=($7, $16)], joinType=[inner])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], EMPNO0=[$9], ENAME0=[$10], JOB0=[$11], MGR0=[$12], HIREDATE0=[$13], SAL0=[$14], COMM0=[$15], DEPTNO0=[$16], SLACKER0=[$17])\n  LogicalJoin(condition=[AND(=($7, $16), IS NOT DISTINCT FROM($1, $10))], joinType=[inner])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ]
+  } ]
 }

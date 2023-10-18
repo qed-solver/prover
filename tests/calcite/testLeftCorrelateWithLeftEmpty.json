@@ -1,0 +1,45 @@
+{
+  "help" : [ "LogicalCorrelate(correlation=[$cor0], joinType=[left], requiredColumns=[{7}])\n  LogicalValues(tuples=[[]])\n  LogicalFilter(condition=[=($cor0.DEPTNO, $0)])\n    LogicalTableScan(table=[[scott, DEPT]])\n", "LogicalValues(tuples=[[]])\n" ],
+  "schemas" : [ {
+    "types" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
+    "nullable" : [ false, true, true ],
+    "name" : "scott.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "DNAME", "LOC" ],
+    "key" : [ [ 0 ], [ 1 ], [ 2 ] ]
+  } ],
+  "queries" : [ {
+    "correlate" : {
+      "left" : {
+        "values" : {
+          "schema" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
+          "content" : [ ]
+        }
+      },
+      "kind" : "LEFT",
+      "right" : {
+        "filter" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 7,
+              "type" : "TINYINT"
+            }, {
+              "column" : 8,
+              "type" : "TINYINT"
+            } ],
+            "operator" : "="
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  }, {
+    "values" : {
+      "schema" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT", "TINYINT", "VARCHAR", "VARCHAR" ],
+      "content" : [ ]
+    }
+  } ]
+}

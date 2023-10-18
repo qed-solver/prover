@@ -1,197 +1,189 @@
 {
+  "help" : [ "LogicalMinus(all=[false])\n  LogicalMinus(all=[false])\n    LogicalMinus(all=[false])\n      LogicalProject(X=[$0], Y=[$1])\n        LogicalValues(tuples=[[{ 30, 3 }]])\n      LogicalProject(X=[$0], Y=[$1])\n        LogicalFilter(condition=[>($0, 30)])\n          LogicalValues(tuples=[[{ 20, 2 }]])\n    LogicalProject(EXPR$0=[$0], EXPR$1=[$1])\n      LogicalValues(tuples=[[{ 40, 4 }]])\n  LogicalProject(X=[$0], Y=[$1])\n    LogicalFilter(condition=[>($0, 50)])\n      LogicalValues(tuples=[[{ 50, 5 }]])\n", "LogicalMinus(all=[false])\n  LogicalProject(X=[$0], Y=[$1])\n    LogicalValues(tuples=[[{ 30, 3 }]])\n  LogicalProject(EXPR$0=[$0], EXPR$1=[$1])\n    LogicalValues(tuples=[[{ 40, 4 }]])\n" ],
   "schemas" : [ ],
   "queries" : [ {
-    "distinct" : {
+    "except" : [ {
       "except" : [ {
-        "distinct" : {
-          "except" : [ {
-            "distinct" : {
-              "except" : [ {
-                "project" : {
-                  "target" : [ {
+        "except" : [ {
+          "project" : {
+            "source" : {
+              "values" : {
+                "schema" : [ "INTEGER", "INTEGER" ],
+                "content" : [ [ {
+                  "type" : "INTEGER",
+                  "operand" : [ ],
+                  "operator" : "30"
+                }, {
+                  "type" : "INTEGER",
+                  "operand" : [ ],
+                  "operator" : "3"
+                } ] ]
+              }
+            },
+            "target" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            }, {
+              "column" : 1,
+              "type" : "INTEGER"
+            } ]
+          }
+        }, {
+          "project" : {
+            "source" : {
+              "filter" : {
+                "condition" : {
+                  "type" : "BOOLEAN",
+                  "operand" : [ {
                     "column" : 0,
                     "type" : "INTEGER"
                   }, {
-                    "column" : 1,
-                    "type" : "INTEGER"
+                    "type" : "INTEGER",
+                    "operand" : [ ],
+                    "operator" : "30"
                   } ],
-                  "source" : {
-                    "values" : {
-                      "schema" : [ "INTEGER", "INTEGER" ],
-                      "content" : [ [ {
-                        "operator" : "30",
-                        "operand" : [ ],
-                        "type" : "INTEGER"
-                      }, {
-                        "operator" : "3",
-                        "operand" : [ ],
-                        "type" : "INTEGER"
-                      } ] ]
-                    }
+                  "operator" : ">"
+                },
+                "source" : {
+                  "values" : {
+                    "schema" : [ "INTEGER", "INTEGER" ],
+                    "content" : [ [ {
+                      "type" : "INTEGER",
+                      "operand" : [ ],
+                      "operator" : "20"
+                    }, {
+                      "type" : "INTEGER",
+                      "operand" : [ ],
+                      "operator" : "2"
+                    } ] ]
                   }
                 }
+              }
+            },
+            "target" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            }, {
+              "column" : 1,
+              "type" : "INTEGER"
+            } ]
+          }
+        } ]
+      }, {
+        "project" : {
+          "source" : {
+            "values" : {
+              "schema" : [ "INTEGER", "INTEGER" ],
+              "content" : [ [ {
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "40"
               }, {
-                "project" : {
-                  "target" : [ {
-                    "column" : 0,
-                    "type" : "INTEGER"
-                  }, {
-                    "column" : 1,
-                    "type" : "INTEGER"
-                  } ],
-                  "source" : {
-                    "filter" : {
-                      "condition" : {
-                        "operator" : ">",
-                        "operand" : [ {
-                          "column" : 0,
-                          "type" : "INTEGER"
-                        }, {
-                          "operator" : "30",
-                          "operand" : [ ],
-                          "type" : "INTEGER"
-                        } ],
-                        "type" : "BOOLEAN"
-                      },
-                      "source" : {
-                        "values" : {
-                          "schema" : [ "INTEGER", "INTEGER" ],
-                          "content" : [ [ {
-                            "operator" : "20",
-                            "operand" : [ ],
-                            "type" : "INTEGER"
-                          }, {
-                            "operator" : "2",
-                            "operand" : [ ],
-                            "type" : "INTEGER"
-                          } ] ]
-                        }
-                      }
-                    }
-                  }
-                }
-              } ]
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "4"
+              } ] ]
             }
+          },
+          "target" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
           }, {
-            "project" : {
-              "target" : [ {
+            "column" : 1,
+            "type" : "INTEGER"
+          } ]
+        }
+      } ]
+    }, {
+      "project" : {
+        "source" : {
+          "filter" : {
+            "condition" : {
+              "type" : "BOOLEAN",
+              "operand" : [ {
                 "column" : 0,
                 "type" : "INTEGER"
               }, {
-                "column" : 1,
-                "type" : "INTEGER"
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "50"
               } ],
-              "source" : {
-                "values" : {
-                  "schema" : [ "INTEGER", "INTEGER" ],
-                  "content" : [ [ {
-                    "operator" : "40",
-                    "operand" : [ ],
-                    "type" : "INTEGER"
-                  }, {
-                    "operator" : "4",
-                    "operand" : [ ],
-                    "type" : "INTEGER"
-                  } ] ]
-                }
-              }
-            }
-          } ]
-        }
-      }, {
-        "project" : {
-          "target" : [ {
-            "column" : 0,
-            "type" : "INTEGER"
-          }, {
-            "column" : 1,
-            "type" : "INTEGER"
-          } ],
-          "source" : {
-            "filter" : {
-              "condition" : {
-                "operator" : ">",
-                "operand" : [ {
-                  "column" : 0,
-                  "type" : "INTEGER"
-                }, {
-                  "operator" : "50",
+              "operator" : ">"
+            },
+            "source" : {
+              "values" : {
+                "schema" : [ "INTEGER", "INTEGER" ],
+                "content" : [ [ {
+                  "type" : "INTEGER",
                   "operand" : [ ],
-                  "type" : "INTEGER"
-                } ],
-                "type" : "BOOLEAN"
-              },
-              "source" : {
-                "values" : {
-                  "schema" : [ "INTEGER", "INTEGER" ],
-                  "content" : [ [ {
-                    "operator" : "50",
-                    "operand" : [ ],
-                    "type" : "INTEGER"
-                  }, {
-                    "operator" : "5",
-                    "operand" : [ ],
-                    "type" : "INTEGER"
-                  } ] ]
-                }
+                  "operator" : "50"
+                }, {
+                  "type" : "INTEGER",
+                  "operand" : [ ],
+                  "operator" : "5"
+                } ] ]
               }
             }
           }
-        }
-      } ]
-    }
+        },
+        "target" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        }, {
+          "column" : 1,
+          "type" : "INTEGER"
+        } ]
+      }
+    } ]
   }, {
-    "distinct" : {
-      "except" : [ {
-        "project" : {
-          "target" : [ {
-            "column" : 0,
-            "type" : "INTEGER"
-          }, {
-            "column" : 1,
-            "type" : "INTEGER"
-          } ],
-          "source" : {
-            "values" : {
-              "schema" : [ "INTEGER", "INTEGER" ],
-              "content" : [ [ {
-                "operator" : "30",
-                "operand" : [ ],
-                "type" : "INTEGER"
-              }, {
-                "operator" : "3",
-                "operand" : [ ],
-                "type" : "INTEGER"
-              } ] ]
-            }
+    "except" : [ {
+      "project" : {
+        "source" : {
+          "values" : {
+            "schema" : [ "INTEGER", "INTEGER" ],
+            "content" : [ [ {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "30"
+            }, {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "3"
+            } ] ]
           }
-        }
-      }, {
-        "project" : {
-          "target" : [ {
-            "column" : 0,
-            "type" : "INTEGER"
-          }, {
-            "column" : 1,
-            "type" : "INTEGER"
-          } ],
-          "source" : {
-            "values" : {
-              "schema" : [ "INTEGER", "INTEGER" ],
-              "content" : [ [ {
-                "operator" : "40",
-                "operand" : [ ],
-                "type" : "INTEGER"
-              }, {
-                "operator" : "4",
-                "operand" : [ ],
-                "type" : "INTEGER"
-              } ] ]
-            }
+        },
+        "target" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        }, {
+          "column" : 1,
+          "type" : "INTEGER"
+        } ]
+      }
+    }, {
+      "project" : {
+        "source" : {
+          "values" : {
+            "schema" : [ "INTEGER", "INTEGER" ],
+            "content" : [ [ {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "40"
+            }, {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "4"
+            } ] ]
           }
-        }
-      } ]
-    }
-  } ],
-  "help" : [ "LogicalMinus(all=[false])\n  LogicalMinus(all=[false])\n    LogicalMinus(all=[false])\n      LogicalProject(X=[$0], Y=[$1])\n        LogicalValues(tuples=[[{ 30, 3 }]])\n      LogicalProject(X=[$0], Y=[$1])\n        LogicalFilter(condition=[>($0, 30)])\n          LogicalValues(tuples=[[{ 20, 2 }]])\n    LogicalProject(EXPR$0=[$0], EXPR$1=[$1])\n      LogicalValues(tuples=[[{ 40, 4 }]])\n  LogicalProject(X=[$0], Y=[$1])\n    LogicalFilter(condition=[>($0, 50)])\n      LogicalValues(tuples=[[{ 50, 5 }]])\n", "LogicalMinus(all=[false])\n  LogicalProject(X=[$0], Y=[$1])\n    LogicalValues(tuples=[[{ 30, 3 }]])\n  LogicalProject(EXPR$0=[$0], EXPR$1=[$1])\n    LogicalValues(tuples=[[{ 40, 4 }]])\n" ]
+        },
+        "target" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        }, {
+          "column" : 1,
+          "type" : "INTEGER"
+        } ]
+      }
+    } ]
+  } ]
 }

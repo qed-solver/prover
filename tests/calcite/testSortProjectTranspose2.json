@@ -1,66 +1,84 @@
 {
+  "help" : [ "LogicalProject(DEPTNO=[$0])\n  LogicalSort(sort0=[$1], dir0=[ASC], offset=[1])\n    LogicalProject(DEPTNO=[$0], EXPR$1=[CAST($0):DOUBLE NOT NULL])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(DEPTNO=[$0])\n  LogicalProject(DEPTNO=[$0], EXPR$1=[CAST($0):DOUBLE NOT NULL])\n    LogicalSort(sort0=[$0], dir0=[ASC], offset=[1])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ],
   "schemas" : [ {
-    "name" : "DEPT",
-    "fields" : [ "DEPTNO", "NAME" ],
     "types" : [ "INTEGER", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
-    "sort" : {
-      "collation" : [ [ 1, "DOUBLE", "ASC" ] ],
-      "offset" : {
-        "operator" : "1",
-        "operand" : [ ],
-        "type" : "INTEGER"
+    "project" : {
+      "source" : {
+        "sort" : {
+          "offset" : {
+            "type" : "INTEGER",
+            "operand" : [ ],
+            "operator" : "1"
+          },
+          "limit" : null,
+          "source" : {
+            "project" : {
+              "source" : {
+                "scan" : 0
+              },
+              "target" : [ {
+                "column" : 0,
+                "type" : "INTEGER"
+              }, {
+                "type" : "DOUBLE",
+                "operand" : [ {
+                  "column" : 0,
+                  "type" : "INTEGER"
+                } ],
+                "operator" : "CAST"
+              } ]
+            }
+          },
+          "collation" : [ [ 1, "DOUBLE", "ASCENDING" ] ]
+        }
       },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      } ]
+    }
+  }, {
+    "project" : {
       "source" : {
         "project" : {
+          "source" : {
+            "sort" : {
+              "offset" : {
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "1"
+              },
+              "limit" : null,
+              "source" : {
+                "scan" : 0
+              },
+              "collation" : [ [ 0, "INTEGER", "ASCENDING" ] ]
+            }
+          },
           "target" : [ {
             "column" : 0,
             "type" : "INTEGER"
           }, {
-            "operator" : "CAST",
+            "type" : "DOUBLE",
             "operand" : [ {
               "column" : 0,
               "type" : "INTEGER"
             } ],
-            "type" : "DOUBLE"
-          } ],
-          "source" : {
-            "scan" : 0
-          }
+            "operator" : "CAST"
+          } ]
         }
-      }
-    }
-  }, {
-    "project" : {
+      },
       "target" : [ {
         "column" : 0,
         "type" : "INTEGER"
-      }, {
-        "operator" : "CAST",
-        "operand" : [ {
-          "column" : 0,
-          "type" : "INTEGER"
-        } ],
-        "type" : "DOUBLE"
-      } ],
-      "source" : {
-        "sort" : {
-          "collation" : [ [ 0, "INTEGER", "ASC" ] ],
-          "offset" : {
-            "operator" : "1",
-            "operand" : [ ],
-            "type" : "INTEGER"
-          },
-          "source" : {
-            "scan" : 0
-          }
-        }
-      }
+      } ]
     }
-  } ],
-  "help" : [ "LogicalSort(sort0=[$1], dir0=[ASC], offset=[1])\n  LogicalProject(DEPTNO=[$0], EXPR$1=[CAST($0):DOUBLE NOT NULL])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(DEPTNO=[$0], EXPR$1=[CAST($0):DOUBLE NOT NULL])\n  LogicalSort(sort0=[$0], dir0=[ASC], offset=[1])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ]
+  } ]
 }

@@ -1,68 +1,68 @@
 {
+  "help" : [ "LogicalProject(NEWCOL=[+($0, CASE(=('a', 'a'), 1, null:INTEGER))])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(NEWCOL=[+($0, 1)])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
   "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "project" : {
+      "source" : {
+        "scan" : 0
+      },
       "target" : [ {
-        "operator" : "+",
+        "type" : "INTEGER",
         "operand" : [ {
           "column" : 0,
           "type" : "INTEGER"
         }, {
-          "operator" : "CASE",
+          "type" : "INTEGER",
           "operand" : [ {
-            "operator" : "=",
+            "type" : "BOOLEAN",
             "operand" : [ {
-              "operator" : "_ISO-8859-1'a'",
+              "type" : "CHAR",
               "operand" : [ ],
-              "type" : "CHAR"
+              "operator" : "_ISO-8859-1'a'"
             }, {
-              "operator" : "_ISO-8859-1'a'",
+              "type" : "CHAR",
               "operand" : [ ],
-              "type" : "CHAR"
+              "operator" : "_ISO-8859-1'a'"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "="
           }, {
-            "operator" : "1",
+            "type" : "INTEGER",
             "operand" : [ ],
-            "type" : "INTEGER"
+            "operator" : "1"
           }, {
-            "operator" : "NULL",
+            "type" : "INTEGER",
             "operand" : [ ],
-            "type" : "INTEGER"
+            "operator" : "NULL"
           } ],
-          "type" : "INTEGER"
+          "operator" : "CASE"
         } ],
-        "type" : "INTEGER"
-      } ],
-      "source" : {
-        "scan" : 0
-      }
+        "operator" : "+"
+      } ]
     }
   }, {
     "project" : {
+      "source" : {
+        "scan" : 0
+      },
       "target" : [ {
-        "operator" : "+",
+        "type" : "INTEGER",
         "operand" : [ {
           "column" : 0,
           "type" : "INTEGER"
         }, {
-          "operator" : "1",
+          "type" : "INTEGER",
           "operand" : [ ],
-          "type" : "INTEGER"
+          "operator" : "1"
         } ],
-        "type" : "INTEGER"
-      } ],
-      "source" : {
-        "scan" : 0
-      }
+        "operator" : "+"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalProject(NEWCOL=[+($0, CASE(=('a', 'a'), 1, null:INTEGER))])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(NEWCOL=[+($0, 1)])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ]
+  } ]
 }

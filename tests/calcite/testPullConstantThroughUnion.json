@@ -1,91 +1,91 @@
 {
+  "help" : [ "LogicalUnion(all=[true])\n  LogicalProject(EXPR$0=[2], DEPTNO=[$7], JOB=[$2])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n  LogicalProject(EXPR$0=[2], DEPTNO=[$7], JOB=[$2])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(EXPR$0=[2], DEPTNO=[$0], JOB=[$1])\n  LogicalUnion(all=[true])\n    LogicalProject(DEPTNO=[$7], JOB=[$2])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalProject(DEPTNO=[$7], JOB=[$2])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
   "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "union" : [ {
       "project" : {
+        "source" : {
+          "scan" : 0
+        },
         "target" : [ {
-          "operator" : "2",
+          "type" : "INTEGER",
           "operand" : [ ],
-          "type" : "INTEGER"
+          "operator" : "2"
         }, {
           "column" : 7,
           "type" : "INTEGER"
         }, {
           "column" : 2,
           "type" : "VARCHAR"
-        } ],
-        "source" : {
-          "scan" : 0
-        }
+        } ]
       }
     }, {
       "project" : {
+        "source" : {
+          "scan" : 0
+        },
         "target" : [ {
-          "operator" : "2",
+          "type" : "INTEGER",
           "operand" : [ ],
-          "type" : "INTEGER"
+          "operator" : "2"
         }, {
           "column" : 7,
           "type" : "INTEGER"
         }, {
           "column" : 2,
           "type" : "VARCHAR"
-        } ],
-        "source" : {
-          "scan" : 0
-        }
+        } ]
       }
     } ]
   }, {
     "project" : {
+      "source" : {
+        "union" : [ {
+          "project" : {
+            "source" : {
+              "scan" : 0
+            },
+            "target" : [ {
+              "column" : 7,
+              "type" : "INTEGER"
+            }, {
+              "column" : 2,
+              "type" : "VARCHAR"
+            } ]
+          }
+        }, {
+          "project" : {
+            "source" : {
+              "scan" : 0
+            },
+            "target" : [ {
+              "column" : 7,
+              "type" : "INTEGER"
+            }, {
+              "column" : 2,
+              "type" : "VARCHAR"
+            } ]
+          }
+        } ]
+      },
       "target" : [ {
-        "operator" : "2",
+        "type" : "INTEGER",
         "operand" : [ ],
-        "type" : "INTEGER"
+        "operator" : "2"
       }, {
         "column" : 0,
         "type" : "INTEGER"
       }, {
         "column" : 1,
         "type" : "VARCHAR"
-      } ],
-      "source" : {
-        "union" : [ {
-          "project" : {
-            "target" : [ {
-              "column" : 7,
-              "type" : "INTEGER"
-            }, {
-              "column" : 2,
-              "type" : "VARCHAR"
-            } ],
-            "source" : {
-              "scan" : 0
-            }
-          }
-        }, {
-          "project" : {
-            "target" : [ {
-              "column" : 7,
-              "type" : "INTEGER"
-            }, {
-              "column" : 2,
-              "type" : "VARCHAR"
-            } ],
-            "source" : {
-              "scan" : 0
-            }
-          }
-        } ]
-      }
+      } ]
     }
-  } ],
-  "help" : [ "LogicalUnion(all=[true])\n  LogicalProject(EXPR$0=[2], DEPTNO=[$7], JOB=[$2])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n  LogicalProject(EXPR$0=[2], DEPTNO=[$7], JOB=[$2])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(EXPR$0=[2], DEPTNO=[$0], JOB=[$1])\n  LogicalUnion(all=[true])\n    LogicalProject(DEPTNO=[$7], JOB=[$2])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalProject(DEPTNO=[$7], JOB=[$2])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ]
+  } ]
 }

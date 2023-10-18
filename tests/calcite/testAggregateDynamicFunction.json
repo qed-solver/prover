@@ -1,326 +1,185 @@
 {
+  "help" : [ "LogicalProject(HIREDATE=[$1])\n  LogicalFilter(condition=[>($2, 3)])\n    LogicalAggregate(group=[{0, 1}], agg#0=[COUNT()])\n      LogicalProject(MGR=[$3], HIREDATE=[$4])\n        LogicalFilter(condition=[AND(IS NULL($3), =($4, CURRENT_TIMESTAMP))])\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(HIREDATE=[$1])\n  LogicalFilter(condition=[>($2, 3)])\n    LogicalProject(MGR=[$0], HIREDATE=[CURRENT_TIMESTAMP], $f2=[$1])\n      LogicalAggregate(group=[{0}], agg#0=[COUNT()])\n        LogicalProject(MGR=[$3])\n          LogicalFilter(condition=[AND(IS NULL($3), =($4, CURRENT_TIMESTAMP))])\n            LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
   "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "DEFAULT", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "column" : 1,
-        "type" : "TIMESTAMP"
-      } ],
       "source" : {
         "filter" : {
           "condition" : {
-            "operator" : ">",
+            "type" : "BOOLEAN",
             "operand" : [ {
               "column" : 2,
               "type" : "BIGINT"
             }, {
-              "operator" : "3",
+              "type" : "INTEGER",
               "operand" : [ ],
-              "type" : "INTEGER"
+              "operator" : "3"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : ">"
           },
           "source" : {
-            "distinct" : {
-              "correlate" : [ {
-                "project" : {
-                  "target" : [ {
-                    "column" : 0,
-                    "type" : "INTEGER"
-                  }, {
-                    "column" : 1,
-                    "type" : "TIMESTAMP"
-                  } ],
-                  "source" : {
-                    "project" : {
-                      "target" : [ {
-                        "column" : 3,
-                        "type" : "INTEGER"
-                      }, {
-                        "column" : 4,
-                        "type" : "TIMESTAMP"
-                      } ],
-                      "source" : {
-                        "filter" : {
-                          "condition" : {
-                            "operator" : "AND",
-                            "operand" : [ {
-                              "operator" : "IS NULL",
-                              "operand" : [ {
-                                "column" : 3,
-                                "type" : "INTEGER"
-                              } ],
-                              "type" : "BOOLEAN"
-                            }, {
-                              "operator" : "=",
-                              "operand" : [ {
-                                "column" : 4,
-                                "type" : "TIMESTAMP"
-                              }, {
-                                "operator" : "CURRENT_TIMESTAMP",
-                                "operand" : [ ],
-                                "type" : "TIMESTAMP"
-                              } ],
-                              "type" : "BOOLEAN"
-                            } ],
-                            "type" : "BOOLEAN"
-                          },
-                          "source" : {
-                            "scan" : 0
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }, {
-                "aggregate" : {
-                  "function" : [ {
-                    "operator" : "COUNT",
-                    "operand" : [ ],
-                    "distinct" : false,
-                    "ignoreNulls" : false,
-                    "type" : "BIGINT"
-                  } ],
-                  "source" : {
-                    "filter" : {
-                      "condition" : {
-                        "operator" : "AND",
-                        "operand" : [ {
-                          "operator" : "=",
-                          "operand" : [ {
-                            "column" : 0,
-                            "type" : "INTEGER"
-                          }, {
-                            "column" : 2,
-                            "type" : "INTEGER"
-                          } ],
-                          "type" : "BOOLEAN"
-                        }, {
-                          "operator" : "=",
-                          "operand" : [ {
-                            "column" : 1,
-                            "type" : "TIMESTAMP"
-                          }, {
-                            "column" : 3,
-                            "type" : "TIMESTAMP"
-                          } ],
-                          "type" : "BOOLEAN"
-                        } ],
-                        "type" : "BOOLEAN"
-                      },
-                      "source" : {
-                        "project" : {
-                          "target" : [ {
-                            "column" : 5,
-                            "type" : "INTEGER"
-                          }, {
-                            "column" : 6,
-                            "type" : "TIMESTAMP"
-                          } ],
-                          "source" : {
-                            "filter" : {
-                              "condition" : {
-                                "operator" : "AND",
-                                "operand" : [ {
-                                  "operator" : "IS NULL",
-                                  "operand" : [ {
-                                    "column" : 5,
-                                    "type" : "INTEGER"
-                                  } ],
-                                  "type" : "BOOLEAN"
-                                }, {
-                                  "operator" : "=",
-                                  "operand" : [ {
-                                    "column" : 6,
-                                    "type" : "TIMESTAMP"
-                                  }, {
-                                    "operator" : "CURRENT_TIMESTAMP",
-                                    "operand" : [ ],
-                                    "type" : "TIMESTAMP"
-                                  } ],
-                                  "type" : "BOOLEAN"
-                                } ],
-                                "type" : "BOOLEAN"
-                              },
-                              "source" : {
-                                "scan" : 0
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              } ]
-            }
-          }
-        }
-      }
-    }
-  }, {
-    "project" : {
-      "target" : [ {
-        "column" : 1,
-        "type" : "TIMESTAMP"
-      } ],
-      "source" : {
-        "filter" : {
-          "condition" : {
-            "operator" : ">",
-            "operand" : [ {
-              "column" : 2,
-              "type" : "BIGINT"
-            }, {
-              "operator" : "3",
-              "operand" : [ ],
-              "type" : "INTEGER"
-            } ],
-            "type" : "BOOLEAN"
-          },
-          "source" : {
-            "project" : {
-              "target" : [ {
+            "group" : {
+              "keys" : [ {
                 "column" : 0,
                 "type" : "INTEGER"
               }, {
-                "operator" : "CURRENT_TIMESTAMP",
-                "operand" : [ ],
-                "type" : "TIMESTAMP"
-              }, {
                 "column" : 1,
-                "type" : "BIGINT"
+                "type" : "TIMESTAMP"
+              } ],
+              "function" : [ {
+                "distinct" : false,
+                "type" : "BIGINT",
+                "operand" : [ ],
+                "operator" : "COUNT",
+                "ignoreNulls" : false
               } ],
               "source" : {
-                "distinct" : {
-                  "correlate" : [ {
-                    "project" : {
-                      "target" : [ {
-                        "column" : 0,
-                        "type" : "INTEGER"
-                      } ],
-                      "source" : {
-                        "project" : {
-                          "target" : [ {
+                "project" : {
+                  "source" : {
+                    "filter" : {
+                      "condition" : {
+                        "type" : "BOOLEAN",
+                        "operand" : [ {
+                          "type" : "BOOLEAN",
+                          "operand" : [ {
                             "column" : 3,
                             "type" : "INTEGER"
                           } ],
-                          "source" : {
-                            "filter" : {
-                              "condition" : {
-                                "operator" : "AND",
-                                "operand" : [ {
-                                  "operator" : "IS NULL",
-                                  "operand" : [ {
-                                    "column" : 3,
-                                    "type" : "INTEGER"
-                                  } ],
-                                  "type" : "BOOLEAN"
-                                }, {
-                                  "operator" : "=",
-                                  "operand" : [ {
-                                    "column" : 4,
-                                    "type" : "TIMESTAMP"
-                                  }, {
-                                    "operator" : "CURRENT_TIMESTAMP",
-                                    "operand" : [ ],
-                                    "type" : "TIMESTAMP"
-                                  } ],
-                                  "type" : "BOOLEAN"
-                                } ],
-                                "type" : "BOOLEAN"
-                              },
-                              "source" : {
-                                "scan" : 0
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }, {
-                    "aggregate" : {
-                      "function" : [ {
-                        "operator" : "COUNT",
-                        "operand" : [ ],
-                        "distinct" : false,
-                        "ignoreNulls" : false,
-                        "type" : "BIGINT"
-                      } ],
+                          "operator" : "IS NULL"
+                        }, {
+                          "type" : "BOOLEAN",
+                          "operand" : [ {
+                            "column" : 4,
+                            "type" : "TIMESTAMP"
+                          }, {
+                            "type" : "TIMESTAMP",
+                            "operand" : [ ],
+                            "operator" : "CURRENT_TIMESTAMP"
+                          } ],
+                          "operator" : "="
+                        } ],
+                        "operator" : "AND"
+                      },
                       "source" : {
-                        "filter" : {
-                          "condition" : {
-                            "operator" : "AND",
-                            "operand" : [ {
-                              "operator" : "=",
-                              "operand" : [ {
-                                "column" : 0,
-                                "type" : "INTEGER"
-                              }, {
-                                "column" : 1,
-                                "type" : "INTEGER"
-                              } ],
-                              "type" : "BOOLEAN"
-                            } ],
-                            "type" : "BOOLEAN"
-                          },
-                          "source" : {
-                            "project" : {
-                              "target" : [ {
-                                "column" : 4,
-                                "type" : "INTEGER"
-                              } ],
-                              "source" : {
-                                "filter" : {
-                                  "condition" : {
-                                    "operator" : "AND",
-                                    "operand" : [ {
-                                      "operator" : "IS NULL",
-                                      "operand" : [ {
-                                        "column" : 4,
-                                        "type" : "INTEGER"
-                                      } ],
-                                      "type" : "BOOLEAN"
-                                    }, {
-                                      "operator" : "=",
-                                      "operand" : [ {
-                                        "column" : 5,
-                                        "type" : "TIMESTAMP"
-                                      }, {
-                                        "operator" : "CURRENT_TIMESTAMP",
-                                        "operand" : [ ],
-                                        "type" : "TIMESTAMP"
-                                      } ],
-                                      "type" : "BOOLEAN"
-                                    } ],
-                                    "type" : "BOOLEAN"
-                                  },
-                                  "source" : {
-                                    "scan" : 0
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
+                        "scan" : 0
                       }
                     }
+                  },
+                  "target" : [ {
+                    "column" : 3,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 4,
+                    "type" : "TIMESTAMP"
                   } ]
                 }
               }
             }
           }
         }
-      }
+      },
+      "target" : [ {
+        "column" : 1,
+        "type" : "TIMESTAMP"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalProject(HIREDATE=[$1])\n  LogicalFilter(condition=[>($2, 3)])\n    LogicalAggregate(group=[{0, 1}], agg#0=[COUNT()])\n      LogicalProject(MGR=[$3], HIREDATE=[$4])\n        LogicalFilter(condition=[AND(IS NULL($3), =($4, CURRENT_TIMESTAMP))])\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(HIREDATE=[$1])\n  LogicalFilter(condition=[>($2, 3)])\n    LogicalProject(MGR=[$0], HIREDATE=[CURRENT_TIMESTAMP], $f2=[$1])\n      LogicalAggregate(group=[{0}], agg#0=[COUNT()])\n        LogicalProject(MGR=[$3])\n          LogicalFilter(condition=[AND(IS NULL($3), =($4, CURRENT_TIMESTAMP))])\n            LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ]
+  }, {
+    "project" : {
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 2,
+              "type" : "BIGINT"
+            }, {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "3"
+            } ],
+            "operator" : ">"
+          },
+          "source" : {
+            "project" : {
+              "source" : {
+                "group" : {
+                  "keys" : [ {
+                    "column" : 0,
+                    "type" : "INTEGER"
+                  } ],
+                  "function" : [ {
+                    "distinct" : false,
+                    "type" : "BIGINT",
+                    "operand" : [ ],
+                    "operator" : "COUNT",
+                    "ignoreNulls" : false
+                  } ],
+                  "source" : {
+                    "project" : {
+                      "source" : {
+                        "filter" : {
+                          "condition" : {
+                            "type" : "BOOLEAN",
+                            "operand" : [ {
+                              "type" : "BOOLEAN",
+                              "operand" : [ {
+                                "column" : 3,
+                                "type" : "INTEGER"
+                              } ],
+                              "operator" : "IS NULL"
+                            }, {
+                              "type" : "BOOLEAN",
+                              "operand" : [ {
+                                "column" : 4,
+                                "type" : "TIMESTAMP"
+                              }, {
+                                "type" : "TIMESTAMP",
+                                "operand" : [ ],
+                                "operator" : "CURRENT_TIMESTAMP"
+                              } ],
+                              "operator" : "="
+                            } ],
+                            "operator" : "AND"
+                          },
+                          "source" : {
+                            "scan" : 0
+                          }
+                        }
+                      },
+                      "target" : [ {
+                        "column" : 3,
+                        "type" : "INTEGER"
+                      } ]
+                    }
+                  }
+                }
+              },
+              "target" : [ {
+                "column" : 0,
+                "type" : "INTEGER"
+              }, {
+                "type" : "TIMESTAMP",
+                "operand" : [ ],
+                "operator" : "CURRENT_TIMESTAMP"
+              }, {
+                "column" : 1,
+                "type" : "BIGINT"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 1,
+        "type" : "TIMESTAMP"
+      } ]
+    }
+  } ]
 }

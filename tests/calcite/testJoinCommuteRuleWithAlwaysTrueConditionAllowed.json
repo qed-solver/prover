@@ -1,36 +1,53 @@
 {
+  "help" : [ "LogicalJoin(condition=[true], joinType=[inner])\n  LogicalTableScan(table=[[scott, EMP]])\n  LogicalTableScan(table=[[scott, DEPT]])\n", "LogicalProject(EMPNO=[$3], ENAME=[$4], JOB=[$5], MGR=[$6], HIREDATE=[$7], SAL=[$8], COMM=[$9], DEPTNO=[$10], DEPTNO0=[$0], DNAME=[$1], LOC=[$2])\n  LogicalJoin(condition=[true], joinType=[inner])\n    LogicalTableScan(table=[[scott, DEPT]])\n    LogicalTableScan(table=[[scott, EMP]])\n" ],
   "schemas" : [ {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
     "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
-    "key" : [ [ 0 ], [ 1 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, true, true, true, true, true, true, true ],
+    "name" : "scott.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
+    "key" : [ [ 0 ], [ 1 ] ]
   }, {
-    "name" : "DEPT",
-    "fields" : [ "DEPTNO", "DNAME", "LOC" ],
     "types" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE" ],
-    "key" : [ [ 0 ], [ 1 ], [ 2 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, true, true ],
+    "name" : "scott.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "DNAME", "LOC" ],
+    "key" : [ [ 0 ], [ 1 ], [ 2 ] ]
   } ],
   "queries" : [ {
     "join" : {
-      "kind" : "INNER",
       "condition" : {
-        "operator" : "true",
+        "type" : "BOOLEAN",
         "operand" : [ ],
-        "type" : "BOOLEAN"
+        "operator" : "true"
       },
       "left" : {
         "scan" : 0
       },
+      "kind" : "INNER",
       "right" : {
         "scan" : 1
       }
     }
   }, {
     "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ ],
+            "operator" : "true"
+          },
+          "left" : {
+            "scan" : 1
+          },
+          "kind" : "INNER",
+          "right" : {
+            "scan" : 0
+          }
+        }
+      },
       "target" : [ {
         "column" : 3,
         "type" : "SMALLINT"
@@ -64,24 +81,7 @@
       }, {
         "column" : 2,
         "type" : "VARCHAR"
-      } ],
-      "source" : {
-        "join" : {
-          "kind" : "INNER",
-          "condition" : {
-            "operator" : "true",
-            "operand" : [ ],
-            "type" : "BOOLEAN"
-          },
-          "left" : {
-            "scan" : 1
-          },
-          "right" : {
-            "scan" : 0
-          }
-        }
-      }
+      } ]
     }
-  } ],
-  "help" : [ "LogicalJoin(condition=[true], joinType=[inner])\n  LogicalTableScan(table=[[scott, EMP]])\n  LogicalTableScan(table=[[scott, DEPT]])\n", "LogicalProject(EMPNO=[$3], ENAME=[$4], JOB=[$5], MGR=[$6], HIREDATE=[$7], SAL=[$8], COMM=[$9], DEPTNO=[$10], DEPTNO0=[$0], DNAME=[$1], LOC=[$2])\n  LogicalJoin(condition=[true], joinType=[inner])\n    LogicalTableScan(table=[[scott, DEPT]])\n    LogicalTableScan(table=[[scott, EMP]])\n" ]
+  } ]
 }

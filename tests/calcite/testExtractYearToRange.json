@@ -1,75 +1,42 @@
 {
+  "help" : [ "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], BIRTHDATE=[$9])\n  LogicalFilter(condition=[=(EXTRACT(FLAG(YEAR), $9), 2014)])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP_B]])\n", "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], BIRTHDATE=[$9])\n  LogicalFilter(condition=[SEARCH($9, Sarg[[2014-01-01..2015-01-01)])])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP_B]])\n" ],
   "schemas" : [ {
-    "name" : "EMP_B",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER", "BIRTHDATE" ],
     "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN", "DATE" ],
-    "strategy" : [ "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE", "NOT_NULLABLE" ],
-    "key" : [ [ 0 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, false, false, true, false, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP_B",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER", "BIRTHDATE" ],
+    "key" : [ [ 0 ] ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "column" : 0,
-        "type" : "INTEGER"
-      }, {
-        "column" : 1,
-        "type" : "VARCHAR"
-      }, {
-        "column" : 2,
-        "type" : "VARCHAR"
-      }, {
-        "column" : 3,
-        "type" : "INTEGER"
-      }, {
-        "column" : 4,
-        "type" : "TIMESTAMP"
-      }, {
-        "column" : 5,
-        "type" : "INTEGER"
-      }, {
-        "column" : 6,
-        "type" : "INTEGER"
-      }, {
-        "column" : 7,
-        "type" : "INTEGER"
-      }, {
-        "column" : 8,
-        "type" : "BOOLEAN"
-      }, {
-        "column" : 9,
-        "type" : "DATE"
-      } ],
       "source" : {
         "filter" : {
           "condition" : {
-            "operator" : "=",
+            "type" : "BOOLEAN",
             "operand" : [ {
-              "operator" : "EXTRACT",
+              "type" : "BIGINT",
               "operand" : [ {
-                "operator" : "YEAR",
+                "type" : "SYMBOL",
                 "operand" : [ ],
-                "type" : "SYMBOL"
+                "operator" : "YEAR"
               }, {
                 "column" : 9,
                 "type" : "DATE"
               } ],
-              "type" : "BIGINT"
+              "operator" : "EXTRACT"
             }, {
-              "operator" : "2014",
+              "type" : "BIGINT",
               "operand" : [ ],
-              "type" : "BIGINT"
+              "operator" : "2014"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "="
           },
           "source" : {
             "scan" : 0
           }
         }
-      }
-    }
-  }, {
-    "project" : {
+      },
       "target" : [ {
         "column" : 0,
         "type" : "INTEGER"
@@ -100,27 +67,60 @@
       }, {
         "column" : 9,
         "type" : "DATE"
-      } ],
+      } ]
+    }
+  }, {
+    "project" : {
       "source" : {
         "filter" : {
           "condition" : {
-            "operator" : "SEARCH",
+            "type" : "BOOLEAN",
             "operand" : [ {
               "column" : 9,
               "type" : "DATE"
             }, {
-              "operator" : "Sarg[[2014-01-01..2015-01-01)]",
+              "type" : "DATE",
               "operand" : [ ],
-              "type" : "DATE"
+              "operator" : "Sarg[[2014-01-01..2015-01-01)]"
             } ],
-            "type" : "BOOLEAN"
+            "operator" : "SEARCH"
           },
           "source" : {
             "scan" : 0
           }
         }
-      }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 2,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 3,
+        "type" : "INTEGER"
+      }, {
+        "column" : 4,
+        "type" : "TIMESTAMP"
+      }, {
+        "column" : 5,
+        "type" : "INTEGER"
+      }, {
+        "column" : 6,
+        "type" : "INTEGER"
+      }, {
+        "column" : 7,
+        "type" : "INTEGER"
+      }, {
+        "column" : 8,
+        "type" : "BOOLEAN"
+      }, {
+        "column" : 9,
+        "type" : "DATE"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], BIRTHDATE=[$9])\n  LogicalFilter(condition=[=(EXTRACT(FLAG(YEAR), $9), 2014)])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP_B]])\n", "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], BIRTHDATE=[$9])\n  LogicalFilter(condition=[SEARCH($9, Sarg[[2014-01-01..2015-01-01)])])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP_B]])\n" ]
+  } ]
 }

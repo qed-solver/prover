@@ -1,139 +1,102 @@
 {
+  "help" : [ "LogicalProject(DNAME=[$1])\n  LogicalJoin(condition=[=($0, $3)], joinType=[inner])\n    LogicalTableScan(table=[[scott, DEPT]])\n    LogicalAggregate(group=[{0}])\n      LogicalProject(DEPTNO=[$7])\n        LogicalTableScan(table=[[scott, EMP]])\n", "LogicalProject(DNAME=[$1])\n  LogicalJoin(condition=[=($0, $3)], joinType=[semi])\n    LogicalTableScan(table=[[scott, DEPT]])\n    LogicalProject(DEPTNO=[$7])\n      LogicalTableScan(table=[[scott, EMP]])\n" ],
   "schemas" : [ {
-    "name" : "DEPT",
-    "fields" : [ "DEPTNO", "DNAME", "LOC" ],
     "types" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE" ],
-    "key" : [ [ 0 ], [ 1 ], [ 2 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, true, true ],
+    "name" : "scott.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "DNAME", "LOC" ],
+    "key" : [ [ 0 ], [ 1 ], [ 2 ] ]
   }, {
-    "name" : "EMP",
-    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
     "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
-    "strategy" : [ "NOT_NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE", "NULLABLE" ],
-    "key" : [ [ 0 ], [ 1 ] ],
-    "foreign" : [ ]
+    "nullable" : [ false, true, true, true, true, true, true, true ],
+    "name" : "scott.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
+    "key" : [ [ 0 ], [ 1 ] ]
   } ],
   "queries" : [ {
     "project" : {
-      "target" : [ {
-        "column" : 1,
-        "type" : "VARCHAR"
-      } ],
       "source" : {
         "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "TINYINT"
+            }, {
+              "column" : 3,
+              "type" : "TINYINT"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "scan" : 0
+          },
           "kind" : "INNER",
-          "condition" : {
-            "operator" : "=",
-            "operand" : [ {
-              "column" : 0,
-              "type" : "TINYINT"
-            }, {
-              "column" : 3,
-              "type" : "TINYINT"
-            } ],
-            "type" : "BOOLEAN"
-          },
-          "left" : {
-            "scan" : 0
-          },
           "right" : {
-            "distinct" : {
-              "correlate" : [ {
-                "project" : {
-                  "target" : [ {
-                    "column" : 0,
-                    "type" : "TINYINT"
-                  } ],
-                  "source" : {
-                    "project" : {
-                      "target" : [ {
-                        "column" : 7,
-                        "type" : "TINYINT"
-                      } ],
-                      "source" : {
-                        "scan" : 1
-                      }
-                    }
-                  }
-                }
-              }, {
-                "aggregate" : {
-                  "function" : [ ],
-                  "source" : {
-                    "filter" : {
-                      "condition" : {
-                        "operator" : "AND",
-                        "operand" : [ {
-                          "operator" : "=",
-                          "operand" : [ {
-                            "column" : 0,
-                            "type" : "TINYINT"
-                          }, {
-                            "column" : 1,
-                            "type" : "TINYINT"
-                          } ],
-                          "type" : "BOOLEAN"
-                        } ],
-                        "type" : "BOOLEAN"
-                      },
-                      "source" : {
-                        "project" : {
-                          "target" : [ {
-                            "column" : 8,
-                            "type" : "TINYINT"
-                          } ],
-                          "source" : {
-                            "scan" : 1
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              } ]
-            }
-          }
-        }
-      }
-    }
-  }, {
-    "project" : {
-      "target" : [ {
-        "column" : 1,
-        "type" : "VARCHAR"
-      } ],
-      "source" : {
-        "join" : {
-          "kind" : "SEMI",
-          "condition" : {
-            "operator" : "=",
-            "operand" : [ {
-              "column" : 0,
-              "type" : "TINYINT"
-            }, {
-              "column" : 3,
-              "type" : "TINYINT"
-            } ],
-            "type" : "BOOLEAN"
-          },
-          "left" : {
-            "scan" : 0
-          },
-          "right" : {
-            "project" : {
-              "target" : [ {
-                "column" : 7,
+            "group" : {
+              "keys" : [ {
+                "column" : 0,
                 "type" : "TINYINT"
               } ],
+              "function" : [ ],
               "source" : {
-                "scan" : 1
+                "project" : {
+                  "source" : {
+                    "scan" : 1
+                  },
+                  "target" : [ {
+                    "column" : 7,
+                    "type" : "TINYINT"
+                  } ]
+                }
               }
             }
           }
         }
-      }
+      },
+      "target" : [ {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ]
     }
-  } ],
-  "help" : [ "LogicalProject(DNAME=[$1])\n  LogicalJoin(condition=[=($0, $3)], joinType=[inner])\n    LogicalTableScan(table=[[scott, DEPT]])\n    LogicalAggregate(group=[{0}])\n      LogicalProject(DEPTNO=[$7])\n        LogicalTableScan(table=[[scott, EMP]])\n", "LogicalProject(DNAME=[$1])\n  LogicalJoin(condition=[=($0, $3)], joinType=[semi])\n    LogicalTableScan(table=[[scott, DEPT]])\n    LogicalProject(DEPTNO=[$7])\n      LogicalTableScan(table=[[scott, EMP]])\n" ]
+  }, {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "TINYINT"
+            }, {
+              "column" : 3,
+              "type" : "TINYINT"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "kind" : "SEMI",
+          "right" : {
+            "project" : {
+              "source" : {
+                "scan" : 1
+              },
+              "target" : [ {
+                "column" : 7,
+                "type" : "TINYINT"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ]
+    }
+  } ]
 }
