@@ -1,0 +1,69 @@
+{
+  "help" : [ "LogicalProject(EMPNO=[$0])\n  LogicalJoin(condition=[AND(=($7, $8), =($5, 2000))], joinType=[anti])\n    LogicalTableScan(table=[[scott, EMP]])\n    LogicalValues(tuples=[[]])\n", "LogicalProject(EMPNO=[$0])\n  LogicalTableScan(table=[[scott, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
+    "nullable" : [ false, true, true, true, true, true, true, true ],
+    "name" : "scott.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
+    "key" : [ [ 0 ], [ 1 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "type" : "BOOLEAN",
+              "operand" : [ {
+                "column" : 7,
+                "type" : "TINYINT"
+              }, {
+                "column" : 8,
+                "type" : "TINYINT"
+              } ],
+              "operator" : "="
+            }, {
+              "type" : "BOOLEAN",
+              "operand" : [ {
+                "column" : 5,
+                "type" : "DECIMAL"
+              }, {
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "2000"
+              } ],
+              "operator" : "="
+            } ],
+            "operator" : "AND"
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "kind" : "ANTI",
+          "right" : {
+            "values" : {
+              "schema" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
+              "content" : [ ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "SMALLINT"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "scan" : 0
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "SMALLINT"
+      } ]
+    }
+  } ]
+}

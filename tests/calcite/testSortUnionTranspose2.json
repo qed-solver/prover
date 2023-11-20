@@ -1,0 +1,92 @@
+{
+  "help" : [ "LogicalSort(sort0=[$0], dir0=[ASC])\n  LogicalProject(NAME=[$0])\n    LogicalUnion(all=[true])\n      LogicalProject(NAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n      LogicalProject(NAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalSort(sort0=[$0], dir0=[ASC])\n  LogicalUnion(all=[true])\n    LogicalSort(sort0=[$0], dir0=[ASC])\n      LogicalProject(NAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n    LogicalSort(sort0=[$0], dir0=[ASC])\n      LogicalProject(NAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "sort" : {
+      "offset" : null,
+      "limit" : null,
+      "source" : {
+        "project" : {
+          "source" : {
+            "union" : [ {
+              "project" : {
+                "source" : {
+                  "scan" : 0
+                },
+                "target" : [ {
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                } ]
+              }
+            }, {
+              "project" : {
+                "source" : {
+                  "scan" : 0
+                },
+                "target" : [ {
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                } ]
+              }
+            } ]
+          },
+          "target" : [ {
+            "column" : 0,
+            "type" : "VARCHAR"
+          } ]
+        }
+      },
+      "collation" : [ [ 0, "VARCHAR", "ASCENDING" ] ]
+    }
+  }, {
+    "sort" : {
+      "offset" : null,
+      "limit" : null,
+      "source" : {
+        "union" : [ {
+          "sort" : {
+            "offset" : null,
+            "limit" : null,
+            "source" : {
+              "project" : {
+                "source" : {
+                  "scan" : 0
+                },
+                "target" : [ {
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                } ]
+              }
+            },
+            "collation" : [ [ 0, "VARCHAR", "ASCENDING" ] ]
+          }
+        }, {
+          "sort" : {
+            "offset" : null,
+            "limit" : null,
+            "source" : {
+              "project" : {
+                "source" : {
+                  "scan" : 0
+                },
+                "target" : [ {
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                } ]
+              }
+            },
+            "collation" : [ [ 0, "VARCHAR", "ASCENDING" ] ]
+          }
+        } ]
+      },
+      "collation" : [ [ 0, "VARCHAR", "ASCENDING" ] ]
+    }
+  } ]
+}

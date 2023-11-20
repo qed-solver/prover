@@ -1,0 +1,107 @@
+{
+  "help" : [ "LogicalAggregate(group=[{}], EXPR$0=[SUM(DISTINCT $0)], EXPR$1=[COUNT(DISTINCT $0)], EXPR$2=[BIT_AND($0)])\n  LogicalProject(DEPTNO=[$7])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalAggregate(group=[{}], EXPR$0=[SUM($0)], EXPR$1=[COUNT($0)], EXPR$2=[BIT_AND($0)])\n  LogicalAggregate(group=[{0}])\n    LogicalProject(DEPTNO=[$7])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "group" : {
+      "keys" : [ ],
+      "function" : [ {
+        "distinct" : true,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "SUM",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : true,
+        "type" : "BIGINT",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "COUNT",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "BIT_AND",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "project" : {
+          "source" : {
+            "scan" : 0
+          },
+          "target" : [ {
+            "column" : 7,
+            "type" : "INTEGER"
+          } ]
+        }
+      }
+    }
+  }, {
+    "group" : {
+      "keys" : [ ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "SUM",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "BIGINT",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "COUNT",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "BIT_AND",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "group" : {
+          "keys" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          } ],
+          "function" : [ ],
+          "source" : {
+            "project" : {
+              "source" : {
+                "scan" : 0
+              },
+              "target" : [ {
+                "column" : 7,
+                "type" : "INTEGER"
+              } ]
+            }
+          }
+        }
+      }
+    }
+  } ]
+}

@@ -1,0 +1,94 @@
+{
+  "help" : [ "LogicalProject(NAME=[$0], LATITUDE=[$1], LONGITUDE=[$2], CUISINE=[$3], HILBERT=[$4])\n  LogicalFilter(condition=[ST_DWITHIN(ST_POINT(10.0:DECIMAL(3, 1), 20.0:DECIMAL(3, 1)), ST_POINT($2, $1), -2)])\n    LogicalTableScan(table=[[CATALOG, GEO, RESTAURANTS]])\n", "LogicalProject(NAME=[$0], LATITUDE=[$1], LONGITUDE=[$2], CUISINE=[$3], HILBERT=[$4])\n  LogicalValues(tuples=[[]])\n" ],
+  "schemas" : [ {
+    "types" : [ "VARCHAR", "INTEGER", "INTEGER", "VARCHAR", "BIGINT" ],
+    "nullable" : [ false, false, false, false, false ],
+    "name" : "CATALOG.GEO.RESTAURANTS",
+    "guaranteed" : [ ],
+    "fields" : [ "NAME", "LATITUDE", "LONGITUDE", "CUISINE", "HILBERT" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "type" : "GEOMETRY",
+              "operand" : [ {
+                "type" : "DECIMAL",
+                "operand" : [ ],
+                "operator" : "10.0"
+              }, {
+                "type" : "DECIMAL",
+                "operand" : [ ],
+                "operator" : "20.0"
+              } ],
+              "operator" : "ST_POINT"
+            }, {
+              "type" : "GEOMETRY",
+              "operand" : [ {
+                "column" : 2,
+                "type" : "INTEGER"
+              }, {
+                "column" : 1,
+                "type" : "INTEGER"
+              } ],
+              "operator" : "ST_POINT"
+            }, {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "-2"
+            } ],
+            "operator" : "ST_DWITHIN"
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 1,
+        "type" : "INTEGER"
+      }, {
+        "column" : 2,
+        "type" : "INTEGER"
+      }, {
+        "column" : 3,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 4,
+        "type" : "BIGINT"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "values" : {
+          "schema" : [ "VARCHAR", "INTEGER", "INTEGER", "VARCHAR", "BIGINT" ],
+          "content" : [ ]
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 1,
+        "type" : "INTEGER"
+      }, {
+        "column" : 2,
+        "type" : "INTEGER"
+      }, {
+        "column" : 3,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 4,
+        "type" : "BIGINT"
+      } ]
+    }
+  } ]
+}

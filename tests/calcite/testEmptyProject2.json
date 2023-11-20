@@ -1,0 +1,76 @@
+{
+  "help" : [ "LogicalProject(EXPR$0=[+(+($0, $1), $0)])\n  LogicalFilter(condition=[>(+($0, $1), 50)])\n    LogicalValues(tuples=[[{ 10, 1 }, { 30, 3 }]])\n", "LogicalValues(tuples=[[]])\n" ],
+  "schemas" : [ ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "type" : "INTEGER",
+              "operand" : [ {
+                "column" : 0,
+                "type" : "INTEGER"
+              }, {
+                "column" : 1,
+                "type" : "INTEGER"
+              } ],
+              "operator" : "+"
+            }, {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "50"
+            } ],
+            "operator" : ">"
+          },
+          "source" : {
+            "values" : {
+              "schema" : [ "INTEGER", "INTEGER" ],
+              "content" : [ [ {
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "10"
+              }, {
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "1"
+              } ], [ {
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "30"
+              }, {
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "3"
+              } ] ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "type" : "INTEGER",
+        "operand" : [ {
+          "type" : "INTEGER",
+          "operand" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "column" : 1,
+            "type" : "INTEGER"
+          } ],
+          "operator" : "+"
+        }, {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "+"
+      } ]
+    }
+  }, {
+    "values" : {
+      "schema" : [ "INTEGER" ],
+      "content" : [ ]
+    }
+  } ]
+}

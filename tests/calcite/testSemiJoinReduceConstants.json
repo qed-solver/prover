@@ -1,0 +1,195 @@
+{
+  "help" : [ "LogicalProject(SAL=[$0])\n  LogicalJoin(condition=[=($1, $2)], joinType=[semi])\n    LogicalFilter(condition=[=($1, 200)])\n      LogicalProject(SAL=[$5], DEPTNO=[$7])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalProject(DEPTNO=[$1])\n      LogicalFilter(condition=[=($0, 100)])\n        LogicalProject(SAL=[$5], DEPTNO=[$7])\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(SAL=[$0])\n  LogicalJoin(condition=[=(200, $2)], joinType=[semi])\n    LogicalFilter(condition=[=($1, 200)])\n      LogicalProject(SAL=[$5], DEPTNO=[$7])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalProject(DEPTNO=[$1])\n      LogicalFilter(condition=[=($0, 100)])\n        LogicalProject(SAL=[$5], DEPTNO=[$7])\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 1,
+              "type" : "INTEGER"
+            }, {
+              "column" : 2,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "filter" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 1,
+                  "type" : "INTEGER"
+                }, {
+                  "type" : "INTEGER",
+                  "operand" : [ ],
+                  "operator" : "200"
+                } ],
+                "operator" : "="
+              },
+              "source" : {
+                "project" : {
+                  "source" : {
+                    "scan" : 0
+                  },
+                  "target" : [ {
+                    "column" : 5,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 7,
+                    "type" : "INTEGER"
+                  } ]
+                }
+              }
+            }
+          },
+          "kind" : "SEMI",
+          "right" : {
+            "project" : {
+              "source" : {
+                "filter" : {
+                  "condition" : {
+                    "type" : "BOOLEAN",
+                    "operand" : [ {
+                      "column" : 0,
+                      "type" : "INTEGER"
+                    }, {
+                      "type" : "INTEGER",
+                      "operand" : [ ],
+                      "operator" : "100"
+                    } ],
+                    "operator" : "="
+                  },
+                  "source" : {
+                    "project" : {
+                      "source" : {
+                        "scan" : 0
+                      },
+                      "target" : [ {
+                        "column" : 5,
+                        "type" : "INTEGER"
+                      }, {
+                        "column" : 7,
+                        "type" : "INTEGER"
+                      } ]
+                    }
+                  }
+                }
+              },
+              "target" : [ {
+                "column" : 1,
+                "type" : "INTEGER"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "200"
+            }, {
+              "column" : 2,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "filter" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 1,
+                  "type" : "INTEGER"
+                }, {
+                  "type" : "INTEGER",
+                  "operand" : [ ],
+                  "operator" : "200"
+                } ],
+                "operator" : "="
+              },
+              "source" : {
+                "project" : {
+                  "source" : {
+                    "scan" : 0
+                  },
+                  "target" : [ {
+                    "column" : 5,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 7,
+                    "type" : "INTEGER"
+                  } ]
+                }
+              }
+            }
+          },
+          "kind" : "SEMI",
+          "right" : {
+            "project" : {
+              "source" : {
+                "filter" : {
+                  "condition" : {
+                    "type" : "BOOLEAN",
+                    "operand" : [ {
+                      "column" : 0,
+                      "type" : "INTEGER"
+                    }, {
+                      "type" : "INTEGER",
+                      "operand" : [ ],
+                      "operator" : "100"
+                    } ],
+                    "operator" : "="
+                  },
+                  "source" : {
+                    "project" : {
+                      "source" : {
+                        "scan" : 0
+                      },
+                      "target" : [ {
+                        "column" : 5,
+                        "type" : "INTEGER"
+                      }, {
+                        "column" : 7,
+                        "type" : "INTEGER"
+                      } ]
+                    }
+                  }
+                }
+              },
+              "target" : [ {
+                "column" : 1,
+                "type" : "INTEGER"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      } ]
+    }
+  } ]
+}

@@ -1,0 +1,114 @@
+{
+  "help" : [ "LogicalProject(X=[$0], EXPR$1=[$2], Y=[$1])\n  LogicalAggregate(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], EXPR$1=[SUM($2)])\n    LogicalProject(X=[$7], Y=[$0], Z=[$5])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(X=[$0], EXPR$1=[$2], Y=[$1])\n  LogicalProject(DEPTNO=[$1], EMPNO=[$0], EXPR$1=[$2])\n    LogicalAggregate(group=[{0, 7}], groups=[[{0, 7}, {7}, {}]], EXPR$1=[SUM($5)])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "group" : {
+          "keys" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "column" : 1,
+            "type" : "INTEGER"
+          } ],
+          "function" : [ {
+            "distinct" : false,
+            "type" : "INTEGER",
+            "operand" : [ {
+              "column" : 2,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "SUM",
+            "ignoreNulls" : false
+          } ],
+          "source" : {
+            "project" : {
+              "source" : {
+                "scan" : 0
+              },
+              "target" : [ {
+                "column" : 7,
+                "type" : "INTEGER"
+              }, {
+                "column" : 0,
+                "type" : "INTEGER"
+              }, {
+                "column" : 5,
+                "type" : "INTEGER"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 2,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "INTEGER"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "project" : {
+          "source" : {
+            "group" : {
+              "keys" : [ {
+                "column" : 0,
+                "type" : "INTEGER"
+              }, {
+                "column" : 7,
+                "type" : "INTEGER"
+              } ],
+              "function" : [ {
+                "distinct" : false,
+                "type" : "INTEGER",
+                "operand" : [ {
+                  "column" : 5,
+                  "type" : "INTEGER"
+                } ],
+                "operator" : "SUM",
+                "ignoreNulls" : false
+              } ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          },
+          "target" : [ {
+            "column" : 1,
+            "type" : "INTEGER"
+          }, {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "column" : 2,
+            "type" : "INTEGER"
+          } ]
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 2,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "INTEGER"
+      } ]
+    }
+  } ]
+}

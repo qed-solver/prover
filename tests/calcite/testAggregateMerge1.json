@@ -1,0 +1,175 @@
+{
+  "help" : [ "LogicalAggregate(group=[{1}], EXPR$1=[MIN($4)], Z=[MAX($3)], EXPR$3=[SUM($6)], N=[SUM($5)], SAL=[SUM($2)])\n  LogicalAggregate(group=[{1, 7}], X=[SUM($5)], Z=[MAX($5)], Y=[MIN($5)], M=[COUNT()], R=[COUNT($3)])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalAggregate(group=[{7}], EXPR$1=[MIN($5)], Z=[MAX($5)], EXPR$3=[COUNT($3)], N=[COUNT()], SAL=[SUM($5)])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "group" : {
+      "keys" : [ {
+        "column" : 1,
+        "type" : "INTEGER"
+      } ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 4,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "MIN",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 3,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "MAX",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "BIGINT",
+        "operand" : [ {
+          "column" : 6,
+          "type" : "BIGINT"
+        } ],
+        "operator" : "SUM",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "BIGINT",
+        "operand" : [ {
+          "column" : 5,
+          "type" : "BIGINT"
+        } ],
+        "operator" : "SUM",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 2,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "SUM",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "group" : {
+          "keys" : [ {
+            "column" : 1,
+            "type" : "VARCHAR"
+          }, {
+            "column" : 7,
+            "type" : "INTEGER"
+          } ],
+          "function" : [ {
+            "distinct" : false,
+            "type" : "INTEGER",
+            "operand" : [ {
+              "column" : 5,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "SUM",
+            "ignoreNulls" : false
+          }, {
+            "distinct" : false,
+            "type" : "INTEGER",
+            "operand" : [ {
+              "column" : 5,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "MAX",
+            "ignoreNulls" : false
+          }, {
+            "distinct" : false,
+            "type" : "INTEGER",
+            "operand" : [ {
+              "column" : 5,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "MIN",
+            "ignoreNulls" : false
+          }, {
+            "distinct" : false,
+            "type" : "BIGINT",
+            "operand" : [ ],
+            "operator" : "COUNT",
+            "ignoreNulls" : false
+          }, {
+            "distinct" : false,
+            "type" : "BIGINT",
+            "operand" : [ {
+              "column" : 3,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "COUNT",
+            "ignoreNulls" : false
+          } ],
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  }, {
+    "group" : {
+      "keys" : [ {
+        "column" : 7,
+        "type" : "INTEGER"
+      } ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 5,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "MIN",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 5,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "MAX",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "BIGINT",
+        "operand" : [ {
+          "column" : 3,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "COUNT",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "BIGINT",
+        "operand" : [ ],
+        "operator" : "COUNT",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 5,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "SUM",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "scan" : 0
+      }
+    }
+  } ]
+}

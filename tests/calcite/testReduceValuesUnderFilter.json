@@ -1,0 +1,77 @@
+{
+  "help" : [ "LogicalProject(A=[$0], B=[$1])\n  LogicalFilter(condition=[<($0, 15)])\n    LogicalValues(tuples=[[{ 10, 'x' }, { 20, 'y' }]])\n", "LogicalProject(A=[$0], B=[$1])\n  LogicalValues(tuples=[[{ 10, 'x' }]])\n" ],
+  "schemas" : [ ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            }, {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "15"
+            } ],
+            "operator" : "<"
+          },
+          "source" : {
+            "values" : {
+              "schema" : [ "INTEGER", "CHAR" ],
+              "content" : [ [ {
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "10"
+              }, {
+                "type" : "CHAR",
+                "operand" : [ ],
+                "operator" : "_ISO-8859-1'x'"
+              } ], [ {
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "20"
+              }, {
+                "type" : "CHAR",
+                "operand" : [ ],
+                "operator" : "_ISO-8859-1'y'"
+              } ] ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "CHAR"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "values" : {
+          "schema" : [ "INTEGER", "CHAR" ],
+          "content" : [ [ {
+            "type" : "INTEGER",
+            "operand" : [ ],
+            "operator" : "10"
+          }, {
+            "type" : "CHAR",
+            "operand" : [ ],
+            "operator" : "_ISO-8859-1'x'"
+          } ] ]
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "CHAR"
+      } ]
+    }
+  } ]
+}

@@ -11,7 +11,8 @@ use imbl::{vector, Vector};
 use indenter::indented;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use z3::ast::{Ast, Datatype, Dynamic};
+use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
+use z3::ast::{Ast, Dynamic};
 use z3::{Context, FuncDecl, Sort};
 
 pub trait Eval<S, T> {
@@ -44,10 +45,33 @@ pub struct Schema {
 }
 
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub enum Expr<R> {
+pub enum Expr<U, R, A> {
 	Var(VL, DataType),
-	Op(String, Vec<Expr<R>>, DataType),
-	HOp(String, Vec<Expr<R>>, Box<R>, DataType),
+	Log(Box<Logic<U, Expr<U, R, A>>>),
+	Agg(A),
+	Op(String, Vec<Expr<U, R, A>>, DataType),
+	HOp(String, Vec<Expr<U, R, A>>, Box<R>, DataType),
+}
+
+pub trait Typed {
+	fn ty(&self) -> DataType;
+}
+
+impl<U, R, A: Typed> Typed for Expr<U, R, A> {
+	fn ty(&self) -> DataType {
+		use Expr::*;
+		match self {
+			Var(_, ty) | Op(_, _, ty) | HOp(_, _, _, ty) => ty.clone(),
+			Log(_) => DataType::Boolean,
+			Agg(agg) => agg.ty(),
+		}
+	}
+}
+
+impl<U, R, A: Typed> Expr<U, R, A> {
+	pub fn is_null(self) -> Logic<U, Self> {
+		Logic::Eq(Self::Op("NULL".to_string(), vec![], self.ty()), self)
+	}
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -60,19 +84,29 @@ impl<U: Display> Display for Lambda<U> {
 	}
 }
 
-#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub enum Logic<R, L, A> {
-	Bool(Expr<R>),
-	Eq(Expr<R>, Expr<R>),
-	Pred(String, Vec<Expr<R>>),
-	Neg(Box<Logic<R, L, A>>),
-	And(Vector<Logic<R, L, A>>),
-	Or(Vector<Logic<R, L, A>>),
-	App(A),
-	Exists(L),
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct Sigma<U>(pub Vector<DataType>, pub U);
+
+impl<U: Display> Display for Sigma<U> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		writeln!(f, "∑ {:?} {{", self.0)?;
+		writeln!(indented(f).with_str("\t"), "{}", self.1)?;
+		writeln!(f, "}}")
+	}
 }
 
-impl<R, L, A> Logic<R, L, A> {
+#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub enum Logic<U, E> {
+	Bool(E),
+	Eq(E, E),
+	Pred(String, Vec<E>),
+	Neg(Box<Logic<U, E>>),
+	And(Vector<Logic<U, E>>),
+	Or(Vector<Logic<U, E>>),
+	Squash(Box<U>),
+}
+
+impl<U, E> Logic<U, E> {
 	pub fn tt() -> Self {
 		Logic::And(vector![])
 	}
@@ -81,13 +115,12 @@ impl<R, L, A> Logic<R, L, A> {
 		Logic::Or(vector![])
 	}
 
-	pub fn is_null(expr: Expr<R>) -> Self {
-		let ty = expr.ty();
-		Self::Eq(expr, Expr::Op("NULL".to_string(), vec![], ty))
+	pub fn squash(u: impl Into<Box<U>>) -> Self {
+		Logic::Squash(u.into())
 	}
 }
 
-impl<R: Clone, L: Clone, A: Clone> Mul for Logic<R, L, A> {
+impl<U: Clone, E: Clone> Mul for Logic<U, E> {
 	type Output = Self;
 
 	fn mul(self, rhs: Self) -> Self::Output {
@@ -101,7 +134,7 @@ impl<R: Clone, L: Clone, A: Clone> Mul for Logic<R, L, A> {
 	}
 }
 
-impl<R: Clone, L: Clone, A: Clone> Add for Logic<R, L, A> {
+impl<U: Clone, E: Clone> Add for Logic<U, E> {
 	type Output = Self;
 
 	fn add(self, rhs: Self) -> Self::Output {
@@ -115,7 +148,7 @@ impl<R: Clone, L: Clone, A: Clone> Add for Logic<R, L, A> {
 	}
 }
 
-impl<R, L, A> Not for Logic<R, L, A> {
+impl<U, E> Not for Logic<U, E> {
 	type Output = Self;
 
 	fn not(self) -> Self::Output {
@@ -123,7 +156,7 @@ impl<R, L, A> Not for Logic<R, L, A> {
 	}
 }
 
-impl<R: Display, L: Display, A: Display> Display for Logic<R, L, A> {
+impl<E: Display, U: Display> Display for Logic<U, E> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		use Logic::*;
 		match self {
@@ -135,23 +168,15 @@ impl<R: Display, L: Display, A: Display> Display for Logic<R, L, A> {
 			And(ls) => write!(f, "({})", ls.iter().format(" ∧ ")),
 			Or(ls) if ls.is_empty() => write!(f, "false"),
 			Or(ls) => write!(f, "({})", ls.iter().format(" ∨ ")),
-			App(app) => write!(f, "{}", app),
-			Exists(rel) => write!(f, "∃({})", rel),
+			Squash(u) => write!(f, "{}", u),
 		}
 	}
 }
 
-impl<E, S, T, L, M, A, B> Eval<Logic<S, L, A>, Logic<T, M, B>> for E
-where
-	E: Eval<Expr<S>, Expr<T>> + Eval<L, M> + Eval<A, Logic<T, M, B>> + Clone,
-	S: Clone,
-	T: Clone,
-	L: Clone,
-	M: Clone,
-	A: Clone,
-	B: Clone,
+impl<Env, U: Clone, V: Clone, S: Clone, T: Clone> Eval<Logic<U, S>, Logic<V, T>> for Env
+where Env: Eval<S, T> + Eval<U, V> + Clone
 {
-	fn eval(self, source: Logic<S, L, A>) -> Logic<T, M, B> {
+	fn eval(self, source: Logic<U, S>) -> Logic<V, T> {
 		use Logic::*;
 		match source {
 			Bool(e) => Bool(self.eval(e)),
@@ -160,31 +185,23 @@ where
 			Neg(l) => Neg(self.eval(l)),
 			And(ls) => And(self.eval(ls)),
 			Or(ls) => Or(self.eval(ls)),
-			App(app) => self.eval(app),
-			Exists(rel) => Exists(self.eval(rel)),
+			Squash(u) => Squash(self.eval(u)),
 		}
 	}
 }
 
-impl<R> Expr<R> {
-	pub fn ty(&self) -> DataType {
-		use Expr::*;
-		match self {
-			Var(_, ty) | Op(_, _, ty) | HOp(_, _, _, ty) => ty.clone(),
-		}
+impl<U: Clone, R: Clone, A: Clone> Expr<U, R, A> {
+	pub fn vars(level: usize, scope: Vector<DataType>) -> Vector<Self> {
+		scope.into_iter().enumerate().map(|(l, ty)| Expr::Var(VL(level + l), ty)).collect()
 	}
 }
 
-impl<R: Clone> Expr<R> {
-	pub fn vars(level: usize, scopes: Vector<DataType>) -> Vector<Expr<R>> {
-		scopes.into_iter().enumerate().map(|(l, ty)| Expr::<R>::Var(VL(level + l), ty)).collect()
-	}
-}
-
-impl<R: Display> Display for Expr<R> {
+impl<U: Display, R: Display, A: Display> Display for Expr<U, R, A> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
 			Expr::Var(v, _) => write!(f, "{}", v),
+			Expr::Log(u) => write!(f, "‖{}‖", u),
+			Expr::Agg(agg) => write!(f, "{}", agg),
 			Expr::Op(op, args, _) if args.is_empty() => write!(f, "\"{}\"", op),
 			Expr::Op(op, args, _) => {
 				write!(f, "{}({})", op, args.iter().join(", "))
@@ -194,64 +211,51 @@ impl<R: Display> Display for Expr<R> {
 	}
 }
 
-impl<U> From<u32> for Expr<U> {
+impl<U, R, A> From<u32> for Expr<U, R, A> {
 	fn from(n: u32) -> Self {
 		Expr::Op(n.to_string(), vec![], DataType::Integer)
 	}
 }
 
-impl<U> From<usize> for Expr<U> {
+impl<U, R, A> From<usize> for Expr<U, R, A> {
 	fn from(n: usize) -> Self {
 		Expr::Op(n.to_string(), vec![], DataType::Integer)
 	}
 }
 
-impl<U> From<String> for Expr<U> {
+impl<U, R, A> From<String> for Expr<U, R, A> {
 	fn from(s: String) -> Self {
 		Expr::Op(s, vec![], DataType::String)
 	}
 }
 
-impl<E, S, T> Eval<Expr<S>, Expr<T>> for E
-where E: Eval<(VL, DataType), Expr<T>> + Eval<S, T> + Clone
+impl<Env, U: Clone, V: Clone, R: Clone, S: Clone, A: Clone, B: Clone>
+	Eval<Expr<U, R, A>, Expr<V, S, B>> for Env
+where Env: Eval<(VL, DataType), Expr<V, S, B>>
+		+ Eval<U, V>
+		+ Eval<R, S>
+		+ Eval<A, Expr<V, S, B>>
+		+ Clone
 {
-	fn eval(self, source: Expr<S>) -> Expr<T> {
+	fn eval(self, source: Expr<U, R, A>) -> Expr<V, S, B> {
 		use Expr::*;
 		match source {
 			Var(l, ty) => self.eval((l, ty)),
+			Log(l) => Log(self.eval(l)),
+			Agg(agg) => self.eval(agg),
 			Op(f, args, ty) => Op(f, self.eval(args), ty),
 			HOp(f, args, rel, ty) => HOp(f, self.clone().eval(args), self.eval(rel), ty),
 		}
 	}
 }
 
-impl<E, S: Clone, T: Clone> Eval<Neutral<S>, Neutral<T>> for E
-where E: Eval<Head<S>, Head<T>> + Eval<Vector<Expr<S>>, Vector<Expr<T>>> + Clone
-{
-	fn eval(self, source: Neutral<S>) -> Neutral<T> {
-		let head = self.clone().eval(source.head);
-		let args = self.eval(source.args);
-		Neutral { head, args }
-	}
-}
-
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct Relation<U>(pub Vector<DataType>, pub Box<U>);
-
-impl<U: Display> Display for Relation<U> {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		writeln!(f, "λ {:?}", self.0)?;
-		writeln!(indented(f).with_str("\t"), "{}", self.1)
-	}
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub enum Head<R> {
+pub enum Head<R, E> {
 	Var(VL),
-	HOp(String, Vec<Expr<R>>, Box<R>),
+	HOp(String, Vec<E>, Box<R>),
 }
 
-impl<R: Display> Display for Head<R> {
+impl<R: Display, E: Display> Display for Head<R, E> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
 			Head::Var(VL(l)) => write!(f, "#{}", l),
@@ -262,42 +266,43 @@ impl<R: Display> Display for Head<R> {
 	}
 }
 
-impl<E, S: Clone, T: Clone> Eval<Head<S>, Head<T>> for E
-where E: Eval<Vec<Expr<S>>, Vec<Expr<T>>> + Eval<Box<S>, Box<T>> + Clone
+impl<Env, R: Clone, S: Clone, E: Clone, F: Clone> Eval<Head<R, E>, Head<S, F>> for Env
+where Env: Eval<R, S> + Eval<Vec<E>, Vec<F>> + Clone
 {
-	fn eval(self, source: Head<S>) -> Head<T> {
+	fn eval(self, source: Head<R, E>) -> Head<S, F> {
 		use Head::*;
 		match source {
 			Var(v) => Var(v),
-			HOp(op, args, rel) => HOp(op, self.clone().eval(args), self.eval(rel)),
+			HOp(op, args, rel) => HOp(op, self.clone().eval(args), self.eval(*rel).into()),
 		}
 	}
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct Neutral<R> {
-	pub head: Head<R>,
-	pub args: Vector<Expr<R>>,
-}
+pub struct Neutral<R, E>(pub Head<R, E>, pub Vector<E>);
 
-impl<R> Neutral<R> {
-	pub fn new(head: Head<R>, args: Vector<Expr<R>>) -> Self {
-		Neutral { head, args }
+impl<R: Display, E: Display> Display for Neutral<R, E> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}({})", self.0, self.1.iter().format(", "))
 	}
 }
 
-impl<R: Display> Display for Neutral<R> {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{}({})", self.head, self.args.iter().format(", "))
+impl<Env, R: Clone, S: Clone, E: Clone, F: Clone> Eval<Neutral<R, E>, Neutral<S, F>> for Env
+where Env: Eval<Head<R, E>, Head<S, F>> + Eval<Vector<E>, Vector<F>> + Clone
+{
+	fn eval(self, Neutral(head, args): Neutral<R, E>) -> Neutral<S, F> {
+		let head = self.clone().eval(head);
+		let args = self.eval(args);
+		Neutral(head, args)
 	}
 }
 
 /// SQL data types (adapted from sqlparser)
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(
+	Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize_enum_str, Deserialize_enum_str,
+)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum DataType {
-	/// Uuid type
-	Uuid,
 	/// Integer
 	#[serde(alias = "INT", alias = "SMALLINT", alias = "BIGINT", alias = "TINYINT")]
 	#[serde(alias = "TIMESTAMP", alias = "DATE", alias = "TIME")]
@@ -306,21 +311,14 @@ pub enum DataType {
 	#[serde(alias = "FLOAT", alias = "DOUBLE", alias = "DECIMAL")]
 	Real,
 	/// Boolean
+	#[serde(alias = "BOOL")]
 	Boolean,
-	/// Interval
-	Interval,
-	/// Regclass used in postgresql serial
-	Regclass,
 	/// String
 	#[serde(alias = "VARCHAR", alias = "CHAR", alias = "TEXT")]
 	String,
 	/// Custom type such as enums
-	Custom(String),
-	/// Arrays
-	Array(Box<DataType>),
-	/// Any type
 	#[serde(other)]
-	Any,
+	Custom(String),
 }
 
 #[derive(Clone, Debug, Default, Ord, PartialOrd, Eq, PartialEq, Hash)]
@@ -471,13 +469,16 @@ impl<'c> Ctx<'c> {
 	pub fn sort(&self, ty: &DataType) -> Sort<'c> {
 		use DataType::*;
 		match ty {
-			Boolean => &self.bool.sort,
-			String => &self.string.sort,
-			Integer => &self.int.sort,
-			Real => &self.real.sort,
-			_ => panic!("unsupported type {:?}", ty),
+			Boolean => self.bool.sort.clone(),
+			String => self.string.sort.clone(),
+			Integer => self.int.sort.clone(),
+			Real => self.real.sort.clone(),
+			Custom(ty) => self.generic_sort(ty),
 		}
-		.clone()
+	}
+
+	pub fn generic_sort(&self, ty: impl ToString) -> Sort<'c> {
+		Sort::uninterpreted(self.z3_ctx(), z3::Symbol::String(ty.to_string()))
 	}
 
 	pub fn strict_sort(&self, ty: &DataType) -> Sort<'c> {
@@ -493,7 +494,7 @@ impl<'c> Ctx<'c> {
 	}
 
 	pub fn var(&self, ty: &DataType, prefix: &str) -> Dynamic<'c> {
-		Datatype::fresh_const(self.solver.get_context(), prefix, &self.sort(ty)).into()
+		Dynamic::fresh_const(self.solver.get_context(), prefix, &self.sort(ty))
 	}
 
 	pub fn app(
@@ -510,9 +511,9 @@ impl<'c> Ctx<'c> {
 		let f = FuncDecl::new(ctx, name, &domain.iter().collect_vec(), &range);
 		f.apply(&args)
 	}
-	
+
 	pub fn timeout() -> Duration {
-		if let Some(t) = std::env::var("COSETTE_SMT_TIMEOUT").ok().and_then(|t| t.parse::<u64>().ok()) {
+		if let Some(t) = std::env::var("QED_SMT_TIMEOUT").ok().and_then(|t| t.parse::<u64>().ok()) {
 			Duration::from_millis(t)
 		} else {
 			Duration::from_secs(10)

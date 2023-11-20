@@ -1,0 +1,148 @@
+{
+  "help" : [ "LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[$2], EXPR$1=[$3])\n  LogicalJoin(condition=[=($1, $2)], joinType=[left])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n    LogicalProject(NAME=[$1], EXPR$1=[AND(>($0, 10), null)])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[$2], EXPR$1=[$3])\n  LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[$3], EXPR$1=[AND(>($2, 10), null)])\n    LogicalJoin(condition=[=($1, $3)], joinType=[left])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 1,
+              "type" : "VARCHAR"
+            }, {
+              "column" : 2,
+              "type" : "VARCHAR"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "kind" : "LEFT",
+          "right" : {
+            "project" : {
+              "source" : {
+                "scan" : 0
+              },
+              "target" : [ {
+                "column" : 1,
+                "type" : "VARCHAR"
+              }, {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "type" : "BOOLEAN",
+                  "operand" : [ {
+                    "column" : 0,
+                    "type" : "INTEGER"
+                  }, {
+                    "type" : "INTEGER",
+                    "operand" : [ ],
+                    "operator" : "10"
+                  } ],
+                  "operator" : ">"
+                }, {
+                  "type" : "BOOLEAN",
+                  "operand" : [ ],
+                  "operator" : "NULL"
+                } ],
+                "operator" : "AND"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 2,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 3,
+        "type" : "BOOLEAN"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "project" : {
+          "source" : {
+            "join" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                }, {
+                  "column" : 3,
+                  "type" : "VARCHAR"
+                } ],
+                "operator" : "="
+              },
+              "left" : {
+                "scan" : 0
+              },
+              "kind" : "LEFT",
+              "right" : {
+                "scan" : 0
+              }
+            }
+          },
+          "target" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "column" : 1,
+            "type" : "VARCHAR"
+          }, {
+            "column" : 3,
+            "type" : "VARCHAR"
+          }, {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "type" : "BOOLEAN",
+              "operand" : [ {
+                "column" : 2,
+                "type" : "INTEGER"
+              }, {
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "10"
+              } ],
+              "operator" : ">"
+            }, {
+              "type" : "BOOLEAN",
+              "operand" : [ ],
+              "operator" : "NULL"
+            } ],
+            "operator" : "AND"
+          } ]
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 2,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 3,
+        "type" : "BOOLEAN"
+      } ]
+    }
+  } ]
+}

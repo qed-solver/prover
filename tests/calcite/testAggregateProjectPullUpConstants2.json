@@ -1,0 +1,81 @@
+{
+  "help" : [ "LogicalAggregate(group=[{1, 5}])\n  LogicalFilter(condition=[=($1, 'John')])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(ENAME=['John':VARCHAR(20)], SAL=[$0])\n  LogicalAggregate(group=[{5}])\n    LogicalFilter(condition=[=($1, 'John')])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "group" : {
+      "keys" : [ {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 5,
+        "type" : "INTEGER"
+      } ],
+      "function" : [ ],
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 1,
+              "type" : "VARCHAR"
+            }, {
+              "type" : "VARCHAR",
+              "operand" : [ ],
+              "operator" : "_ISO-8859-1'John'"
+            } ],
+            "operator" : "="
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "group" : {
+          "keys" : [ {
+            "column" : 5,
+            "type" : "INTEGER"
+          } ],
+          "function" : [ ],
+          "source" : {
+            "filter" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                }, {
+                  "type" : "VARCHAR",
+                  "operand" : [ ],
+                  "operator" : "_ISO-8859-1'John'"
+                } ],
+                "operator" : "="
+              },
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "type" : "VARCHAR",
+        "operand" : [ ],
+        "operator" : "_ISO-8859-1'John'"
+      }, {
+        "column" : 0,
+        "type" : "INTEGER"
+      } ]
+    }
+  } ]
+}

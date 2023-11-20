@@ -1,0 +1,284 @@
+{
+  "help" : [ "LogicalProject(EXPR$0=[+($5, $13)])\n  LogicalJoin(condition=[AND(IS NOT DISTINCT FROM($9, $14), =($7, 10))], joinType=[inner])\n    LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], $f9=[||($1, $2)])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalProject(ENAME=[$0], JOB=[$1], SAL=[$2], COMM=[$3], $f4=[||($0, $1)])\n      LogicalTableScan(table=[[CATALOG, SALES, BONUS]])\n", "LogicalProject(EXPR$0=[+($0, $3)])\n  LogicalJoin(condition=[AND(IS NOT DISTINCT FROM($1, $4), $2)], joinType=[inner])\n    LogicalProject(SAL=[$5], $f9=[$9], EXPR$0=[=($7, 10)])\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], $f9=[||($1, $2)])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalProject(COMM=[$3], $f4=[$4])\n      LogicalProject(ENAME=[$0], JOB=[$1], SAL=[$2], COMM=[$3], $f4=[||($0, $1)])\n        LogicalTableScan(table=[[CATALOG, SALES, BONUS]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  }, {
+    "types" : [ "VARCHAR", "VARCHAR", "INTEGER", "INTEGER" ],
+    "nullable" : [ false, false, false, false ],
+    "name" : "CATALOG.SALES.BONUS",
+    "guaranteed" : [ ],
+    "fields" : [ "ENAME", "JOB", "SAL", "COMM" ],
+    "key" : [ ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "type" : "BOOLEAN",
+              "operand" : [ {
+                "column" : 9,
+                "type" : "VARCHAR"
+              }, {
+                "column" : 14,
+                "type" : "VARCHAR"
+              } ],
+              "operator" : "IS NOT DISTINCT FROM"
+            }, {
+              "type" : "BOOLEAN",
+              "operand" : [ {
+                "column" : 7,
+                "type" : "INTEGER"
+              }, {
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "10"
+              } ],
+              "operator" : "="
+            } ],
+            "operator" : "AND"
+          },
+          "left" : {
+            "project" : {
+              "source" : {
+                "scan" : 0
+              },
+              "target" : [ {
+                "column" : 0,
+                "type" : "INTEGER"
+              }, {
+                "column" : 1,
+                "type" : "VARCHAR"
+              }, {
+                "column" : 2,
+                "type" : "VARCHAR"
+              }, {
+                "column" : 3,
+                "type" : "INTEGER"
+              }, {
+                "column" : 4,
+                "type" : "TIMESTAMP"
+              }, {
+                "column" : 5,
+                "type" : "INTEGER"
+              }, {
+                "column" : 6,
+                "type" : "INTEGER"
+              }, {
+                "column" : 7,
+                "type" : "INTEGER"
+              }, {
+                "column" : 8,
+                "type" : "BOOLEAN"
+              }, {
+                "type" : "VARCHAR",
+                "operand" : [ {
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                }, {
+                  "column" : 2,
+                  "type" : "VARCHAR"
+                } ],
+                "operator" : "||"
+              } ]
+            }
+          },
+          "kind" : "INNER",
+          "right" : {
+            "project" : {
+              "source" : {
+                "scan" : 1
+              },
+              "target" : [ {
+                "column" : 0,
+                "type" : "VARCHAR"
+              }, {
+                "column" : 1,
+                "type" : "VARCHAR"
+              }, {
+                "column" : 2,
+                "type" : "INTEGER"
+              }, {
+                "column" : 3,
+                "type" : "INTEGER"
+              }, {
+                "type" : "VARCHAR",
+                "operand" : [ {
+                  "column" : 0,
+                  "type" : "VARCHAR"
+                }, {
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                } ],
+                "operator" : "||"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 5,
+          "type" : "INTEGER"
+        }, {
+          "column" : 13,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "+"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "type" : "BOOLEAN",
+              "operand" : [ {
+                "column" : 1,
+                "type" : "VARCHAR"
+              }, {
+                "column" : 4,
+                "type" : "VARCHAR"
+              } ],
+              "operator" : "IS NOT DISTINCT FROM"
+            }, {
+              "column" : 2,
+              "type" : "BOOLEAN"
+            } ],
+            "operator" : "AND"
+          },
+          "left" : {
+            "project" : {
+              "source" : {
+                "project" : {
+                  "source" : {
+                    "scan" : 0
+                  },
+                  "target" : [ {
+                    "column" : 0,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 1,
+                    "type" : "VARCHAR"
+                  }, {
+                    "column" : 2,
+                    "type" : "VARCHAR"
+                  }, {
+                    "column" : 3,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 4,
+                    "type" : "TIMESTAMP"
+                  }, {
+                    "column" : 5,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 6,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 7,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 8,
+                    "type" : "BOOLEAN"
+                  }, {
+                    "type" : "VARCHAR",
+                    "operand" : [ {
+                      "column" : 1,
+                      "type" : "VARCHAR"
+                    }, {
+                      "column" : 2,
+                      "type" : "VARCHAR"
+                    } ],
+                    "operator" : "||"
+                  } ]
+                }
+              },
+              "target" : [ {
+                "column" : 5,
+                "type" : "INTEGER"
+              }, {
+                "column" : 9,
+                "type" : "VARCHAR"
+              }, {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 7,
+                  "type" : "INTEGER"
+                }, {
+                  "type" : "INTEGER",
+                  "operand" : [ ],
+                  "operator" : "10"
+                } ],
+                "operator" : "="
+              } ]
+            }
+          },
+          "kind" : "INNER",
+          "right" : {
+            "project" : {
+              "source" : {
+                "project" : {
+                  "source" : {
+                    "scan" : 1
+                  },
+                  "target" : [ {
+                    "column" : 0,
+                    "type" : "VARCHAR"
+                  }, {
+                    "column" : 1,
+                    "type" : "VARCHAR"
+                  }, {
+                    "column" : 2,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 3,
+                    "type" : "INTEGER"
+                  }, {
+                    "type" : "VARCHAR",
+                    "operand" : [ {
+                      "column" : 0,
+                      "type" : "VARCHAR"
+                    }, {
+                      "column" : 1,
+                      "type" : "VARCHAR"
+                    } ],
+                    "operator" : "||"
+                  } ]
+                }
+              },
+              "target" : [ {
+                "column" : 3,
+                "type" : "INTEGER"
+              }, {
+                "column" : 4,
+                "type" : "VARCHAR"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        }, {
+          "column" : 3,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "+"
+      } ]
+    }
+  } ]
+}

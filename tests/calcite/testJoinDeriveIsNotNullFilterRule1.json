@@ -1,0 +1,94 @@
+{
+  "help" : [ "LogicalProject(DEPTNO=[$7])\n  LogicalJoin(condition=[=($3, $12)], joinType=[inner])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(DEPTNO=[$7])\n  LogicalJoin(condition=[=($3, $12)], joinType=[inner])\n    LogicalFilter(condition=[IS NOT NULL($3)])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalFilter(condition=[IS NOT NULL($3)])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 3,
+              "type" : "INTEGER"
+            }, {
+              "column" : 12,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "kind" : "INNER",
+          "right" : {
+            "scan" : 0
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 7,
+        "type" : "INTEGER"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 3,
+              "type" : "INTEGER"
+            }, {
+              "column" : 12,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "filter" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 3,
+                  "type" : "INTEGER"
+                } ],
+                "operator" : "IS NOT NULL"
+              },
+              "source" : {
+                "scan" : 0
+              }
+            }
+          },
+          "kind" : "INNER",
+          "right" : {
+            "filter" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 3,
+                  "type" : "INTEGER"
+                } ],
+                "operator" : "IS NOT NULL"
+              },
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 7,
+        "type" : "INTEGER"
+      } ]
+    }
+  } ]
+}

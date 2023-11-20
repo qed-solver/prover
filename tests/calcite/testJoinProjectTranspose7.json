@@ -1,0 +1,104 @@
+{
+  "help" : [ "LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[$2])\n  LogicalJoin(condition=[=($1, $2)], joinType=[left])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n    LogicalProject(NAME=[$1])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[$2])\n  LogicalProject(DEPTNO=[$0], NAME=[$1], NAME0=[$3])\n    LogicalJoin(condition=[=($1, $3)], joinType=[left])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 1,
+              "type" : "VARCHAR"
+            }, {
+              "column" : 2,
+              "type" : "VARCHAR"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "kind" : "LEFT",
+          "right" : {
+            "project" : {
+              "source" : {
+                "scan" : 0
+              },
+              "target" : [ {
+                "column" : 1,
+                "type" : "VARCHAR"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 2,
+        "type" : "VARCHAR"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "project" : {
+          "source" : {
+            "join" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                }, {
+                  "column" : 3,
+                  "type" : "VARCHAR"
+                } ],
+                "operator" : "="
+              },
+              "left" : {
+                "scan" : 0
+              },
+              "kind" : "LEFT",
+              "right" : {
+                "scan" : 0
+              }
+            }
+          },
+          "target" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "column" : 1,
+            "type" : "VARCHAR"
+          }, {
+            "column" : 3,
+            "type" : "VARCHAR"
+          } ]
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 2,
+        "type" : "VARCHAR"
+      } ]
+    }
+  } ]
+}

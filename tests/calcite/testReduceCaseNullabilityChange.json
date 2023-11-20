@@ -1,0 +1,88 @@
+{
+  "help" : [ "LogicalProject(QX=[CASE(=($0, 1), 1, IS NOT NULL(1), 2, null:INTEGER)])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(QX=[CAST(CASE(=($0, 1), 1, 2)):INTEGER])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "scan" : 0
+      },
+      "target" : [ {
+        "type" : "INTEGER",
+        "operand" : [ {
+          "type" : "BOOLEAN",
+          "operand" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "type" : "INTEGER",
+            "operand" : [ ],
+            "operator" : "1"
+          } ],
+          "operator" : "="
+        }, {
+          "type" : "INTEGER",
+          "operand" : [ ],
+          "operator" : "1"
+        }, {
+          "type" : "BOOLEAN",
+          "operand" : [ {
+            "type" : "INTEGER",
+            "operand" : [ ],
+            "operator" : "1"
+          } ],
+          "operator" : "IS NOT NULL"
+        }, {
+          "type" : "INTEGER",
+          "operand" : [ ],
+          "operator" : "2"
+        }, {
+          "type" : "INTEGER",
+          "operand" : [ ],
+          "operator" : "NULL"
+        } ],
+        "operator" : "CASE"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "scan" : 0
+      },
+      "target" : [ {
+        "type" : "INTEGER",
+        "operand" : [ {
+          "type" : "INTEGER",
+          "operand" : [ {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            }, {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "1"
+            } ],
+            "operator" : "="
+          }, {
+            "type" : "INTEGER",
+            "operand" : [ ],
+            "operator" : "1"
+          }, {
+            "type" : "INTEGER",
+            "operand" : [ ],
+            "operator" : "2"
+          } ],
+          "operator" : "CASE"
+        } ],
+        "operator" : "CAST"
+      } ]
+    }
+  } ]
+}

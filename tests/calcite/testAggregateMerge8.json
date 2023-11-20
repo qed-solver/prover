@@ -1,0 +1,88 @@
+{
+  "help" : [ "LogicalAggregate(group=[{}], X=[SUM($0)], Z=[MIN($1)])\n  LogicalAggregate(group=[{}], X=[SUM($5)], Y=[MIN($5)])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalAggregate(group=[{}], X=[SUM($5)], Z=[MIN($5)])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "group" : {
+      "keys" : [ ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "SUM",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 1,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "MIN",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "group" : {
+          "keys" : [ ],
+          "function" : [ {
+            "distinct" : false,
+            "type" : "INTEGER",
+            "operand" : [ {
+              "column" : 5,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "SUM",
+            "ignoreNulls" : false
+          }, {
+            "distinct" : false,
+            "type" : "INTEGER",
+            "operand" : [ {
+              "column" : 5,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "MIN",
+            "ignoreNulls" : false
+          } ],
+          "source" : {
+            "scan" : 0
+          }
+        }
+      }
+    }
+  }, {
+    "group" : {
+      "keys" : [ ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 5,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "SUM",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 5,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "MIN",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "scan" : 0
+      }
+    }
+  } ]
+}

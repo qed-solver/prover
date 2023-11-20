@@ -1,0 +1,94 @@
+{
+  "help" : [ "LogicalJoin(condition=[=($7, $12)], joinType=[inner])\n  LogicalJoin(condition=[true], joinType=[inner])\n    LogicalTableScan(table=[[scott, EMP]])\n    LogicalTableScan(table=[[scott, BONUS]])\n  LogicalTableScan(table=[[scott, DEPT]])\n", "LogicalJoin(condition=[=($7, $12)], joinType=[inner])\n  LogicalTableScan(table=[[scott, EMP]])\n  LogicalJoin(condition=[true], joinType=[inner])\n    LogicalTableScan(table=[[scott, BONUS]])\n    LogicalTableScan(table=[[scott, DEPT]])\n" ],
+  "schemas" : [ {
+    "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
+    "nullable" : [ false, true, true, true, true, true, true, true ],
+    "name" : "scott.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
+    "key" : [ [ 0 ], [ 1 ] ]
+  }, {
+    "types" : [ "VARCHAR", "VARCHAR", "DECIMAL", "DECIMAL" ],
+    "nullable" : [ true, true, true, true ],
+    "name" : "scott.BONUS",
+    "guaranteed" : [ ],
+    "fields" : [ "ENAME", "JOB", "SAL", "COMM" ],
+    "key" : [ [ 0 ], [ 1 ], [ 2 ], [ 3 ] ]
+  }, {
+    "types" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
+    "nullable" : [ false, true, true ],
+    "name" : "scott.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "DNAME", "LOC" ],
+    "key" : [ [ 0 ], [ 1 ], [ 2 ] ]
+  } ],
+  "queries" : [ {
+    "join" : {
+      "condition" : {
+        "type" : "BOOLEAN",
+        "operand" : [ {
+          "column" : 7,
+          "type" : "TINYINT"
+        }, {
+          "column" : 12,
+          "type" : "TINYINT"
+        } ],
+        "operator" : "="
+      },
+      "left" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ ],
+            "operator" : "true"
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "kind" : "INNER",
+          "right" : {
+            "scan" : 1
+          }
+        }
+      },
+      "kind" : "INNER",
+      "right" : {
+        "scan" : 2
+      }
+    }
+  }, {
+    "join" : {
+      "condition" : {
+        "type" : "BOOLEAN",
+        "operand" : [ {
+          "column" : 7,
+          "type" : "TINYINT"
+        }, {
+          "column" : 12,
+          "type" : "TINYINT"
+        } ],
+        "operator" : "="
+      },
+      "left" : {
+        "scan" : 0
+      },
+      "kind" : "INNER",
+      "right" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ ],
+            "operator" : "true"
+          },
+          "left" : {
+            "scan" : 1
+          },
+          "kind" : "INNER",
+          "right" : {
+            "scan" : 2
+          }
+        }
+      }
+    }
+  } ]
+}

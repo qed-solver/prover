@@ -1,0 +1,111 @@
+{
+  "help" : [ "LogicalProject(SAL=[$5])\n  LogicalFilter(condition=[OR(IS NULL(CASE(=($5, 1000), null:INTEGER, 1)), IS NULL(CASE(=($5, 2000), null:INTEGER, 1)))])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(SAL=[$5])\n  LogicalFilter(condition=[SEARCH($5, Sarg[1000, 2000])])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "type" : "BOOLEAN",
+              "operand" : [ {
+                "type" : "INTEGER",
+                "operand" : [ {
+                  "type" : "BOOLEAN",
+                  "operand" : [ {
+                    "column" : 5,
+                    "type" : "INTEGER"
+                  }, {
+                    "type" : "INTEGER",
+                    "operand" : [ ],
+                    "operator" : "1000"
+                  } ],
+                  "operator" : "="
+                }, {
+                  "type" : "INTEGER",
+                  "operand" : [ ],
+                  "operator" : "NULL"
+                }, {
+                  "type" : "INTEGER",
+                  "operand" : [ ],
+                  "operator" : "1"
+                } ],
+                "operator" : "CASE"
+              } ],
+              "operator" : "IS NULL"
+            }, {
+              "type" : "BOOLEAN",
+              "operand" : [ {
+                "type" : "INTEGER",
+                "operand" : [ {
+                  "type" : "BOOLEAN",
+                  "operand" : [ {
+                    "column" : 5,
+                    "type" : "INTEGER"
+                  }, {
+                    "type" : "INTEGER",
+                    "operand" : [ ],
+                    "operator" : "2000"
+                  } ],
+                  "operator" : "="
+                }, {
+                  "type" : "INTEGER",
+                  "operand" : [ ],
+                  "operator" : "NULL"
+                }, {
+                  "type" : "INTEGER",
+                  "operand" : [ ],
+                  "operator" : "1"
+                } ],
+                "operator" : "CASE"
+              } ],
+              "operator" : "IS NULL"
+            } ],
+            "operator" : "OR"
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 5,
+        "type" : "INTEGER"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 5,
+              "type" : "INTEGER"
+            }, {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "Sarg[1000, 2000]"
+            } ],
+            "operator" : "SEARCH"
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 5,
+        "type" : "INTEGER"
+      } ]
+    }
+  } ]
+}

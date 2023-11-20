@@ -1,0 +1,102 @@
+{
+  "help" : [ "LogicalProject(NAME=[$1])\n  LogicalFilter(condition=[=($0, 10)])\n    LogicalProject(DEPTNO=[$0], NAME=[$1])\n      LogicalFilter(condition=[=($0, 10)])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(NAME=[$1])\n  LogicalProject(DEPTNO=[$0], NAME=[$1])\n    LogicalFilter(condition=[=($0, 10)])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            }, {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "10"
+            } ],
+            "operator" : "="
+          },
+          "source" : {
+            "project" : {
+              "source" : {
+                "filter" : {
+                  "condition" : {
+                    "type" : "BOOLEAN",
+                    "operand" : [ {
+                      "column" : 0,
+                      "type" : "INTEGER"
+                    }, {
+                      "type" : "INTEGER",
+                      "operand" : [ ],
+                      "operator" : "10"
+                    } ],
+                    "operator" : "="
+                  },
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              },
+              "target" : [ {
+                "column" : 0,
+                "type" : "INTEGER"
+              }, {
+                "column" : 1,
+                "type" : "VARCHAR"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "project" : {
+          "source" : {
+            "filter" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 0,
+                  "type" : "INTEGER"
+                }, {
+                  "type" : "INTEGER",
+                  "operand" : [ ],
+                  "operator" : "10"
+                } ],
+                "operator" : "="
+              },
+              "source" : {
+                "scan" : 0
+              }
+            }
+          },
+          "target" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "column" : 1,
+            "type" : "VARCHAR"
+          } ]
+        }
+      },
+      "target" : [ {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ]
+    }
+  } ]
+}

@@ -1,0 +1,54 @@
+{
+  "help" : [ "LogicalAggregate(group=[{}], EXPR$0=[SUM($5)])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalAggregate(group=[{}], EXPR$0=[SUM($0)])\n  LogicalProject(SAL=[$5])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "group" : {
+      "keys" : [ ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 5,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "SUM",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "scan" : 0
+      }
+    }
+  }, {
+    "group" : {
+      "keys" : [ ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "SUM",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "project" : {
+          "source" : {
+            "scan" : 0
+          },
+          "target" : [ {
+            "column" : 5,
+            "type" : "INTEGER"
+          } ]
+        }
+      }
+    }
+  } ]
+}

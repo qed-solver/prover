@@ -1,0 +1,117 @@
+{
+  "help" : [ "LogicalProject(ENAME=[$1])\n  LogicalFilter(condition=[AND(=($7, $9), =($1, 'foo'))])\n    LogicalJoin(condition=[true], joinType=[inner])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(ENAME=[$1])\n  LogicalJoin(condition=[=($7, $9)], joinType=[inner], semiJoinDone=[true])\n    LogicalFilter(condition=[=($1, 'foo')])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  }, {
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "type" : "BOOLEAN",
+              "operand" : [ {
+                "column" : 7,
+                "type" : "INTEGER"
+              }, {
+                "column" : 9,
+                "type" : "INTEGER"
+              } ],
+              "operator" : "="
+            }, {
+              "type" : "BOOLEAN",
+              "operand" : [ {
+                "column" : 1,
+                "type" : "VARCHAR"
+              }, {
+                "type" : "VARCHAR",
+                "operand" : [ ],
+                "operator" : "_ISO-8859-1'foo'"
+              } ],
+              "operator" : "="
+            } ],
+            "operator" : "AND"
+          },
+          "source" : {
+            "join" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ ],
+                "operator" : "true"
+              },
+              "left" : {
+                "scan" : 0
+              },
+              "kind" : "INNER",
+              "right" : {
+                "scan" : 1
+              }
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 7,
+              "type" : "INTEGER"
+            }, {
+              "column" : 9,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "filter" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                }, {
+                  "type" : "VARCHAR",
+                  "operand" : [ ],
+                  "operator" : "_ISO-8859-1'foo'"
+                } ],
+                "operator" : "="
+              },
+              "source" : {
+                "scan" : 0
+              }
+            }
+          },
+          "kind" : "INNER",
+          "right" : {
+            "scan" : 1
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ]
+    }
+  } ]
+}

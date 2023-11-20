@@ -1,0 +1,132 @@
+{
+  "help" : [ "LogicalAggregate(group=[{}], EXPR$0=[COUNT(DISTINCT $0)], EXPR$1=[COUNT(DISTINCT $1)])\n  LogicalProject(ENAME=[$1], JOB=[$2])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalAggregate(group=[{}], EXPR$0=[COUNT($0) FILTER $2], EXPR$1=[COUNT($1) FILTER $3])\n  LogicalProject(ENAME=[$0], JOB=[$1], $g_1=[=($2, 1)], $g_2=[=($2, 2)])\n    LogicalAggregate(group=[{1, 2}], groups=[[{1}, {2}]], $g=[GROUPING($1, $2)])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "group" : {
+      "keys" : [ ],
+      "function" : [ {
+        "distinct" : true,
+        "type" : "BIGINT",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "VARCHAR"
+        } ],
+        "operator" : "COUNT",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : true,
+        "type" : "BIGINT",
+        "operand" : [ {
+          "column" : 1,
+          "type" : "VARCHAR"
+        } ],
+        "operator" : "COUNT",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "project" : {
+          "source" : {
+            "scan" : 0
+          },
+          "target" : [ {
+            "column" : 1,
+            "type" : "VARCHAR"
+          }, {
+            "column" : 2,
+            "type" : "VARCHAR"
+          } ]
+        }
+      }
+    }
+  }, {
+    "group" : {
+      "keys" : [ ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "BIGINT",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "VARCHAR"
+        } ],
+        "operator" : "COUNT",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "BIGINT",
+        "operand" : [ {
+          "column" : 1,
+          "type" : "VARCHAR"
+        } ],
+        "operator" : "COUNT",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "project" : {
+          "source" : {
+            "group" : {
+              "keys" : [ {
+                "column" : 1,
+                "type" : "VARCHAR"
+              }, {
+                "column" : 2,
+                "type" : "VARCHAR"
+              } ],
+              "function" : [ {
+                "distinct" : false,
+                "type" : "BIGINT",
+                "operand" : [ {
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                }, {
+                  "column" : 2,
+                  "type" : "VARCHAR"
+                } ],
+                "operator" : "GROUPING",
+                "ignoreNulls" : false
+              } ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          },
+          "target" : [ {
+            "column" : 0,
+            "type" : "VARCHAR"
+          }, {
+            "column" : 1,
+            "type" : "VARCHAR"
+          }, {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 2,
+              "type" : "BIGINT"
+            }, {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "1"
+            } ],
+            "operator" : "="
+          }, {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 2,
+              "type" : "BIGINT"
+            }, {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "2"
+            } ],
+            "operator" : "="
+          } ]
+        }
+      }
+    }
+  } ]
+}

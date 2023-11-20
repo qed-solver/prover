@@ -1,0 +1,140 @@
+{
+  "help" : [ "LogicalProject(DEPTNO=[$0], EXPR$1=[$1])\n  LogicalUnion(all=[true])\n    LogicalAggregate(group=[{0}], EXPR$1=[COUNT(DISTINCT $1)])\n      LogicalProject(DEPTNO=[$7], EMPNO=[$0])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalAggregate(group=[{0}], EXPR$1=[COUNT(APPROXIMATE DISTINCT $1)])\n      LogicalProject(DEPTNO=[$7], EMPNO=[$0])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(DEPTNO=[$0], EXPR$1=[$1])\n  LogicalUnion(all=[true])\n    LogicalAggregate(group=[{7}], EXPR$1=[COUNT(DISTINCT $0)])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalAggregate(group=[{7}], EXPR$1=[COUNT(APPROXIMATE DISTINCT $0)])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "union" : [ {
+          "group" : {
+            "keys" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            } ],
+            "function" : [ {
+              "distinct" : true,
+              "type" : "BIGINT",
+              "operand" : [ {
+                "column" : 1,
+                "type" : "INTEGER"
+              } ],
+              "operator" : "COUNT",
+              "ignoreNulls" : false
+            } ],
+            "source" : {
+              "project" : {
+                "source" : {
+                  "scan" : 0
+                },
+                "target" : [ {
+                  "column" : 7,
+                  "type" : "INTEGER"
+                }, {
+                  "column" : 0,
+                  "type" : "INTEGER"
+                } ]
+              }
+            }
+          }
+        }, {
+          "group" : {
+            "keys" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            } ],
+            "function" : [ {
+              "distinct" : true,
+              "type" : "BIGINT",
+              "operand" : [ {
+                "column" : 1,
+                "type" : "INTEGER"
+              } ],
+              "operator" : "COUNT",
+              "ignoreNulls" : false
+            } ],
+            "source" : {
+              "project" : {
+                "source" : {
+                  "scan" : 0
+                },
+                "target" : [ {
+                  "column" : 7,
+                  "type" : "INTEGER"
+                }, {
+                  "column" : 0,
+                  "type" : "INTEGER"
+                } ]
+              }
+            }
+          }
+        } ]
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "BIGINT"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "union" : [ {
+          "group" : {
+            "keys" : [ {
+              "column" : 7,
+              "type" : "INTEGER"
+            } ],
+            "function" : [ {
+              "distinct" : true,
+              "type" : "BIGINT",
+              "operand" : [ {
+                "column" : 0,
+                "type" : "INTEGER"
+              } ],
+              "operator" : "COUNT",
+              "ignoreNulls" : false
+            } ],
+            "source" : {
+              "scan" : 0
+            }
+          }
+        }, {
+          "group" : {
+            "keys" : [ {
+              "column" : 7,
+              "type" : "INTEGER"
+            } ],
+            "function" : [ {
+              "distinct" : true,
+              "type" : "BIGINT",
+              "operand" : [ {
+                "column" : 0,
+                "type" : "INTEGER"
+              } ],
+              "operator" : "COUNT",
+              "ignoreNulls" : false
+            } ],
+            "source" : {
+              "scan" : 0
+            }
+          }
+        } ]
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "BIGINT"
+      } ]
+    }
+  } ]
+}

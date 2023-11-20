@@ -1,0 +1,46 @@
+{
+  "help" : [ "LogicalProject(NEWCOL=[CASE(false, 2.1:FLOAT, 1:FLOAT)])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(NEWCOL=[1E0:FLOAT])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "scan" : 0
+      },
+      "target" : [ {
+        "type" : "FLOAT",
+        "operand" : [ {
+          "type" : "BOOLEAN",
+          "operand" : [ ],
+          "operator" : "false"
+        }, {
+          "type" : "FLOAT",
+          "operand" : [ ],
+          "operator" : "2.1"
+        }, {
+          "type" : "FLOAT",
+          "operand" : [ ],
+          "operator" : "1"
+        } ],
+        "operator" : "CASE"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "scan" : 0
+      },
+      "target" : [ {
+        "type" : "FLOAT",
+        "operand" : [ ],
+        "operator" : "1"
+      } ]
+    }
+  } ]
+}

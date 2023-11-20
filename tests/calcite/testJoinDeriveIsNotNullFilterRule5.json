@@ -1,0 +1,144 @@
+{
+  "help" : [ "LogicalProject(DEPTNO=[$1])\n  LogicalJoin(condition=[=($0, $3)], joinType=[inner])\n    LogicalProject(ENAME=[$1], DEPTNO=[+($7, 1)])\n      LogicalFilter(condition=[IS NOT NULL($1)])\n        LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\n    LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\n", "LogicalProject(DEPTNO=[$1])\n  LogicalJoin(condition=[=($0, $3)], joinType=[inner])\n    LogicalProject(ENAME=[$1], DEPTNO=[+($7, 1)])\n      LogicalFilter(condition=[IS NOT NULL($1)])\n        LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\n    LogicalFilter(condition=[IS NOT NULL($1)])\n      LogicalTableScan(table=[[CATALOG, SALES, EMPNULLABLES]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, true, true, true, true, true, true, true, true ],
+    "name" : "CATALOG.SALES.EMPNULLABLES",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "VARCHAR"
+            }, {
+              "column" : 3,
+              "type" : "VARCHAR"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "project" : {
+              "source" : {
+                "filter" : {
+                  "condition" : {
+                    "type" : "BOOLEAN",
+                    "operand" : [ {
+                      "column" : 1,
+                      "type" : "VARCHAR"
+                    } ],
+                    "operator" : "IS NOT NULL"
+                  },
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              },
+              "target" : [ {
+                "column" : 1,
+                "type" : "VARCHAR"
+              }, {
+                "type" : "INTEGER",
+                "operand" : [ {
+                  "column" : 7,
+                  "type" : "INTEGER"
+                }, {
+                  "type" : "INTEGER",
+                  "operand" : [ ],
+                  "operator" : "1"
+                } ],
+                "operator" : "+"
+              } ]
+            }
+          },
+          "kind" : "INNER",
+          "right" : {
+            "scan" : 0
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 1,
+        "type" : "INTEGER"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "VARCHAR"
+            }, {
+              "column" : 3,
+              "type" : "VARCHAR"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "project" : {
+              "source" : {
+                "filter" : {
+                  "condition" : {
+                    "type" : "BOOLEAN",
+                    "operand" : [ {
+                      "column" : 1,
+                      "type" : "VARCHAR"
+                    } ],
+                    "operator" : "IS NOT NULL"
+                  },
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              },
+              "target" : [ {
+                "column" : 1,
+                "type" : "VARCHAR"
+              }, {
+                "type" : "INTEGER",
+                "operand" : [ {
+                  "column" : 7,
+                  "type" : "INTEGER"
+                }, {
+                  "type" : "INTEGER",
+                  "operand" : [ ],
+                  "operator" : "1"
+                } ],
+                "operator" : "+"
+              } ]
+            }
+          },
+          "kind" : "INNER",
+          "right" : {
+            "filter" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                } ],
+                "operator" : "IS NOT NULL"
+              },
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 1,
+        "type" : "INTEGER"
+      } ]
+    }
+  } ]
+}

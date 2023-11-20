@@ -1,0 +1,182 @@
+{
+  "help" : [ "LogicalProject(EMPNO=[$0])\n  LogicalFilter(condition=[=($5, $SCALAR_QUERY({\nLogicalAggregate(group=[{}], EXPR$0=[MAX($0)])\n  LogicalProject(SAL=[$5])\n    LogicalFilter(condition=[=($0, $cor0.EMPNO)])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n}))], variablesSet=[[$cor0]])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(EMPNO=[$0])\n  LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n    LogicalFilter(condition=[=($5, $9)])\n      LogicalCorrelate(correlation=[$cor0], joinType=[left], requiredColumns=[{0}])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n        LogicalAggregate(group=[{}], EXPR$0=[MAX($0)])\n          LogicalProject(SAL=[$5])\n            LogicalFilter(condition=[=($0, $cor0.EMPNO)])\n              LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 5,
+              "type" : "INTEGER"
+            }, {
+              "query" : {
+                "group" : {
+                  "keys" : [ ],
+                  "function" : [ {
+                    "distinct" : false,
+                    "type" : "INTEGER",
+                    "operand" : [ {
+                      "column" : 9,
+                      "type" : "INTEGER"
+                    } ],
+                    "operator" : "MAX",
+                    "ignoreNulls" : false
+                  } ],
+                  "source" : {
+                    "project" : {
+                      "source" : {
+                        "filter" : {
+                          "condition" : {
+                            "type" : "BOOLEAN",
+                            "operand" : [ {
+                              "column" : 9,
+                              "type" : "INTEGER"
+                            }, {
+                              "column" : 0,
+                              "type" : "INTEGER"
+                            } ],
+                            "operator" : "="
+                          },
+                          "source" : {
+                            "scan" : 0
+                          }
+                        }
+                      },
+                      "target" : [ {
+                        "column" : 14,
+                        "type" : "INTEGER"
+                      } ]
+                    }
+                  }
+                }
+              },
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "$SCALAR_QUERY"
+            } ],
+            "operator" : "="
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "project" : {
+          "source" : {
+            "filter" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 5,
+                  "type" : "INTEGER"
+                }, {
+                  "column" : 9,
+                  "type" : "INTEGER"
+                } ],
+                "operator" : "="
+              },
+              "source" : {
+                "correlate" : {
+                  "left" : {
+                    "scan" : 0
+                  },
+                  "kind" : "LEFT",
+                  "right" : {
+                    "group" : {
+                      "keys" : [ ],
+                      "function" : [ {
+                        "distinct" : false,
+                        "type" : "INTEGER",
+                        "operand" : [ {
+                          "column" : 9,
+                          "type" : "INTEGER"
+                        } ],
+                        "operator" : "MAX",
+                        "ignoreNulls" : false
+                      } ],
+                      "source" : {
+                        "project" : {
+                          "source" : {
+                            "filter" : {
+                              "condition" : {
+                                "type" : "BOOLEAN",
+                                "operand" : [ {
+                                  "column" : 9,
+                                  "type" : "INTEGER"
+                                }, {
+                                  "column" : 0,
+                                  "type" : "INTEGER"
+                                } ],
+                                "operator" : "="
+                              },
+                              "source" : {
+                                "scan" : 0
+                              }
+                            }
+                          },
+                          "target" : [ {
+                            "column" : 14,
+                            "type" : "INTEGER"
+                          } ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "target" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "column" : 1,
+            "type" : "VARCHAR"
+          }, {
+            "column" : 2,
+            "type" : "VARCHAR"
+          }, {
+            "column" : 3,
+            "type" : "INTEGER"
+          }, {
+            "column" : 4,
+            "type" : "TIMESTAMP"
+          }, {
+            "column" : 5,
+            "type" : "INTEGER"
+          }, {
+            "column" : 6,
+            "type" : "INTEGER"
+          }, {
+            "column" : 7,
+            "type" : "INTEGER"
+          }, {
+            "column" : 8,
+            "type" : "BOOLEAN"
+          } ]
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      } ]
+    }
+  } ]
+}

@@ -1,0 +1,192 @@
+{
+  "help" : [ "LogicalAggregate(group=[{2}])\n  LogicalJoin(condition=[=($2, $10)], joinType=[left])\n    LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n      LogicalFilter(condition=[=($1, 'A')])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(JOB=[$0])\n  LogicalJoin(condition=[=($0, $1)], joinType=[left])\n    LogicalAggregate(group=[{2}])\n      LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8])\n        LogicalFilter(condition=[=($1, 'A')])\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalAggregate(group=[{1}])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  }, {
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "group" : {
+      "keys" : [ {
+        "column" : 2,
+        "type" : "VARCHAR"
+      } ],
+      "function" : [ ],
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 2,
+              "type" : "VARCHAR"
+            }, {
+              "column" : 10,
+              "type" : "VARCHAR"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "project" : {
+              "source" : {
+                "filter" : {
+                  "condition" : {
+                    "type" : "BOOLEAN",
+                    "operand" : [ {
+                      "column" : 1,
+                      "type" : "VARCHAR"
+                    }, {
+                      "type" : "VARCHAR",
+                      "operand" : [ ],
+                      "operator" : "_ISO-8859-1'A'"
+                    } ],
+                    "operator" : "="
+                  },
+                  "source" : {
+                    "scan" : 0
+                  }
+                }
+              },
+              "target" : [ {
+                "column" : 0,
+                "type" : "INTEGER"
+              }, {
+                "column" : 1,
+                "type" : "VARCHAR"
+              }, {
+                "column" : 2,
+                "type" : "VARCHAR"
+              }, {
+                "column" : 3,
+                "type" : "INTEGER"
+              }, {
+                "column" : 4,
+                "type" : "TIMESTAMP"
+              }, {
+                "column" : 5,
+                "type" : "INTEGER"
+              }, {
+                "column" : 6,
+                "type" : "INTEGER"
+              }, {
+                "column" : 7,
+                "type" : "INTEGER"
+              }, {
+                "column" : 8,
+                "type" : "BOOLEAN"
+              } ]
+            }
+          },
+          "kind" : "LEFT",
+          "right" : {
+            "scan" : 1
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "VARCHAR"
+            }, {
+              "column" : 1,
+              "type" : "VARCHAR"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "group" : {
+              "keys" : [ {
+                "column" : 2,
+                "type" : "VARCHAR"
+              } ],
+              "function" : [ ],
+              "source" : {
+                "project" : {
+                  "source" : {
+                    "filter" : {
+                      "condition" : {
+                        "type" : "BOOLEAN",
+                        "operand" : [ {
+                          "column" : 1,
+                          "type" : "VARCHAR"
+                        }, {
+                          "type" : "VARCHAR",
+                          "operand" : [ ],
+                          "operator" : "_ISO-8859-1'A'"
+                        } ],
+                        "operator" : "="
+                      },
+                      "source" : {
+                        "scan" : 0
+                      }
+                    }
+                  },
+                  "target" : [ {
+                    "column" : 0,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 1,
+                    "type" : "VARCHAR"
+                  }, {
+                    "column" : 2,
+                    "type" : "VARCHAR"
+                  }, {
+                    "column" : 3,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 4,
+                    "type" : "TIMESTAMP"
+                  }, {
+                    "column" : 5,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 6,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 7,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 8,
+                    "type" : "BOOLEAN"
+                  } ]
+                }
+              }
+            }
+          },
+          "kind" : "LEFT",
+          "right" : {
+            "group" : {
+              "keys" : [ {
+                "column" : 1,
+                "type" : "VARCHAR"
+              } ],
+              "function" : [ ],
+              "source" : {
+                "scan" : 1
+              }
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "VARCHAR"
+      } ]
+    }
+  } ]
+}

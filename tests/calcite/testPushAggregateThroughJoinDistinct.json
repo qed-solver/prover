@@ -1,0 +1,141 @@
+{
+  "help" : [ "LogicalAggregate(group=[{9}], SUM_SAL=[SUM($5)], C=[COUNT()])\n  LogicalJoin(condition=[=($2, $9)], joinType=[inner])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalAggregate(group=[{1}])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(NAME=[$3], SUM_SAL=[$1], C=[$2])\n  LogicalJoin(condition=[=($0, $3)], joinType=[inner])\n    LogicalAggregate(group=[{2}], SUM_SAL=[SUM($5)], C=[COUNT()])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalAggregate(group=[{1}])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  }, {
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "group" : {
+      "keys" : [ {
+        "column" : 9,
+        "type" : "VARCHAR"
+      } ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 5,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "SUM",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : false,
+        "type" : "BIGINT",
+        "operand" : [ ],
+        "operator" : "COUNT",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 2,
+              "type" : "VARCHAR"
+            }, {
+              "column" : 9,
+              "type" : "VARCHAR"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "kind" : "INNER",
+          "right" : {
+            "group" : {
+              "keys" : [ {
+                "column" : 1,
+                "type" : "VARCHAR"
+              } ],
+              "function" : [ ],
+              "source" : {
+                "scan" : 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "VARCHAR"
+            }, {
+              "column" : 3,
+              "type" : "VARCHAR"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "group" : {
+              "keys" : [ {
+                "column" : 2,
+                "type" : "VARCHAR"
+              } ],
+              "function" : [ {
+                "distinct" : false,
+                "type" : "INTEGER",
+                "operand" : [ {
+                  "column" : 5,
+                  "type" : "INTEGER"
+                } ],
+                "operator" : "SUM",
+                "ignoreNulls" : false
+              }, {
+                "distinct" : false,
+                "type" : "BIGINT",
+                "operand" : [ ],
+                "operator" : "COUNT",
+                "ignoreNulls" : false
+              } ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          },
+          "kind" : "INNER",
+          "right" : {
+            "group" : {
+              "keys" : [ {
+                "column" : 1,
+                "type" : "VARCHAR"
+              } ],
+              "function" : [ ],
+              "source" : {
+                "scan" : 1
+              }
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 3,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 1,
+        "type" : "INTEGER"
+      }, {
+        "column" : 2,
+        "type" : "BIGINT"
+      } ]
+    }
+  } ]
+}

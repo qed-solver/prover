@@ -6,46 +6,30 @@ use indenter::indented;
 use itertools::Itertools;
 use UExpr::*;
 
-use super::shared::VL;
+use super::shared::{Lambda, Neutral, Typed};
 use crate::pipeline::shared;
 use crate::pipeline::shared::DataType;
 
-/// A relation in the U-semiring formalism is a function that maps a tuple to a U-semiring value.
-/// It can be represented as a variable for an unknown relation, or encoded as a lambda function
-/// when having the explict definition.
-/// Here the lambda term uses a vector of data types to bind every components of the input tuple.
-/// That is, each component is treated as a unique variable that might appear in the function body.
-pub type Expr = shared::Expr<Relation>;
-#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct Application(pub Relation, pub Vector<Expr>);
+pub type Relation = Lambda<UExpr>;
+pub type Expr = shared::Expr<UExpr, Relation, Aggr>;
+pub type Logic = shared::Logic<UExpr, Expr>;
 
-#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub enum Relation {
-	Var(VL),
-	HOp(String, Vec<Expr>, Box<Relation>),
-	Lam(Vector<DataType>, Box<UExpr>),
-}
+#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub struct Aggr(pub String, pub Vector<DataType>, pub UExpr, pub Box<Expr>);
 
-pub type Logic = shared::Logic<Relation, Relation, Application>;
-
-impl Relation {
-	pub fn lam(scopes: Vector<DataType>, body: impl Into<Box<UExpr>>) -> Relation {
-		Relation::Lam(scopes, body.into())
+impl Display for Aggr {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		let Aggr(name, scope, uexpr, expr) = self;
+		write!(f, "⨿{} {:?} {{", name, scope)?;
+		writeln!(indented(f).with_str("\t"), "{},", uexpr)?;
+		writeln!(indented(f).with_str("\t"), "{}", expr)?;
+		write!(f, "}}")
 	}
 }
 
-impl Display for Relation {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		match self {
-			Relation::Var(table) => write!(f, "#{}", table.0),
-			Relation::Lam(scopes, body) => {
-				writeln!(f, "(λ {:?}", scopes)?;
-				writeln!(indented(f).with_str("\t"), "{})", body)
-			},
-			Relation::HOp(op, args, rel) => {
-				writeln!(f, "{}({}, {})", op, args.iter().join(", "), rel)
-			},
-		}
+impl Typed for Aggr {
+	fn ty(&self) -> DataType {
+		self.3.ty()
 	}
 }
 
@@ -65,10 +49,11 @@ pub enum UExpr {
 	// Summation that ranges over tuples of certain schema
 	Sum(Vector<DataType>, Box<UExpr>),
 	// Predicate that can be evaluated to 0 or 1
-	Pred(Logic),
-	// Application of a relation with arguments.
-	// Here each argument are required to be a single variable.
-	App(Relation, Vector<Expr>),
+	Pred(Box<Logic>),
+	// Application of a lambda with arguments
+	App(Box<Relation>, Vector<Expr>),
+	// Neutral application
+	Neu(Neutral<Relation, Expr>),
 }
 
 impl UExpr {
@@ -80,24 +65,20 @@ impl UExpr {
 		UExpr::Mul(vector![])
 	}
 
-	pub fn sum(scopes: impl Into<Vector<DataType>>, body: impl Into<Box<UExpr>>) -> Self {
-		Sum(scopes.into(), body.into())
+	pub fn sum(scope: impl Into<Vector<DataType>>, body: impl Into<Box<UExpr>>) -> Self {
+		Sum(scope.into(), body.into())
 	}
 
 	pub fn squash(body: impl Into<Box<UExpr>>) -> Self {
 		Squash(body.into())
 	}
 
-	pub fn as_logic(self) -> Logic {
-		match self {
-			Add(us) => Logic::Or(us.into_iter().map(UExpr::as_logic).collect()),
-			Mul(us) => Logic::And(us.into_iter().map(UExpr::as_logic).collect()),
-			Squash(u) => u.as_logic(),
-			Not(u) => !u.as_logic(),
-			Sum(scopes, body) => Logic::Exists(Relation::Lam(scopes, body)),
-			Pred(logic) => logic,
-			App(table, args) => Logic::App(Application(table, args)),
-		}
+	pub fn pred(l: Logic) -> Self {
+		Pred(l.into())
+	}
+
+	pub fn app(rel: impl Into<Box<Relation>>, args: Vector<Expr>) -> Self {
+		App(rel.into(), args)
 	}
 }
 
@@ -110,8 +91,8 @@ impl Display for UExpr {
 			Mul(us) => write!(f, "({})", us.iter().format(" × ")),
 			Squash(u) => write!(f, "‖{}‖", u),
 			Not(u) => write!(f, "¬({})", u),
-			Sum(scopes, body) => {
-				writeln!(f, "∑ {:?} {{", scopes)?;
+			Sum(scope, body) => {
+				writeln!(f, "∑ {:?} {{", scope)?;
 				writeln!(indented(f).with_str("\t"), "{}", body)?;
 				write!(f, "}}")
 			},
@@ -119,14 +100,10 @@ impl Display for UExpr {
 			App(rel, args) => {
 				write!(f, "{}({})", rel, args.iter().join(", "))
 			},
+			Neu(Neutral(head, args)) => {
+				write!(f, "{}({})", head, args.iter().join(", "))
+			},
 		}
-	}
-}
-
-impl Display for Application {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		let Application(rel, args) = self;
-		write!(f, "{}({})", rel, args.iter().join(", "))
 	}
 }
 

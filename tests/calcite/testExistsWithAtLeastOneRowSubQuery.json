@@ -1,0 +1,93 @@
+{
+  "help" : [ "LogicalProject(DEPTNO=[$0], NAME=[$1])\n  LogicalFilter(condition=[EXISTS({\nLogicalAggregate(group=[{}], EXPR$0=[COUNT()])\n  LogicalProject($f0=[0])\n    LogicalFilter(condition=[=($cor0.DEPTNO, $7)])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n})], variablesSet=[[$cor0]])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(DEPTNO=[$0], NAME=[$1])\n  LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  }, {
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "query" : {
+              "group" : {
+                "keys" : [ ],
+                "function" : [ {
+                  "distinct" : false,
+                  "type" : "BIGINT",
+                  "operand" : [ ],
+                  "operator" : "COUNT",
+                  "ignoreNulls" : false
+                } ],
+                "source" : {
+                  "project" : {
+                    "source" : {
+                      "filter" : {
+                        "condition" : {
+                          "type" : "BOOLEAN",
+                          "operand" : [ {
+                            "column" : 0,
+                            "type" : "INTEGER"
+                          }, {
+                            "column" : 9,
+                            "type" : "INTEGER"
+                          } ],
+                          "operator" : "="
+                        },
+                        "source" : {
+                          "scan" : 0
+                        }
+                      }
+                    },
+                    "target" : [ {
+                      "type" : "INTEGER",
+                      "operand" : [ ],
+                      "operator" : "0"
+                    } ]
+                  }
+                }
+              }
+            },
+            "type" : "BOOLEAN",
+            "operand" : [ ],
+            "operator" : "EXISTS"
+          },
+          "source" : {
+            "scan" : 1
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "scan" : 1
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ]
+    }
+  } ]
+}

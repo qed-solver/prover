@@ -1,0 +1,116 @@
+{
+  "help" : [ "LogicalProject(DNAME=[$0], C=[$1])\n  LogicalFilter(condition=[=($0, 'Charlie')])\n    LogicalAggregate(group=[{0}], C=[COUNT()])\n      LogicalProject(DNAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(DNAME=[$0], C=[$1])\n  LogicalAggregate(group=[{0}], C=[COUNT()])\n    LogicalFilter(condition=[=($0, 'Charlie')])\n      LogicalProject(DNAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "VARCHAR"
+            }, {
+              "type" : "VARCHAR",
+              "operand" : [ ],
+              "operator" : "_ISO-8859-1'Charlie'"
+            } ],
+            "operator" : "="
+          },
+          "source" : {
+            "group" : {
+              "keys" : [ {
+                "column" : 0,
+                "type" : "VARCHAR"
+              } ],
+              "function" : [ {
+                "distinct" : false,
+                "type" : "BIGINT",
+                "operand" : [ ],
+                "operator" : "COUNT",
+                "ignoreNulls" : false
+              } ],
+              "source" : {
+                "project" : {
+                  "source" : {
+                    "scan" : 0
+                  },
+                  "target" : [ {
+                    "column" : 1,
+                    "type" : "VARCHAR"
+                  } ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 1,
+        "type" : "BIGINT"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "group" : {
+          "keys" : [ {
+            "column" : 0,
+            "type" : "VARCHAR"
+          } ],
+          "function" : [ {
+            "distinct" : false,
+            "type" : "BIGINT",
+            "operand" : [ ],
+            "operator" : "COUNT",
+            "ignoreNulls" : false
+          } ],
+          "source" : {
+            "filter" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 0,
+                  "type" : "VARCHAR"
+                }, {
+                  "type" : "VARCHAR",
+                  "operand" : [ ],
+                  "operator" : "_ISO-8859-1'Charlie'"
+                } ],
+                "operator" : "="
+              },
+              "source" : {
+                "project" : {
+                  "source" : {
+                    "scan" : 0
+                  },
+                  "target" : [ {
+                    "column" : 1,
+                    "type" : "VARCHAR"
+                  } ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 1,
+        "type" : "BIGINT"
+      } ]
+    }
+  } ]
+}

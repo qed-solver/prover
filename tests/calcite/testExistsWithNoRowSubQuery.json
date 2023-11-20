@@ -1,0 +1,57 @@
+{
+  "help" : [ "LogicalProject(DEPTNO=[$0], NAME=[$1])\n  LogicalFilter(condition=[NOT(EXISTS({\nLogicalValues(tuples=[[]])\n}))])\n    LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(DEPTNO=[$0], NAME=[$1])\n  LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "filter" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "query" : {
+                "values" : {
+                  "schema" : [ "BIGINT" ],
+                  "content" : [ ]
+                }
+              },
+              "type" : "BOOLEAN",
+              "operand" : [ ],
+              "operator" : "EXISTS"
+            } ],
+            "operator" : "NOT"
+          },
+          "source" : {
+            "scan" : 0
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "scan" : 0
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ]
+    }
+  } ]
+}

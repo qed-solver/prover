@@ -1,0 +1,141 @@
+{
+  "help" : [ "LogicalAggregate(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], EXPR$2=[COUNT(DISTINCT $2)])\n  LogicalProject(DEPTNO=[$7], JOB=[$2], ENAME=[$1])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalAggregate(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], EXPR$2=[COUNT($2) FILTER $3])\n  LogicalProject(DEPTNO=[$0], JOB=[$1], ENAME=[$2], $g_0=[=($3, 0)])\n    LogicalAggregate(group=[{0, 1, 2}], $g=[GROUPING($0, $1, $2)])\n      LogicalProject(DEPTNO=[$7], JOB=[$2], ENAME=[$1])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "group" : {
+      "keys" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ],
+      "function" : [ {
+        "distinct" : true,
+        "type" : "BIGINT",
+        "operand" : [ {
+          "column" : 2,
+          "type" : "VARCHAR"
+        } ],
+        "operator" : "COUNT",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "project" : {
+          "source" : {
+            "scan" : 0
+          },
+          "target" : [ {
+            "column" : 7,
+            "type" : "INTEGER"
+          }, {
+            "column" : 2,
+            "type" : "VARCHAR"
+          }, {
+            "column" : 1,
+            "type" : "VARCHAR"
+          } ]
+        }
+      }
+    }
+  }, {
+    "group" : {
+      "keys" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "BIGINT",
+        "operand" : [ {
+          "column" : 2,
+          "type" : "VARCHAR"
+        } ],
+        "operator" : "COUNT",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "project" : {
+          "source" : {
+            "group" : {
+              "keys" : [ {
+                "column" : 0,
+                "type" : "INTEGER"
+              }, {
+                "column" : 1,
+                "type" : "VARCHAR"
+              }, {
+                "column" : 2,
+                "type" : "VARCHAR"
+              } ],
+              "function" : [ {
+                "distinct" : false,
+                "type" : "BIGINT",
+                "operand" : [ {
+                  "column" : 0,
+                  "type" : "INTEGER"
+                }, {
+                  "column" : 1,
+                  "type" : "VARCHAR"
+                }, {
+                  "column" : 2,
+                  "type" : "VARCHAR"
+                } ],
+                "operator" : "GROUPING",
+                "ignoreNulls" : false
+              } ],
+              "source" : {
+                "project" : {
+                  "source" : {
+                    "scan" : 0
+                  },
+                  "target" : [ {
+                    "column" : 7,
+                    "type" : "INTEGER"
+                  }, {
+                    "column" : 2,
+                    "type" : "VARCHAR"
+                  }, {
+                    "column" : 1,
+                    "type" : "VARCHAR"
+                  } ]
+                }
+              }
+            }
+          },
+          "target" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "column" : 1,
+            "type" : "VARCHAR"
+          }, {
+            "column" : 2,
+            "type" : "VARCHAR"
+          }, {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 3,
+              "type" : "BIGINT"
+            }, {
+              "type" : "INTEGER",
+              "operand" : [ ],
+              "operator" : "0"
+            } ],
+            "operator" : "="
+          } ]
+        }
+      }
+    }
+  } ]
+}

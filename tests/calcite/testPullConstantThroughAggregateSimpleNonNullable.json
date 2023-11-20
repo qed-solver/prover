@@ -1,0 +1,92 @@
+{
+  "help" : [ "LogicalProject(DEPTNO=[$0], EXPR$1=[$2])\n  LogicalAggregate(group=[{0, 1}], EXPR$1=[MAX($2)])\n    LogicalProject(DEPTNO=[$7], FOUR=[4], ENAME=[$1])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalAggregate(group=[{0}], EXPR$1=[MAX($1)])\n  LogicalProject(DEPTNO=[$7], ENAME=[$1])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "group" : {
+          "keys" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          }, {
+            "column" : 1,
+            "type" : "INTEGER"
+          } ],
+          "function" : [ {
+            "distinct" : false,
+            "type" : "VARCHAR",
+            "operand" : [ {
+              "column" : 2,
+              "type" : "VARCHAR"
+            } ],
+            "operator" : "MAX",
+            "ignoreNulls" : false
+          } ],
+          "source" : {
+            "project" : {
+              "source" : {
+                "scan" : 0
+              },
+              "target" : [ {
+                "column" : 7,
+                "type" : "INTEGER"
+              }, {
+                "type" : "INTEGER",
+                "operand" : [ ],
+                "operator" : "4"
+              }, {
+                "column" : 1,
+                "type" : "VARCHAR"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 2,
+        "type" : "VARCHAR"
+      } ]
+    }
+  }, {
+    "group" : {
+      "keys" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      } ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "VARCHAR",
+        "operand" : [ {
+          "column" : 1,
+          "type" : "VARCHAR"
+        } ],
+        "operator" : "MAX",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "project" : {
+          "source" : {
+            "scan" : 0
+          },
+          "target" : [ {
+            "column" : 7,
+            "type" : "INTEGER"
+          }, {
+            "column" : 1,
+            "type" : "VARCHAR"
+          } ]
+        }
+      }
+    }
+  } ]
+}

@@ -1,0 +1,186 @@
+{
+  "help" : [ "LogicalProject(EXPR$0=[$6])\n  LogicalAggregate(group=[{0, 1, 2, 3, 4, 5}], EXPR$0=[AVG($6)])\n    LogicalProject($f0=[false], DEPTNO=[$7], $f2=[true], EMPNO=[$0], $f4=['ab'], $f5=[2022-01-01], SAL=[$5])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(EXPR$0=[$6])\n  LogicalAggregate(group=[{0, 1, 2, 3, 4, 5}], EXPR$0=[AVG($6)])\n    LogicalProject($f0=[$9], DEPTNO=[$7], $f2=[$10], EMPNO=[$0], $f4=[$11], $f5=[$12], SAL=[$5])\n      LogicalJoin(condition=[true], joinType=[inner])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n        LogicalValues(tuples=[[{ false, true, 'ab', 2022-01-01 }]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "group" : {
+          "keys" : [ {
+            "column" : 0,
+            "type" : "BOOLEAN"
+          }, {
+            "column" : 1,
+            "type" : "INTEGER"
+          }, {
+            "column" : 2,
+            "type" : "BOOLEAN"
+          }, {
+            "column" : 3,
+            "type" : "INTEGER"
+          }, {
+            "column" : 4,
+            "type" : "CHAR"
+          }, {
+            "column" : 5,
+            "type" : "DATE"
+          } ],
+          "function" : [ {
+            "distinct" : false,
+            "type" : "INTEGER",
+            "operand" : [ {
+              "column" : 6,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "AVG",
+            "ignoreNulls" : false
+          } ],
+          "source" : {
+            "project" : {
+              "source" : {
+                "scan" : 0
+              },
+              "target" : [ {
+                "type" : "BOOLEAN",
+                "operand" : [ ],
+                "operator" : "false"
+              }, {
+                "column" : 7,
+                "type" : "INTEGER"
+              }, {
+                "type" : "BOOLEAN",
+                "operand" : [ ],
+                "operator" : "true"
+              }, {
+                "column" : 0,
+                "type" : "INTEGER"
+              }, {
+                "type" : "CHAR",
+                "operand" : [ ],
+                "operator" : "_ISO-8859-1'ab'"
+              }, {
+                "type" : "DATE",
+                "operand" : [ ],
+                "operator" : "java.util.GregorianCalendar[time=1640995200000,areFieldsSet=true,areAllFieldsSet=true,lenient=true,zone=sun.util.calendar.ZoneInfo[id=\"UTC\",offset=0,dstSavings=0,useDaylight=false,transitions=0,lastRule=null],firstDayOfWeek=1,minimalDaysInFirstWeek=1,ERA=1,YEAR=2022,MONTH=0,WEEK_OF_YEAR=1,WEEK_OF_MONTH=1,DAY_OF_MONTH=1,DAY_OF_YEAR=1,DAY_OF_WEEK=7,DAY_OF_WEEK_IN_MONTH=1,AM_PM=0,HOUR=0,HOUR_OF_DAY=0,MINUTE=0,SECOND=0,MILLISECOND=0,ZONE_OFFSET=0,DST_OFFSET=0]"
+              }, {
+                "column" : 5,
+                "type" : "INTEGER"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 6,
+        "type" : "INTEGER"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "group" : {
+          "keys" : [ {
+            "column" : 0,
+            "type" : "BOOLEAN"
+          }, {
+            "column" : 1,
+            "type" : "INTEGER"
+          }, {
+            "column" : 2,
+            "type" : "BOOLEAN"
+          }, {
+            "column" : 3,
+            "type" : "INTEGER"
+          }, {
+            "column" : 4,
+            "type" : "CHAR"
+          }, {
+            "column" : 5,
+            "type" : "DATE"
+          } ],
+          "function" : [ {
+            "distinct" : false,
+            "type" : "INTEGER",
+            "operand" : [ {
+              "column" : 6,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "AVG",
+            "ignoreNulls" : false
+          } ],
+          "source" : {
+            "project" : {
+              "source" : {
+                "join" : {
+                  "condition" : {
+                    "type" : "BOOLEAN",
+                    "operand" : [ ],
+                    "operator" : "true"
+                  },
+                  "left" : {
+                    "scan" : 0
+                  },
+                  "kind" : "INNER",
+                  "right" : {
+                    "values" : {
+                      "schema" : [ "BOOLEAN", "BOOLEAN", "CHAR", "DATE" ],
+                      "content" : [ [ {
+                        "type" : "BOOLEAN",
+                        "operand" : [ ],
+                        "operator" : "false"
+                      }, {
+                        "type" : "BOOLEAN",
+                        "operand" : [ ],
+                        "operator" : "true"
+                      }, {
+                        "type" : "CHAR",
+                        "operand" : [ ],
+                        "operator" : "_ISO-8859-1'ab'"
+                      }, {
+                        "type" : "DATE",
+                        "operand" : [ ],
+                        "operator" : "java.util.GregorianCalendar[time=1640995200000,areFieldsSet=true,areAllFieldsSet=true,lenient=true,zone=sun.util.calendar.ZoneInfo[id=\"UTC\",offset=0,dstSavings=0,useDaylight=false,transitions=0,lastRule=null],firstDayOfWeek=1,minimalDaysInFirstWeek=1,ERA=1,YEAR=2022,MONTH=0,WEEK_OF_YEAR=1,WEEK_OF_MONTH=1,DAY_OF_MONTH=1,DAY_OF_YEAR=1,DAY_OF_WEEK=7,DAY_OF_WEEK_IN_MONTH=1,AM_PM=0,HOUR=0,HOUR_OF_DAY=0,MINUTE=0,SECOND=0,MILLISECOND=0,ZONE_OFFSET=0,DST_OFFSET=0]"
+                      } ] ]
+                    }
+                  }
+                }
+              },
+              "target" : [ {
+                "column" : 9,
+                "type" : "BOOLEAN"
+              }, {
+                "column" : 7,
+                "type" : "INTEGER"
+              }, {
+                "column" : 10,
+                "type" : "BOOLEAN"
+              }, {
+                "column" : 0,
+                "type" : "INTEGER"
+              }, {
+                "column" : 11,
+                "type" : "CHAR"
+              }, {
+                "column" : 12,
+                "type" : "DATE"
+              }, {
+                "column" : 5,
+                "type" : "INTEGER"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 6,
+        "type" : "INTEGER"
+      } ]
+    }
+  } ]
+}

@@ -1,0 +1,234 @@
+{
+  "help" : [ "LogicalAggregate(group=[{0}], EXPR$1=[SUM($1)], EXPR$2=[AVG(DISTINCT $1)], EXPR$3=[SUM(DISTINCT $0)])\n  LogicalProject(SAL=[$5], COMM=[$6])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(SAL=[$0], EXPR$1=[$1], EXPR$2=[$3], EXPR$3=[$5])\n  LogicalJoin(condition=[IS NOT DISTINCT FROM($0, $4)], joinType=[inner])\n    LogicalJoin(condition=[IS NOT DISTINCT FROM($0, $2)], joinType=[inner])\n      LogicalAggregate(group=[{0}], EXPR$1=[SUM($1)])\n        LogicalProject(SAL=[$5], COMM=[$6])\n          LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n      LogicalAggregate(group=[{0}], EXPR$2=[AVG($1)])\n        LogicalAggregate(group=[{0, 1}])\n          LogicalProject(SAL=[$5], COMM=[$6])\n            LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalAggregate(group=[{0}], EXPR$3=[SUM($0)])\n      LogicalAggregate(group=[{0}])\n        LogicalProject(SAL=[$0])\n          LogicalProject(SAL=[$5], COMM=[$6])\n            LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "group" : {
+      "keys" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      } ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 1,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "SUM",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : true,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 1,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "AVG",
+        "ignoreNulls" : false
+      }, {
+        "distinct" : true,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "SUM",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "project" : {
+          "source" : {
+            "scan" : 0
+          },
+          "target" : [ {
+            "column" : 5,
+            "type" : "INTEGER"
+          }, {
+            "column" : 6,
+            "type" : "INTEGER"
+          } ]
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            }, {
+              "column" : 4,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "IS NOT DISTINCT FROM"
+          },
+          "left" : {
+            "join" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 0,
+                  "type" : "INTEGER"
+                }, {
+                  "column" : 2,
+                  "type" : "INTEGER"
+                } ],
+                "operator" : "IS NOT DISTINCT FROM"
+              },
+              "left" : {
+                "group" : {
+                  "keys" : [ {
+                    "column" : 0,
+                    "type" : "INTEGER"
+                  } ],
+                  "function" : [ {
+                    "distinct" : false,
+                    "type" : "INTEGER",
+                    "operand" : [ {
+                      "column" : 1,
+                      "type" : "INTEGER"
+                    } ],
+                    "operator" : "SUM",
+                    "ignoreNulls" : false
+                  } ],
+                  "source" : {
+                    "project" : {
+                      "source" : {
+                        "scan" : 0
+                      },
+                      "target" : [ {
+                        "column" : 5,
+                        "type" : "INTEGER"
+                      }, {
+                        "column" : 6,
+                        "type" : "INTEGER"
+                      } ]
+                    }
+                  }
+                }
+              },
+              "kind" : "INNER",
+              "right" : {
+                "group" : {
+                  "keys" : [ {
+                    "column" : 0,
+                    "type" : "INTEGER"
+                  } ],
+                  "function" : [ {
+                    "distinct" : false,
+                    "type" : "INTEGER",
+                    "operand" : [ {
+                      "column" : 1,
+                      "type" : "INTEGER"
+                    } ],
+                    "operator" : "AVG",
+                    "ignoreNulls" : false
+                  } ],
+                  "source" : {
+                    "group" : {
+                      "keys" : [ {
+                        "column" : 0,
+                        "type" : "INTEGER"
+                      }, {
+                        "column" : 1,
+                        "type" : "INTEGER"
+                      } ],
+                      "function" : [ ],
+                      "source" : {
+                        "project" : {
+                          "source" : {
+                            "scan" : 0
+                          },
+                          "target" : [ {
+                            "column" : 5,
+                            "type" : "INTEGER"
+                          }, {
+                            "column" : 6,
+                            "type" : "INTEGER"
+                          } ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "kind" : "INNER",
+          "right" : {
+            "group" : {
+              "keys" : [ {
+                "column" : 0,
+                "type" : "INTEGER"
+              } ],
+              "function" : [ {
+                "distinct" : false,
+                "type" : "INTEGER",
+                "operand" : [ {
+                  "column" : 0,
+                  "type" : "INTEGER"
+                } ],
+                "operator" : "SUM",
+                "ignoreNulls" : false
+              } ],
+              "source" : {
+                "group" : {
+                  "keys" : [ {
+                    "column" : 0,
+                    "type" : "INTEGER"
+                  } ],
+                  "function" : [ ],
+                  "source" : {
+                    "project" : {
+                      "source" : {
+                        "project" : {
+                          "source" : {
+                            "scan" : 0
+                          },
+                          "target" : [ {
+                            "column" : 5,
+                            "type" : "INTEGER"
+                          }, {
+                            "column" : 6,
+                            "type" : "INTEGER"
+                          } ]
+                        }
+                      },
+                      "target" : [ {
+                        "column" : 0,
+                        "type" : "INTEGER"
+                      } ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "INTEGER"
+      }, {
+        "column" : 3,
+        "type" : "INTEGER"
+      }, {
+        "column" : 5,
+        "type" : "INTEGER"
+      } ]
+    }
+  } ]
+}

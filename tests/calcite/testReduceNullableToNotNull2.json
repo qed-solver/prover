@@ -1,0 +1,68 @@
+{
+  "help" : [ "LogicalProject(NEWCOL=[+($0, CASE(=('a', 'a'), 1, null:INTEGER))])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(NEWCOL=[+($0, 1)])\n  LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "scan" : 0
+      },
+      "target" : [ {
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        }, {
+          "type" : "INTEGER",
+          "operand" : [ {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "type" : "CHAR",
+              "operand" : [ ],
+              "operator" : "_ISO-8859-1'a'"
+            }, {
+              "type" : "CHAR",
+              "operand" : [ ],
+              "operator" : "_ISO-8859-1'a'"
+            } ],
+            "operator" : "="
+          }, {
+            "type" : "INTEGER",
+            "operand" : [ ],
+            "operator" : "1"
+          }, {
+            "type" : "INTEGER",
+            "operand" : [ ],
+            "operator" : "NULL"
+          } ],
+          "operator" : "CASE"
+        } ],
+        "operator" : "+"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "scan" : 0
+      },
+      "target" : [ {
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        }, {
+          "type" : "INTEGER",
+          "operand" : [ ],
+          "operator" : "1"
+        } ],
+        "operator" : "+"
+      } ]
+    }
+  } ]
+}

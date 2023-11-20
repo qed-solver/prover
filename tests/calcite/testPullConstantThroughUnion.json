@@ -1,0 +1,91 @@
+{
+  "help" : [ "LogicalUnion(all=[true])\n  LogicalProject(EXPR$0=[2], DEPTNO=[$7], JOB=[$2])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n  LogicalProject(EXPR$0=[2], DEPTNO=[$7], JOB=[$2])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject(EXPR$0=[2], DEPTNO=[$0], JOB=[$1])\n  LogicalUnion(all=[true])\n    LogicalProject(DEPTNO=[$7], JOB=[$2])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalProject(DEPTNO=[$7], JOB=[$2])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "union" : [ {
+      "project" : {
+        "source" : {
+          "scan" : 0
+        },
+        "target" : [ {
+          "type" : "INTEGER",
+          "operand" : [ ],
+          "operator" : "2"
+        }, {
+          "column" : 7,
+          "type" : "INTEGER"
+        }, {
+          "column" : 2,
+          "type" : "VARCHAR"
+        } ]
+      }
+    }, {
+      "project" : {
+        "source" : {
+          "scan" : 0
+        },
+        "target" : [ {
+          "type" : "INTEGER",
+          "operand" : [ ],
+          "operator" : "2"
+        }, {
+          "column" : 7,
+          "type" : "INTEGER"
+        }, {
+          "column" : 2,
+          "type" : "VARCHAR"
+        } ]
+      }
+    } ]
+  }, {
+    "project" : {
+      "source" : {
+        "union" : [ {
+          "project" : {
+            "source" : {
+              "scan" : 0
+            },
+            "target" : [ {
+              "column" : 7,
+              "type" : "INTEGER"
+            }, {
+              "column" : 2,
+              "type" : "VARCHAR"
+            } ]
+          }
+        }, {
+          "project" : {
+            "source" : {
+              "scan" : 0
+            },
+            "target" : [ {
+              "column" : 7,
+              "type" : "INTEGER"
+            }, {
+              "column" : 2,
+              "type" : "VARCHAR"
+            } ]
+          }
+        } ]
+      },
+      "target" : [ {
+        "type" : "INTEGER",
+        "operand" : [ ],
+        "operator" : "2"
+      }, {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      } ]
+    }
+  } ]
+}

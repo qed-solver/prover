@@ -1,0 +1,68 @@
+{
+  "help" : [ "LogicalCorrelate(correlation=[$cor0], joinType=[left], requiredColumns=[{7}])\n  LogicalTableScan(table=[[scott, EMP]])\n  LogicalValues(tuples=[[]])\n", "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], DEPTNO0=[null:TINYINT], DNAME=[null:VARCHAR(14)], LOC=[null:VARCHAR(13)])\n  LogicalTableScan(table=[[scott, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
+    "nullable" : [ false, true, true, true, true, true, true, true ],
+    "name" : "scott.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO" ],
+    "key" : [ [ 0 ], [ 1 ] ]
+  } ],
+  "queries" : [ {
+    "correlate" : {
+      "left" : {
+        "scan" : 0
+      },
+      "kind" : "LEFT",
+      "right" : {
+        "values" : {
+          "schema" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
+          "content" : [ ]
+        }
+      }
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "scan" : 0
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "SMALLINT"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 2,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 3,
+        "type" : "SMALLINT"
+      }, {
+        "column" : 4,
+        "type" : "DATE"
+      }, {
+        "column" : 5,
+        "type" : "DECIMAL"
+      }, {
+        "column" : 6,
+        "type" : "DECIMAL"
+      }, {
+        "column" : 7,
+        "type" : "TINYINT"
+      }, {
+        "type" : "TINYINT",
+        "operand" : [ ],
+        "operator" : "NULL"
+      }, {
+        "type" : "VARCHAR",
+        "operand" : [ ],
+        "operator" : "NULL"
+      }, {
+        "type" : "VARCHAR",
+        "operand" : [ ],
+        "operator" : "NULL"
+      } ]
+    }
+  } ]
+}

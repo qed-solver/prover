@@ -1,0 +1,165 @@
+{
+  "help" : [ "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], DEPTNO0=[$9], NAME=[$10])\n  LogicalSort(sort0=[$5], sort1=[$10], dir0=[ASC], dir1=[ASC])\n    LogicalJoin(condition=[=($7, $9)], joinType=[inner])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n      LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n", "LogicalProject(EMPNO=[$0], ENAME=[$1], JOB=[$2], MGR=[$3], HIREDATE=[$4], SAL=[$5], COMM=[$6], DEPTNO=[$7], SLACKER=[$8], DEPTNO0=[$9], NAME=[$10])\n  LogicalSort(sort0=[$5], sort1=[$10], dir0=[ASC], dir1=[ASC])\n    LogicalJoin(condition=[=($7, $9)], joinType=[inner])\n      LogicalSort(sort0=[$5], dir0=[ASC])\n        LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n      LogicalSort(sort0=[$1], dir0=[ASC])\n        LogicalTableScan(table=[[CATALOG, SALES, DEPT]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  }, {
+    "types" : [ "INTEGER", "VARCHAR" ],
+    "nullable" : [ false, false ],
+    "name" : "CATALOG.SALES.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "NAME" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "sort" : {
+          "offset" : null,
+          "limit" : null,
+          "source" : {
+            "join" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 7,
+                  "type" : "INTEGER"
+                }, {
+                  "column" : 9,
+                  "type" : "INTEGER"
+                } ],
+                "operator" : "="
+              },
+              "left" : {
+                "scan" : 0
+              },
+              "kind" : "INNER",
+              "right" : {
+                "scan" : 1
+              }
+            }
+          },
+          "collation" : [ [ 5, "INTEGER", "ASCENDING" ], [ 10, "VARCHAR", "ASCENDING" ] ]
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 2,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 3,
+        "type" : "INTEGER"
+      }, {
+        "column" : 4,
+        "type" : "TIMESTAMP"
+      }, {
+        "column" : 5,
+        "type" : "INTEGER"
+      }, {
+        "column" : 6,
+        "type" : "INTEGER"
+      }, {
+        "column" : 7,
+        "type" : "INTEGER"
+      }, {
+        "column" : 8,
+        "type" : "BOOLEAN"
+      }, {
+        "column" : 9,
+        "type" : "INTEGER"
+      }, {
+        "column" : 10,
+        "type" : "VARCHAR"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "sort" : {
+          "offset" : null,
+          "limit" : null,
+          "source" : {
+            "join" : {
+              "condition" : {
+                "type" : "BOOLEAN",
+                "operand" : [ {
+                  "column" : 7,
+                  "type" : "INTEGER"
+                }, {
+                  "column" : 9,
+                  "type" : "INTEGER"
+                } ],
+                "operator" : "="
+              },
+              "left" : {
+                "sort" : {
+                  "offset" : null,
+                  "limit" : null,
+                  "source" : {
+                    "scan" : 0
+                  },
+                  "collation" : [ [ 5, "INTEGER", "ASCENDING" ] ]
+                }
+              },
+              "kind" : "INNER",
+              "right" : {
+                "sort" : {
+                  "offset" : null,
+                  "limit" : null,
+                  "source" : {
+                    "scan" : 1
+                  },
+                  "collation" : [ [ 1, "VARCHAR", "ASCENDING" ] ]
+                }
+              }
+            }
+          },
+          "collation" : [ [ 5, "INTEGER", "ASCENDING" ], [ 10, "VARCHAR", "ASCENDING" ] ]
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "INTEGER"
+      }, {
+        "column" : 1,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 2,
+        "type" : "VARCHAR"
+      }, {
+        "column" : 3,
+        "type" : "INTEGER"
+      }, {
+        "column" : 4,
+        "type" : "TIMESTAMP"
+      }, {
+        "column" : 5,
+        "type" : "INTEGER"
+      }, {
+        "column" : 6,
+        "type" : "INTEGER"
+      }, {
+        "column" : 7,
+        "type" : "INTEGER"
+      }, {
+        "column" : 8,
+        "type" : "BOOLEAN"
+      }, {
+        "column" : 9,
+        "type" : "INTEGER"
+      }, {
+        "column" : 10,
+        "type" : "VARCHAR"
+      } ]
+    }
+  } ]
+}

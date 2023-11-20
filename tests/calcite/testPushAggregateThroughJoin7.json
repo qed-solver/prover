@@ -1,0 +1,111 @@
+{
+  "help" : [ "LogicalAggregate(group=[{}], EXPR$0=[ANY_VALUE($9)])\n  LogicalJoin(condition=[=($5, $9)], joinType=[inner])\n    LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalAggregate(group=[{5}])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalAggregate(group=[{}], EXPR$0=[ANY_VALUE($1)])\n  LogicalJoin(condition=[=($0, $1)], joinType=[inner])\n    LogicalAggregate(group=[{5}])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n    LogicalAggregate(group=[{5}])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "group" : {
+      "keys" : [ ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 9,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "ANY_VALUE",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 5,
+              "type" : "INTEGER"
+            }, {
+              "column" : 9,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "scan" : 0
+          },
+          "kind" : "INNER",
+          "right" : {
+            "group" : {
+              "keys" : [ {
+                "column" : 5,
+                "type" : "INTEGER"
+              } ],
+              "function" : [ ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      }
+    }
+  }, {
+    "group" : {
+      "keys" : [ ],
+      "function" : [ {
+        "distinct" : false,
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 1,
+          "type" : "INTEGER"
+        } ],
+        "operator" : "ANY_VALUE",
+        "ignoreNulls" : false
+      } ],
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            }, {
+              "column" : 1,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "group" : {
+              "keys" : [ {
+                "column" : 5,
+                "type" : "INTEGER"
+              } ],
+              "function" : [ ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          },
+          "kind" : "INNER",
+          "right" : {
+            "group" : {
+              "keys" : [ {
+                "column" : 5,
+                "type" : "INTEGER"
+              } ],
+              "function" : [ ],
+              "source" : {
+                "scan" : 0
+              }
+            }
+          }
+        }
+      }
+    }
+  } ]
+}

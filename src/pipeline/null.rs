@@ -59,7 +59,10 @@ macro_rules! optional_op {
 
 macro_rules! optional_fn {
     ($ilsort:ident $olsort:ident $name:ident ($($v:ident),* $(,)*)) => {
-        paste!(pub fn [<$ilsort _ $name>] (&self, $($v: &Dynamic<'c>),*) -> Dynamic<'c> {
+        paste!(
+			#[allow(non_snake_case)]
+			#[allow(dead_code)]
+			pub fn [<$ilsort _ $name>] (&self, $($v: &Dynamic<'c>),*) -> Dynamic<'c> {
             let input_sort = &self.$ilsort.sort;
 			let output_sort = &self.$olsort.sort;
             let func = FuncDecl::new(
@@ -121,6 +124,7 @@ ctx_impl!(
 		le(x, y) -> Bool;
 		gt(x, y) -> Bool;
 		ge(x, y) -> Bool;
+		_eq(x, y) -> Bool;
 	};
 	Int {
 		add[a, b] -> Int;
@@ -135,18 +139,23 @@ ctx_impl!(
 		le(x, y) -> Bool;
 		gt(x, y) -> Bool;
 		ge(x, y) -> Bool;
+		_eq(x, y) -> Bool;
 		to_real(x) -> Real;
 	};
 	Bool {
 		not(x) -> Bool;
-		and[x, y] -> Bool;
-		or[x, y] -> Bool;
+		_eq(x, y) -> Bool;
 	};
 	String {
 		concat[x, y] -> String;
 		contains(x, y) -> Bool;
 		prefix(x, y) -> Bool;
 		suffix(x, y) -> Bool;
+		lt(x, y) -> Bool;
+		le(x, y) -> Bool;
+		gt(x, y) -> Bool;
+		ge(x, y) -> Bool;
+		_eq(x, y) -> Bool;
 	};
 );
 
@@ -160,7 +169,7 @@ impl<'c> Ctx<'c> {
 	pub fn int_sub_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
 		match *args {
 			[] => self.int_some(Int::from_i64(self.solver.get_context(), 0)),
-			[arg] => arg.clone(),
+			[arg] => self.int_unary_minus(arg),
 			[arg, ref args @ ..] => args.iter().fold(arg.clone(), |a, b| self.int_sub(&a, b)),
 		}
 	}
@@ -181,7 +190,7 @@ impl<'c> Ctx<'c> {
 	pub fn real_sub_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
 		match *args {
 			[] => self.real_some(Real::from_real(self.solver.get_context(), 0, 1)),
-			[arg] => arg.clone(),
+			[arg] => self.real_unary_minus(arg),
 			[arg, ref args @ ..] => args.iter().fold(arg.clone(), |a, b| self.real_sub(&a, b)),
 		}
 	}
@@ -197,9 +206,87 @@ impl<'c> Ctx<'c> {
 		let ctx = self.solver.get_context();
 		self.bool.variants[0].tester.apply(&[expr]).as_bool().unwrap().ite(
 			&Bool::from_bool(ctx, false),
-			&self.bool.variants[1].accessors[0]
-				.apply(&[expr])
-				._eq(&Bool::from_bool(ctx, true).into()),
+			&self.bool.variants[1].accessors[0].apply(&[expr]).as_bool().unwrap(),
+		)
+	}
+
+	pub fn bool_and_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
+		args.iter()
+			.fold(self.bool_some(Bool::from_bool(self.solver.get_context(), true)), |a, b| {
+				self.bool_and(&a, b)
+			})
+	}
+
+	pub fn bool_or_v(&self, args: &[&Dynamic<'c>]) -> Dynamic<'c> {
+		args.iter()
+			.fold(self.bool_some(Bool::from_bool(self.solver.get_context(), false)), |a, b| {
+				self.bool_or(&a, b)
+			})
+	}
+
+	pub fn bool_and(&self, e1: &Dynamic<'c>, e2: &Dynamic<'c>) -> Dynamic<'c> {
+		let ctx = self.solver.get_context();
+		self.bool.variants[0].tester.apply(&[e1]).as_bool().unwrap().ite(
+			// NULL, b
+			&self.bool.variants[0].tester.apply(&[e2]).as_bool().unwrap().ite(
+				// NULL, NULL
+				e2,
+				// NULL, Some(b)
+				&self.bool.variants[1].accessors[0].apply(&[e2]).as_bool().unwrap().ite(
+					// NULL, Some(True)
+					&self.bool_none(),
+					// NULL, Some(False)
+					e2,
+				),
+			),
+			// Some(a), b
+			&self.bool.variants[1].accessors[0].apply(&[e1]).as_bool().unwrap().ite(
+				// Some(True), b
+				e2,
+				// Some(False), b
+				&self.bool_some(Bool::from_bool(ctx, false)),
+			),
+		)
+	}
+
+	pub fn bool_or(&self, e1: &Dynamic<'c>, e2: &Dynamic<'c>) -> Dynamic<'c> {
+		let ctx = self.solver.get_context();
+		self.bool.variants[0].tester.apply(&[e1]).as_bool().unwrap().ite(
+			// NULL, b
+			&self.bool.variants[0].tester.apply(&[e2]).as_bool().unwrap().ite(
+				// NULL, NULL
+				e2,
+				// NULL, Some(b)
+				&self.bool.variants[1].accessors[0].apply(&[e2]).as_bool().unwrap().ite(
+					// NULL, Some(True)
+					e2,
+					// NULL, Some(False)
+					&self.bool_none(),
+				),
+			),
+			// Some(a), b
+			&self.bool.variants[1].accessors[0].apply(&[e1]).as_bool().unwrap().ite(
+				// Some(True), b
+				&self.bool_some(Bool::from_bool(ctx, true)),
+				// Some(False), b
+				e2,
+			),
+		)
+	}
+
+	pub fn generic_none(&self, ty: impl ToString) -> Dynamic<'c> {
+		Dynamic::new_const(
+			self.solver.get_context(),
+			format!("null!{}", ty.to_string()),
+			&self.generic_sort(ty),
+		)
+	}
+
+	pub fn generic_eq(&self, ty: impl ToString, e1: &Dynamic<'c>, e2: &Dynamic<'c>) -> Dynamic<'c> {
+		let none = self.generic_none(ty);
+		none._eq(e1).ite(
+			&self.bool_none(),
+			&none._eq(e2).ite(&self.bool_none(), &self.bool_some(e1._eq(e2))),
 		)
 	}
 }

@@ -1,0 +1,57 @@
+{
+  "help" : [ "LogicalProject(EMPNO=[$0])\n  LogicalJoin(condition=[=($7, $8)], joinType=[semi])\n    LogicalValues(tuples=[[]])\n    LogicalTableScan(table=[[scott, DEPT]])\n", "LogicalProject(EMPNO=[$0])\n  LogicalValues(tuples=[[]])\n" ],
+  "schemas" : [ {
+    "types" : [ "TINYINT", "VARCHAR", "VARCHAR" ],
+    "nullable" : [ false, true, true ],
+    "name" : "scott.DEPT",
+    "guaranteed" : [ ],
+    "fields" : [ "DEPTNO", "DNAME", "LOC" ],
+    "key" : [ [ 0 ], [ 1 ], [ 2 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "join" : {
+          "condition" : {
+            "type" : "BOOLEAN",
+            "operand" : [ {
+              "column" : 7,
+              "type" : "TINYINT"
+            }, {
+              "column" : 8,
+              "type" : "TINYINT"
+            } ],
+            "operator" : "="
+          },
+          "left" : {
+            "values" : {
+              "schema" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
+              "content" : [ ]
+            }
+          },
+          "kind" : "SEMI",
+          "right" : {
+            "scan" : 0
+          }
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "SMALLINT"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "values" : {
+          "schema" : [ "SMALLINT", "VARCHAR", "VARCHAR", "SMALLINT", "DATE", "DECIMAL", "DECIMAL", "TINYINT" ],
+          "content" : [ ]
+        }
+      },
+      "target" : [ {
+        "column" : 0,
+        "type" : "SMALLINT"
+      } ]
+    }
+  } ]
+}

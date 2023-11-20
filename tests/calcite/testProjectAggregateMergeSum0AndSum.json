@@ -1,0 +1,128 @@
+{
+  "help" : [ "LogicalProject(EXPR$0=[*($0, 2)], SS0=[CASE(IS NOT NULL($0), CAST($0):INTEGER NOT NULL, 0)])\n  LogicalAggregate(group=[{}], SUM_SAL=[SUM($0)])\n    LogicalProject(SAL=[$5])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n", "LogicalProject($f0=[*($0, 2)], $f1=[$1])\n  LogicalAggregate(group=[{}], SUM_SAL=[SUM($0)], agg#1=[$SUM0($0)])\n    LogicalProject(SAL=[$5])\n      LogicalTableScan(table=[[CATALOG, SALES, EMP]])\n" ],
+  "schemas" : [ {
+    "types" : [ "INTEGER", "VARCHAR", "VARCHAR", "INTEGER", "TIMESTAMP", "INTEGER", "INTEGER", "INTEGER", "BOOLEAN" ],
+    "nullable" : [ false, false, false, true, false, false, false, false, false ],
+    "name" : "CATALOG.SALES.EMP",
+    "guaranteed" : [ ],
+    "fields" : [ "EMPNO", "ENAME", "JOB", "MGR", "HIREDATE", "SAL", "COMM", "DEPTNO", "SLACKER" ],
+    "key" : [ [ 0 ] ]
+  } ],
+  "queries" : [ {
+    "project" : {
+      "source" : {
+        "group" : {
+          "keys" : [ ],
+          "function" : [ {
+            "distinct" : false,
+            "type" : "INTEGER",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "SUM",
+            "ignoreNulls" : false
+          } ],
+          "source" : {
+            "project" : {
+              "source" : {
+                "scan" : 0
+              },
+              "target" : [ {
+                "column" : 5,
+                "type" : "INTEGER"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        }, {
+          "type" : "INTEGER",
+          "operand" : [ ],
+          "operator" : "2"
+        } ],
+        "operator" : "*"
+      }, {
+        "type" : "INTEGER",
+        "operand" : [ {
+          "type" : "BOOLEAN",
+          "operand" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          } ],
+          "operator" : "IS NOT NULL"
+        }, {
+          "type" : "INTEGER",
+          "operand" : [ {
+            "column" : 0,
+            "type" : "INTEGER"
+          } ],
+          "operator" : "CAST"
+        }, {
+          "type" : "INTEGER",
+          "operand" : [ ],
+          "operator" : "0"
+        } ],
+        "operator" : "CASE"
+      } ]
+    }
+  }, {
+    "project" : {
+      "source" : {
+        "group" : {
+          "keys" : [ ],
+          "function" : [ {
+            "distinct" : false,
+            "type" : "INTEGER",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "SUM",
+            "ignoreNulls" : false
+          }, {
+            "distinct" : false,
+            "type" : "INTEGER",
+            "operand" : [ {
+              "column" : 0,
+              "type" : "INTEGER"
+            } ],
+            "operator" : "$SUM0",
+            "ignoreNulls" : false
+          } ],
+          "source" : {
+            "project" : {
+              "source" : {
+                "scan" : 0
+              },
+              "target" : [ {
+                "column" : 5,
+                "type" : "INTEGER"
+              } ]
+            }
+          }
+        }
+      },
+      "target" : [ {
+        "type" : "INTEGER",
+        "operand" : [ {
+          "column" : 0,
+          "type" : "INTEGER"
+        }, {
+          "type" : "INTEGER",
+          "operand" : [ ],
+          "operator" : "2"
+        } ],
+        "operator" : "*"
+      }, {
+        "column" : 1,
+        "type" : "INTEGER"
+      } ]
+    }
+  } ]
+}
