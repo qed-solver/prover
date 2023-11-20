@@ -30,16 +30,16 @@
             ++ lib.optionals stdenv.isDarwin [ libiconv ];
         };
         cargoArtifacts = craneLib.buildDepsOnly packageDef;
-        cosette-prover = craneLib.buildPackage (packageDef // {
+        qed-prover = craneLib.buildPackage (packageDef // {
           inherit cargoArtifacts;
           doNotLinkInheritedArtifacts = true;
-          postInstall = with pkgs; "wrapProgram $out/bin/cosette-prover --set PATH ${lib.makeBinPath [ cvc5 z3_4_12 ]}";
+          postInstall = with pkgs; "wrapProgram $out/bin/qed-prover --set PATH ${lib.makeBinPath [ cvc5 z3_4_12 ]}";
         });
       in {
-        packages.default = cosette-prover;
+        packages.default = qed-prover;
 
         devShells.default = pkgs.mkShell {
-          inputsFrom = [ cosette-prover ];
+          inputsFrom = [ qed-prover ];
           packages = with pkgs; [ rust-analyzer julia-bin jless ] ++ lib.optionals stdenv.isLinux [ linuxPackages.perf ];
         };
       });

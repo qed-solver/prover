@@ -513,9 +513,7 @@ impl<'c> Ctx<'c> {
 	}
 
 	pub fn timeout() -> Duration {
-		if let Some(t) =
-			std::env::var("COSETTE_SMT_TIMEOUT").ok().and_then(|t| t.parse::<u64>().ok())
-		{
+		if let Some(t) = std::env::var("QED_SMT_TIMEOUT").ok().and_then(|t| t.parse::<u64>().ok()) {
 			Duration::from_millis(t)
 		} else {
 			Duration::from_secs(10)
