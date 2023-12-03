@@ -1,0 +1,268 @@
+{
+  "help": [
+    "project\n ├── columns: m:1 n:2 p:6 \"?column?\":13 random:14\n ├── volatile\n ├── fd: (6)--\u003e(13,14)\n └── left-join (hash)\n      ├── columns: m:1 n:2 rowid:3!null small.crdb_internal_mvcc_timestamp:4 small.tableoid:5 p:6 \"?column?\":13 random:14\n      ├── multiplicity: left-rows(exactly-one), right-rows(zero-or-more)\n      ├── volatile\n      ├── key: (3)\n      ├── fd: (3)--\u003e(1,2,4-6,13,14), (6)--\u003e(13,14)\n      ├── scan small\n      │    ├── columns: m:1 n:2 rowid:3!null small.crdb_internal_mvcc_timestamp:4 small.tableoid:5\n      │    ├── key: (3)\n      │    └── fd: (3)--\u003e(1,2,4,5)\n      ├── project\n      │    ├── columns: \"?column?\":13 random:14 p:6!null\n      │    ├── volatile\n      │    ├── key: (6)\n      │    ├── fd: (6)--\u003e(13,14)\n      │    ├── scan pqr\n      │    │    ├── columns: p:6!null q:7 r:8 s:9 t:10 pqr.crdb_internal_mvcc_timestamp:11 pqr.tableoid:12\n      │    │    ├── key: (6)\n      │    │    └── fd: (6)--\u003e(7-12)\n      │    └── projections\n      │         ├── p:6 + q:7 [as=\"?column?\":13, outer=(6,7), immutable]\n      │         └── random() [as=random:14, volatile]\n      └── filters\n           └── p:6 = m:1 [outer=(1,6), constraints=(/1: (/NULL - ]; /6: (/NULL - ]), fd=(1)==(6), (6)==(1)]\n",
+    "right-join (hash)\n ├── columns: m:1 n:2 p:6 \"?column?\":13 random:14\n ├── volatile\n ├── fd: (6)--\u003e(13,14)\n ├── project\n │    ├── columns: \"?column?\":13 random:14 p:6!null\n │    ├── volatile\n │    ├── key: (6)\n │    ├── fd: (6)--\u003e(13,14)\n │    ├── scan pqr@q\n │    │    ├── columns: p:6!null q:7\n │    │    ├── key: (6)\n │    │    └── fd: (6)--\u003e(7)\n │    └── projections\n │         ├── p:6 + q:7 [as=\"?column?\":13, outer=(6,7), immutable]\n │         └── random() [as=random:14, volatile]\n ├── scan small\n │    └── columns: m:1 n:2\n └── filters\n      └── p:6 = m:1 [outer=(1,6), constraints=(/1: (/NULL - ]; /6: (/NULL - ]), fd=(1)==(6), (6)==(1)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 5,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "LEFT",
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 1
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "PLUS",
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "operand": [],
+                        "operator": "SCALAR LIST",
+                        "type": "ANYELEMENT"
+                      }
+                    ],
+                    "operator": "FUNCTION",
+                    "type": "FLOAT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 5,
+            "type": "INT"
+          },
+          {
+            "column": 6,
+            "type": "INT"
+          },
+          {
+            "column": 7,
+            "type": "FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 3,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "RIGHT",
+            "left": {
+              "project": {
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 1
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "PLUS",
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "operand": [],
+                        "operator": "SCALAR LIST",
+                        "type": "ANYELEMENT"
+                      }
+                    ],
+                    "operator": "FUNCTION",
+                    "type": "FLOAT"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 3,
+            "type": "INT"
+          },
+          {
+            "column": 4,
+            "type": "INT"
+          },
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "FLOAT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "STRING",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

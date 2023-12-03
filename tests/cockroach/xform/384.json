@@ -1,0 +1,169 @@
+{
+  "help": [
+    "project\n ├── columns: max:6!null count:7!null\n └── group-by (hash)\n      ├── columns: x:1!null y:2 max:6!null count:7!null\n      ├── grouping columns: x:1!null y:2\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2,6,7)\n      ├── project\n      │    ├── columns: x:1!null y:2\n      │    ├── key: (1)\n      │    ├── fd: (1)--\u003e(2)\n      │    └── scan xyz\n      │         ├── columns: x:1!null y:2 z:3 crdb_internal_mvcc_timestamp:4 tableoid:5\n      │         ├── key: (1)\n      │         └── fd: (1)--\u003e(2-5)\n      └── aggregations\n           ├── max [as=max:6, outer=(1)]\n           │    └── x:1\n           └── count [as=count:7, outer=(2)]\n                └── y:2\n",
+    "project\n ├── columns: max:6!null count:7!null\n └── group-by (streaming)\n      ├── columns: x:1!null max:6!null count:7!null\n      ├── grouping columns: x:1!null\n      ├── internal-ordering: +1\n      ├── key: (1)\n      ├── fd: (1)--\u003e(6,7)\n      ├── scan xyz@xy\n      │    ├── columns: x:1!null y:2\n      │    ├── key: (1)\n      │    ├── fd: (1)--\u003e(2)\n      │    └── ordering: +1\n      └── aggregations\n           ├── max [as=max:6, outer=(1)]\n           │    └── x:1\n           └── count [as=count:7, outer=(2)]\n                └── y:2\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "MAX",
+                "type": "INT"
+              },
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "COUNT",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "MAX",
+                "type": "INT"
+              },
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "COUNT",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

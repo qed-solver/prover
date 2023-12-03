@@ -1,0 +1,82 @@
+{
+  "help": [
+    "project\n ├── columns: \"?column?\":5\n ├── scan tbl\n │    ├── columns: k:1!null b:2 crdb_internal_mvcc_timestamp:3 tableoid:4\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-4)\n └── projections\n      └── b:2 != true [as=\"?column?\":5, outer=(2)]\n",
+    "project\n ├── columns: \"?column?\":5\n ├── scan tbl\n │    └── columns: b:2\n └── projections\n      └── NOT b:2 [as=\"?column?\":5, outer=(2)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "BOOL"
+              },
+              {
+                "operand": [],
+                "operator": "TRUE",
+                "type": "BOOL"
+              }
+            ],
+            "operator": "NE",
+            "type": "BOOL"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "BOOL"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "BOOL"
+              }
+            ],
+            "operator": "NOT",
+            "type": "BOOL"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "BOOL",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

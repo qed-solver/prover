@@ -1,0 +1,141 @@
+{
+  "help": [
+    "project\n ├── columns: catalog_name:2!null schema_name:3!null default_character_set_name:4 sql_path:5 crdb_is_user_defined:6\n ├── stats: [rows=10]\n ├── cost: 1259.37\n ├── fd: ()--\u003e(3)\n └── select\n      ├── columns: crdb_internal_vtable_pk:1!null catalog_name:2!null schema_name:3!null default_character_set_name:4 sql_path:5 crdb_is_user_defined:6\n      ├── stats: [rows=10, distinct(3)=1, null(3)=0]\n      ├── cost: 1259.25\n      ├── fd: ()--\u003e(3)\n      ├── scan schemata\n      │    ├── columns: crdb_internal_vtable_pk:1!null catalog_name:2!null schema_name:3!null default_character_set_name:4 sql_path:5 crdb_is_user_defined:6\n      │    ├── stats: [rows=1000, distinct(1)=100, null(1)=0, distinct(2)=100, null(2)=0, distinct(3)=100, null(3)=0]\n      │    └── cost: 1249.22\n      └── filters\n           └── schema_name:3 = 'public' [outer=(3), constraints=(/3: [/'public' - /'public']; tight), fd=()--\u003e(3)]\n",
+    "select\n ├── columns: catalog_name:2!null schema_name:3!null default_character_set_name:4 sql_path:5 crdb_is_user_defined:6\n ├── stats: [rows=10, distinct(3)=1, null(3)=0]\n ├── cost: 1249.15\n ├── fd: ()--\u003e(3)\n ├── scan schemata\n │    ├── columns: catalog_name:2!null schema_name:3!null default_character_set_name:4 sql_path:5 crdb_is_user_defined:6\n │    ├── stats: [rows=1000, distinct(2)=100, null(2)=0, distinct(3)=100, null(3)=0]\n │    └── cost: 1239.12\n └── filters\n      └── schema_name:3 = 'public' [outer=(3), constraints=(/3: [/'public' - /'public']; tight), fd=()--\u003e(3)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "STRING"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'public'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "STRING"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          },
+          {
+            "column": 3,
+            "type": "STRING"
+          },
+          {
+            "column": 4,
+            "type": "STRING"
+          },
+          {
+            "column": 5,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 1,
+                  "type": "STRING"
+                },
+                {
+                  "operand": [],
+                  "operator": "'public'",
+                  "type": "STRING"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "STRING"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              },
+              {
+                "column": 3,
+                "type": "STRING"
+              },
+              {
+                "column": 4,
+                "type": "STRING"
+              },
+              {
+                "column": 5,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING"
+      ]
+    }
+  ]
+}

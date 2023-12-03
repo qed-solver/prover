@@ -1,0 +1,56 @@
+{
+  "help": [
+    "project\n ├── columns: one:2\n ├── cardinality: [1 - 1]\n ├── volatile\n ├── key: ()\n ├── fd: ()--\u003e(2)\n ├── values\n │    ├── cardinality: [1 - 1]\n │    ├── key: ()\n │    └── tuple\n └── projections\n      └── udf: one [as=one:2, volatile, udf]\n           └── body\n                └── limit\n                     ├── columns: \"?column?\":1!null\n                     ├── cardinality: [1 - 1]\n                     ├── key: ()\n                     ├── fd: ()--\u003e(1)\n                     ├── project\n                     │    ├── columns: \"?column?\":1!null\n                     │    ├── cardinality: [1 - 1]\n                     │    ├── key: ()\n                     │    ├── fd: ()--\u003e(1)\n                     │    ├── values\n                     │    │    ├── cardinality: [1 - 1]\n                     │    │    ├── key: ()\n                     │    │    └── tuple\n                     │    └── projections\n                     │         └── const: 1 [as=\"?column?\":1]\n                     └── const: 1\n",
+    "values\n ├── columns: one:2\n ├── cardinality: [1 - 1]\n ├── volatile\n ├── key: ()\n ├── fd: ()--\u003e(2)\n └── tuple\n      └── udf: one\n           └── body\n                └── values\n                     ├── columns: \"?column?\":1!null\n                     ├── cardinality: [1 - 1]\n                     ├── key: ()\n                     ├── fd: ()--\u003e(1)\n                     └── tuple\n                          └── const: 1\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "values": {
+            "content": [
+              []
+            ],
+            "schema": []
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "U D F",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "values": {
+        "content": [
+          [
+            {
+              "operand": [
+                {
+                  "operand": [],
+                  "operator": "SCALAR LIST",
+                  "type": "ANYELEMENT"
+                }
+              ],
+              "operator": "U D F",
+              "type": "INT"
+            }
+          ]
+        ],
+        "schema": [
+          "INT"
+        ]
+      }
+    }
+  ],
+  "schemas": []
+}

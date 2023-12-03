@@ -1,0 +1,172 @@
+{
+  "help": [
+    "sort\n ├── columns: x:1!null y:2 x:5!null\n ├── stats: [rows=1000]\n ├── cost: 2456.70819\n ├── key: (5)\n ├── fd: (1)--\u003e(2), (1)==(5), (5)==(1)\n ├── ordering: +2\n └── project\n      ├── columns: a.x:1!null y:2 b.x:5!null\n      ├── stats: [rows=1000]\n      ├── cost: 2207.22625\n      ├── key: (5)\n      ├── fd: (1)--\u003e(2), (1)==(5), (5)==(1)\n      └── inner-join (hash)\n           ├── columns: a.x:1!null y:2 a.crdb_internal_mvcc_timestamp:3 a.tableoid:4 b.x:5!null b.crdb_internal_mvcc_timestamp:6 b.tableoid:7\n           ├── multiplicity: left-rows(zero-or-one), right-rows(zero-or-one)\n           ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(5)=1000, null(5)=0]\n           ├── cost: 2197.20625\n           ├── key: (5)\n           ├── fd: (1)--\u003e(2-4), (5)--\u003e(6,7), (1)==(5), (5)==(1)\n           ├── scan a\n           │    ├── columns: a.x:1!null y:2 a.crdb_internal_mvcc_timestamp:3 a.tableoid:4\n           │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0]\n           │    ├── cost: 1088.62\n           │    ├── key: (1)\n           │    └── fd: (1)--\u003e(2-4)\n           ├── scan b\n           │    ├── columns: b.x:5!null b.crdb_internal_mvcc_timestamp:6 b.tableoid:7\n           │    ├── stats: [rows=1000, distinct(5)=1000, null(5)=0]\n           │    ├── cost: 1068.42\n           │    ├── key: (5)\n           │    └── fd: (5)--\u003e(6,7)\n           └── filters\n                └── a.x:1 = b.x:5 [outer=(1,5), constraints=(/1: (/NULL - ]; /5: (/NULL - ]), fd=(1)==(5), (5)==(1)]\n",
+    "sort\n ├── columns: x:1!null y:2 x:5!null\n ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(5)=1000, null(5)=0]\n ├── cost: 2406.28819\n ├── key: (5)\n ├── fd: (1)--\u003e(2), (1)==(5), (5)==(1)\n ├── ordering: +2\n └── inner-join (hash)\n      ├── columns: a.x:1!null y:2 b.x:5!null\n      ├── multiplicity: left-rows(zero-or-one), right-rows(zero-or-one)\n      ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(5)=1000, null(5)=0]\n      ├── cost: 2156.80625\n      ├── key: (5)\n      ├── fd: (1)--\u003e(2), (1)==(5), (5)==(1)\n      ├── scan a\n      │    ├── columns: a.x:1!null y:2\n      │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0]\n      │    ├── cost: 1068.42\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2)\n      ├── scan b\n      │    ├── columns: b.x:5!null\n      │    ├── stats: [rows=1000, distinct(5)=1000, null(5)=0]\n      │    ├── cost: 1048.22\n      │    └── key: (5)\n      └── filters\n           └── a.x:1 = b.x:5 [outer=(1,5), constraints=(/1: (/NULL - ]; /5: (/NULL - ]), fd=(1)==(5), (5)==(1)]\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            1,
+            "INT",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 4,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "scan": 1
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 4,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [
+          [
+            1,
+            "INT",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 1
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

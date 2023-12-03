@@ -1,0 +1,126 @@
+{
+  "help": [
+    "project\n ├── columns: k:1\n └── full-join (cross)\n      ├── columns: k:1 i:2 f:3 s:4 arr:5 a.crdb_internal_mvcc_timestamp:6 a.tableoid:7 x:8 y:9 xy.crdb_internal_mvcc_timestamp:10 xy.tableoid:11\n      ├── key: (1,8)\n      ├── fd: (1)--\u003e(2-7), (8)--\u003e(9-11)\n      ├── scan a\n      │    ├── columns: k:1!null i:2 f:3 s:4 arr:5 a.crdb_internal_mvcc_timestamp:6 a.tableoid:7\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-7)\n      ├── scan xy\n      │    ├── columns: x:8!null y:9 xy.crdb_internal_mvcc_timestamp:10 xy.tableoid:11\n      │    ├── key: (8)\n      │    └── fd: (8)--\u003e(9-11)\n      └── filters\n           └── k:1 \u003e= k:1 [outer=(1), constraints=(/1: (/NULL - ])]\n",
+    "full-join (cross)\n ├── columns: k:1\n ├── scan a\n │    ├── columns: k:1!null\n │    └── key: (1)\n ├── scan xy\n └── filters (true)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "GE",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "FULL",
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 1
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "FULL",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 1
+            },
+            "target": []
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "INT[]",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

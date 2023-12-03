@@ -1,0 +1,98 @@
+{
+  "help": [
+    "project\n ├── columns: x:1(int!null) case:7(int)\n ├── key: (1)\n ├── fd: (1)--\u003e(7)\n ├── prune: (1,7)\n ├── scan xysd\n │    ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6)\n │    └── prune: (1-6)\n └── projections\n      └── case [as=case:7, type=int, outer=(1)]\n           ├── true [type=bool]\n           ├── when [type=int]\n           │    ├── true [type=bool]\n           │    └── variable: x:1 [type=int]\n           └── null [type=int]\n",
+    "project\n ├── columns: x:1(int!null) case:7(int!null)\n ├── key: (1)\n ├── fd: (1)==(7), (7)==(1)\n ├── prune: (1,7)\n ├── scan xysd\n │    ├── columns: x:1(int!null)\n │    ├── key: (1)\n │    └── prune: (1)\n └── projections\n      └── variable: x:1 [as=case:7, type=int, outer=(1)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "operand": [],
+                "operator": "TRUE",
+                "type": "BOOL"
+              },
+              {
+                "operand": [],
+                "operator": "TRUE",
+                "type": "BOOL"
+              },
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "NULL",
+                "type": "INT"
+              }
+            ],
+            "operator": "CASE",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

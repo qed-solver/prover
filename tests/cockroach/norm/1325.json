@@ -1,0 +1,127 @@
+{
+  "help": [
+    "project\n ├── columns: j:8 j:9\n ├── scan b\n │    ├── columns: k:1!null b.j:2 i:3 s:4 arr:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-7)\n └── projections\n      ├── b.j:2[i:3] [as=j:8, outer=(2,3)]\n      └── b.j:2[s:4] [as=j:9, outer=(2,4)]\n",
+    "project\n ├── columns: j:8 j:9\n ├── immutable\n ├── scan b\n │    └── columns: b.j:2 i:3 s:4\n └── projections\n      ├── b.j:2-\u003ei:3 [as=j:8, outer=(2,3), immutable]\n      └── b.j:2-\u003es:4 [as=j:9, outer=(2,4), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "JSONB"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              }
+            ],
+            "operator": "INDIRECTION",
+            "type": "JSONB"
+          },
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "JSONB"
+              },
+              {
+                "column": 3,
+                "type": "STRING"
+              }
+            ],
+            "operator": "INDIRECTION",
+            "type": "JSONB"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "JSONB"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "STRING"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "JSONB"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "operator": "FETCH VAL",
+            "type": "JSONB"
+          },
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "JSONB"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              }
+            ],
+            "operator": "FETCH VAL",
+            "type": "JSONB"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "JSONB",
+        "INT",
+        "STRING",
+        "STRING[]",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

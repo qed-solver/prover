@@ -1,0 +1,155 @@
+{
+  "help": [
+    "group-by (hash)\n ├── columns: max:7!null min:8!null i:2 s:3\n ├── grouping columns: i:2 s:3\n ├── stats: [rows=1000, distinct(2,3)=1000, null(2,3)=0.1]\n ├── cost: 1199.21625\n ├── key: (2,3)\n ├── fd: (2,3)--\u003e(7,8)\n ├── project\n │    ├── columns: k:1!null i:2 s:3\n │    ├── stats: [rows=1000, distinct(2,3)=1000, null(2,3)=0.1]\n │    ├── cost: 1139.04\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2,3)\n │    └── scan a\n │         ├── columns: k:1!null i:2 s:3 d:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n │         ├── stats: [rows=1000, distinct(2,3)=1000, null(2,3)=0.1]\n │         ├── cost: 1129.02\n │         ├── key: (1)\n │         └── fd: (1)--\u003e(2-6)\n └── aggregations\n      ├── max [as=max:7, outer=(1)]\n      │    └── k:1\n      └── min [as=min:8, outer=(1)]\n           └── k:1\n",
+    "group-by (hash)\n ├── columns: max:7!null min:8!null i:2 s:3\n ├── grouping columns: i:2 s:3\n ├── stats: [rows=1000, distinct(2,3)=1000, null(2,3)=0.1]\n ├── cost: 1158.89625\n ├── key: (2,3)\n ├── fd: (2,3)--\u003e(7,8)\n ├── scan a\n │    ├── columns: k:1!null i:2 s:3\n │    ├── stats: [rows=1000, distinct(2,3)=1000, null(2,3)=0.1]\n │    ├── cost: 1098.72\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2,3)\n └── aggregations\n      ├── max [as=max:7, outer=(1)]\n      │    └── k:1\n      └── min [as=min:8, outer=(1)]\n           └── k:1\n"
+  ],
+  "queries": [
+    {
+      "group": {
+        "function": [
+          {
+            "distinct": false,
+            "ignoreNulls": true,
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "operator": "MAX",
+            "type": "INT"
+          },
+          {
+            "distinct": false,
+            "ignoreNulls": true,
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "operator": "MIN",
+            "type": "INT"
+          }
+        ],
+        "keys": [
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          }
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "group": {
+        "function": [
+          {
+            "distinct": false,
+            "ignoreNulls": true,
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "operator": "MAX",
+            "type": "INT"
+          },
+          {
+            "distinct": false,
+            "ignoreNulls": true,
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "operator": "MIN",
+            "type": "INT"
+          }
+        ],
+        "keys": [
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          }
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

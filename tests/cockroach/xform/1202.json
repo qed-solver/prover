@@ -1,0 +1,213 @@
+{
+  "help": [
+    "project\n └── select\n      ├── scan zz_partial\n      │    └── partial index predicates\n      │         └── j: filters\n      │              └── s = 'foo'\n      └── filters\n           └── (s = 'foo') AND (j = 20)\n",
+    "project\n └── project\n      ├── scan zz_partial@j,partial\n      │    └── constraint: /3/1: [/20 - /20]\n      └── projections\n           └── 'foo'\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 5,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'foo'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "20",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "20",
+                              "type": "INT"
+                            },
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "20",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 5,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'foo'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "scan": 0
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "'foo'",
+                "type": "STRING"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "BOOL",
+        "BOOL",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

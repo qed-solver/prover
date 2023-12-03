@@ -1,0 +1,228 @@
+{
+  "help": [
+    "project\n └── inner-join-apply\n      ├── scan xy\n      ├── project\n      │    └── select\n      │         ├── scan ab\n      │         └── filters\n      │              └── b = x\n      └── filters\n           └── a = x\n",
+    "inner-join (hash)\n ├── scan xy\n ├── select\n │    ├── scan ab\n │    └── filters\n │         └── b = a\n └── filters\n      └── a = x\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 4,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "correlate": {
+                "kind": "INNER",
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "project": {
+                    "source": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 5,
+                                  "type": "INT"
+                                },
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "scan": 1
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 4,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 5,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 4,
+            "type": "INT"
+          },
+          {
+            "column": 5,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 2,
+                  "type": "INT"
+                },
+                {
+                  "column": 0,
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "INNER",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "right": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 1
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

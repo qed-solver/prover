@@ -1,0 +1,288 @@
+{
+  "help": [
+    "project\n ├── columns: i:2\n └── select\n      ├── columns: k:1!null i:2 f:3 s:4 a.crdb_internal_mvcc_timestamp:5 a.tableoid:6\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-6)\n      ├── scan a\n      │    ├── columns: k:1!null i:2 f:3 s:4 a.crdb_internal_mvcc_timestamp:5 a.tableoid:6\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-6)\n      └── filters\n           └── and [outer=(1), correlated-subquery]\n                ├── not\n                │    └── exists\n                │         └── project\n                │              ├── columns: x:7!null y:8\n                │              ├── outer: (1)\n                │              ├── cardinality: [0 - 1]\n                │              ├── key: ()\n                │              ├── fd: ()--\u003e(7,8)\n                │              └── select\n                │                   ├── columns: x:7!null y:8 xy.crdb_internal_mvcc_timestamp:9 xy.tableoid:10\n                │                   ├── outer: (1)\n                │                   ├── cardinality: [0 - 1]\n                │                   ├── key: ()\n                │                   ├── fd: ()--\u003e(7-10)\n                │                   ├── scan xy\n                │                   │    ├── columns: x:7!null y:8 xy.crdb_internal_mvcc_timestamp:9 xy.tableoid:10\n                │                   │    ├── key: (7)\n                │                   │    └── fd: (7)--\u003e(8-10)\n                │                   └── filters\n                │                        └── k:1 = x:7 [outer=(1,7), constraints=(/1: (/NULL - ]; /7: (/NULL - ]), fd=(1)==(7), (7)==(1)]\n                └── not\n                     └── exists\n                          └── project\n                               ├── columns: x:11!null y:12\n                               ├── outer: (1)\n                               ├── cardinality: [0 - 1]\n                               ├── key: ()\n                               ├── fd: ()--\u003e(11,12)\n                               └── select\n                                    ├── columns: x:11!null y:12 xy.crdb_internal_mvcc_timestamp:13 xy.tableoid:14\n                                    ├── outer: (1)\n                                    ├── cardinality: [0 - 1]\n                                    ├── key: ()\n                                    ├── fd: ()--\u003e(11-14)\n                                    ├── scan xy\n                                    │    ├── columns: x:11!null y:12 xy.crdb_internal_mvcc_timestamp:13 xy.tableoid:14\n                                    │    ├── key: (11)\n                                    │    └── fd: (11)--\u003e(12-14)\n                                    └── filters\n                                         └── k:1 = x:11 [outer=(1,11), constraints=(/1: (/NULL - ]; /11: (/NULL - ]), fd=(1)==(11), (11)==(1)]\n",
+    "project\n ├── columns: i:2\n └── anti-join (hash)\n      ├── columns: k:1!null i:2\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2)\n      ├── anti-join (hash)\n      │    ├── columns: k:1!null i:2\n      │    ├── key: (1)\n      │    ├── fd: (1)--\u003e(2)\n      │    ├── scan a\n      │    │    ├── columns: k:1!null i:2\n      │    │    ├── key: (1)\n      │    │    └── fd: (1)--\u003e(2)\n      │    ├── scan xy\n      │    │    ├── columns: x:11!null\n      │    │    └── key: (11)\n      │    └── filters\n      │         └── k:1 = x:11 [outer=(1,11), constraints=(/1: (/NULL - ]; /11: (/NULL - ]), fd=(1)==(11), (11)==(1)]\n      ├── scan xy\n      │    ├── columns: x:7!null\n      │    └── key: (7)\n      └── filters\n           └── k:1 = x:7 [outer=(1,7), constraints=(/1: (/NULL - ]; /7: (/NULL - ]), fd=(1)==(7), (7)==(1)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "EXISTS",
+                          "query": {
+                            "project": {
+                              "source": {
+                                "filter": {
+                                  "condition": {
+                                    "operand": [
+                                      {
+                                        "operand": [
+                                          {
+                                            "column": 0,
+                                            "type": "INT"
+                                          },
+                                          {
+                                            "column": 6,
+                                            "type": "INT"
+                                          }
+                                        ],
+                                        "operator": "EQ",
+                                        "type": "BOOL"
+                                      }
+                                    ],
+                                    "operator": "AND",
+                                    "type": "BOOLEAN"
+                                  },
+                                  "source": {
+                                    "scan": 1
+                                  }
+                                }
+                              },
+                              "target": [
+                                {
+                                  "column": 6,
+                                  "type": "INT"
+                                },
+                                {
+                                  "column": 7,
+                                  "type": "INT"
+                                }
+                              ]
+                            }
+                          },
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "NOT",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "EXISTS",
+                          "query": {
+                            "project": {
+                              "source": {
+                                "filter": {
+                                  "condition": {
+                                    "operand": [
+                                      {
+                                        "operand": [
+                                          {
+                                            "column": 0,
+                                            "type": "INT"
+                                          },
+                                          {
+                                            "column": 6,
+                                            "type": "INT"
+                                          }
+                                        ],
+                                        "operator": "EQ",
+                                        "type": "BOOL"
+                                      }
+                                    ],
+                                    "operator": "AND",
+                                    "type": "BOOLEAN"
+                                  },
+                                  "source": {
+                                    "scan": 1
+                                  }
+                                }
+                              },
+                              "target": [
+                                {
+                                  "column": 6,
+                                  "type": "INT"
+                                },
+                                {
+                                  "column": 7,
+                                  "type": "INT"
+                                }
+                              ]
+                            }
+                          },
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "NOT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "ANTI",
+            "left": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "ANTI",
+                "left": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                },
+                "right": {
+                  "project": {
+                    "source": {
+                      "scan": 1
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 1
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

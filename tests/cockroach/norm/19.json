@@ -1,0 +1,104 @@
+{
+  "help": [
+    "project\n ├── columns: r:8!null\n ├── scan a\n │    ├── columns: k:1!null i:2 f:3 s:4 j:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-7)\n └── projections\n      └── (k:1 = 1) OR false [as=r:8, outer=(1)]\n",
+    "project\n ├── columns: r:8!null\n ├── scan a\n │    ├── columns: k:1!null\n │    └── key: (1)\n └── projections\n      └── k:1 = 1 [as=r:8, outer=(1)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "1",
+                    "type": "INT"
+                  }
+                ],
+                "operator": "EQ",
+                "type": "BOOL"
+              },
+              {
+                "operand": [],
+                "operator": "FALSE",
+                "type": "BOOL"
+              }
+            ],
+            "operator": "OR",
+            "type": "BOOL"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "EQ",
+            "type": "BOOL"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

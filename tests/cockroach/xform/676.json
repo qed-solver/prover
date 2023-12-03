@@ -1,0 +1,348 @@
+{
+  "help": [
+    "project\n ├── columns: name:16 boroname:9\n ├── immutable\n └── inner-join (cross)\n      ├── columns: c.gid:1!null blkid:2 popn_total:3 popn_white:4 popn_black:5 popn_nativ:6 popn_asian:7 popn_other:8 c.boroname:9 c.geom:10 c.crdb_internal_mvcc_timestamp:11 c.tableoid:12 n.gid:14!null n.boroname:15 name:16 n.geom:17 n.crdb_internal_mvcc_timestamp:18 n.tableoid:19\n      ├── immutable\n      ├── key: (1,14)\n      ├── fd: (1)--\u003e(2-12), (14)--\u003e(15-19)\n      ├── scan nyc_census_blocks [as=c]\n      │    ├── columns: c.gid:1!null blkid:2 popn_total:3 popn_white:4 popn_black:5 popn_nativ:6 popn_asian:7 popn_other:8 c.boroname:9 c.geom:10 c.crdb_internal_mvcc_timestamp:11 c.tableoid:12\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-12)\n      ├── scan nyc_neighborhoods [as=n]\n      │    ├── columns: n.gid:14!null n.boroname:15 name:16 n.geom:17 n.crdb_internal_mvcc_timestamp:18 n.tableoid:19\n      │    ├── flags: force-index=nyc_neighborhoods_geo_idx\n      │    ├── key: (14)\n      │    └── fd: (14)--\u003e(15-19)\n      └── filters\n           └── st_covers(c.geom:10, n.geom:17) OR (name:16 LIKE (c.boroname:9 || 'Upper%')) [outer=(9,10,16,17), immutable]\n",
+    "project\n ├── columns: name:16 boroname:9\n ├── immutable\n └── inner-join (cross)\n      ├── columns: c.boroname:9 c.geom:10 name:16 n.geom:17\n      ├── immutable\n      ├── scan nyc_census_blocks [as=c]\n      │    └── columns: c.boroname:9 c.geom:10\n      ├── scan nyc_neighborhoods [as=n]\n      │    ├── columns: name:16 n.geom:17\n      │    └── flags: force-index=nyc_neighborhoods_geo_idx\n      └── filters\n           └── st_covers(c.geom:10, n.geom:17) OR (name:16 LIKE (c.boroname:9 || 'Upper%')) [outer=(9,10,16,17), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 9,
+                              "type": "GEOMETRY"
+                            },
+                            {
+                              "column": 15,
+                              "type": "GEOMETRY"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 14,
+                          "type": "VARCHAR"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 8,
+                              "type": "VARCHAR"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'Upper%'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "CONCAT",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "LIKE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "VARCHAR"
+                  },
+                  {
+                    "column": 2,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 4,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 5,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 6,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 7,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 8,
+                    "type": "VARCHAR"
+                  },
+                  {
+                    "column": 9,
+                    "type": "GEOMETRY"
+                  },
+                  {
+                    "column": 10,
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "column": 11,
+                    "type": "OID"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 1
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "VARCHAR"
+                  },
+                  {
+                    "column": 2,
+                    "type": "VARCHAR"
+                  },
+                  {
+                    "column": 3,
+                    "type": "GEOMETRY"
+                  },
+                  {
+                    "column": 4,
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "column": 5,
+                    "type": "OID"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 8,
+            "type": "VARCHAR"
+          },
+          {
+            "column": 14,
+            "type": "VARCHAR"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "GEOMETRY"
+                            },
+                            {
+                              "column": 3,
+                              "type": "GEOMETRY"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "VARCHAR"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "VARCHAR"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'Upper%'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "CONCAT",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "LIKE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 8,
+                    "type": "VARCHAR"
+                  },
+                  {
+                    "column": 9,
+                    "type": "GEOMETRY"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 1
+                },
+                "target": [
+                  {
+                    "column": 2,
+                    "type": "VARCHAR"
+                  },
+                  {
+                    "column": 3,
+                    "type": "GEOMETRY"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "VARCHAR"
+          },
+          {
+            "column": 2,
+            "type": "VARCHAR"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "types": [
+        "INT",
+        "VARCHAR",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "VARCHAR",
+        "GEOMETRY",
+        "DECIMAL",
+        "OID",
+        "ENCODEDKEY"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "types": [
+        "INT",
+        "VARCHAR",
+        "VARCHAR",
+        "GEOMETRY",
+        "DECIMAL",
+        "OID",
+        "ENCODEDKEY"
+      ]
+    }
+  ]
+}

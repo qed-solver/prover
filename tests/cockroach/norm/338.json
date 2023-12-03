@@ -1,0 +1,314 @@
+{
+  "help": [
+    "project\n └── inner-join-apply\n      ├── scan xy\n      ├── project\n      │    └── group-by (hash)\n      │         ├── project\n      │         │    └── project\n      │         │         ├── scan uv\n      │         │         └── projections\n      │         │              └── u + x\n      │         └── aggregations\n      │              └── corr\n      │                   ├── u\n      │                   └── v\n      └── filters\n           └── corr = x\n",
+    "project\n └── inner-join (cross)\n      ├── scan xy\n      ├── group-by (hash)\n      │    ├── scan uv\n      │    └── aggregations\n      │         ├── corr\n      │         │    ├── u\n      │         │    └── v\n      │         └── const-agg\n      │              └── v\n      └── filters\n           └── corr = x\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 5,
+                      "type": "FLOAT"
+                    },
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "correlate": {
+                "kind": "INNER",
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "project": {
+                    "source": {
+                      "group": {
+                        "function": [
+                          {
+                            "distinct": false,
+                            "ignoreNulls": true,
+                            "operand": [
+                              {
+                                "column": 4,
+                                "type": "INT"
+                              },
+                              {
+                                "column": 5,
+                                "type": "INT"
+                              }
+                            ],
+                            "operator": "CORR",
+                            "type": "FLOAT"
+                          }
+                        ],
+                        "keys": [
+                          {
+                            "column": 4,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 5,
+                            "type": "INT"
+                          }
+                        ],
+                        "source": {
+                          "project": {
+                            "source": {
+                              "project": {
+                                "source": {
+                                  "scan": 1
+                                },
+                                "target": [
+                                  {
+                                    "column": 4,
+                                    "type": "INT"
+                                  },
+                                  {
+                                    "column": 5,
+                                    "type": "INT"
+                                  },
+                                  {
+                                    "operand": [
+                                      {
+                                        "column": 4,
+                                        "type": "INT"
+                                      },
+                                      {
+                                        "column": 0,
+                                        "type": "INT"
+                                      }
+                                    ],
+                                    "operator": "PLUS",
+                                    "type": "INT"
+                                  }
+                                ]
+                              }
+                            },
+                            "target": [
+                              {
+                                "column": 4,
+                                "type": "INT"
+                              },
+                              {
+                                "column": 5,
+                                "type": "INT"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 5,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 6,
+                        "type": "FLOAT"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 4,
+            "type": "INT"
+          },
+          {
+            "column": 5,
+            "type": "FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 4,
+                      "type": "FLOAT"
+                    },
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "CORR",
+                    "type": "FLOAT"
+                  },
+                  {
+                    "distinct": false,
+                    "ignoreNulls": false,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "CONST AGG",
+                    "type": "INT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 1
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          },
+          {
+            "column": 4,
+            "type": "FLOAT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

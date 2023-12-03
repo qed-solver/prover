@@ -1,0 +1,140 @@
+{
+  "help": [
+    "project\n ├── columns: x:5 rowid:7!null y:2 x:1!null y2:2 y:6\n ├── key: (1,7)\n ├── fd: (1)--\u003e(2), (7)--\u003e(5,6)\n └── inner-join (cross)\n      ├── columns: a.x:1!null a.y:2 a.crdb_internal_mvcc_timestamp:3 a.tableoid:4 b.x:5 b.y:6 rowid:7!null b.crdb_internal_mvcc_timestamp:8 b.tableoid:9\n      ├── key: (1,7)\n      ├── fd: (1)--\u003e(2-4), (7)--\u003e(5,6,8,9)\n      ├── scan a\n      │    ├── columns: a.x:1!null a.y:2 a.crdb_internal_mvcc_timestamp:3 a.tableoid:4\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-4)\n      ├── scan b\n      │    ├── columns: b.x:5 b.y:6 rowid:7!null b.crdb_internal_mvcc_timestamp:8 b.tableoid:9\n      │    ├── key: (7)\n      │    └── fd: (7)--\u003e(5,6,8,9)\n      └── filters (true)\n",
+    "inner-join (cross)\n ├── columns: x:5 rowid:7!null y:2 x:1!null y2:2 y:6\n ├── key: (1,7)\n ├── fd: (1)--\u003e(2), (7)--\u003e(5,6)\n ├── scan a\n │    ├── columns: a.x:1!null a.y:2\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2)\n ├── scan b\n │    ├── columns: b.x:5 b.y:6 rowid:7!null\n │    ├── key: (7)\n │    └── fd: (7)--\u003e(5,6)\n └── filters (true)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 1
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 4,
+            "type": "INT"
+          },
+          {
+            "column": 5,
+            "type": "FLOAT"
+          },
+          {
+            "column": 6,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "INNER",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 1
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "FLOAT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

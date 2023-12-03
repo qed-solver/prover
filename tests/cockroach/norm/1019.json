@@ -1,0 +1,118 @@
+{
+  "help": [
+    "project\n ├── columns: r:7!null\n ├── has-placeholder\n ├── fd: ()--\u003e(7)\n ├── select\n │    ├── columns: k:1!null i:2 f:3 s:4 crdb_internal_mvcc_timestamp:5 tableoid:6\n │    ├── has-placeholder\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2-6)\n │    ├── scan a\n │    │    ├── columns: k:1!null i:2 f:3 s:4 crdb_internal_mvcc_timestamp:5 tableoid:6\n │    │    ├── key: (1)\n │    │    └── fd: (1)--\u003e(2-6)\n │    └── filters\n │         └── $1 \u003c '2000-01-01 02:00:00'\n └── projections\n      └── 1 [as=r:7]\n",
+    "project\n ├── columns: r:7!null\n ├── has-placeholder\n ├── fd: ()--\u003e(7)\n ├── select\n │    ├── has-placeholder\n │    ├── scan a\n │    └── filters\n │         └── $1 \u003c '2000-01-01 02:00:00'\n └── projections\n      └── 1 [as=r:7]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "PLACEHOLDER",
+                      "type": "TIMESTAMP"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'2000-01-01 02:00:00'",
+                      "type": "TIMESTAMP"
+                    }
+                  ],
+                  "operator": "LT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "operand": [],
+            "operator": "1",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "PLACEHOLDER",
+                      "type": "TIMESTAMP"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'2000-01-01 02:00:00'",
+                      "type": "TIMESTAMP"
+                    }
+                  ],
+                  "operator": "LT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": []
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "operand": [],
+            "operator": "1",
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

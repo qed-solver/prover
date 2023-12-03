@@ -1,0 +1,322 @@
+{
+  "help": [
+    "project\n ├── columns: metric_id:1!null time:2!null value:3 id:6!null name:7!null\n ├── stable\n ├── key: (2,6)\n ├── fd: ()--\u003e(7), (1,2)--\u003e(3), (1)==(6), (6)==(1)\n └── select\n      ├── columns: metric_id:1!null time:2!null value:3 metric_values.crdb_internal_mvcc_timestamp:4 metric_values.tableoid:5 id:6!null name:7!null metrics.crdb_internal_mvcc_timestamp:8 metrics.tableoid:9\n      ├── stable\n      ├── key: (2,6)\n      ├── fd: ()--\u003e(7), (1,2)--\u003e(3-5), (6)--\u003e(8,9), (1)==(6), (6)==(1)\n      ├── inner-join (hash)\n      │    ├── columns: metric_id:1!null time:2!null value:3 metric_values.crdb_internal_mvcc_timestamp:4 metric_values.tableoid:5 id:6!null name:7 metrics.crdb_internal_mvcc_timestamp:8 metrics.tableoid:9\n      │    ├── multiplicity: left-rows(zero-or-one), right-rows(zero-or-more)\n      │    ├── key: (2,6)\n      │    ├── fd: (1,2)--\u003e(3-5), (6)--\u003e(7-9), (1)==(6), (6)==(1)\n      │    ├── scan metric_values\n      │    │    ├── columns: metric_id:1!null time:2!null value:3 metric_values.crdb_internal_mvcc_timestamp:4 metric_values.tableoid:5\n      │    │    ├── key: (1,2)\n      │    │    └── fd: (1,2)--\u003e(3-5)\n      │    ├── scan metrics\n      │    │    ├── columns: id:6!null name:7 metrics.crdb_internal_mvcc_timestamp:8 metrics.tableoid:9\n      │    │    ├── key: (6)\n      │    │    └── fd: (6)--\u003e(7-9)\n      │    └── filters\n      │         └── metric_id:1 = id:6 [outer=(1,6), constraints=(/1: (/NULL - ]; /6: (/NULL - ]), fd=(1)==(6), (6)==(1)]\n      └── filters\n           └── (time:2::STRING LIKE '202%') AND (name:7 = 'cpu') [outer=(2,7), stable, constraints=(/7: [/'cpu' - /'cpu']), fd=()--\u003e(7)]\n",
+    "inner-join (lookup metric_values)\n ├── columns: metric_id:1!null time:2!null value:3 id:6!null name:7!null\n ├── key columns: [6] = [1]\n ├── stable\n ├── key: (2,6)\n ├── fd: ()--\u003e(7), (1,2)--\u003e(3), (1)==(6), (6)==(1)\n ├── scan metrics@name_index\n │    ├── columns: id:6!null name:7!null\n │    ├── constraint: /7/6: [/'cpu' - /'cpu']\n │    ├── key: (6)\n │    └── fd: ()--\u003e(7)\n └── filters\n      └── time:2::STRING LIKE '202%' [outer=(2), stable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "TIMESTAMPTZ"
+                            }
+                          ],
+                          "operator": "CAST",
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'202%'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "LIKE",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 6,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'cpu'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 5,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "scan": 1
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 5,
+            "type": "INT"
+          },
+          {
+            "column": 6,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 3,
+                              "type": "TIMESTAMPTZ"
+                            }
+                          ],
+                          "operator": "CAST",
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'202%'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "LIKE",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "'cpu'",
+                              "type": "STRING"
+                            },
+                            {
+                              "column": 1,
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'cpu'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 1
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "STRING"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "TIMESTAMPTZ"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "column": 4,
+            "type": "INT"
+          },
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0,
+          1
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "TIMESTAMPTZ",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

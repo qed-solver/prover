@@ -1,0 +1,172 @@
+{
+  "help": [
+    "project\n ├── columns: array_agg:8\n └── group-by (hash)\n      ├── columns: a:1 b:2 array_agg:8\n      ├── grouping columns: a:1 b:2\n      ├── internal-ordering: +3 opt(1,2)\n      ├── key: (1,2)\n      ├── fd: (1,2)--\u003e(8)\n      ├── sort\n      │    ├── columns: a:1 b:2 c:3 d:4\n      │    ├── ordering: +3 opt(1,2) [actual: +3]\n      │    └── project\n      │         ├── columns: a:1 b:2 c:3 d:4\n      │         └── scan abcd\n      │              ├── columns: a:1 b:2 c:3 d:4 rowid:5!null crdb_internal_mvcc_timestamp:6 tableoid:7\n      │              ├── key: (5)\n      │              └── fd: (5)--\u003e(1-4,6,7)\n      └── aggregations\n           └── array-agg [as=array_agg:8, outer=(4)]\n                └── d:4\n",
+    "project\n ├── columns: array_agg:8\n └── group-by (hash)\n      ├── columns: a:1 b:2 array_agg:8\n      ├── grouping columns: a:1 b:2\n      ├── internal-ordering: +3 opt(1,2)\n      ├── key: (1,2)\n      ├── fd: (1,2)--\u003e(8)\n      ├── scan abcd@cd\n      │    ├── columns: a:1 b:2 c:3 d:4\n      │    └── ordering: +3 opt(1,2) [actual: +3]\n      └── aggregations\n           └── array-agg [as=array_agg:8, outer=(4)]\n                └── d:4\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "ARRAY AGG",
+                "type": "INT[]"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "sort": {
+                "collation": [
+                  [
+                    2,
+                    "INT",
+                    "ASCENDING"
+                  ]
+                ],
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 2,
+            "type": "INT[]"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "ARRAY AGG",
+                "type": "INT[]"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 2,
+            "type": "INT[]"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          4
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

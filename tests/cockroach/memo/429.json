@@ -1,0 +1,465 @@
+{
+  "help": [
+    "project\n ├── columns: a:1(uuid!null) b:2(bool!null) c:3(int!null) d:4(string!null) e:5(int!null) f:6(float!null)\n ├── stats: [rows=0.07568148]\n ├── fd: ()--\u003e(1-4)\n └── select\n      ├── columns: a:1(uuid!null) b:2(bool!null) c:3(int!null) d:4(string!null) e:5(int!null) f:6(float!null) rowid:7(int!null) crdb_internal_mvcc_timestamp:8(decimal) tableoid:9(oid)\n      ├── stats: [rows=0.07568148, distinct(1)=0.0756815, null(1)=0, distinct(2)=0.0756815, null(2)=0, distinct(3)=0.0756815, null(3)=0, distinct(4)=0.0756815, null(4)=0, distinct(5)=0.0756815, null(5)=0, distinct(6)=0.0756815, null(6)=0, distinct(5,6)=0.0756815, null(5,6)=0, distinct(1-4)=0.0756815, null(1-4)=0, distinct(1-6)=0.0756815, null(1-6)=0]\n      ├── key: (7)\n      ├── fd: ()--\u003e(1-4), (7)--\u003e(5,6,8,9)\n      ├── scan multi_col\n      │    ├── columns: a:1(uuid) b:2(bool) c:3(int) d:4(string) e:5(int) f:6(float) rowid:7(int!null) crdb_internal_mvcc_timestamp:8(decimal) tableoid:9(oid)\n      │    ├── flags: force-index=ce_idx\n      │    ├── stats: [rows=1000, distinct(1)=100, null(1)=10, distinct(2)=3, null(2)=10, distinct(3)=100, null(3)=10, distinct(4)=100, null(4)=10, distinct(5)=100, null(5)=10, distinct(6)=100, null(6)=10, distinct(7)=1000, null(7)=0, distinct(5,6)=1000, null(5,6)=0.1, distinct(1-4)=1000, null(1-4)=1e-05, distinct(1-6)=1000, null(1-6)=1e-09]\n      │    ├── key: (7)\n      │    └── fd: (7)--\u003e(1-6,8,9)\n      └── filters\n           └── ((((((a:1 = '37685f26-4b07-40ba-9bbf-42916ed9bc61') AND (b:2 = true)) AND (c:3 = 5)) AND (d:4 = 'foo')) AND (e:5 \u003e 10)) AND (e:5 \u003c= 20)) AND (f:6 \u003e 0.0) [type=bool, outer=(1-6), constraints=(/1: [/'37685f26-4b07-40ba-9bbf-42916ed9bc61' - /'37685f26-4b07-40ba-9bbf-42916ed9bc61']; /2: [/true - /true]; /3: [/5 - /5]; /4: [/'foo' - /'foo']; /5: [/11 - /20]; /6: [/5e-324 - ]; tight), fd=()--\u003e(1-4)]\n",
+    "select\n ├── columns: a:1(uuid!null) b:2(bool!null) c:3(int!null) d:4(string!null) e:5(int!null) f:6(float!null)\n ├── stats: [rows=0.07568148, distinct(1)=0.0756815, null(1)=0, distinct(2)=0.0756815, null(2)=0, distinct(3)=0.0756815, null(3)=0, distinct(4)=0.0756815, null(4)=0, distinct(5)=0.0756815, null(5)=0, distinct(6)=0.0756815, null(6)=0, distinct(5,6)=0.0756815, null(5,6)=0, distinct(1-4)=0.0756815, null(1-4)=0, distinct(1-6)=0.0756815, null(1-6)=0]\n ├── fd: ()--\u003e(1-4)\n ├── index-join multi_col\n │    ├── columns: a:1(uuid) b:2(bool) c:3(int) d:4(string) e:5(int) f:6(float)\n │    ├── stats: [rows=9.1]\n │    ├── fd: ()--\u003e(3)\n │    └── scan multi_col@ce_idx\n │         ├── columns: c:3(int!null) e:5(int!null) rowid:7(int!null)\n │         ├── constraint: /3/5/7: [/5/11 - /5/20]\n │         ├── flags: force-index=ce_idx\n │         ├── stats: [rows=9.1, distinct(3)=1, null(3)=0, distinct(5)=9.1, null(5)=0, distinct(3,5)=9.1, null(3,5)=0]\n │         ├── key: (7)\n │         └── fd: ()--\u003e(3), (7)--\u003e(5)\n └── filters\n      ├── a:1 = '37685f26-4b07-40ba-9bbf-42916ed9bc61' [type=bool, outer=(1), constraints=(/1: [/'37685f26-4b07-40ba-9bbf-42916ed9bc61' - /'37685f26-4b07-40ba-9bbf-42916ed9bc61']; tight), fd=()--\u003e(1)]\n      ├── b:2 [type=bool, outer=(2), constraints=(/2: [/true - /true]; tight), fd=()--\u003e(2)]\n      ├── d:4 = 'foo' [type=bool, outer=(4), constraints=(/4: [/'foo' - /'foo']; tight), fd=()--\u003e(4)]\n      └── f:6 \u003e 0.0 [type=bool, outer=(6), constraints=(/6: [/5e-324 - ]; tight)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [
+                                        {
+                                          "operand": [
+                                            {
+                                              "column": 0,
+                                              "type": "UUID"
+                                            },
+                                            {
+                                              "operand": [],
+                                              "operator": "'37685f26-4b07-40ba-9bbf-42916ed9bc61'",
+                                              "type": "UUID"
+                                            }
+                                          ],
+                                          "operator": "EQ",
+                                          "type": "BOOL"
+                                        },
+                                        {
+                                          "operand": [
+                                            {
+                                              "column": 1,
+                                              "type": "BOOL"
+                                            },
+                                            {
+                                              "operand": [],
+                                              "operator": "TRUE",
+                                              "type": "BOOL"
+                                            }
+                                          ],
+                                          "operator": "EQ",
+                                          "type": "BOOL"
+                                        }
+                                      ],
+                                      "operator": "AND",
+                                      "type": "BOOL"
+                                    },
+                                    {
+                                      "operand": [
+                                        {
+                                          "column": 2,
+                                          "type": "INT"
+                                        },
+                                        {
+                                          "operand": [],
+                                          "operator": "5",
+                                          "type": "INT"
+                                        }
+                                      ],
+                                      "operator": "EQ",
+                                      "type": "BOOL"
+                                    }
+                                  ],
+                                  "operator": "AND",
+                                  "type": "BOOL"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 3,
+                                      "type": "STRING"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "'foo'",
+                                      "type": "STRING"
+                                    }
+                                  ],
+                                  "operator": "EQ",
+                                  "type": "BOOL"
+                                }
+                              ],
+                              "operator": "AND",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 4,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "10",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "GT",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 4,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "20",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 5,
+                          "type": "FLOAT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "0.0",
+                          "type": "FLOAT"
+                        }
+                      ],
+                      "operator": "GT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "UUID"
+          },
+          {
+            "column": 1,
+            "type": "BOOL"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "STRING"
+          },
+          {
+            "column": 4,
+            "type": "INT"
+          },
+          {
+            "column": 5,
+            "type": "FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 3,
+                      "type": "UUID"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'37685f26-4b07-40ba-9bbf-42916ed9bc61'",
+                      "type": "UUID"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                },
+                {
+                  "column": 4,
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 6,
+                      "type": "STRING"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'foo'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 8,
+                      "type": "FLOAT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "0.0",
+                      "type": "FLOAT"
+                    }
+                  ],
+                  "operator": "GT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 5,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "\u003c=\u003e",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 7,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "\u003c=\u003e",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 9,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "\u003c=\u003e",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "filter": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "operand": [],
+                                  "operator": "5",
+                                  "type": "INT"
+                                },
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "\u003c=",
+                              "type": "BOOLEAN"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "5",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "\u003c=",
+                              "type": "BOOLEAN"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "operand": [],
+                                  "operator": "11",
+                                  "type": "INT"
+                                },
+                                {
+                                  "column": 1,
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "\u003c=",
+                              "type": "BOOLEAN"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 1,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "20",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "\u003c=",
+                              "type": "BOOLEAN"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "OR",
+                      "type": "BOOLEAN"
+                    },
+                    "source": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 2,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 4,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 6,
+                            "type": "INT"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "scan": 0
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 3,
+            "type": "UUID"
+          },
+          {
+            "column": 4,
+            "type": "BOOL"
+          },
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 6,
+            "type": "STRING"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 8,
+            "type": "FLOAT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          6
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "UUID",
+        "BOOL",
+        "INT",
+        "STRING",
+        "INT",
+        "FLOAT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

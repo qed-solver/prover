@@ -1,0 +1,219 @@
+{
+  "help": [
+    "union-all\n ├── columns: a:15 b:16 c:17 d:18\n ├── left columns: abcd.a:1 abcd.b:2 abcd.c:3 abcd.d:4\n ├── right columns: abcd.c:10 abcd.d:11 abcd.a:8 abcd.b:9\n ├── ordering: +15,+16\n ├── sort\n │    ├── columns: abcd.a:1 abcd.b:2 abcd.c:3 abcd.d:4\n │    ├── ordering: +1,+2\n │    └── project\n │         ├── columns: abcd.a:1 abcd.b:2 abcd.c:3 abcd.d:4\n │         └── scan abcd\n │              ├── columns: abcd.a:1 abcd.b:2 abcd.c:3 abcd.d:4 rowid:5!null crdb_internal_mvcc_timestamp:6 tableoid:7\n │              ├── key: (5)\n │              └── fd: (5)--\u003e(1-4,6,7)\n └── sort\n      ├── columns: abcd.a:8 abcd.b:9 abcd.c:10 abcd.d:11\n      ├── ordering: +10,+11\n      └── project\n           ├── columns: abcd.a:8 abcd.b:9 abcd.c:10 abcd.d:11\n           └── scan abcd\n                ├── columns: abcd.a:8 abcd.b:9 abcd.c:10 abcd.d:11 rowid:12!null crdb_internal_mvcc_timestamp:13 tableoid:14\n                ├── key: (12)\n                └── fd: (12)--\u003e(8-11,13,14)\n",
+    "union-all\n ├── columns: a:15 b:16 c:17 d:18\n ├── left columns: abcd.a:1 abcd.b:2 abcd.c:3 abcd.d:4\n ├── right columns: abcd.c:10 abcd.d:11 abcd.a:8 abcd.b:9\n ├── ordering: +15,+16\n ├── scan abcd@ab\n │    ├── columns: abcd.a:1 abcd.b:2 abcd.c:3 abcd.d:4\n │    └── ordering: +1,+2\n └── scan abcd@cd\n      ├── columns: abcd.a:8 abcd.b:9 abcd.c:10 abcd.d:11\n      └── ordering: +10,+11\n"
+  ],
+  "queries": [
+    {
+      "union": [
+        {
+          "sort": {
+            "collation": [
+              [
+                0,
+                "INT",
+                "ASCENDING"
+              ],
+              [
+                1,
+                "INT",
+                "ASCENDING"
+              ]
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "project": {
+            "source": {
+              "sort": {
+                "collation": [
+                  [
+                    2,
+                    "INT",
+                    "ASCENDING"
+                  ],
+                  [
+                    3,
+                    "INT",
+                    "ASCENDING"
+                  ]
+                ],
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 2,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "INT"
+              },
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "union": [
+        {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        {
+          "project": {
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            "target": [
+              {
+                "column": 2,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "INT"
+              },
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          4
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

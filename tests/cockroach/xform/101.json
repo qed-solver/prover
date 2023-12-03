@@ -1,0 +1,136 @@
+{
+  "help": [
+    "project\n ├── columns: b:2(int!null) c:3(string)\n ├── stats: [rows=10]\n ├── cost: 1155.37\n ├── lax-key: (2,3)\n ├── fd: ()--\u003e(2)\n ├── distribution: us\n ├── prune: (2,3)\n └── select\n      ├── columns: t.public.abc.a:1(int!null) t.public.abc.b:2(int!null) t.public.abc.c:3(string) t.public.abc.crdb_internal_mvcc_timestamp:4(decimal) t.public.abc.tableoid:5(oid)\n      ├── stats: [rows=10, distinct(2)=1, null(2)=0]\n      ├── cost: 1155.25\n      ├── key: (1)\n      ├── fd: ()--\u003e(2), (1)--\u003e(3-5), (2,3)~~\u003e(1,4,5)\n      ├── distribution: us\n      ├── scan t.public.abc\n      │    ├── columns: t.public.abc.a:1(int!null) t.public.abc.b:2(int) t.public.abc.c:3(string) t.public.abc.crdb_internal_mvcc_timestamp:4(decimal) t.public.abc.tableoid:5(oid)\n      │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(2)=100, null(2)=10]\n      │    ├── cost: 1145.22\n      │    ├── key: (1)\n      │    ├── fd: (1)--\u003e(2-5), (2,3)~~\u003e(1,4,5)\n      │    ├── distribution: us\n      │    └── prune: (1-5)\n      └── filters\n           └── eq [type=bool, outer=(2), constraints=(/2: [/10 - /10]; tight), fd=()--\u003e(2)]\n                ├── variable: t.public.abc.b:2 [type=int]\n                └── const: 10 [type=int]\n",
+    "scan t.public.abc@bc1\n ├── columns: b:2(int!null) c:3(string)\n ├── constraint: /2/3: [/10 - /10]\n ├── stats: [rows=10, distinct(2)=1, null(2)=0]\n ├── cost: 24.7700001\n ├── lax-key: (3)\n ├── fd: ()--\u003e(2)\n ├── distribution: us\n └── prune: (3)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "10",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "10",
+                      "type": "INT"
+                    },
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "10",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            }
+          ],
+          "operator": "OR",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

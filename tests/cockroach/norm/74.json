@@ -1,0 +1,187 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null i:2 f:3 s:4 j:5 d:6\n ├── stable\n ├── key: (1)\n ├── fd: (1)--\u003e(2-6)\n └── select\n      ├── columns: k:1!null i:2 f:3 s:4 j:5 d:6 crdb_internal_mvcc_timestamp:7 tableoid:8\n      ├── stable\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-8)\n      ├── scan a\n      │    ├── columns: k:1!null i:2 f:3 s:4 j:5 d:6 crdb_internal_mvcc_timestamp:7 tableoid:8\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-8)\n      └── filters\n           └── ('2022-01-01' - s:4::TIME) \u003e= '2022-01-01 01:00:00' [outer=(4), stable]\n",
+    "select\n ├── columns: k:1!null i:2 f:3 s:4 j:5 d:6\n ├── stable\n ├── key: (1)\n ├── fd: (1)--\u003e(2-6)\n ├── scan a\n │    ├── columns: k:1!null i:2 f:3 s:4 j:5 d:6\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-6)\n └── filters\n      └── ('2022-01-01' - s:4::TIME) \u003e= '2022-01-01 01:00:00' [outer=(4), stable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "'2022-01-01'",
+                          "type": "DATE"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 3,
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "CAST",
+                          "type": "TIME"
+                        }
+                      ],
+                      "operator": "MINUS",
+                      "type": "TIMESTAMP"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'2022-01-01 01:00:00'",
+                      "type": "TIMESTAMP"
+                    }
+                  ],
+                  "operator": "GE",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "FLOAT"
+          },
+          {
+            "column": 3,
+            "type": "STRING"
+          },
+          {
+            "column": 4,
+            "type": "JSONB"
+          },
+          {
+            "column": 5,
+            "type": "DATE"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "'2022-01-01'",
+                      "type": "DATE"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 3,
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "CAST",
+                      "type": "TIME"
+                    }
+                  ],
+                  "operator": "MINUS",
+                  "type": "TIMESTAMP"
+                },
+                {
+                  "operand": [],
+                  "operator": "'2022-01-01 01:00:00'",
+                  "type": "TIMESTAMP"
+                }
+              ],
+              "operator": "GE",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "FLOAT"
+              },
+              {
+                "column": 3,
+                "type": "STRING"
+              },
+              {
+                "column": 4,
+                "type": "JSONB"
+              },
+              {
+                "column": 5,
+                "type": "DATE"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DATE",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

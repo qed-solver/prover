@@ -1,0 +1,75 @@
+{
+  "help": [
+    "project\n ├── columns: exists:2\n ├── cardinality: [1 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(2)\n ├── values\n │    ├── cardinality: [1 - 1]\n │    ├── key: ()\n │    └── ()\n └── projections\n      └── exists [as=exists:2, subquery]\n           └── select\n                ├── columns: column1:1!null\n                ├── cardinality: [0 - 0]\n                ├── key: ()\n                ├── fd: ()--\u003e(1)\n                ├── values\n                │    ├── columns: column1:1!null\n                │    ├── cardinality: [1 - 1]\n                │    ├── key: ()\n                │    ├── fd: ()--\u003e(1)\n                │    └── (1,)\n                └── filters\n                     └── false [constraints=(contradiction; tight)]\n",
+    "values\n ├── columns: exists:2!null\n ├── cardinality: [1 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(2)\n └── (false,)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "values": {
+            "content": [
+              []
+            ],
+            "schema": []
+          }
+        },
+        "target": [
+          {
+            "operand": [],
+            "operator": "EXISTS",
+            "query": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "FALSE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "values": {
+                    "content": [
+                      [
+                        {
+                          "operand": [],
+                          "operator": "1",
+                          "type": "INT"
+                        }
+                      ]
+                    ],
+                    "schema": [
+                      "INT"
+                    ]
+                  }
+                }
+              }
+            },
+            "type": "BOOLEAN"
+          }
+        ]
+      }
+    },
+    {
+      "values": {
+        "content": [
+          [
+            {
+              "operand": [],
+              "operator": "FALSE",
+              "type": "BOOL"
+            }
+          ]
+        ],
+        "schema": [
+          "BOOL"
+        ]
+      }
+    }
+  ],
+  "schemas": []
+}

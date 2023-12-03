@@ -1,0 +1,287 @@
+{
+  "help": [
+    "project\n ├── columns: k:1(int!null) i:2(int) s:3(string!null) t:4(string!null)\n ├── stats: [rows=1573.425]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-4)\n └── select\n      ├── columns: k:1(int!null) i:2(int) s:3(string!null) t:4(string!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      ├── stats: [rows=1573.425, distinct(3)=50, null(3)=0, distinct(4)=500, null(4)=0, distinct(3,4)=1573.43, null(3,4)=0]\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-6)\n      ├── scan a\n      │    ├── columns: k:1(int!null) i:2(int) s:3(string) t:4(string) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      │    ├── partial index predicates\n      │    │    └── idx: filters\n      │    │         └── s:3 = t:4 [type=bool, outer=(3,4), constraints=(/3: (/NULL - ]; /4: (/NULL - ]), fd=(3)==(4), (4)==(3)]\n      │    ├── stats: [rows=5000, distinct(1)=5000, null(1)=0, distinct(3)=50, null(3)=275, distinct(4)=500, null(4)=50, distinct(3,4)=5000, null(3,4)=2.75]\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-6)\n      └── filters\n           └── ((s:3 = t:4) AND (s:3 LIKE '%foo%')) AND (t:4 LIKE '%bar%') [type=bool, outer=(3,4), constraints=(/3: (/NULL - ]; /4: (/NULL - ])]\n",
+    "index-join a\n ├── columns: k:1(int!null) i:2(int) s:3(string!null) t:4(string!null)\n ├── stats: [rows=1.04895, distinct(3)=1.04895, null(3)=0, distinct(4)=1.04895, null(4)=0, distinct(3,4)=1.04895, null(3,4)=0]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-4), (3)==(4), (4)==(3)\n └── select\n      ├── columns: k:1(int!null) s:3(string!null) t:4(string!null)\n      ├── stats: [rows=1.0395, distinct(3)=1.0395, null(3)=0, distinct(4)=1.0395, null(4)=0]\n      ├── key: (1)\n      ├── fd: (1)--\u003e(3,4), (3)==(4), (4)==(3)\n      ├── scan a@idx,partial\n      │    ├── columns: k:1(int!null) s:3(string!null) t:4(string!null)\n      │    ├── stats: [rows=9.3555, distinct(1)=9.3555, null(1)=0, distinct(3)=9.3555, null(3)=0, distinct(4)=9.3555, null(4)=0]\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(3,4), (3)==(4), (4)==(3)\n      └── filters\n           ├── s:3 LIKE '%foo%' [type=bool, outer=(3), constraints=(/3: (/NULL - ])]\n           └── t:4 LIKE '%bar%' [type=bool, outer=(4), constraints=(/4: (/NULL - ])]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 2,
+                              "type": "STRING"
+                            },
+                            {
+                              "column": 3,
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "EQ",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 2,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'%foo%'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "LIKE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 3,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'%bar%'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "LIKE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          },
+          {
+            "column": 3,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 3,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "STRING"
+                    },
+                    {
+                      "column": 5,
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "STRING"
+                    },
+                    {
+                      "column": 6,
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'%foo%'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "LIKE",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'%bar%'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "LIKE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 2,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "column": 3,
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "scan": 0
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 3,
+                        "type": "STRING"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 4,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "STRING"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

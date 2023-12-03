@@ -1,0 +1,209 @@
+{
+  "help": [
+    "select\n ├── columns: y:1!null\n ├── cardinality: [0 - 2]\n ├── immutable\n ├── values\n │    ├── columns: column1:1!null\n │    ├── cardinality: [2 - 2]\n │    ├── ('\"a\"',)\n │    └── ('\"b\"',)\n └── filters\n      └── exists [outer=(1), immutable, correlated-subquery]\n           └── project\n                ├── columns: x:2!null y:3 z:4\n                ├── outer: (1)\n                ├── immutable\n                └── select\n                     ├── columns: x:2!null y:3 z:4 rowid:5!null crdb_internal_mvcc_timestamp:6 tableoid:7\n                     ├── outer: (1)\n                     ├── immutable\n                     ├── key: (5)\n                     ├── fd: (5)--\u003e(2-4,6,7)\n                     ├── scan t59615_inv [as=t]\n                     │    ├── columns: x:2!null y:3 z:4 rowid:5!null crdb_internal_mvcc_timestamp:6 tableoid:7\n                     │    ├── check constraint expressions\n                     │    │    └── x:2 IN (1, 3) [outer=(2), constraints=(/2: [/1 - /1] [/3 - /3]; tight)]\n                     │    ├── key: (5)\n                     │    └── fd: (5)--\u003e(2-4,6,7)\n                     └── filters\n                          └── y:3 @\u003e column1:1 [outer=(1,3), immutable]\n",
+    "semi-join (cross)\n ├── columns: y:1!null\n ├── cardinality: [0 - 2]\n ├── immutable\n ├── values\n │    ├── columns: column1:1!null\n │    ├── cardinality: [2 - 2]\n │    ├── ('\"a\"',)\n │    └── ('\"b\"',)\n ├── scan t59615_inv [as=t]\n │    ├── columns: y:3\n │    └── check constraint expressions\n │         └── x:2 IN (1, 3) [outer=(2), constraints=(/2: [/1 - /1] [/3 - /3]; tight)]\n └── filters\n      └── y:3 @\u003e column1:1 [outer=(1,3), immutable]\n"
+  ],
+  "queries": [
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [],
+              "operator": "EXISTS",
+              "query": {
+                "project": {
+                  "source": {
+                    "filter": {
+                      "condition": {
+                        "operand": [
+                          {
+                            "operand": [
+                              {
+                                "column": 2,
+                                "type": "JSONB"
+                              },
+                              {
+                                "column": 0,
+                                "type": "JSONB"
+                              }
+                            ],
+                            "operator": "CONTAINS",
+                            "type": "BOOL"
+                          }
+                        ],
+                        "operator": "AND",
+                        "type": "BOOLEAN"
+                      },
+                      "source": {
+                        "project": {
+                          "source": {
+                            "scan": 0
+                          },
+                          "target": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 2,
+                              "type": "JSONB"
+                            },
+                            {
+                              "column": 3,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 4,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 5,
+                              "type": "DECIMAL"
+                            },
+                            {
+                              "column": 6,
+                              "type": "OID"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "target": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 2,
+                      "type": "JSONB"
+                    },
+                    {
+                      "column": 3,
+                      "type": "INT"
+                    }
+                  ]
+                }
+              },
+              "type": "BOOLEAN"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "values": {
+            "content": [
+              [
+                {
+                  "operand": [],
+                  "operator": "'\"a\"'",
+                  "type": "JSONB"
+                }
+              ],
+              [
+                {
+                  "operand": [],
+                  "operator": "'\"b\"'",
+                  "type": "JSONB"
+                }
+              ]
+            ],
+            "schema": [
+              "JSONB"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 1,
+                  "type": "JSONB"
+                },
+                {
+                  "column": 0,
+                  "type": "JSONB"
+                }
+              ],
+              "operator": "CONTAINS",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "SEMI",
+        "left": {
+          "values": {
+            "content": [
+              [
+                {
+                  "operand": [],
+                  "operator": "'\"a\"'",
+                  "type": "JSONB"
+                }
+              ],
+              [
+                {
+                  "operand": [],
+                  "operator": "'\"b\"'",
+                  "type": "JSONB"
+                }
+              ]
+            ],
+            "schema": [
+              "JSONB"
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "JSONB"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          3
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "types": [
+        "INT",
+        "JSONB",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID",
+        "ENCODEDKEY"
+      ]
+    }
+  ]
+}

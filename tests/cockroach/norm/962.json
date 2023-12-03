@@ -1,0 +1,184 @@
+{
+  "help": [
+    "project\n ├── columns: x:1!null \"?column?\":4!null y:2!null \"?column?\":5!null \"?column?\":6!null\n ├── cardinality: [2 - 2]\n ├── immutable\n ├── fd: (1)--\u003e(4), (2)--\u003e(5)\n ├── values\n │    ├── columns: column1:1!null column2:2!null column3:3!null\n │    ├── cardinality: [2 - 2]\n │    ├── (1, 2, 3)\n │    └── (2, 3, 6)\n └── projections\n      ├── column1:1 * 1 [as=\"?column?\":4, outer=(1), immutable]\n      ├── column2:2 * 1 [as=\"?column?\":5, outer=(2), immutable]\n      └── column3:3 * 1 [as=\"?column?\":6, outer=(3), immutable]\n",
+    "project\n ├── columns: x:1!null \"?column?\":4!null y:2!null \"?column?\":5!null \"?column?\":6!null\n ├── cardinality: [2 - 2]\n ├── fd: (1)==(4), (4)==(1), (2)==(5), (5)==(2)\n ├── values\n │    ├── columns: column1:1!null column2:2!null \"?column?\":6!null\n │    ├── cardinality: [2 - 2]\n │    ├── (1, 2, 3)\n │    └── (2, 3, 6)\n └── projections\n      ├── column1:1 [as=\"?column?\":4, outer=(1)]\n      └── column2:2 [as=\"?column?\":5, outer=(2)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "values": {
+            "content": [
+              [
+                {
+                  "operand": [],
+                  "operator": "1",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "2",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "3",
+                  "type": "INT"
+                }
+              ],
+              [
+                {
+                  "operand": [],
+                  "operator": "2",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "3",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "6",
+                  "type": "INT"
+                }
+              ]
+            ],
+            "schema": [
+              "INT",
+              "INT",
+              "INT"
+            ]
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "MULT",
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "MULT",
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 2,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "MULT",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "values": {
+            "content": [
+              [
+                {
+                  "operand": [],
+                  "operator": "1",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "2",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "3",
+                  "type": "INT"
+                }
+              ],
+              [
+                {
+                  "operand": [],
+                  "operator": "2",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "3",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "6",
+                  "type": "INT"
+                }
+              ]
+            ],
+            "schema": [
+              "INT",
+              "INT",
+              "INT"
+            ]
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": []
+}

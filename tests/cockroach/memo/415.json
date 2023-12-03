@@ -1,0 +1,165 @@
+{
+  "help": [
+    "project\n ├── columns: a:1(int!null) b:2(date) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string)\n ├── stats: [rows=400]\n └── select\n      ├── columns: a:1(int!null) b:2(date) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string) rowid:8(int!null) crdb_internal_mvcc_timestamp:9(decimal) tableoid:10(oid)\n      ├── stats: [rows=400, distinct(1)=10, null(1)=0]\n      │   histogram(1)=  0  0   360  40\n      │                \u003c--- 30 ----- 40\n      ├── key: (8)\n      ├── fd: (8)--\u003e(1-7,9,10)\n      ├── scan hist\n      │    ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string) rowid:8(int!null) crdb_internal_mvcc_timestamp:9(decimal) tableoid:10(oid)\n      │    ├── stats: [rows=1000, distinct(1)=40, null(1)=0, distinct(8)=1000, null(8)=0]\n      │    │   histogram(1)=  0  0  90  10  180  20  270  30  360  40\n      │    │                \u003c--- 0 ---- 10 ----- 20 ----- 30 ----- 40\n      │    ├── key: (8)\n      │    └── fd: (8)--\u003e(1-7,9,10)\n      └── filters\n           └── a:1 \u003e 30 [type=bool, outer=(1), constraints=(/1: [/31 - ]; tight)]\n",
+    "select\n ├── columns: a:1(int!null) b:2(date) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string)\n ├── stats: [rows=400, distinct(1)=10, null(1)=0]\n │   histogram(1)=  0  0   360  40\n │                \u003c--- 30 ----- 40\n ├── scan hist\n │    ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string)\n │    └── stats: [rows=1000, distinct(1)=40, null(1)=0]\n │        histogram(1)=  0  0  90  10  180  20  270  30  360  40\n │                     \u003c--- 0 ---- 10 ----- 20 ----- 30 ----- 40\n └── filters\n      └── a:1 \u003e 30 [type=bool, outer=(1), constraints=(/1: [/31 - ]; tight)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "30",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "GT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "DATE"
+          },
+          {
+            "column": 2,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 3,
+            "type": "FLOAT"
+          },
+          {
+            "column": 4,
+            "type": "TIMESTAMP"
+          },
+          {
+            "column": 5,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "column": 6,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "30",
+                  "type": "INT"
+                }
+              ],
+              "operator": "GT",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "DATE"
+              },
+              {
+                "column": 2,
+                "type": "DECIMAL"
+              },
+              {
+                "column": 3,
+                "type": "FLOAT"
+              },
+              {
+                "column": 4,
+                "type": "TIMESTAMP"
+              },
+              {
+                "column": 5,
+                "type": "TIMESTAMPTZ"
+              },
+              {
+                "column": 6,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          7
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "DATE",
+        "DECIMAL",
+        "FLOAT",
+        "TIMESTAMP",
+        "TIMESTAMPTZ",
+        "STRING",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

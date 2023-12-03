@@ -1,0 +1,298 @@
+{
+  "help": [
+    "project\n ├── columns: count:12(int!null)\n ├── immutable\n ├── stats: [rows=400]\n └── group-by (hash)\n      ├── columns: y:2(int) count_rows:12(int!null)\n      ├── grouping columns: y:2(int)\n      ├── immutable\n      ├── stats: [rows=400, distinct(2)=400, null(2)=0]\n      ├── key: (2)\n      ├── fd: (2)--\u003e(12)\n      ├── project\n      │    ├── columns: y:2(int)\n      │    ├── immutable\n      │    ├── stats: [rows=1.666667e+07, distinct(2)=400, null(2)=0]\n      │    └── project\n      │         ├── columns: x:1(int) y:2(int) s:3(string) d:4(decimal) u:7(int) v:8(int)\n      │         ├── immutable\n      │         ├── stats: [rows=1.666667e+07, distinct(2)=400, null(2)=0]\n      │         ├── fd: (1)--\u003e(2-4), (3,4)~~\u003e(1,2)\n      │         └── full-join (cross)\n      │              ├── columns: x:1(int) y:2(int) s:3(string) d:4(decimal) xysd.crdb_internal_mvcc_timestamp:5(decimal) xysd.tableoid:6(oid) u:7(int) v:8(int) rowid:9(int) uv.crdb_internal_mvcc_timestamp:10(decimal) uv.tableoid:11(oid)\n      │              ├── immutable\n      │              ├── stats: [rows=1.666667e+07, distinct(2)=400, null(2)=0]\n      │              ├── key: (1,9)\n      │              ├── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6), (9)--\u003e(7,8,10,11)\n      │              ├── scan xysd\n      │              │    ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) xysd.crdb_internal_mvcc_timestamp:5(decimal) xysd.tableoid:6(oid)\n      │              │    ├── stats: [rows=5000, distinct(1)=5000, null(1)=0, distinct(2)=400, null(2)=0]\n      │              │    ├── key: (1)\n      │              │    └── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6)\n      │              ├── scan uv\n      │              │    ├── columns: u:7(int) v:8(int!null) rowid:9(int!null) uv.crdb_internal_mvcc_timestamp:10(decimal) uv.tableoid:11(oid)\n      │              │    ├── stats: [rows=10000, distinct(7)=500, null(7)=0]\n      │              │    ├── key: (9)\n      │              │    └── fd: (9)--\u003e(7,8,10,11)\n      │              └── filters\n      │                   └── (x:1 = u:7) AND ((y:2 + v:8) = 5) [type=bool, outer=(1,2,7,8), immutable, constraints=(/1: (/NULL - ]; /7: (/NULL - ])]\n      └── aggregations\n           └── count-rows [as=count_rows:12, type=int]\n",
+    "project\n ├── columns: count:12(int!null)\n ├── immutable\n ├── stats: [rows=400]\n └── group-by (hash)\n      ├── columns: y:2(int) count_rows:12(int!null)\n      ├── grouping columns: y:2(int)\n      ├── immutable\n      ├── stats: [rows=400, distinct(2)=400, null(2)=1]\n      ├── key: (2)\n      ├── fd: (2)--\u003e(12)\n      ├── full-join (hash)\n      │    ├── columns: x:1(int) y:2(int) u:7(int) v:8(int)\n      │    ├── multiplicity: left-rows(one-or-more), right-rows(exactly-one)\n      │    ├── immutable\n      │    ├── stats: [rows=11666.67, distinct(2)=400, null(2)=6666.67]\n      │    ├── fd: (1)--\u003e(2)\n      │    ├── scan xysd\n      │    │    ├── columns: x:1(int!null) y:2(int)\n      │    │    ├── stats: [rows=5000, distinct(1)=5000, null(1)=0, distinct(2)=400, null(2)=0]\n      │    │    ├── key: (1)\n      │    │    └── fd: (1)--\u003e(2)\n      │    ├── scan uv\n      │    │    ├── columns: u:7(int) v:8(int!null)\n      │    │    └── stats: [rows=10000, distinct(7)=500, null(7)=0]\n      │    └── filters\n      │         ├── x:1 = u:7 [type=bool, outer=(1,7), constraints=(/1: (/NULL - ]; /7: (/NULL - ]), fd=(1)==(7), (7)==(1)]\n      │         └── (y:2 + v:8) = 5 [type=bool, outer=(2,8), immutable]\n      └── aggregations\n           └── count-rows [as=count_rows:12, type=int]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [],
+                "operator": "COUNT ROWS",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "project": {
+                    "source": {
+                      "join": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 0,
+                                      "type": "INT"
+                                    },
+                                    {
+                                      "column": 6,
+                                      "type": "INT"
+                                    }
+                                  ],
+                                  "operator": "EQ",
+                                  "type": "BOOL"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [
+                                        {
+                                          "column": 1,
+                                          "type": "INT"
+                                        },
+                                        {
+                                          "column": 7,
+                                          "type": "INT"
+                                        }
+                                      ],
+                                      "operator": "PLUS",
+                                      "type": "INT"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "5",
+                                      "type": "INT"
+                                    }
+                                  ],
+                                  "operator": "EQ",
+                                  "type": "BOOL"
+                                }
+                              ],
+                              "operator": "AND",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "kind": "FULL",
+                        "left": {
+                          "scan": 0
+                        },
+                        "right": {
+                          "scan": 1
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 3,
+                        "type": "DECIMAL"
+                      },
+                      {
+                        "column": 6,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 7,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [],
+                "operator": "COUNT ROWS",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 3,
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "PLUS",
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "5",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "FULL",
+                "left": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                },
+                "right": {
+                  "project": {
+                    "source": {
+                      "scan": 1
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

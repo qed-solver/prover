@@ -1,0 +1,73 @@
+{
+  "help": [
+    "project\n ├── columns: a:1(int!null) b:2(int) c:3(string)\n ├── stats: [rows=1000]\n ├── cost: 1168.70667\n ├── key: (1)\n ├── fd: (1)--\u003e(2,3), (2,3)~~\u003e(1)\n ├── distribution: central\n ├── prune: (1-3)\n └── scan t.public.abc\n      ├── columns: t.public.abc.a:1(int!null) t.public.abc.b:2(int) t.public.abc.c:3(string) t.public.abc.crdb_internal_mvcc_timestamp:4(decimal) t.public.abc.tableoid:5(oid)\n      ├── stats: [rows=1000]\n      ├── cost: 1158.68667\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-5), (2,3)~~\u003e(1,4,5)\n      ├── distribution: central\n      └── prune: (1-5)\n",
+    "scan t.public.abc\n ├── columns: a:1(int!null) b:2(int) c:3(string)\n ├── stats: [rows=1000]\n ├── cost: 1125.02\n ├── key: (1)\n ├── fd: (1)--\u003e(2,3), (2,3)~~\u003e(1)\n ├── distribution: central\n └── prune: (1-3)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

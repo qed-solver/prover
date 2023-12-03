@@ -1,0 +1,297 @@
+{
+  "help": [
+    "project\n ├── columns: count:21(int!null)\n ├── immutable\n ├── stats: [rows=0.3333333]\n └── select\n      ├── columns: b:2(geography!null) count_rows:21(int!null)\n      ├── immutable\n      ├── stats: [rows=0.3333333, distinct(2)=0.333333, null(2)=0]\n      ├── key: (2)\n      ├── fd: (2)--\u003e(21)\n      ├── group-by (hash)\n      │    ├── columns: b:2(geography) count_rows:21(int!null)\n      │    ├── grouping columns: b:2(geography)\n      │    ├── stats: [rows=1, distinct(2)=1, null(2)=0, distinct(21)=1, null(21)=0]\n      │    ├── key: (2)\n      │    ├── fd: (2)--\u003e(21)\n      │    ├── project\n      │    │    ├── columns: b:2(geography)\n      │    │    ├── stats: [rows=1, distinct(2)=1, null(2)=0]\n      │    │    └── scan t62289\n      │    │         ├── columns: a:1(bit!null) b:2(geography) c:3(regproc!null) d:4(date!null) e:5(bytes) f:6(int2) g:7(uuid) h:8(regclass) i:9(bit!null) j:10(time) k:11(float4!null) l:12(jsonb) m:13(string) n:14(int) o:15(string) p:16(string) rowid:17(int!null) crdb_internal_mvcc_timestamp:18(decimal) tableoid:19(oid)\n      │    │         ├── stats: [rows=1, distinct(2)=1, null(2)=0]\n      │    │         ├── key: (17)\n      │    │         └── fd: (17)--\u003e(1-16,18,19)\n      │    └── aggregations\n      │         └── count-rows [as=count_rows:21, type=int]\n      └── filters\n           └── _st_dwithinexclusive(b:2, b:2, -0.38) [type=bool, outer=(2), immutable, constraints=(/2: (/NULL - ])]\n",
+    "project\n ├── columns: count:21(int!null)\n ├── immutable\n ├── stats: [rows=0.3333333]\n └── group-by (hash)\n      ├── columns: b:2(geography!null) count_rows:21(int!null)\n      ├── grouping columns: b:2(geography!null)\n      ├── immutable\n      ├── stats: [rows=0.3333333, distinct(2)=0.333333, null(2)=0]\n      ├── key: (2)\n      ├── fd: (2)--\u003e(21)\n      ├── select\n      │    ├── columns: b:2(geography!null)\n      │    ├── immutable\n      │    ├── stats: [rows=0.3333333, distinct(2)=0.333333, null(2)=0]\n      │    ├── scan t62289\n      │    │    ├── columns: b:2(geography)\n      │    │    └── stats: [rows=1, distinct(2)=1, null(2)=0]\n      │    └── filters\n      │         └── _st_dwithinexclusive(b:2, b:2, -0.38) [type=bool, outer=(2), immutable, constraints=(/2: (/NULL - ])]\n      └── aggregations\n           └── count-rows [as=count_rows:21, type=int]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "GEOGRAPHY"
+                        },
+                        {
+                          "column": 0,
+                          "type": "GEOGRAPHY"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "-0.38",
+                          "type": "FLOAT"
+                        }
+                      ],
+                      "operator": "SCALAR LIST",
+                      "type": "ANYELEMENT"
+                    }
+                  ],
+                  "operator": "FUNCTION",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": false,
+                    "operand": [],
+                    "operator": "COUNT ROWS",
+                    "type": "INT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "GEOGRAPHY"
+                  }
+                ],
+                "source": {
+                  "project": {
+                    "source": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "BIT"
+                          },
+                          {
+                            "column": 1,
+                            "type": "GEOGRAPHY"
+                          },
+                          {
+                            "column": 2,
+                            "type": "REGPROC"
+                          },
+                          {
+                            "column": 3,
+                            "type": "DATE"
+                          },
+                          {
+                            "column": 4,
+                            "type": "BYTES"
+                          },
+                          {
+                            "column": 5,
+                            "type": "INT2"
+                          },
+                          {
+                            "column": 6,
+                            "type": "UUID"
+                          },
+                          {
+                            "column": 7,
+                            "type": "REGCLASS"
+                          },
+                          {
+                            "column": 8,
+                            "type": "BIT"
+                          },
+                          {
+                            "column": 9,
+                            "type": "TIME"
+                          },
+                          {
+                            "column": 10,
+                            "type": "FLOAT4"
+                          },
+                          {
+                            "column": 11,
+                            "type": "JSONB"
+                          },
+                          {
+                            "column": 12,
+                            "type": "STRING"
+                          },
+                          {
+                            "column": 13,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 14,
+                            "type": "STRING"
+                          },
+                          {
+                            "column": 15,
+                            "type": "STRING"
+                          },
+                          {
+                            "column": 16,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 17,
+                            "type": "DECIMAL"
+                          },
+                          {
+                            "column": 18,
+                            "type": "OID"
+                          }
+                        ]
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 1,
+                        "type": "GEOGRAPHY"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [],
+                "operator": "COUNT ROWS",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "GEOGRAPHY"
+              }
+            ],
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "GEOGRAPHY"
+                            },
+                            {
+                              "column": 0,
+                              "type": "GEOGRAPHY"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "-0.38",
+                              "type": "FLOAT"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 1,
+                        "type": "GEOGRAPHY"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          16
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "types": [
+        "BIT",
+        "GEOGRAPHY",
+        "REGPROC",
+        "DATE",
+        "BYTES",
+        "INT2",
+        "UUID",
+        "REGCLASS",
+        "BIT",
+        "TIME",
+        "FLOAT4",
+        "JSONB",
+        "STRING",
+        "INT",
+        "STRING",
+        "STRING",
+        "INT",
+        "DECIMAL",
+        "OID",
+        "ENCODEDKEY"
+      ]
+    }
+  ]
+}

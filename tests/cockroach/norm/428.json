@@ -1,0 +1,102 @@
+{
+  "help": [
+    "project\n ├── columns: length:1 upper:2 lower:3\n ├── cardinality: [1 - 1]\n ├── immutable\n ├── key: ()\n ├── fd: ()--\u003e(1-3)\n ├── values\n │    ├── cardinality: [1 - 1]\n │    ├── key: ()\n │    └── ()\n └── projections\n      ├── length('abc') [as=length:1, immutable]\n      ├── upper('xyz') [as=upper:2, immutable]\n      └── lower('DEF') [as=lower:3, immutable]\n",
+    "values\n ├── columns: length:1!null upper:2!null lower:3!null\n ├── cardinality: [1 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(1-3)\n └── (3, 'XYZ', 'def')\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "values": {
+            "content": [
+              []
+            ],
+            "schema": []
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "operand": [],
+                    "operator": "'abc'",
+                    "type": "STRING"
+                  }
+                ],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "FUNCTION",
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "operand": [],
+                    "operator": "'xyz'",
+                    "type": "STRING"
+                  }
+                ],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "FUNCTION",
+            "type": "STRING"
+          },
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "operand": [],
+                    "operator": "'DEF'",
+                    "type": "STRING"
+                  }
+                ],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "FUNCTION",
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "values": {
+        "content": [
+          [
+            {
+              "operand": [],
+              "operator": "3",
+              "type": "INT"
+            },
+            {
+              "operand": [],
+              "operator": "'XYZ'",
+              "type": "STRING"
+            },
+            {
+              "operand": [],
+              "operator": "'def'",
+              "type": "STRING"
+            }
+          ]
+        ],
+        "schema": [
+          "INT",
+          "STRING",
+          "STRING"
+        ]
+      }
+    }
+  ],
+  "schemas": []
+}

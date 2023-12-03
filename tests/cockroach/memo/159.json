@@ -1,0 +1,76 @@
+{
+  "help": [
+    "project\n ├── columns: \"?column?\":7(int!null)\n ├── fd: ()--\u003e(7)\n ├── prune: (7)\n ├── project\n │    ├── columns: x:1(int!null)\n │    ├── key: (1)\n │    ├── prune: (1)\n │    └── scan xysd\n │         ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n │         ├── key: (1)\n │         ├── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6)\n │         └── prune: (1-6)\n └── projections\n      └── const: 1 [as=\"?column?\":7, type=int]\n",
+    "project\n ├── columns: \"?column?\":7(int!null)\n ├── fd: ()--\u003e(7)\n ├── prune: (7)\n ├── scan xysd@xysd_s_d_key\n └── projections\n      └── const: 1 [as=\"?column?\":7, type=int]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [],
+            "operator": "1",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": []
+          }
+        },
+        "target": [
+          {
+            "operand": [],
+            "operator": "1",
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

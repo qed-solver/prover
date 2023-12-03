@@ -1,0 +1,156 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null\n ├── stable\n ├── key: (1)\n └── select\n      ├── columns: k:1!null i:2 t:3 tz:4!null d:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n      ├── stable\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-7)\n      ├── scan e\n      │    ├── columns: k:1!null i:2 t:3 tz:4 d:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-7)\n      └── filters\n           └── tz:4 \u003e '2017-11-12 07:35:01' [outer=(4), stable, constraints=(/4: (/NULL - ])]\n",
+    "project\n ├── columns: k:1!null\n ├── stable\n ├── key: (1)\n └── select\n      ├── columns: k:1!null tz:4!null\n      ├── stable\n      ├── key: (1)\n      ├── fd: (1)--\u003e(4)\n      ├── scan e@e_tz_idx\n      │    ├── columns: k:1!null tz:4!null\n      │    ├── constraint: /4/1: (/NULL - ]\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(4)\n      └── filters\n           └── tz:4 \u003e '2017-11-12 07:35:01' [outer=(4), stable, constraints=(/4: (/NULL - ])]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 3,
+                      "type": "TIMESTAMPTZ"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'2017-11-12 07:35:01'",
+                      "type": "TIMESTAMP"
+                    }
+                  ],
+                  "operator": "GT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "TIMESTAMPTZ"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'2017-11-12 07:35:01'",
+                      "type": "TIMESTAMP"
+                    }
+                  ],
+                  "operator": "GT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "NULL",
+                              "type": "TIMESTAMPTZ"
+                            },
+                            {
+                              "column": 1,
+                              "type": "TIMESTAMPTZ"
+                            }
+                          ],
+                          "operator": "IS NOT",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "TIMESTAMPTZ"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "TIMESTAMP",
+        "TIMESTAMPTZ",
+        "DATE",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

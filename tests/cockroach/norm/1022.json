@@ -1,0 +1,245 @@
+{
+  "help": [
+    "project\n ├── columns: f:3 r:8\n ├── immutable\n ├── fd: (3)--\u003e(8)\n ├── project\n │    ├── columns: k:1!null f:3\n │    ├── immutable\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(3)\n │    └── select\n │         ├── columns: k:1!null f:3 sum:7!null\n │         ├── immutable\n │         ├── key: (1)\n │         ├── fd: ()--\u003e(7), (1)--\u003e(3)\n │         ├── group-by (hash)\n │         │    ├── columns: k:1!null f:3 sum:7!null\n │         │    ├── grouping columns: k:1!null f:3\n │         │    ├── key: (1)\n │         │    ├── fd: (1)--\u003e(3,7)\n │         │    ├── project\n │         │    │    ├── columns: k:1!null f:3\n │         │    │    ├── key: (1)\n │         │    │    ├── fd: (1)--\u003e(3)\n │         │    │    └── scan a\n │         │    │         ├── columns: k:1!null i:2 f:3 s:4 crdb_internal_mvcc_timestamp:5 tableoid:6\n │         │    │         ├── key: (1)\n │         │    │         └── fd: (1)--\u003e(2-6)\n │         │    └── aggregations\n │         │         └── sum [as=sum:7, outer=(1)]\n │         │              └── k:1\n │         └── filters\n │              └── sum:7 = 100 [outer=(7), immutable, constraints=(/7: [/100 - /100]; tight), fd=()--\u003e(7)]\n └── projections\n      └── f:3 + 1.1 [as=r:8, outer=(3), immutable]\n",
+    "project\n ├── columns: f:3 r:8\n ├── immutable\n ├── fd: (3)--\u003e(8)\n ├── select\n │    ├── columns: k:1!null f:3 sum:7!null\n │    ├── immutable\n │    ├── key: (1)\n │    ├── fd: ()--\u003e(7), (1)--\u003e(3)\n │    ├── group-by (hash)\n │    │    ├── columns: k:1!null f:3 sum:7!null\n │    │    ├── grouping columns: k:1!null\n │    │    ├── key: (1)\n │    │    ├── fd: (1)--\u003e(3,7)\n │    │    ├── scan a\n │    │    │    ├── columns: k:1!null f:3\n │    │    │    ├── key: (1)\n │    │    │    └── fd: (1)--\u003e(3)\n │    │    └── aggregations\n │    │         ├── sum [as=sum:7, outer=(1)]\n │    │         │    └── k:1\n │    │         └── const-agg [as=f:3, outer=(3)]\n │    │              └── f:3\n │    └── filters\n │         └── sum:7 = 100 [outer=(7), immutable, constraints=(/7: [/100 - /100]; tight), fd=()--\u003e(7)]\n └── projections\n      └── f:3 + 1.1 [as=r:8, outer=(3), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "DECIMAL"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "100",
+                          "type": "DECIMAL"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "group": {
+                    "function": [
+                      {
+                        "distinct": false,
+                        "ignoreNulls": true,
+                        "operand": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          }
+                        ],
+                        "operator": "SUM",
+                        "type": "DECIMAL"
+                      }
+                    ],
+                    "keys": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "source": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 2,
+                            "type": "FLOAT"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "FLOAT"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "FLOAT"
+          },
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "operand": [],
+                "operator": "1.1",
+                "type": "FLOAT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "DECIMAL"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "100",
+                      "type": "DECIMAL"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "SUM",
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "distinct": false,
+                    "ignoreNulls": false,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "CONST AGG",
+                    "type": "FLOAT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "FLOAT"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "FLOAT"
+          },
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "operand": [],
+                "operator": "1.1",
+                "type": "FLOAT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "FLOAT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

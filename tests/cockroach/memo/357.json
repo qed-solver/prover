@@ -1,0 +1,313 @@
+{
+  "help": [
+    "project\n ├── columns: k:1(int!null) i:2(int!null) s:3(string!null) t:4(string)\n ├── stats: [rows=8.273571]\n ├── key: (1)\n ├── fd: ()--\u003e(3), (1)--\u003e(2,4)\n └── select\n      ├── columns: k:1(int!null) i:2(int!null) s:3(string!null) t:4(string) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      ├── stats: [rows=8.273571, distinct(2)=8.27357, null(2)=0, distinct(3)=1, null(3)=0, distinct(2,3)=8.27357, null(2,3)=0]\n      ├── key: (1)\n      ├── fd: ()--\u003e(3), (1)--\u003e(2,4-6)\n      ├── scan a\n      │    ├── columns: k:1(int!null) i:2(int) s:3(string) t:4(string) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      │    ├── partial index predicates\n      │    │    └── idx: filters\n      │    │         └── ((i:2 \u003e 0) AND (i:2 \u003c 50)) AND (s:3 = 'foo') [type=bool, outer=(2,3), constraints=(/2: [/1 - /49]; /3: [/'foo' - /'foo']; tight), fd=()--\u003e(3)]\n      │    ├── stats: [rows=5000, distinct(1)=5000, null(1)=0, distinct(2)=500, null(2)=0, distinct(3)=50, null(3)=275, distinct(2,3)=5000, null(2,3)=0]\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-6)\n      └── filters\n           └── ((i:2 \u003e 10) AND (i:2 \u003c 20)) AND (s:3 = 'foo') [type=bool, outer=(2,3), constraints=(/2: [/11 - /19]; /3: [/'foo' - /'foo']; tight), fd=()--\u003e(3)]\n",
+    "index-join a\n ├── columns: k:1(int!null) i:2(int!null) s:3(string!null) t:4(string)\n ├── stats: [rows=8.273571, distinct(2)=8.27357, null(2)=0, distinct(3)=1, null(3)=0, distinct(2,3)=8.27357, null(2,3)=0]\n ├── key: (1)\n ├── fd: ()--\u003e(3), (1)--\u003e(2,4)\n └── scan a@idx,partial\n      ├── columns: k:1(int!null) i:2(int!null)\n      ├── constraint: /2/1: [/11 - /19]\n      ├── stats: [rows=8.273571, distinct(2)=8.27357, null(2)=0, distinct(3)=1, null(3)=0, distinct(2,3)=8.27357, null(2,3)=0]\n      ├── key: (1)\n      └── fd: (1)--\u003e(2)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "10",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GT",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "20",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LT",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'foo'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          },
+          {
+            "column": 3,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 3,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "11",
+                              "type": "INT"
+                            },
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "19",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 1,
+                                      "type": "INT"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "0",
+                                      "type": "INT"
+                                    }
+                                  ],
+                                  "operator": "GT",
+                                  "type": "BOOL"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 1,
+                                      "type": "INT"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "50",
+                                      "type": "INT"
+                                    }
+                                  ],
+                                  "operator": "LT",
+                                  "type": "BOOL"
+                                }
+                              ],
+                              "operator": "AND",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 2,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'foo'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "scan": 0
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 4,
+            "type": "STRING"
+          },
+          {
+            "column": 5,
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

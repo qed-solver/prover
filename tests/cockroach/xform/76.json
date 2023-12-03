@@ -1,0 +1,217 @@
+{
+  "help": [
+    "project\n ├── columns: id:1!null\n ├── immutable\n ├── stats: [rows=165000]\n ├── cost: 1556679.07\n ├── key: (1)\n └── select\n      ├── columns: id:1!null a:2 b:3!null geog:4 crdb_internal_mvcc_timestamp:5 tableoid:6\n      ├── immutable\n      ├── stats: [rows=165000, distinct(3)=3, null(3)=0]\n      ├── cost: 1555029.05\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-6)\n      ├── scan g\n      │    ├── columns: id:1!null a:2 b:3 geog:4 crdb_internal_mvcc_timestamp:5 tableoid:6\n      │    ├── stats: [rows=500000, distinct(1)=500000, null(1)=0, distinct(3)=3, null(3)=5000]\n      │    ├── cost: 550029.02\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-6)\n      └── filters\n           └── b:3 = st_dwithin(geog:4, st_makepoint(a:2, 1.0)::GEOGRAPHY, 200.0) [outer=(2-4), immutable, constraints=(/3: (/NULL - ])]\n",
+    "project\n ├── columns: id:1!null\n ├── immutable\n ├── stats: [rows=165000]\n ├── cost: 1546678.87\n ├── key: (1)\n └── select\n      ├── columns: id:1!null a:2 b:3!null geog:4\n      ├── immutable\n      ├── stats: [rows=165000, distinct(3)=3, null(3)=0]\n      ├── cost: 1545028.85\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-4)\n      ├── scan g\n      │    ├── columns: id:1!null a:2 b:3 geog:4\n      │    ├── stats: [rows=500000, distinct(1)=500000, null(1)=0, distinct(3)=3, null(3)=5000]\n      │    ├── cost: 540028.82\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-4)\n      └── filters\n           └── b:3 = st_dwithin(geog:4, st_makepoint(a:2, 1.0)::GEOGRAPHY, 200.0) [outer=(2-4), immutable, constraints=(/3: (/NULL - ])]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 3,
+                              "type": "GEOGRAPHY"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [
+                                        {
+                                          "column": 1,
+                                          "type": "FLOAT"
+                                        },
+                                        {
+                                          "operand": [],
+                                          "operator": "1.0",
+                                          "type": "FLOAT"
+                                        }
+                                      ],
+                                      "operator": "SCALAR LIST",
+                                      "type": "ANYELEMENT"
+                                    }
+                                  ],
+                                  "operator": "FUNCTION",
+                                  "type": "GEOMETRY"
+                                }
+                              ],
+                              "operator": "CAST",
+                              "type": "GEOGRAPHY"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "200.0",
+                              "type": "FLOAT"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 3,
+                              "type": "GEOGRAPHY"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [
+                                        {
+                                          "column": 1,
+                                          "type": "FLOAT"
+                                        },
+                                        {
+                                          "operand": [],
+                                          "operator": "1.0",
+                                          "type": "FLOAT"
+                                        }
+                                      ],
+                                      "operator": "SCALAR LIST",
+                                      "type": "ANYELEMENT"
+                                    }
+                                  ],
+                                  "operator": "FUNCTION",
+                                  "type": "GEOMETRY"
+                                }
+                              ],
+                              "operator": "CAST",
+                              "type": "GEOGRAPHY"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "200.0",
+                              "type": "FLOAT"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "BOOL"
+                  },
+                  {
+                    "column": 3,
+                    "type": "GEOGRAPHY"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "FLOAT",
+        "BOOL",
+        "GEOGRAPHY",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

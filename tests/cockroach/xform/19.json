@@ -1,0 +1,524 @@
+{
+  "help": [
+    "limit\n ├── columns: id:1!null sender_id:2!null receiver_id:3!null amount:4!null creation_date:5!null last_update:6 schedule_date:7 status:8 comment:9 linked_trans_id:10 c1:11 c2:12 c3:13 id:16!null name:17!null gender:18 email:19 first_name:20 last_name:21 creation_date:22!null situation:23 balance:24!null is_blocked:25 id:28!null name:29!null gender:30 email:31 first_name:32 last_name:33 creation_date:34!null situation:35 balance:36!null is_blocked:37\n ├── cardinality: [0 - 10]\n ├── stats: [rows=10]\n ├── cost: 3901.0995\n ├── key: (1)\n ├── fd: (1)--\u003e(2-13,16-25,28-37), (16)--\u003e(17-25), (2)==(16), (16)==(2), (28)--\u003e(29-37), (3)==(28), (28)==(3)\n ├── project\n │    ├── columns: t.id:1!null sender_id:2!null receiver_id:3!null amount:4!null t.creation_date:5!null last_update:6 schedule_date:7 status:8 comment:9 linked_trans_id:10 c1:11 c2:12 c3:13 s.id:16!null s.name:17!null s.gender:18 s.email:19 s.first_name:20 s.last_name:21 s.creation_date:22!null s.situation:23 s.balance:24!null s.is_blocked:25 r.id:28!null r.name:29!null r.gender:30 r.email:31 r.first_name:32 r.last_name:33 r.creation_date:34!null r.situation:35 r.balance:36!null r.is_blocked:37\n │    ├── stats: [rows=980.1]\n │    ├── cost: 3900.9895\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2-13,16-25,28-37), (16)--\u003e(17-25), (2)==(16), (16)==(2), (28)--\u003e(29-37), (3)==(28), (28)==(3)\n │    ├── limit hint: 10.00\n │    └── inner-join (hash)\n │         ├── columns: t.id:1!null sender_id:2!null receiver_id:3!null amount:4!null t.creation_date:5!null last_update:6 schedule_date:7 status:8 comment:9 linked_trans_id:10 c1:11 c2:12 c3:13 t.crdb_internal_mvcc_timestamp:14 t.tableoid:15 s.id:16!null s.name:17!null s.gender:18 s.email:19 s.first_name:20 s.last_name:21 s.creation_date:22!null s.situation:23 s.balance:24!null s.is_blocked:25 s.crdb_internal_mvcc_timestamp:26 s.tableoid:27 r.id:28!null r.name:29!null r.gender:30 r.email:31 r.first_name:32 r.last_name:33 r.creation_date:34!null r.situation:35 r.balance:36!null r.is_blocked:37 r.crdb_internal_mvcc_timestamp:38 r.tableoid:39\n │         ├── multiplicity: left-rows(zero-or-one), right-rows(zero-or-more)\n │         ├── stats: [rows=980.1, distinct(3)=98.995, null(3)=0, distinct(28)=98.995, null(28)=0]\n │         ├── cost: 3891.1685\n │         ├── key: (1)\n │         ├── fd: (1)--\u003e(2-15), (16)--\u003e(17-27), (2)==(16), (16)==(2), (28)--\u003e(29-39), (3)==(28), (28)==(3)\n │         ├── limit hint: 10.00\n │         ├── inner-join (hash)\n │         │    ├── columns: t.id:1!null sender_id:2!null receiver_id:3 amount:4!null t.creation_date:5!null last_update:6 schedule_date:7 status:8 comment:9 linked_trans_id:10 c1:11 c2:12 c3:13 t.crdb_internal_mvcc_timestamp:14 t.tableoid:15 s.id:16!null s.name:17!null s.gender:18 s.email:19 s.first_name:20 s.last_name:21 s.creation_date:22!null s.situation:23 s.balance:24!null s.is_blocked:25 s.crdb_internal_mvcc_timestamp:26 s.tableoid:27\n │         │    ├── multiplicity: left-rows(zero-or-one), right-rows(zero-or-more)\n │         │    ├── stats: [rows=990, distinct(1)=628.605, null(1)=0, distinct(2)=99, null(2)=0, distinct(3)=99.995, null(3)=9.9, distinct(4)=99.995, null(4)=0, distinct(5)=99.995, null(5)=0, distinct(16)=99, null(16)=0, distinct(17)=99.995, null(17)=0, distinct(22)=99.995, null(22)=0, distinct(24)=99.995, null(24)=0]\n │         │    ├── cost: 2601.10625\n │         │    ├── key: (1)\n │         │    ├── fd: (1)--\u003e(2-15), (16)--\u003e(17-27), (2)==(16), (16)==(2)\n │         │    ├── scan transaction [as=t]\n │         │    │    ├── columns: t.id:1!null sender_id:2 receiver_id:3 amount:4!null t.creation_date:5!null last_update:6 schedule_date:7 status:8 comment:9 linked_trans_id:10 c1:11 c2:12 c3:13 t.crdb_internal_mvcc_timestamp:14 t.tableoid:15\n │         │    │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(2)=100, null(2)=10, distinct(3)=100, null(3)=10, distinct(4)=100, null(4)=0, distinct(5)=100, null(5)=0]\n │         │    │    ├── cost: 1310.82\n │         │    │    ├── key: (1)\n │         │    │    └── fd: (1)--\u003e(2-15)\n │         │    ├── scan wallet [as=s]\n │         │    │    ├── columns: s.id:16!null s.name:17!null s.gender:18 s.email:19 s.first_name:20 s.last_name:21 s.creation_date:22!null s.situation:23 s.balance:24!null s.is_blocked:25 s.crdb_internal_mvcc_timestamp:26 s.tableoid:27\n │         │    │    ├── stats: [rows=1000, distinct(16)=1000, null(16)=0, distinct(17)=100, null(17)=0, distinct(22)=100, null(22)=0, distinct(24)=100, null(24)=0]\n │         │    │    ├── cost: 1250.22\n │         │    │    ├── key: (16)\n │         │    │    └── fd: (16)--\u003e(17-27)\n │         │    └── filters\n │         │         └── sender_id:2 = s.id:16 [outer=(2,16), constraints=(/2: (/NULL - ]; /16: (/NULL - ]), fd=(2)==(16), (16)==(2)]\n │         ├── scan wallet [as=r]\n │         │    ├── columns: r.id:28!null r.name:29!null r.gender:30 r.email:31 r.first_name:32 r.last_name:33 r.creation_date:34!null r.situation:35 r.balance:36!null r.is_blocked:37 r.crdb_internal_mvcc_timestamp:38 r.tableoid:39\n │         │    ├── stats: [rows=1000, distinct(28)=1000, null(28)=0, distinct(29)=100, null(29)=0, distinct(34)=100, null(34)=0, distinct(36)=100, null(36)=0]\n │         │    ├── cost: 1250.22\n │         │    ├── key: (28)\n │         │    └── fd: (28)--\u003e(29-39)\n │         └── filters\n │              └── receiver_id:3 = r.id:28 [outer=(3,28), constraints=(/3: (/NULL - ]; /28: (/NULL - ]), fd=(3)==(28), (28)==(3)]\n └── 10\n",
+    "limit\n ├── columns: id:1!null sender_id:2!null receiver_id:3!null amount:4!null creation_date:5!null last_update:6 schedule_date:7 status:8 comment:9 linked_trans_id:10 c1:11 c2:12 c3:13 id:16!null name:17!null gender:18 email:19 first_name:20 last_name:21 creation_date:22!null situation:23 balance:24!null is_blocked:25 id:28!null name:29!null gender:30 email:31 first_name:32 last_name:33 creation_date:34!null situation:35 balance:36!null is_blocked:37\n ├── cardinality: [0 - 10]\n ├── stats: [rows=10]\n ├── cost: 2134.54\n ├── key: (1)\n ├── fd: (1)--\u003e(2-13), (16)--\u003e(17-25), (2)==(16), (16)==(2), (28)--\u003e(29-37), (3)==(28), (28)==(3)\n ├── inner-join (lookup wallet [as=r])\n │    ├── columns: t.id:1!null sender_id:2!null receiver_id:3!null amount:4!null t.creation_date:5!null last_update:6 schedule_date:7 status:8 comment:9 linked_trans_id:10 c1:11 c2:12 c3:13 s.id:16!null s.name:17!null s.gender:18 s.email:19 s.first_name:20 s.last_name:21 s.creation_date:22!null s.situation:23 s.balance:24!null s.is_blocked:25 r.id:28!null r.name:29!null r.gender:30 r.email:31 r.first_name:32 r.last_name:33 r.creation_date:34!null r.situation:35 r.balance:36!null r.is_blocked:37\n │    ├── key columns: [3] = [28]\n │    ├── lookup columns are key\n │    ├── stats: [rows=980.1, distinct(3)=98.995, null(3)=0, distinct(28)=98.995, null(28)=0]\n │    ├── cost: 2134.43\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2-13), (16)--\u003e(17-25), (2)==(16), (16)==(2), (28)--\u003e(29-37), (3)==(28), (28)==(3)\n │    ├── limit hint: 10.00\n │    ├── inner-join (lookup wallet [as=s])\n │    │    ├── columns: t.id:1!null sender_id:2!null receiver_id:3 amount:4!null t.creation_date:5!null last_update:6 schedule_date:7 status:8 comment:9 linked_trans_id:10 c1:11 c2:12 c3:13 s.id:16!null s.name:17!null s.gender:18 s.email:19 s.first_name:20 s.last_name:21 s.creation_date:22!null s.situation:23 s.balance:24!null s.is_blocked:25\n │    │    ├── key columns: [2] = [16]\n │    │    ├── lookup columns are key\n │    │    ├── stats: [rows=990, distinct(1)=628.605, null(1)=0, distinct(2)=99, null(2)=0, distinct(3)=99.995, null(3)=9.9, distinct(4)=99.995, null(4)=0, distinct(5)=99.995, null(5)=0, distinct(16)=99, null(16)=0, distinct(17)=99.995, null(17)=0, distinct(22)=99.995, null(22)=0, distinct(24)=99.995, null(24)=0]\n │    │    ├── cost: 1511.62\n │    │    ├── key: (1)\n │    │    ├── fd: (1)--\u003e(2-13), (16)--\u003e(17-25), (2)==(16), (16)==(2)\n │    │    ├── limit hint: 100.00\n │    │    ├── scan transaction [as=t]\n │    │    │    ├── columns: t.id:1!null sender_id:2 receiver_id:3 amount:4!null t.creation_date:5!null last_update:6 schedule_date:7 status:8 comment:9 linked_trans_id:10 c1:11 c2:12 c3:13\n │    │    │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(2)=100, null(2)=10, distinct(3)=100, null(3)=10, distinct(4)=100, null(4)=0, distinct(5)=100, null(5)=0]\n │    │    │    ├── cost: 270.02\n │    │    │    ├── key: (1)\n │    │    │    ├── fd: (1)--\u003e(2-13)\n │    │    │    └── limit hint: 200.00\n │    │    └── filters (true)\n │    └── filters (true)\n └── 10\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "10",
+          "type": "INT"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 27,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "join": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 15,
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "EQ",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "kind": "INNER",
+                    "left": {
+                      "scan": 0
+                    },
+                    "right": {
+                      "scan": 1
+                    }
+                  }
+                },
+                "right": {
+                  "scan": 1
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "DECIMAL"
+              },
+              {
+                "column": 4,
+                "type": "TIMESTAMP"
+              },
+              {
+                "column": 5,
+                "type": "TIMESTAMP"
+              },
+              {
+                "column": 6,
+                "type": "TIMESTAMP"
+              },
+              {
+                "column": 7,
+                "type": "INT"
+              },
+              {
+                "column": 8,
+                "type": "STRING"
+              },
+              {
+                "column": 9,
+                "type": "INT"
+              },
+              {
+                "column": 10,
+                "type": "STRING"
+              },
+              {
+                "column": 11,
+                "type": "STRING"
+              },
+              {
+                "column": 12,
+                "type": "STRING"
+              },
+              {
+                "column": 15,
+                "type": "INT"
+              },
+              {
+                "column": 16,
+                "type": "STRING"
+              },
+              {
+                "column": 17,
+                "type": "INT"
+              },
+              {
+                "column": 18,
+                "type": "STRING"
+              },
+              {
+                "column": 19,
+                "type": "STRING"
+              },
+              {
+                "column": 20,
+                "type": "STRING"
+              },
+              {
+                "column": 21,
+                "type": "TIMESTAMP"
+              },
+              {
+                "column": 22,
+                "type": "INT"
+              },
+              {
+                "column": 23,
+                "type": "DECIMAL"
+              },
+              {
+                "column": 24,
+                "type": "BOOL"
+              },
+              {
+                "column": 27,
+                "type": "INT"
+              },
+              {
+                "column": 28,
+                "type": "STRING"
+              },
+              {
+                "column": 29,
+                "type": "INT"
+              },
+              {
+                "column": 30,
+                "type": "STRING"
+              },
+              {
+                "column": 31,
+                "type": "STRING"
+              },
+              {
+                "column": 32,
+                "type": "STRING"
+              },
+              {
+                "column": 33,
+                "type": "TIMESTAMP"
+              },
+              {
+                "column": 34,
+                "type": "INT"
+              },
+              {
+                "column": 35,
+                "type": "DECIMAL"
+              },
+              {
+                "column": 36,
+                "type": "BOOL"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "10",
+          "type": "INT"
+        },
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 23,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 13,
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "EQ",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "DECIMAL"
+                      },
+                      {
+                        "column": 4,
+                        "type": "TIMESTAMP"
+                      },
+                      {
+                        "column": 5,
+                        "type": "TIMESTAMP"
+                      },
+                      {
+                        "column": 6,
+                        "type": "TIMESTAMP"
+                      },
+                      {
+                        "column": 7,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 8,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 9,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 10,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 11,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 12,
+                        "type": "STRING"
+                      }
+                    ]
+                  }
+                },
+                "right": {
+                  "project": {
+                    "source": {
+                      "scan": 1
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 4,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 5,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 6,
+                        "type": "TIMESTAMP"
+                      },
+                      {
+                        "column": 7,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 8,
+                        "type": "DECIMAL"
+                      },
+                      {
+                        "column": 9,
+                        "type": "BOOL"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 1
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 4,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 5,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 6,
+                    "type": "TIMESTAMP"
+                  },
+                  {
+                    "column": 7,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 8,
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "column": 9,
+                    "type": "BOOL"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "TIMESTAMP",
+        "TIMESTAMP",
+        "TIMESTAMP",
+        "INT",
+        "STRING",
+        "INT",
+        "STRING",
+        "STRING",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "STRING",
+        "INT",
+        "STRING",
+        "STRING",
+        "STRING",
+        "TIMESTAMP",
+        "INT",
+        "DECIMAL",
+        "BOOL",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

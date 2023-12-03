@@ -1,0 +1,141 @@
+{
+  "help": [
+    "limit\n ├── columns: a:1\n ├── cardinality: [0 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(1)\n ├── project\n │    ├── columns: a:1\n │    ├── limit hint: 1.00\n │    └── select\n │         ├── columns: a:1 b:2!null rowid:3!null crdb_internal_mvcc_timestamp:4 tableoid:5\n │         ├── key: (3)\n │         ├── fd: (3)--\u003e(1,2,4,5)\n │         ├── limit hint: 1.00\n │         ├── scan partial_index_tab\n │         │    ├── columns: a:1 b:2 rowid:3!null crdb_internal_mvcc_timestamp:4 tableoid:5\n │         │    ├── partial index predicates\n │         │    │    └── partial_index_tab_a_idx: filters\n │         │    │         └── b:2 \u003e 0 [outer=(2), constraints=(/2: [/1 - ]; tight)]\n │         │    ├── key: (3)\n │         │    ├── fd: (3)--\u003e(1,2,4,5)\n │         │    └── limit hint: 3.00\n │         └── filters\n │              └── b:2 \u003e 0 [outer=(2), constraints=(/2: [/1 - ]; tight)]\n └── 1\n",
+    "project\n ├── columns: a:1\n ├── cardinality: [0 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(1)\n └── scan partial_index_tab@partial_index_tab_a_idx,partial\n      ├── columns: a:1 rowid:3!null\n      ├── limit: 1\n      ├── key: ()\n      └── fd: ()--\u003e(1,3)\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "1",
+          "type": "INT"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "0",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "GT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "scan": 0
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "sort": {
+            "collation": [],
+            "limit": {
+              "operand": [],
+              "operator": "1",
+              "type": "INTEGER"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "filter": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "0",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GT",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "source": {
+                      "scan": 0
+                    }
+                  }
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

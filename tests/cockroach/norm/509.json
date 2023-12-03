@@ -1,0 +1,263 @@
+{
+  "help": [
+    "project\n ├── columns: sum:9 stddev:11 avg:13\n └── group-by (hash)\n      ├── columns: v:2!null sum:9 stddev:11 avg:13\n      ├── grouping columns: v:2!null\n      ├── key: (2)\n      ├── fd: (2)--\u003e(9,11,13)\n      ├── project\n      │    ├── columns: column8:8!null column10:10!null column12:12!null u:1!null v:2!null w:3!null z:4!null\n      │    ├── key: (2,3)\n      │    ├── fd: (1,2)--\u003e(3,4,8,10,12), (2,3)--\u003e(1,4,8,10,12), (1)--\u003e(8), (3)--\u003e(10), (4)--\u003e(12)\n      │    ├── scan uvwz\n      │    │    ├── columns: u:1!null v:2!null w:3!null z:4!null rowid:5!null crdb_internal_mvcc_timestamp:6 tableoid:7\n      │    │    ├── key: (5)\n      │    │    └── fd: (5)--\u003e(1-4,6,7), (1,2)--\u003e(3-7), (2,3)--\u003e(1,4-7)\n      │    └── projections\n      │         ├── u:1 \u003e 0 [as=column8:8, outer=(1)]\n      │         ├── w:3 \u003e 0 [as=column10:10, outer=(3)]\n      │         └── z:4 \u003e 0 [as=column12:12, outer=(4)]\n      └── aggregations\n           ├── agg-filter [as=sum:9, outer=(1,8)]\n           │    ├── agg-distinct\n           │    │    └── sum\n           │    │         └── u:1\n           │    └── column8:8\n           ├── agg-filter [as=stddev:11, outer=(3,10)]\n           │    ├── agg-distinct\n           │    │    └── std-dev\n           │    │         └── w:3\n           │    └── column10:10\n           └── agg-filter [as=avg:13, outer=(4,12)]\n                ├── agg-distinct\n                │    └── avg\n                │         └── z:4\n                └── column12:12\n",
+    "project\n ├── columns: sum:9 stddev:11 avg:13\n └── group-by (hash)\n      ├── columns: v:2!null sum:9 stddev:11 avg:13\n      ├── grouping columns: v:2!null\n      ├── key: (2)\n      ├── fd: (2)--\u003e(9,11,13)\n      ├── project\n      │    ├── columns: column8:8!null column10:10!null column12:12!null u:1!null v:2!null w:3!null z:4!null\n      │    ├── key: (2,3)\n      │    ├── fd: (1,2)--\u003e(3,4), (2,3)--\u003e(1,4), (1)--\u003e(8), (3)--\u003e(10), (4)--\u003e(12)\n      │    ├── scan uvwz\n      │    │    ├── columns: u:1!null v:2!null w:3!null z:4!null\n      │    │    ├── key: (2,3)\n      │    │    └── fd: (1,2)--\u003e(3,4), (2,3)--\u003e(1,4)\n      │    └── projections\n      │         ├── u:1 \u003e 0 [as=column8:8, outer=(1)]\n      │         ├── w:3 \u003e 0 [as=column10:10, outer=(3)]\n      │         └── z:4 \u003e 0 [as=column12:12, outer=(4)]\n      └── aggregations\n           ├── agg-filter [as=sum:9, outer=(1,8)]\n           │    ├── sum\n           │    │    └── u:1\n           │    └── column8:8\n           ├── agg-filter [as=stddev:11, outer=(3,10)]\n           │    ├── std-dev\n           │    │    └── w:3\n           │    └── column10:10\n           └── agg-filter [as=avg:13, outer=(4,12)]\n                ├── agg-distinct\n                │    └── avg\n                │         └── z:4\n                └── column12:12\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              "?unknown-agg-call (agg-filter)?",
+              "?unknown-agg-call (agg-filter)?",
+              "?unknown-agg-call (agg-filter)?"
+            ],
+            "keys": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "0",
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "GT",
+                    "type": "BOOL"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "0",
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "GT",
+                    "type": "BOOL"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "column": 3,
+                        "type": "INT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "0",
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "GT",
+                    "type": "BOOL"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 2,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 3,
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              "?unknown-agg-call (agg-filter)?",
+              "?unknown-agg-call (agg-filter)?",
+              "?unknown-agg-call (agg-filter)?"
+            ],
+            "keys": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "0",
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "GT",
+                    "type": "BOOL"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "0",
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "GT",
+                    "type": "BOOL"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "column": 3,
+                        "type": "INT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "0",
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "GT",
+                    "type": "BOOL"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 2,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 3,
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          4
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

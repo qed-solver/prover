@@ -1,0 +1,184 @@
+{
+  "help": [
+    "limit\n ├── columns: id:1!null\n ├── cardinality: [0 - 10]\n ├── immutable\n ├── stats: [rows=10]\n ├── cost: 847.270909\n ├── key: (1)\n ├── project\n │    ├── columns: id:1!null\n │    ├── immutable\n │    ├── stats: [rows=55000]\n │    ├── cost: 847.160909\n │    ├── key: (1)\n │    ├── limit hint: 10.00\n │    └── select\n │         ├── columns: id:1!null geog:2!null crdb_internal_mvcc_timestamp:3 tableoid:4\n │         ├── immutable\n │         ├── stats: [rows=55000, distinct(2)=50000, null(2)=0]\n │         ├── cost: 297.140909\n │         ├── key: (1)\n │         ├── fd: (1)--\u003e(2-4)\n │         ├── limit hint: 10.00\n │         ├── scan g\n │         │    ├── columns: id:1!null geog:2 crdb_internal_mvcc_timestamp:3 tableoid:4\n │         │    ├── stats: [rows=500000, distinct(1)=500000, null(1)=0, distinct(2)=50000, null(2)=5000]\n │         │    ├── cost: 114.383636\n │         │    ├── key: (1)\n │         │    ├── fd: (1)--\u003e(2-4)\n │         │    └── limit hint: 90.91\n │         └── filters\n │              └── st_dwithin(geog:2, st_makepoint(1.0, 1.0)::GEOGRAPHY, 200.0) [outer=(2), immutable, constraints=(/2: (/NULL - ])]\n └── 10\n",
+    "project\n ├── columns: id:1!null\n ├── cardinality: [0 - 10]\n ├── immutable\n ├── stats: [rows=10]\n ├── cost: 204.633636\n ├── key: (1)\n └── limit\n      ├── columns: id:1!null geog:2!null\n      ├── cardinality: [0 - 10]\n      ├── immutable\n      ├── stats: [rows=10]\n      ├── cost: 204.523636\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2)\n      ├── select\n      │    ├── columns: id:1!null geog:2!null\n      │    ├── immutable\n      │    ├── stats: [rows=55000, distinct(2)=50000, null(2)=0]\n      │    ├── cost: 204.413636\n      │    ├── key: (1)\n      │    ├── fd: (1)--\u003e(2)\n      │    ├── limit hint: 10.00\n      │    ├── scan g\n      │    │    ├── columns: id:1!null geog:2\n      │    │    ├── stats: [rows=500000, distinct(1)=500000, null(1)=0, distinct(2)=50000, null(2)=5000]\n      │    │    ├── cost: 112.565455\n      │    │    ├── key: (1)\n      │    │    ├── fd: (1)--\u003e(2)\n      │    │    └── limit hint: 90.91\n      │    └── filters\n      │         └── st_dwithin(geog:2, '0101000020E6100000000000000000F03F000000000000F03F', 200.0) [outer=(2), immutable, constraints=(/2: (/NULL - ])]\n      └── 10\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "10",
+          "type": "INT"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "GEOGRAPHY"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [
+                                        {
+                                          "operand": [],
+                                          "operator": "1.0",
+                                          "type": "FLOAT"
+                                        },
+                                        {
+                                          "operand": [],
+                                          "operator": "1.0",
+                                          "type": "FLOAT"
+                                        }
+                                      ],
+                                      "operator": "SCALAR LIST",
+                                      "type": "ANYELEMENT"
+                                    }
+                                  ],
+                                  "operator": "FUNCTION",
+                                  "type": "GEOMETRY"
+                                }
+                              ],
+                              "operator": "CAST",
+                              "type": "GEOGRAPHY"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "200.0",
+                              "type": "FLOAT"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "scan": 0
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "sort": {
+            "collation": [],
+            "limit": {
+              "operand": [],
+              "operator": "10",
+              "type": "INT"
+            },
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "GEOGRAPHY"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'0101000020E6100000000000000000F03F000000000000F03F'",
+                              "type": "GEOGRAPHY"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "200.0",
+                              "type": "FLOAT"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "GEOGRAPHY"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "GEOGRAPHY",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

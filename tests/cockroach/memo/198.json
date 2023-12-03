@@ -1,0 +1,175 @@
+{
+  "help": [
+    "project\n ├── columns: x:1(int!null) y:2(int) s:3(string!null) d:4(decimal!null)\n ├── stats: [rows=200]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-4), (3,4)--\u003e(1,2)\n └── select\n      ├── columns: x:1(int!null) y:2(int) s:3(string!null) d:4(decimal!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      ├── stats: [rows=200, distinct(3)=2, null(3)=0]\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-6), (3,4)--\u003e(1,2,5,6)\n      ├── scan a\n      │    ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      │    ├── stats: [rows=2000, distinct(1)=2000, null(1)=0, distinct(3)=20, null(3)=0, distinct(4)=200, null(4)=0]\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6)\n      └── filters\n           └── (s:3 = 'foo') OR (s:3 = 'bar') [type=bool, outer=(3), constraints=(/3: [/'bar' - /'bar'] [/'foo' - /'foo']; tight)]\n",
+    "select\n ├── columns: x:1(int!null) y:2(int) s:3(string!null) d:4(decimal!null)\n ├── stats: [rows=200, distinct(3)=2, null(3)=0]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-4), (3,4)--\u003e(1,2)\n ├── scan a\n │    ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null)\n │    ├── stats: [rows=2000, distinct(1)=2000, null(1)=0, distinct(3)=20, null(3)=0, distinct(4)=200, null(4)=0]\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-4), (3,4)~~\u003e(1,2)\n └── filters\n      └── (s:3 = 'foo') OR (s:3 = 'bar') [type=bool, outer=(3), constraints=(/3: [/'bar' - /'bar'] [/'foo' - /'foo']; tight)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'foo'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'bar'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          },
+          {
+            "column": 3,
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "STRING"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'foo'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "STRING"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'bar'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "OR",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              },
+              {
+                "column": 3,
+                "type": "DECIMAL"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

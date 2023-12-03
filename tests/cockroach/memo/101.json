@@ -1,0 +1,193 @@
+{
+  "help": [
+    "select\n ├── columns: x:1(int!null) count:7(int!null)\n ├── cardinality: [0 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(1,7)\n ├── prune: (7)\n ├── group-by (hash)\n │    ├── columns: x:1(int!null) count:7(int!null)\n │    ├── grouping columns: x:1(int!null)\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(7)\n │    ├── prune: (7)\n │    ├── project\n │    │    ├── columns: x:1(int!null) y:2(int)\n │    │    ├── key: (1)\n │    │    ├── fd: (1)--\u003e(2)\n │    │    ├── prune: (1,2)\n │    │    └── scan xyzs\n │    │         ├── columns: x:1(int!null) y:2(int) z:3(float!null) s:4(string) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n │    │         ├── key: (1)\n │    │         ├── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6)\n │    │         └── prune: (1-6)\n │    └── aggregations\n │         └── count [as=count:7, type=int, outer=(2)]\n │              └── variable: y:2 [type=int]\n └── filters\n      └── eq [type=bool, outer=(1), constraints=(/1: [/1 - /1]; tight), fd=()--\u003e(1)]\n           ├── variable: x:1 [type=int]\n           └── const: 1 [type=int]\n",
+    "group-by (streaming)\n ├── columns: x:1(int!null) count:7(int!null)\n ├── cardinality: [0 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(1,7)\n ├── prune: (1,7)\n ├── scan xyzs\n │    ├── columns: x:1(int!null) y:2(int)\n │    ├── constraint: /1: [/1 - /1]\n │    ├── cardinality: [0 - 1]\n │    ├── key: ()\n │    ├── fd: ()--\u003e(1,2)\n │    └── prune: (2)\n └── aggregations\n      ├── count [as=count:7, type=int, outer=(2)]\n      │    └── variable: y:2 [type=int]\n      └── const-agg [as=x:1, type=int, outer=(1)]\n           └── variable: x:1 [type=int]\n"
+  ],
+  "queries": [
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "1",
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "COUNT",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "group": {
+        "function": [
+          {
+            "distinct": false,
+            "ignoreNulls": true,
+            "operand": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "operator": "COUNT",
+            "type": "INT"
+          },
+          {
+            "distinct": false,
+            "ignoreNulls": false,
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "operator": "CONST AGG",
+            "type": "INT"
+          }
+        ],
+        "keys": [],
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "1",
+                          "type": "INT"
+                        },
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "\u003c=",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "1",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "\u003c=",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "OR",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

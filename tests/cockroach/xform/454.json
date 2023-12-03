@@ -1,0 +1,303 @@
+{
+  "help": [
+    "project\n ├── columns: n:2!null m:11 n:12!null\n ├── fd: (2)==(12), (12)==(2)\n └── inner-join (hash)\n      ├── columns: medium.n:2!null small.m:11 small.n:12!null small.rowid:13!null small.crdb_internal_mvcc_timestamp:14 small.tableoid:15\n      ├── fd: (13)--\u003e(11,12,14,15), (2)==(12), (12)==(2)\n      ├── project\n      │    ├── columns: medium.n:2\n      │    └── select\n      │         ├── columns: medium.m:1 medium.n:2 medium.rowid:3!null medium.crdb_internal_mvcc_timestamp:4 medium.tableoid:5\n      │         ├── key: (3)\n      │         ├── fd: (3)--\u003e(1,2,4,5)\n      │         ├── scan medium\n      │         │    ├── columns: medium.m:1 medium.n:2 medium.rowid:3!null medium.crdb_internal_mvcc_timestamp:4 medium.tableoid:5\n      │         │    ├── key: (3)\n      │         │    └── fd: (3)--\u003e(1,2,4,5)\n      │         └── filters\n      │              └── exists [outer=(1), correlated-subquery]\n      │                   └── project\n      │                        ├── columns: large.m:6!null large.n:7\n      │                        ├── outer: (1)\n      │                        ├── fd: ()--\u003e(6)\n      │                        └── select\n      │                             ├── columns: large.m:6!null large.n:7 large.rowid:8!null large.crdb_internal_mvcc_timestamp:9 large.tableoid:10\n      │                             ├── outer: (1)\n      │                             ├── key: (8)\n      │                             ├── fd: ()--\u003e(6), (8)--\u003e(7,9,10)\n      │                             ├── scan large\n      │                             │    ├── columns: large.m:6 large.n:7 large.rowid:8!null large.crdb_internal_mvcc_timestamp:9 large.tableoid:10\n      │                             │    ├── key: (8)\n      │                             │    └── fd: (8)--\u003e(6,7,9,10)\n      │                             └── filters\n      │                                  └── medium.m:1 = large.m:6 [outer=(1,6), constraints=(/1: (/NULL - ]; /6: (/NULL - ]), fd=(1)==(6), (6)==(1)]\n      ├── scan small\n      │    ├── columns: small.m:11 small.n:12 small.rowid:13!null small.crdb_internal_mvcc_timestamp:14 small.tableoid:15\n      │    ├── key: (13)\n      │    └── fd: (13)--\u003e(11,12,14,15)\n      └── filters\n           └── small.n:12 = medium.n:2 [outer=(2,12), constraints=(/2: (/NULL - ]; /12: (/NULL - ]), fd=(2)==(12), (12)==(2)]\n",
+    "project\n ├── columns: n:2!null m:11 n:12!null\n ├── fd: (2)==(12), (12)==(2)\n └── semi-join (hash)\n      ├── columns: medium.m:1 medium.n:2!null small.m:11 small.n:12!null\n      ├── fd: (2)==(12), (12)==(2)\n      ├── inner-join (hash)\n      │    ├── columns: medium.m:1 medium.n:2!null small.m:11 small.n:12!null\n      │    ├── fd: (2)==(12), (12)==(2)\n      │    ├── scan medium\n      │    │    └── columns: medium.m:1 medium.n:2\n      │    ├── scan small\n      │    │    └── columns: small.m:11 small.n:12\n      │    └── filters\n      │         └── small.n:12 = medium.n:2 [outer=(2,12), constraints=(/2: (/NULL - ]; /12: (/NULL - ]), fd=(2)==(12), (12)==(2)]\n      ├── scan large\n      │    └── columns: large.m:6\n      └── filters\n           └── medium.m:1 = large.m:6 [outer=(1,6), constraints=(/1: (/NULL - ]; /6: (/NULL - ]), fd=(1)==(6), (6)==(1)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "project": {
+                "source": {
+                  "filter": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "EXISTS",
+                          "query": {
+                            "project": {
+                              "source": {
+                                "filter": {
+                                  "condition": {
+                                    "operand": [
+                                      {
+                                        "operand": [
+                                          {
+                                            "column": 0,
+                                            "type": "INT"
+                                          },
+                                          {
+                                            "column": 5,
+                                            "type": "INT"
+                                          }
+                                        ],
+                                        "operator": "EQ",
+                                        "type": "BOOL"
+                                      }
+                                    ],
+                                    "operator": "AND",
+                                    "type": "BOOLEAN"
+                                  },
+                                  "source": {
+                                    "scan": 1
+                                  }
+                                }
+                              },
+                              "target": [
+                                {
+                                  "column": 5,
+                                  "type": "INT"
+                                },
+                                {
+                                  "column": 6,
+                                  "type": "INT"
+                                }
+                              ]
+                            }
+                          },
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "source": {
+                      "scan": 0
+                    }
+                  }
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "scan": 2
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 4,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "SEMI",
+            "left": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 3,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                },
+                "right": {
+                  "project": {
+                    "source": {
+                      "scan": 2
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 1
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

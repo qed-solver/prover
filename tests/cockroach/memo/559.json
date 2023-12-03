@@ -1,0 +1,154 @@
+{
+  "help": [
+    "project\n ├── save-table-name: new_order_01_project_1\n ├── columns: w_tax:8(decimal)\n ├── cardinality: [0 - 1]\n ├── stats: [rows=1]\n ├── key: ()\n ├── fd: ()--\u003e(8)\n └── select\n      ├── save-table-name: new_order_01_select_2\n      ├── columns: w_id:1(int!null) w_name:2(varchar) w_street_1:3(varchar) w_street_2:4(varchar) w_city:5(varchar) w_state:6(char) w_zip:7(char) w_tax:8(decimal) w_ytd:9(decimal) crdb_internal_mvcc_timestamp:10(decimal) tableoid:11(oid)\n      ├── cardinality: [0 - 1]\n      ├── stats: [rows=1, distinct(1)=1, null(1)=0]\n      │   histogram(1)=  0  1\n      │                \u003c--- 1\n      ├── key: ()\n      ├── fd: ()--\u003e(1-11)\n      ├── scan warehouse\n      │    ├── save-table-name: new_order_01_scan_3\n      │    ├── columns: w_id:1(int!null) w_name:2(varchar) w_street_1:3(varchar) w_street_2:4(varchar) w_city:5(varchar) w_state:6(char) w_zip:7(char) w_tax:8(decimal) w_ytd:9(decimal) crdb_internal_mvcc_timestamp:10(decimal) tableoid:11(oid)\n      │    ├── stats: [rows=10, distinct(1)=10, null(1)=0]\n      │    │   histogram(1)=  0  1  0  1  0  1  0  1  0  1  0  1  0  1  0  1  0  1  0  1\n      │    │                \u003c--- 0 --- 1 --- 2 --- 3 --- 4 --- 5 --- 6 --- 7 --- 8 --- 9\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-11)\n      └── filters\n           └── w_id:1 = 1 [type=bool, outer=(1), constraints=(/1: [/1 - /1]; tight), fd=()--\u003e(1)]\n",
+    "project\n ├── save-table-name: new_order_01_project_1\n ├── columns: w_tax:8(decimal)\n ├── cardinality: [0 - 1]\n ├── stats: [rows=1]\n ├── key: ()\n ├── fd: ()--\u003e(8)\n └── scan warehouse\n      ├── save-table-name: new_order_01_scan_2\n      ├── columns: w_id:1(int!null) w_tax:8(decimal)\n      ├── constraint: /1: [/1 - /1]\n      ├── cardinality: [0 - 1]\n      ├── stats: [rows=1, distinct(1)=1, null(1)=0]\n      │   histogram(1)=  0  1\n      │                \u003c--- 1\n      ├── key: ()\n      └── fd: ()--\u003e(1,8)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 7,
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "1",
+                          "type": "INT"
+                        },
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "\u003c=",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "1",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "\u003c=",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "OR",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 7,
+                    "type": "DECIMAL"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "VARCHAR",
+        "VARCHAR",
+        "VARCHAR",
+        "VARCHAR",
+        "CHAR",
+        "CHAR",
+        "DECIMAL",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

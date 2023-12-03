@@ -1,0 +1,263 @@
+{
+  "help": [
+    "project\n ├── columns: x:1(int!null) y:2(int) s:3(string!null) d:4(decimal!null) b:5(bool)\n ├── immutable\n ├── stats: [rows=650]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-5), (3,4)--\u003e(1,2,5)\n └── select\n      ├── columns: x:1(int!null) y:2(int) s:3(string!null) d:4(decimal!null) b:5(bool) crdb_internal_mvcc_timestamp:6(decimal) tableoid:7(oid)\n      ├── immutable\n      ├── stats: [rows=650, distinct(3)=1, null(3)=0, distinct(4)=650, null(4)=0, distinct(3,4)=650, null(3,4)=0]\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-7), (3,4)--\u003e(1,2,5-7)\n      ├── scan a\n      │    ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) b:5(bool) crdb_internal_mvcc_timestamp:6(decimal) tableoid:7(oid)\n      │    ├── stats: [rows=3000, distinct(1)=2000, null(1)=0, distinct(3)=2, null(3)=0, distinct(4)=2000, null(4)=0, distinct(3,4)=3000, null(3,4)=0]\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-7), (3,4)~~\u003e(1,2,5-7)\n      └── filters\n           └── (((s:3 \u003e= 'bar') AND (s:3 \u003c= 'foo')) OR (s:3 \u003e= 'foobar')) AND (d:4 \u003e 5.0) [type=bool, outer=(3,4), immutable, constraints=(/3: [/'bar' - /'foo'] [/'foobar' - ]; /4: (/5.0 - ]; tight)]\n",
+    "select\n ├── columns: x:1(int!null) y:2(int) s:3(string!null) d:4(decimal!null) b:5(bool)\n ├── immutable\n ├── stats: [rows=650, distinct(3)=1, null(3)=0, distinct(4)=650, null(4)=0, distinct(3,4)=650, null(3,4)=0]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-5), (3,4)--\u003e(1,2,5)\n ├── scan a\n │    ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) b:5(bool)\n │    ├── stats: [rows=3000, distinct(1)=2000, null(1)=0, distinct(3)=2, null(3)=0, distinct(4)=2000, null(4)=0, distinct(3,4)=3000, null(3,4)=0]\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-5), (3,4)~~\u003e(1,2,5)\n └── filters\n      ├── ((s:3 \u003e= 'bar') AND (s:3 \u003c= 'foo')) OR (s:3 \u003e= 'foobar') [type=bool, outer=(3), constraints=(/3: [/'bar' - /'foo'] [/'foobar' - ]; tight)]\n      └── d:4 \u003e 5.0 [type=bool, outer=(4), immutable, constraints=(/4: (/5.0 - ]; tight)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 2,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'bar'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "GE",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 2,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'foo'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "LE",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 2,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'foobar'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "GE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "OR",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 3,
+                          "type": "DECIMAL"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "5.0",
+                          "type": "DECIMAL"
+                        }
+                      ],
+                      "operator": "GT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          },
+          {
+            "column": 3,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 4,
+            "type": "BOOL"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'bar'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "GE",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'foo'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "LE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "STRING"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'foobar'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "GE",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "OR",
+              "type": "BOOL"
+            },
+            {
+              "operand": [
+                {
+                  "column": 3,
+                  "type": "DECIMAL"
+                },
+                {
+                  "operand": [],
+                  "operator": "5.0",
+                  "type": "DECIMAL"
+                }
+              ],
+              "operator": "GT",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              },
+              {
+                "column": 3,
+                "type": "DECIMAL"
+              },
+              {
+                "column": 4,
+                "type": "BOOL"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "BOOL",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

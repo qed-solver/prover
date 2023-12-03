@@ -1,0 +1,117 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null s:3!null\n ├── stats: [rows=333.3333]\n ├── cost: 1142.40333\n ├── key: (1)\n ├── fd: (1)--\u003e(3)\n └── select\n      ├── columns: k:1!null i:2 s:3!null d:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n      ├── stats: [rows=333.3333, distinct(3)=33.3333, null(3)=0]\n      ├── cost: 1139.05\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-6)\n      ├── scan a\n      │    ├── columns: k:1!null i:2 s:3 d:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n      │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(3)=100, null(3)=10, distinct(4)=100, null(4)=0]\n      │    ├── cost: 1129.02\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-6)\n      └── filters\n           └── s:3 \u003e= 'foo' [outer=(3), constraints=(/3: [/'foo' - ]; tight)]\n",
+    "select\n ├── columns: k:1!null s:3!null\n ├── stats: [rows=333.3333, distinct(3)=33.3333, null(3)=0]\n ├── cost: 1098.65\n ├── key: (1)\n ├── fd: (1)--\u003e(3)\n ├── scan a\n │    ├── columns: k:1!null s:3\n │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(3)=100, null(3)=10]\n │    ├── cost: 1088.62\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(3)\n └── filters\n      └── s:3 \u003e= 'foo' [outer=(3), constraints=(/3: [/'foo' - ]; tight)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "STRING"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'foo'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "GE",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 1,
+                  "type": "STRING"
+                },
+                {
+                  "operand": [],
+                  "operator": "'foo'",
+                  "type": "STRING"
+                }
+              ],
+              "operator": "GE",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

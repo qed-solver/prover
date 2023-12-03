@@ -1,0 +1,135 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null \"?column?\":7!null \"?column?\":8\n ├── immutable\n ├── stats: [rows=1000]\n ├── cost: 1159.04\n ├── key: (1)\n ├── fd: (1)--\u003e(7,8)\n ├── scan a\n │    ├── columns: k:1!null i:2 s:3 d:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n │    ├── stats: [rows=1000]\n │    ├── cost: 1129.02\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-6)\n └── projections\n      ├── k:1 + 2 [as=\"?column?\":7, outer=(1), immutable]\n      └── i:2 * d:4 [as=\"?column?\":8, outer=(2,4), immutable]\n",
+    "project\n ├── columns: k:1!null \"?column?\":7!null \"?column?\":8\n ├── immutable\n ├── stats: [rows=1000]\n ├── cost: 1128.74\n ├── key: (1)\n ├── fd: (1)--\u003e(7,8)\n ├── scan a\n │    ├── columns: k:1!null i:2 d:4!null\n │    ├── stats: [rows=1000]\n │    ├── cost: 1098.72\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2,4)\n └── projections\n      ├── k:1 + 2 [as=\"?column?\":7, outer=(1), immutable]\n      └── i:2 * d:4 [as=\"?column?\":8, outer=(2,4), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "2",
+                "type": "INT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "DECIMAL"
+              }
+            ],
+            "operator": "MULT",
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "DECIMAL"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "2",
+                "type": "INT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "DECIMAL"
+              }
+            ],
+            "operator": "MULT",
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

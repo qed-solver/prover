@@ -1,0 +1,247 @@
+{
+  "help": [
+    "project\n ├── columns: k:1(int!null) i:2(int!null) s:3(string!null)\n ├── stats: [rows=0.8491193]\n ├── key: (1)\n ├── fd: ()--\u003e(3), (1)--\u003e(2)\n └── select\n      ├── columns: k:1(int!null) i:2(int!null) s:3(string!null) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n      ├── stats: [rows=0.8491193, distinct(2)=0.849119, null(2)=0, distinct(3)=0.849119, null(3)=0, distinct(2,3)=0.849119, null(2,3)=0]\n      │   histogram(2)=  0   0   0.63684 0.21228\n      │                \u003c--- 125 ---------- 129 -\n      │   histogram(3)=  0  0.84912\n      │                \u003c--- 'banana'\n      ├── key: (1)\n      ├── fd: ()--\u003e(3), (1)--\u003e(2,4,5)\n      ├── scan hist\n      │    ├── columns: k:1(int!null) i:2(int) s:3(string) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n      │    ├── partial index predicates\n      │    │    └── idx: filters\n      │    │         └── ((i:2 \u003e 100) AND (i:2 \u003c= 200)) AND (s:3 = 'banana') [type=bool, outer=(2,3), constraints=(/2: [/101 - /200]; /3: [/'banana' - /'banana']; tight), fd=()--\u003e(3)]\n      │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(2)=41, null(2)=30, distinct(3)=40, null(3)=0, distinct(2,3)=1000, null(2,3)=0]\n      │    │   histogram(2)=  0   30   0  0  90  10   180  10   270  20   360  30\n      │    │                \u003c--- NULL --- 0 ---- 100 ----- 200 ----- 300 ----- 400\n      │    │   histogram(3)=  0     0     100    100     100    100     100    200    100      200\n      │    │                \u003c--- 'apple' ----- 'banana' ----- 'cherry' ----- 'mango' ----- 'pineapple'\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-5)\n      └── filters\n           └── ((i:2 \u003e 125) AND (i:2 \u003c 130)) AND (s:3 = 'banana') [type=bool, outer=(2,3), constraints=(/2: [/126 - /129]; /3: [/'banana' - /'banana']; tight), fd=()--\u003e(3)]\n",
+    "scan hist@idx,partial\n ├── columns: k:1(int!null) i:2(int!null) s:3(string!null)\n ├── constraint: /2/3/1: [/126 - /129]\n ├── stats: [rows=0.8491193, distinct(2)=0.849119, null(2)=0, distinct(3)=0.849119, null(3)=0, distinct(2,3)=0.849119, null(2,3)=0]\n │   histogram(2)=  0   0   0.63684 0.21228\n │                \u003c--- 125 ---------- 129 -\n │   histogram(3)=  0  0.84912\n │                \u003c--- 'banana'\n ├── key: (1)\n └── fd: ()--\u003e(3), (1)--\u003e(2)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "125",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GT",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "130",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LT",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'banana'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "126",
+                      "type": "INT"
+                    },
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "129",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            }
+          ],
+          "operator": "OR",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "100",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GT",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "200",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'banana'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "scan": 0
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

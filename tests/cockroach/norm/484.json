@@ -1,0 +1,173 @@
+{
+  "help": [
+    "project\n ├── columns: min:9!null\n ├── immutable\n └── group-by (hash)\n      ├── columns: i2:8!null min:9!null\n      ├── grouping columns: i2:8!null\n      ├── immutable\n      ├── key: (8)\n      ├── fd: (8)--\u003e(9)\n      ├── project\n      │    ├── columns: i2:8!null s:4!null\n      │    ├── immutable\n      │    ├── scan a\n      │    │    ├── columns: k:1!null i:2!null f:3 s:4!null j:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n      │    │    ├── key: (1)\n      │    │    └── fd: (1)--\u003e(2-7), (2,4)--\u003e(1,3,5-7), (2,3)~~\u003e(1,4-7)\n      │    └── projections\n      │         └── i:2 + 1 [as=i2:8, outer=(2), immutable]\n      └── aggregations\n           └── min [as=min:9, outer=(4)]\n                └── s:4\n",
+    "project\n ├── columns: min:9!null\n ├── immutable\n └── group-by (hash)\n      ├── columns: i2:8!null min:9!null\n      ├── grouping columns: i2:8!null\n      ├── immutable\n      ├── key: (8)\n      ├── fd: (8)--\u003e(9)\n      ├── project\n      │    ├── columns: i2:8!null s:4!null\n      │    ├── immutable\n      │    ├── scan a\n      │    │    ├── columns: i:2!null s:4!null\n      │    │    └── key: (2,4)\n      │    └── projections\n      │         └── i:2 + 1 [as=i2:8, outer=(2), immutable]\n      └── aggregations\n           └── min [as=min:9, outer=(4)]\n                └── s:4\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "STRING"
+                  }
+                ],
+                "operator": "MIN",
+                "type": "STRING"
+              }
+            ],
+            "keys": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 3,
+                    "type": "STRING"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "1",
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "PLUS",
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "STRING"
+                  }
+                ],
+                "operator": "MIN",
+                "type": "STRING"
+              }
+            ],
+            "keys": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "STRING"
+                      }
+                    ]
+                  }
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "STRING"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "1",
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "PLUS",
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

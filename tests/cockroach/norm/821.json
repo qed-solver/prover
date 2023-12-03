@@ -1,0 +1,125 @@
+{
+  "help": [
+    "limit\n ├── columns: k:1!null r:8\n ├── cardinality: [0 - 5]\n ├── immutable\n ├── key: (1)\n ├── fd: (1)--\u003e(8)\n ├── project\n │    ├── columns: r:8 k:1!null\n │    ├── immutable\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(8)\n │    ├── limit hint: 5.00\n │    ├── scan a\n │    │    ├── columns: k:1!null i:2 f:3 s:4 j:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    │    ├── key: (1)\n │    │    ├── fd: (1)--\u003e(2-7)\n │    │    └── limit hint: 5.00\n │    └── projections\n │         └── f:3 * 2.0 [as=r:8, outer=(3), immutable]\n └── 5\n",
+    "project\n ├── columns: k:1!null r:8\n ├── cardinality: [0 - 5]\n ├── immutable\n ├── key: (1)\n ├── fd: (1)--\u003e(8)\n ├── limit\n │    ├── columns: k:1!null f:3\n │    ├── cardinality: [0 - 5]\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(3)\n │    ├── scan a\n │    │    ├── columns: k:1!null f:3\n │    │    ├── key: (1)\n │    │    ├── fd: (1)--\u003e(3)\n │    │    └── limit hint: 5.00\n │    └── 5\n └── projections\n      └── f:3 * 2.0 [as=r:8, outer=(3), immutable]\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "5",
+          "type": "INT"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [
+                  {
+                    "column": 2,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "2.0",
+                    "type": "FLOAT"
+                  }
+                ],
+                "operator": "MULT",
+                "type": "FLOAT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "sort": {
+            "collation": [],
+            "limit": {
+              "operand": [],
+              "operator": "5",
+              "type": "INT"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "FLOAT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "operand": [],
+                "operator": "2.0",
+                "type": "FLOAT"
+              }
+            ],
+            "operator": "MULT",
+            "type": "FLOAT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

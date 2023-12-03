@@ -1,0 +1,177 @@
+{
+  "help": [
+    "full-join (cross)\n ├── columns: \"?column?\":3(int) column1:4(int)\n ├── cardinality: [2 - 4]\n ├── stats: [rows=2.666667]\n ├── union\n │    ├── columns: \"?column?\":3(int!null)\n │    ├── left columns: \"?column?\":1(int)\n │    ├── right columns: \"?column?\":2(int)\n │    ├── cardinality: [1 - 2]\n │    ├── stats: [rows=2, distinct(3)=2, null(3)=0]\n │    ├── key: (3)\n │    ├── project\n │    │    ├── columns: \"?column?\":1(int!null)\n │    │    ├── cardinality: [1 - 1]\n │    │    ├── stats: [rows=1, distinct(1)=1, null(1)=0]\n │    │    ├── key: ()\n │    │    ├── fd: ()--\u003e(1)\n │    │    ├── values\n │    │    │    ├── cardinality: [1 - 1]\n │    │    │    ├── stats: [rows=1]\n │    │    │    ├── key: ()\n │    │    │    └── () [type=tuple]\n │    │    └── projections\n │    │         └── 1 [as=\"?column?\":1, type=int]\n │    └── project\n │         ├── columns: \"?column?\":2(int!null)\n │         ├── cardinality: [1 - 1]\n │         ├── stats: [rows=1, distinct(2)=1, null(2)=0]\n │         ├── key: ()\n │         ├── fd: ()--\u003e(2)\n │         ├── values\n │         │    ├── cardinality: [1 - 1]\n │         │    ├── stats: [rows=1]\n │         │    ├── key: ()\n │         │    └── () [type=tuple]\n │         └── projections\n │              └── 2 [as=\"?column?\":2, type=int]\n ├── values\n │    ├── columns: column1:4(int!null)\n │    ├── cardinality: [2 - 2]\n │    ├── stats: [rows=2]\n │    ├── (1,) [type=tuple{int}]\n │    └── (2,) [type=tuple{int}]\n └── filters\n      └── true [type=bool]\n",
+    "inner-join (cross)\n ├── columns: \"?column?\":3(int!null) column1:4(int!null)\n ├── cardinality: [2 - 4]\n ├── multiplicity: left-rows(one-or-more), right-rows(one-or-more)\n ├── stats: [rows=4]\n ├── values\n │    ├── columns: column1:4(int!null)\n │    ├── cardinality: [2 - 2]\n │    ├── stats: [rows=2]\n │    ├── (1,) [type=tuple{int}]\n │    └── (2,) [type=tuple{int}]\n ├── union\n │    ├── columns: \"?column?\":3(int!null)\n │    ├── left columns: \"?column?\":1(int)\n │    ├── right columns: \"?column?\":2(int)\n │    ├── cardinality: [1 - 2]\n │    ├── stats: [rows=2, distinct(3)=2, null(3)=0]\n │    ├── key: (3)\n │    ├── values\n │    │    ├── columns: \"?column?\":1(int!null)\n │    │    ├── cardinality: [1 - 1]\n │    │    ├── stats: [rows=1, distinct(1)=1, null(1)=0]\n │    │    ├── key: ()\n │    │    ├── fd: ()--\u003e(1)\n │    │    └── (1,) [type=tuple{int}]\n │    └── values\n │         ├── columns: \"?column?\":2(int!null)\n │         ├── cardinality: [1 - 1]\n │         ├── stats: [rows=1, distinct(2)=1, null(2)=0]\n │         ├── key: ()\n │         ├── fd: ()--\u003e(2)\n │         └── (2,) [type=tuple{int}]\n └── filters (true)\n"
+  ],
+  "queries": [
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [],
+              "operator": "TRUE",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "FULL",
+        "left": {
+          "distinct": {
+            "union": [
+              {
+                "project": {
+                  "source": {
+                    "values": {
+                      "content": [
+                        []
+                      ],
+                      "schema": []
+                    }
+                  },
+                  "target": [
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "INT"
+                    }
+                  ]
+                }
+              },
+              {
+                "project": {
+                  "source": {
+                    "values": {
+                      "content": [
+                        []
+                      ],
+                      "schema": []
+                    }
+                  },
+                  "target": [
+                    {
+                      "operand": [],
+                      "operator": "2",
+                      "type": "INT"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "right": {
+          "values": {
+            "content": [
+              [
+                {
+                  "operand": [],
+                  "operator": "1",
+                  "type": "INT"
+                }
+              ],
+              [
+                {
+                  "operand": [],
+                  "operator": "2",
+                  "type": "INT"
+                }
+              ]
+            ],
+            "schema": [
+              "INT"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "values": {
+                "content": [
+                  [
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "INT"
+                    }
+                  ],
+                  [
+                    {
+                      "operand": [],
+                      "operator": "2",
+                      "type": "INT"
+                    }
+                  ]
+                ],
+                "schema": [
+                  "INT"
+                ]
+              }
+            },
+            "right": {
+              "distinct": {
+                "union": [
+                  {
+                    "values": {
+                      "content": [
+                        [
+                          {
+                            "operand": [],
+                            "operator": "1",
+                            "type": "INT"
+                          }
+                        ]
+                      ],
+                      "schema": [
+                        "INT"
+                      ]
+                    }
+                  },
+                  {
+                    "values": {
+                      "content": [
+                        [
+                          {
+                            "operand": [],
+                            "operator": "2",
+                            "type": "INT"
+                          }
+                        ]
+                      ],
+                      "schema": [
+                        "INT"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": []
+}

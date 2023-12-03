@@ -1,0 +1,344 @@
+{
+  "help": [
+    "limit\n ├── columns: x:1!null y:2!null z:3 s:4!null\n ├── internal-ordering: +4,-1\n ├── cardinality: [0 - 20]\n ├── stats: [rows=1]\n ├── cost: 1140.5476\n ├── key: (1)\n ├── fd: ()--\u003e(2), (1)--\u003e(3,4)\n ├── ordering: +4,-1\n ├── offset\n │    ├── columns: x:1!null y:2!null z:3 s:4!null\n │    ├── internal-ordering: +4,-1\n │    ├── stats: [rows=1]\n │    ├── cost: 1140.5276\n │    ├── key: (1)\n │    ├── fd: ()--\u003e(2), (1)--\u003e(3,4)\n │    ├── ordering: +4,-1\n │    ├── limit hint: 20.00\n │    ├── sort\n │    │    ├── columns: x:1!null y:2!null z:3 s:4!null\n │    │    ├── stats: [rows=10, distinct(4)=9.56179, null(4)=0]\n │    │    ├── cost: 1140.4976\n │    │    ├── key: (1)\n │    │    ├── fd: ()--\u003e(2), (1)--\u003e(3,4)\n │    │    ├── ordering: +4,-1\n │    │    ├── limit hint: 1020.00\n │    │    └── project\n │    │         ├── columns: x:1!null y:2!null z:3 s:4!null\n │    │         ├── stats: [rows=10, distinct(4)=9.56179, null(4)=0]\n │    │         ├── cost: 1139.17\n │    │         ├── key: (1)\n │    │         ├── fd: ()--\u003e(2), (1)--\u003e(3,4)\n │    │         └── select\n │    │              ├── columns: x:1!null y:2!null z:3 s:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n │    │              ├── stats: [rows=10, distinct(2)=1, null(2)=0, distinct(4)=9.56179, null(4)=0]\n │    │              ├── cost: 1139.05\n │    │              ├── key: (1)\n │    │              ├── fd: ()--\u003e(2), (1)--\u003e(3-6)\n │    │              ├── scan a\n │    │              │    ├── columns: x:1!null y:2 z:3 s:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n │    │              │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(2)=100, null(2)=10, distinct(4)=100, null(4)=0, distinct(2,4)=1000, null(2,4)=0]\n │    │              │    ├── cost: 1129.02\n │    │              │    ├── key: (1)\n │    │              │    └── fd: (1)--\u003e(2-6)\n │    │              └── filters\n │    │                   └── y:2 = 10 [outer=(2), constraints=(/2: [/10 - /10]; tight), fd=()--\u003e(2)]\n │    └── 1000\n └── 20\n",
+    "offset\n ├── columns: x:1!null y:2!null z:3 s:4!null\n ├── internal-ordering: +4,-1 opt(2)\n ├── cardinality: [0 - 20]\n ├── stats: [rows=1]\n ├── cost: 89.9929301\n ├── key: (1)\n ├── fd: ()--\u003e(2), (1)--\u003e(3,4)\n ├── ordering: +4,-1 opt(2) [actual: +4,-1]\n ├── index-join a\n │    ├── columns: x:1!null y:2!null z:3 s:4!null\n │    ├── cardinality: [0 - 1020]\n │    ├── stats: [rows=10, distinct(4)=9.56179, null(4)=0]\n │    ├── cost: 89.9729301\n │    ├── key: (1)\n │    ├── fd: ()--\u003e(2), (1)--\u003e(3,4)\n │    ├── ordering: +4,-1 opt(2) [actual: +4,-1]\n │    └── limit\n │         ├── columns: x:1!null y:2!null s:4!null\n │         ├── internal-ordering: +4,-1 opt(2)\n │         ├── cardinality: [0 - 1020]\n │         ├── stats: [rows=10, distinct(4)=9.56179, null(4)=0]\n │         ├── cost: 29.3629295\n │         ├── key: (1)\n │         ├── fd: ()--\u003e(2), (1)--\u003e(4)\n │         ├── ordering: +4,-1 opt(2) [actual: +4,-1]\n │         ├── sort (segmented)\n │         │    ├── columns: x:1!null y:2!null s:4!null\n │         │    ├── stats: [rows=10, distinct(2)=1, null(2)=0, distinct(4)=9.56179, null(4)=0]\n │         │    ├── cost: 29.2529295\n │         │    ├── key: (1)\n │         │    ├── fd: ()--\u003e(2), (1)--\u003e(4)\n │         │    ├── ordering: +4,-1 opt(2) [actual: +4,-1]\n │         │    ├── limit hint: 1020.00\n │         │    └── scan a@a_y_s_idx\n │         │         ├── columns: x:1!null y:2!null s:4!null\n │         │         ├── constraint: /2/4/1: [/10 - /10]\n │         │         ├── stats: [rows=10, distinct(2)=1, null(2)=0, distinct(4)=9.56179, null(4)=0]\n │         │         ├── cost: 28.6200001\n │         │         ├── key: (1)\n │         │         ├── fd: ()--\u003e(2), (1)--\u003e(4)\n │         │         └── ordering: +4 opt(2) [actual: +4]\n │         └── 1020\n └── 1000\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            3,
+            "STRING",
+            "ASCENDING"
+          ],
+          [
+            0,
+            "INT",
+            "DESCENDING"
+          ]
+        ],
+        "limit": {
+          "operand": [],
+          "operator": "20",
+          "type": "INT"
+        },
+        "source": {
+          "sort": {
+            "collation": [
+              [
+                3,
+                "STRING",
+                "ASCENDING"
+              ],
+              [
+                0,
+                "INT",
+                "DESCENDING"
+              ]
+            ],
+            "offset": {
+              "operand": [],
+              "operator": "1000",
+              "type": "INT"
+            },
+            "source": {
+              "sort": {
+                "collation": [
+                  [
+                    3,
+                    "STRING",
+                    "ASCENDING"
+                  ],
+                  [
+                    0,
+                    "INT",
+                    "DESCENDING"
+                  ]
+                ],
+                "source": {
+                  "project": {
+                    "source": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 1,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "10",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "scan": 0
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "DECIMAL"
+                      },
+                      {
+                        "column": 3,
+                        "type": "STRING"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [
+          [
+            3,
+            "STRING",
+            "ASCENDING"
+          ],
+          [
+            0,
+            "INT",
+            "DESCENDING"
+          ]
+        ],
+        "offset": {
+          "operand": [],
+          "operator": "1000",
+          "type": "INT"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 3,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "\u003c=\u003e",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 4,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "\u003c=\u003e",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "STRING"
+                        },
+                        {
+                          "column": 6,
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "\u003c=\u003e",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "sort": {
+                    "collation": [
+                      [
+                        2,
+                        "STRING",
+                        "ASCENDING"
+                      ],
+                      [
+                        0,
+                        "INT",
+                        "DESCENDING"
+                      ]
+                    ],
+                    "limit": {
+                      "operand": [],
+                      "operator": "1020",
+                      "type": "INT"
+                    },
+                    "source": {
+                      "sort": {
+                        "collation": [
+                          [
+                            2,
+                            "STRING",
+                            "ASCENDING"
+                          ],
+                          [
+                            0,
+                            "INT",
+                            "DESCENDING"
+                          ]
+                        ],
+                        "source": {
+                          "filter": {
+                            "condition": {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [
+                                        {
+                                          "operand": [],
+                                          "operator": "10",
+                                          "type": "INT"
+                                        },
+                                        {
+                                          "column": 1,
+                                          "type": "INT"
+                                        }
+                                      ],
+                                      "operator": "\u003c=",
+                                      "type": "BOOLEAN"
+                                    },
+                                    {
+                                      "operand": [
+                                        {
+                                          "column": 1,
+                                          "type": "INT"
+                                        },
+                                        {
+                                          "operand": [],
+                                          "operator": "10",
+                                          "type": "INT"
+                                        }
+                                      ],
+                                      "operator": "\u003c=",
+                                      "type": "BOOLEAN"
+                                    }
+                                  ],
+                                  "operator": "AND",
+                                  "type": "BOOLEAN"
+                                }
+                              ],
+                              "operator": "OR",
+                              "type": "BOOLEAN"
+                            },
+                            "source": {
+                              "project": {
+                                "source": {
+                                  "scan": 0
+                                },
+                                "target": [
+                                  {
+                                    "column": 0,
+                                    "type": "INT"
+                                  },
+                                  {
+                                    "column": 1,
+                                    "type": "INT"
+                                  },
+                                  {
+                                    "column": 3,
+                                    "type": "STRING"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "scan": 0
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 5,
+                "type": "DECIMAL"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

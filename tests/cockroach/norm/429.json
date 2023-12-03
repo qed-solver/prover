@@ -1,0 +1,89 @@
+{
+  "help": [
+    "project\n ├── columns: encode:1 decode:2\n ├── cardinality: [1 - 1]\n ├── immutable\n ├── key: ()\n ├── fd: ()--\u003e(1,2)\n ├── values\n │    ├── cardinality: [1 - 1]\n │    ├── key: ()\n │    └── ()\n └── projections\n      ├── encode('\\x616263', 'hex') [as=encode:1, immutable]\n      └── decode('616263', 'hex') [as=decode:2, immutable]\n",
+    "values\n ├── columns: encode:1!null decode:2!null\n ├── cardinality: [1 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(1,2)\n └── ('616263', '\\x616263')\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "values": {
+            "content": [
+              []
+            ],
+            "schema": []
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "operand": [],
+                    "operator": "'\\x616263'",
+                    "type": "BYTES"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "'hex'",
+                    "type": "STRING"
+                  }
+                ],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "FUNCTION",
+            "type": "STRING"
+          },
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "operand": [],
+                    "operator": "'616263'",
+                    "type": "STRING"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "'hex'",
+                    "type": "STRING"
+                  }
+                ],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "FUNCTION",
+            "type": "BYTES"
+          }
+        ]
+      }
+    },
+    {
+      "values": {
+        "content": [
+          [
+            {
+              "operand": [],
+              "operator": "'616263'",
+              "type": "STRING"
+            },
+            {
+              "operand": [],
+              "operator": "'\\x616263'",
+              "type": "BYTES"
+            }
+          ]
+        ],
+        "schema": [
+          "STRING",
+          "BYTES"
+        ]
+      }
+    }
+  ],
+  "schemas": []
+}

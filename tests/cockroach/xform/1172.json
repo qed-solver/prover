@@ -1,0 +1,307 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null a:2!null b:3!null i:4 geom:5!null\n ├── immutable\n ├── key: (1)\n ├── fd: ()--\u003e(3), (1)--\u003e(2,4,5)\n └── select\n      ├── columns: k:1!null a:2!null b:3!null i:4 geom:5!null crdb_internal_mvcc_timestamp:6 tableoid:7\n      ├── immutable\n      ├── key: (1)\n      ├── fd: ()--\u003e(3), (1)--\u003e(2,4-7)\n      ├── scan m\n      │    ├── columns: k:1!null a:2 b:3 i:4 geom:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-7)\n      └── filters\n           └── (((a:2 \u003e 'x') AND (a:2 \u003c 'y')) AND (b:3 = 'foo')) AND st_coveredby('0103000000010000000500000000000000000000000000000000000000000000000000F03F0000000000000000000000000000F03F000000000000F03F0000000000000000000000000000F03F00000000000000000000000000000000', geom:5) [outer=(2,3,5), immutable, constraints=(/2: [/e'x\\x00' - /'y'); /3: [/'foo' - /'foo']; /5: (/NULL - ]), fd=()--\u003e(3)]\n",
+    "select\n ├── columns: k:1!null a:2!null b:3!null i:4 geom:5!null\n ├── immutable\n ├── key: (1)\n ├── fd: ()--\u003e(3), (1)--\u003e(2,4,5)\n ├── scan m\n │    ├── columns: k:1!null a:2 b:3 i:4 geom:5\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-5)\n └── filters\n      ├── (a:2 \u003e 'x') AND (a:2 \u003c 'y') [outer=(2), constraints=(/2: [/e'x\\x00' - /'y'); tight)]\n      ├── b:3 = 'foo' [outer=(3), constraints=(/3: [/'foo' - /'foo']; tight), fd=()--\u003e(3)]\n      └── st_coveredby('0103000000010000000500000000000000000000000000000000000000000000000000F03F0000000000000000000000000000F03F000000000000F03F0000000000000000000000000000F03F00000000000000000000000000000000', geom:5) [outer=(5), immutable, constraints=(/5: (/NULL - ])]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 1,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'x'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "GT",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 1,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'y'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "LT",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 2,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'foo'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "EQ",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "'0103000000010000000500000000000000000000000000000000000000000000000000F03F0000000000000000000000000000F03F000000000000F03F0000000000000000000000000000F03F00000000000000000000000000000000'",
+                              "type": "GEOMETRY"
+                            },
+                            {
+                              "column": 4,
+                              "type": "GEOMETRY"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 2,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 4,
+                    "type": "GEOMETRY"
+                  },
+                  {
+                    "column": 5,
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "column": 6,
+                    "type": "OID"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "STRING"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          },
+          {
+            "column": 4,
+            "type": "GEOMETRY"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "STRING"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'x'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "GT",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "STRING"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'y'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "LT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOL"
+            },
+            {
+              "operand": [
+                {
+                  "column": 2,
+                  "type": "STRING"
+                },
+                {
+                  "operand": [],
+                  "operator": "'foo'",
+                  "type": "STRING"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            },
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "'0103000000010000000500000000000000000000000000000000000000000000000000F03F0000000000000000000000000000F03F000000000000F03F0000000000000000000000000000F03F00000000000000000000000000000000'",
+                      "type": "GEOMETRY"
+                    },
+                    {
+                      "column": 4,
+                      "type": "GEOMETRY"
+                    }
+                  ],
+                  "operator": "SCALAR LIST",
+                  "type": "ANYELEMENT"
+                }
+              ],
+              "operator": "FUNCTION",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "STRING"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              },
+              {
+                "column": 3,
+                "type": "INT"
+              },
+              {
+                "column": 4,
+                "type": "GEOMETRY"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "types": [
+        "INT",
+        "STRING",
+        "STRING",
+        "INT",
+        "GEOMETRY",
+        "DECIMAL",
+        "OID",
+        "ENCODEDKEY",
+        "ENCODEDKEY"
+      ]
+    }
+  ]
+}

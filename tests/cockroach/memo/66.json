@@ -1,0 +1,174 @@
+{
+  "help": [
+    "project\n ├── columns: k:1(int!null)\n ├── immutable\n ├── key: (1)\n ├── prune: (1)\n └── select\n      ├── columns: k:1(int!null) t:2(timestamp) d:3(timestamp!null) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n      ├── immutable\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-5)\n      ├── scan e\n      │    ├── columns: k:1(int!null) t:2(timestamp) d:3(timestamp) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n      │    ├── key: (1)\n      │    ├── fd: (1)--\u003e(2-5)\n      │    └── prune: (1-5)\n      └── filters\n           └── and [type=bool, outer=(3), immutable, constraints=(/3: [/'2018-07-01 00:00:00.000001' - ])]\n                ├── gt [type=bool]\n                │    ├── variable: d:3 [type=timestamp]\n                │    └── const: '2018-07-01 00:00:00' [type=timestamp]\n                └── lt [type=bool]\n                     ├── variable: d:3 [type=timestamp]\n                     └── plus [type=timestamp]\n                          ├── const: '2018-07-01' [type=date]\n                          └── const: '7 days' [type=interval]\n",
+    "project\n ├── columns: k:1(int!null)\n ├── key: (1)\n ├── prune: (1)\n └── scan e@e_d_idx\n      ├── columns: k:1(int!null) d:3(timestamp!null)\n      ├── constraint: /3/1: [/'2018-07-01 00:00:00.000001' - /'2018-07-07 23:59:59.999999']\n      ├── key: (1)\n      └── fd: (1)--\u003e(3)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "TIMESTAMP"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'2018-07-01 00:00:00'",
+                          "type": "TIMESTAMP"
+                        }
+                      ],
+                      "operator": "GT",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "TIMESTAMP"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "'2018-07-01'",
+                              "type": "DATE"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'7 days'",
+                              "type": "INTERVAL"
+                            }
+                          ],
+                          "operator": "PLUS",
+                          "type": "TIMESTAMP"
+                        }
+                      ],
+                      "operator": "LT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "'2018-07-01 00:00:00.000001'",
+                          "type": "TIMESTAMP"
+                        },
+                        {
+                          "column": 1,
+                          "type": "TIMESTAMP"
+                        }
+                      ],
+                      "operator": "\u003c=",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "TIMESTAMP"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'2018-07-07 23:59:59.999999'",
+                          "type": "TIMESTAMP"
+                        }
+                      ],
+                      "operator": "\u003c=",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "OR",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "TIMESTAMP"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "TIMESTAMP",
+        "TIMESTAMP",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

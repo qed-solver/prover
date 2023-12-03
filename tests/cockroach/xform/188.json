@@ -1,0 +1,169 @@
+{
+  "help": [
+    "project\n ├── columns: sum:8\n └── group-by (hash)\n      ├── columns: a:1 b:2 c:3 sum:8\n      ├── grouping columns: a:1 b:2 c:3\n      ├── key: (1-3)\n      ├── fd: (1-3)--\u003e(8)\n      ├── project\n      │    ├── columns: a:1 b:2 c:3 d:4\n      │    └── scan abcd\n      │         ├── columns: a:1 b:2 c:3 d:4 rowid:5!null crdb_internal_mvcc_timestamp:6 tableoid:7\n      │         ├── key: (5)\n      │         └── fd: (5)--\u003e(1-4,6,7)\n      └── aggregations\n           └── sum [as=sum:8, outer=(4)]\n                └── d:4\n",
+    "project\n ├── columns: sum:8\n └── group-by (hash)\n      ├── columns: a:1 b:2 c:3 sum:8\n      ├── grouping columns: a:1 b:2 c:3\n      ├── key: (1-3)\n      ├── fd: (1-3)--\u003e(8)\n      ├── scan abcd\n      │    └── columns: a:1 b:2 c:3 d:4\n      └── aggregations\n           └── sum [as=sum:8, outer=(4)]\n                └── d:4\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "SUM",
+                "type": "DECIMAL"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 3,
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "SUM",
+                "type": "DECIMAL"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 3,
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          4
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

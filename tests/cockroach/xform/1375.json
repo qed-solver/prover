@@ -1,0 +1,188 @@
+{
+  "help": [
+    "sort\n ├── columns: name:3\n ├── immutable\n ├── ordering: +3\n └── project\n      ├── columns: name:3\n      ├── immutable\n      └── select\n           ├── columns: gid:1!null id:2 name:3 oneway:4 type:5 geom:6!null crdb_internal_mvcc_timestamp:7 tableoid:8\n           ├── immutable\n           ├── key: (1)\n           ├── fd: (1)--\u003e(2-8)\n           ├── scan nyc_streets\n           │    ├── columns: gid:1!null id:2 name:3 oneway:4 type:5 geom:6 crdb_internal_mvcc_timestamp:7 tableoid:8\n           │    ├── key: (1)\n           │    └── fd: (1)--\u003e(2-8)\n           └── filters\n                └── st_dwithin(geom:6, st_geomfromtext('POINT(583571 4506714)', 26918), 10.0) [outer=(6), immutable, constraints=(/6: (/NULL - ])]\n",
+    "sort\n ├── columns: name:3\n ├── immutable\n ├── ordering: +3\n └── project\n      ├── columns: name:3\n      ├── immutable\n      └── select\n           ├── columns: name:3 geom:6!null\n           ├── immutable\n           ├── scan nyc_streets\n           │    └── columns: name:3 geom:6\n           └── filters\n                └── st_dwithin(geom:6, '0101000020266900000000000026CF21410000008016315141', 10.0) [outer=(6), immutable, constraints=(/6: (/NULL - ])]\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            0,
+            "VARCHAR",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 5,
+                              "type": "GEOMETRY"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [],
+                                      "operator": "'POINT(583571 4506714)'",
+                                      "type": "STRING"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "26918",
+                                      "type": "INT"
+                                    }
+                                  ],
+                                  "operator": "SCALAR LIST",
+                                  "type": "ANYELEMENT"
+                                }
+                              ],
+                              "operator": "FUNCTION",
+                              "type": "GEOMETRY"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "10.0",
+                              "type": "FLOAT"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "scan": 0
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 2,
+                "type": "VARCHAR"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [
+          [
+            0,
+            "VARCHAR",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "GEOMETRY"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'0101000020266900000000000026CF21410000008016315141'",
+                              "type": "GEOMETRY"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "10.0",
+                              "type": "FLOAT"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 2,
+                        "type": "VARCHAR"
+                      },
+                      {
+                        "column": 5,
+                        "type": "GEOMETRY"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "VARCHAR"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "FLOAT",
+        "VARCHAR",
+        "VARCHAR",
+        "VARCHAR",
+        "GEOMETRY",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

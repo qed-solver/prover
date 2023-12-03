@@ -1,0 +1,242 @@
+{
+  "help": [
+    "project\n ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float) e:5(timestamp!null) f:6(timestamptz) g:7(string)\n ├── stats: [rows=105.5645]\n └── select\n      ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float) e:5(timestamp!null) f:6(timestamptz) g:7(string) rowid:8(int!null) crdb_internal_mvcc_timestamp:9(decimal) tableoid:10(oid)\n      ├── stats: [rows=105.5645, distinct(5)=51.5148, null(5)=0]\n      │   histogram(5)=  0            0            90           10            5.5645           6.7204e-14\n      │                \u003c--- '2018-06-30 00:00:00' ---- '2018-07-31 00:00:00' -------- '2018-07-31 22:59:59.999999'\n      ├── key: (8)\n      ├── fd: (8)--\u003e(1-7,9,10)\n      ├── scan hist\n      │    ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string) rowid:8(int!null) crdb_internal_mvcc_timestamp:9(decimal) tableoid:10(oid)\n      │    ├── stats: [rows=1000, distinct(5)=200, null(5)=0, distinct(8)=1000, null(8)=0]\n      │    │   histogram(5)=  0            0            90           10            180           20            270           30            360           40\n      │    │                \u003c--- '2018-06-30 00:00:00' ---- '2018-07-31 00:00:00' ----- '2018-08-31 00:00:00' ----- '2018-09-30 00:00:00' ----- '2018-10-31 00:00:00'\n      │    ├── key: (8)\n      │    └── fd: (8)--\u003e(1-7,9,10)\n      └── filters\n           └── e:5 \u003c '2018-07-31 23:00:00' [type=bool, outer=(5), constraints=(/5: (/NULL - /'2018-07-31 22:59:59.999999']; tight)]\n",
+    "index-join hist\n ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float) e:5(timestamp!null) f:6(timestamptz) g:7(string)\n ├── stats: [rows=105.5645, distinct(5)=51.5148, null(5)=0]\n │   histogram(5)=  0            0            90           10            5.5645           6.7204e-14\n │                \u003c--- '2018-06-30 00:00:00' ---- '2018-07-31 00:00:00' -------- '2018-07-31 22:59:59.999999'\n └── scan hist@idx_e\n      ├── columns: e:5(timestamp!null) rowid:8(int!null)\n      ├── constraint: /5/8: (/NULL - /'2018-07-31 22:59:59.999999']\n      ├── stats: [rows=105.5645, distinct(5)=51.5148, null(5)=0]\n      │   histogram(5)=  0            0            90           10            5.5645           6.7204e-14\n      │                \u003c--- '2018-06-30 00:00:00' ---- '2018-07-31 00:00:00' -------- '2018-07-31 22:59:59.999999'\n      ├── key: (8)\n      └── fd: (8)--\u003e(5)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 4,
+                      "type": "TIMESTAMP"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'2018-07-31 23:00:00'",
+                      "type": "TIMESTAMP"
+                    }
+                  ],
+                  "operator": "LT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "DATE"
+          },
+          {
+            "column": 2,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 3,
+            "type": "FLOAT"
+          },
+          {
+            "column": 4,
+            "type": "TIMESTAMP"
+          },
+          {
+            "column": 5,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "column": 6,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "TIMESTAMP"
+                    },
+                    {
+                      "column": 6,
+                      "type": "TIMESTAMP"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 9,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "NULL",
+                              "type": "TIMESTAMP"
+                            },
+                            {
+                              "column": 0,
+                              "type": "TIMESTAMP"
+                            }
+                          ],
+                          "operator": "IS NOT",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "TIMESTAMP"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'2018-07-31 22:59:59.999999'",
+                              "type": "TIMESTAMP"
+                            }
+                          ],
+                          "operator": "\u003c",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 4,
+                        "type": "TIMESTAMP"
+                      },
+                      {
+                        "column": 7,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "DATE"
+          },
+          {
+            "column": 4,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 5,
+            "type": "FLOAT"
+          },
+          {
+            "column": 0,
+            "type": "TIMESTAMP"
+          },
+          {
+            "column": 7,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "column": 8,
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          7
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "DATE",
+        "DECIMAL",
+        "FLOAT",
+        "TIMESTAMP",
+        "TIMESTAMPTZ",
+        "STRING",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

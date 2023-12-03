@@ -1,0 +1,185 @@
+{
+  "help": [
+    "limit\n ├── columns: a:1!null b:2!null c:3!null\n ├── internal-ordering: +1,+2\n ├── cardinality: [0 - 10]\n ├── immutable\n ├── key: (1-3)\n ├── ordering: +1\n ├── project\n │    ├── columns: a:1!null b:2!null c:3!null\n │    ├── immutable\n │    ├── key: (1-3)\n │    ├── ordering: +1,+2\n │    ├── limit hint: 10.00\n │    └── select\n │         ├── columns: a:1!null b:2!null c:3!null crdb_internal_mvcc_timestamp:4 tableoid:5\n │         ├── immutable\n │         ├── key: (1-3)\n │         ├── fd: (1-3)--\u003e(4,5)\n │         ├── ordering: +1,+2\n │         ├── limit hint: 10.00\n │         ├── scan abc\n │         │    ├── columns: a:1!null b:2!null c:3!null crdb_internal_mvcc_timestamp:4 tableoid:5\n │         │    ├── key: (1-3)\n │         │    ├── fd: (1-3)--\u003e(4,5)\n │         │    ├── ordering: +1,+2\n │         │    └── limit hint: 30.00\n │         └── filters\n │              └── (a:1 + b:2) \u003e c:3 [outer=(1-3), immutable]\n └── 10\n",
+    "limit\n ├── columns: a:1!null b:2!null c:3!null\n ├── internal-ordering: +1,+2\n ├── cardinality: [0 - 10]\n ├── immutable\n ├── key: (1-3)\n ├── ordering: +1\n ├── select\n │    ├── columns: a:1!null b:2!null c:3!null\n │    ├── immutable\n │    ├── key: (1-3)\n │    ├── ordering: +1,+2\n │    ├── limit hint: 10.00\n │    ├── scan abc\n │    │    ├── columns: a:1!null b:2!null c:3!null\n │    │    ├── key: (1-3)\n │    │    ├── ordering: +1,+2\n │    │    └── limit hint: 30.00\n │    └── filters\n │         └── c:3 \u003c (a:1 + b:2) [outer=(1-3), immutable]\n └── 10\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            0,
+            "INT",
+            "ASCENDING"
+          ],
+          [
+            1,
+            "INT",
+            "ASCENDING"
+          ]
+        ],
+        "limit": {
+          "operand": [],
+          "operator": "10",
+          "type": "INT"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "PLUS",
+                          "type": "INT"
+                        },
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "GT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "scan": 0
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [
+          [
+            0,
+            "INT",
+            "ASCENDING"
+          ],
+          [
+            1,
+            "INT",
+            "ASCENDING"
+          ]
+        ],
+        "limit": {
+          "operand": [],
+          "operator": "10",
+          "type": "INT"
+        },
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "PLUS",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "LT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0,
+          1,
+          2
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

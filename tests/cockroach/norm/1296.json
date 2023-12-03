@@ -1,0 +1,83 @@
+{
+  "help": [
+    "project\n ├── columns: s:8\n ├── scan a\n │    ├── columns: k:1!null i:2 f:3 a.s:4 arr:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-7)\n └── projections\n      └── a.s:4 COLLATE en_u_ks_level1 [as=s:8, outer=(4)]\n",
+    "project\n ├── columns: s:8\n ├── scan a\n │    └── columns: a.s:4\n └── projections\n      └── a.s:4 COLLATE en_u_ks_level1 [as=s:8, outer=(4)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 3,
+                "type": "STRING"
+              }
+            ],
+            "operator": "COLLATE",
+            "type": "COLLATEDSTRING{EN_U_KS_LEVEL1}"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 3,
+                "type": "STRING"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "STRING"
+              }
+            ],
+            "operator": "COLLATE",
+            "type": "COLLATEDSTRING{EN_U_KS_LEVEL1}"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "INT[]",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

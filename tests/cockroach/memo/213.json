@@ -1,0 +1,215 @@
+{
+  "help": [
+    "limit\n ├── columns: i:1(int)\n ├── internal-ordering: +1\n ├── cardinality: [0 - 1]\n ├── immutable\n ├── stats: [rows=1]\n ├── key: ()\n ├── fd: ()--\u003e(1)\n ├── ordering: +1\n ├── project\n │    ├── columns: i:1(int)\n │    ├── immutable\n │    ├── stats: [rows=211.1111]\n │    ├── ordering: +1\n │    ├── limit hint: 1.00\n │    └── select\n │         ├── columns: i:1(int) g:2(geometry!null) rowid:3(int!null) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n │         ├── immutable\n │         ├── stats: [rows=211.1111, distinct(2)=7, null(2)=0]\n │         ├── key: (3)\n │         ├── fd: (3)--\u003e(1,2,4,5)\n │         ├── ordering: +1\n │         ├── limit hint: 1.00\n │         ├── sort\n │         │    ├── columns: i:1(int) g:2(geometry) rowid:3(int!null) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n │         │    ├── stats: [rows=2000, distinct(2)=7, null(2)=100, distinct(3)=2000, null(3)=0]\n │         │    ├── key: (3)\n │         │    ├── fd: (3)--\u003e(1,2,4,5)\n │         │    ├── ordering: +1\n │         │    ├── limit hint: 9.47\n │         │    └── scan t\n │         │         ├── columns: i:1(int) g:2(geometry) rowid:3(int!null) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n │         │         ├── stats: [rows=2000, distinct(2)=7, null(2)=100, distinct(3)=2000, null(3)=0]\n │         │         ├── key: (3)\n │         │         └── fd: (3)--\u003e(1,2,4,5)\n │         └── filters\n │              └── st_intersects('010200000002000000000000000000E03F000000000000E03F666666666666E63F666666666666E63F', g:2) [type=bool, outer=(2), immutable, constraints=(/2: (/NULL - ])]\n └── 1 [type=int]\n",
+    "project\n ├── columns: i:1(int)\n ├── cardinality: [0 - 1]\n ├── immutable\n ├── stats: [rows=1]\n ├── key: ()\n ├── fd: ()--\u003e(1)\n └── limit\n      ├── columns: i:1(int) g:2(geometry!null)\n      ├── internal-ordering: +1\n      ├── cardinality: [0 - 1]\n      ├── immutable\n      ├── stats: [rows=1]\n      ├── key: ()\n      ├── fd: ()--\u003e(1,2)\n      ├── select\n      │    ├── columns: i:1(int) g:2(geometry!null)\n      │    ├── immutable\n      │    ├── stats: [rows=211.1111, distinct(2)=7, null(2)=0]\n      │    ├── ordering: +1\n      │    ├── limit hint: 1.00\n      │    ├── sort\n      │    │    ├── columns: i:1(int) g:2(geometry)\n      │    │    ├── stats: [rows=2000, distinct(2)=7, null(2)=100]\n      │    │    ├── ordering: +1\n      │    │    ├── limit hint: 9.47\n      │    │    └── scan t\n      │    │         ├── columns: i:1(int) g:2(geometry)\n      │    │         └── stats: [rows=2000, distinct(2)=7, null(2)=100]\n      │    └── filters\n      │         └── st_intersects('010200000002000000000000000000E03F000000000000E03F666666666666E63F666666666666E63F', g:2) [type=bool, outer=(2), immutable, constraints=(/2: (/NULL - ])]\n      └── 1 [type=int]\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            0,
+            "INT",
+            "ASCENDING"
+          ]
+        ],
+        "limit": {
+          "operand": [],
+          "operator": "1",
+          "type": "INT"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "'010200000002000000000000000000E03F000000000000E03F666666666666E63F666666666666E63F'",
+                              "type": "GEOMETRY"
+                            },
+                            {
+                              "column": 1,
+                              "type": "GEOMETRY"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "sort": {
+                    "collation": [
+                      [
+                        0,
+                        "INT",
+                        "ASCENDING"
+                      ]
+                    ],
+                    "source": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 1,
+                            "type": "GEOMETRY"
+                          },
+                          {
+                            "column": 2,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 3,
+                            "type": "DECIMAL"
+                          },
+                          {
+                            "column": 4,
+                            "type": "OID"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "sort": {
+            "collation": [
+              [
+                0,
+                "INT",
+                "ASCENDING"
+              ]
+            ],
+            "limit": {
+              "operand": [],
+              "operator": "1",
+              "type": "INT"
+            },
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "'010200000002000000000000000000E03F000000000000E03F666666666666E63F666666666666E63F'",
+                              "type": "GEOMETRY"
+                            },
+                            {
+                              "column": 1,
+                              "type": "GEOMETRY"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "sort": {
+                    "collation": [
+                      [
+                        0,
+                        "INT",
+                        "ASCENDING"
+                      ]
+                    ],
+                    "source": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 1,
+                            "type": "GEOMETRY"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "types": [
+        "INT",
+        "GEOMETRY",
+        "INT",
+        "DECIMAL",
+        "OID",
+        "ENCODEDKEY"
+      ]
+    }
+  ]
+}

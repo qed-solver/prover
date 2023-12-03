@@ -1,0 +1,50 @@
+{
+  "help": [
+    "project\n ├── columns: \"?column?\":1(decimal)\n ├── cardinality: [1 - 1]\n ├── immutable\n ├── stats: [rows=1]\n ├── cost: 0.05\n ├── key: ()\n ├── fd: ()--\u003e(1)\n ├── prune: (1)\n ├── values\n │    ├── cardinality: [1 - 1]\n │    ├── stats: [rows=1]\n │    ├── cost: 0.02\n │    ├── key: ()\n │    └── tuple [type=tuple]\n └── projections\n      └── unary-minus [as=\"?column?\":1, type=decimal, immutable]\n           └── const: 1 [type=decimal]\n",
+    "values\n ├── columns: \"?column?\":1(decimal!null)\n ├── cardinality: [1 - 1]\n ├── stats: [rows=1]\n ├── cost: 0.02\n ├── key: ()\n ├── fd: ()--\u003e(1)\n ├── prune: (1)\n └── tuple [type=tuple{decimal}]\n      └── const: -1 [type=decimal]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "values": {
+            "content": [
+              []
+            ],
+            "schema": []
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "DECIMAL"
+              }
+            ],
+            "operator": "UNARY MINUS",
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    },
+    {
+      "values": {
+        "content": [
+          [
+            {
+              "operand": [],
+              "operator": "-1",
+              "type": "DECIMAL"
+            }
+          ]
+        ],
+        "schema": [
+          "DECIMAL"
+        ]
+      }
+    }
+  ],
+  "schemas": []
+}

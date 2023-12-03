@@ -1,0 +1,158 @@
+{
+  "help": [
+    "project\n ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) u:7(int) v:8(int!null)\n ├── stats: [rows=1.666667e+07]\n ├── fd: (1)--\u003e(2-4), (3,4)~~\u003e(1,2)\n └── inner-join (cross)\n      ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) xysd.crdb_internal_mvcc_timestamp:5(decimal) xysd.tableoid:6(oid) u:7(int) v:8(int!null) rowid:9(int!null) uv.crdb_internal_mvcc_timestamp:10(decimal) uv.tableoid:11(oid)\n      ├── stats: [rows=1.666667e+07]\n      ├── key: (1,9)\n      ├── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6), (9)--\u003e(7,8,10,11)\n      ├── scan xysd\n      │    ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) xysd.crdb_internal_mvcc_timestamp:5(decimal) xysd.tableoid:6(oid)\n      │    ├── stats: [rows=5000, distinct(1)=5000, null(1)=0, distinct(4)=500, null(4)=0]\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6)\n      ├── scan uv\n      │    ├── columns: u:7(int) v:8(int!null) rowid:9(int!null) uv.crdb_internal_mvcc_timestamp:10(decimal) uv.tableoid:11(oid)\n      │    ├── stats: [rows=10000, distinct(8)=100, null(8)=0, distinct(9)=10000, null(9)=0]\n      │    ├── key: (9)\n      │    └── fd: (9)--\u003e(7,8,10,11)\n      └── filters\n           └── true [type=bool]\n",
+    "inner-join (cross)\n ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) u:7(int) v:8(int!null)\n ├── stats: [rows=5e+07]\n ├── fd: (1)--\u003e(2-4), (3,4)~~\u003e(1,2)\n ├── scan xysd\n │    ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null)\n │    ├── stats: [rows=5000]\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-4), (3,4)~~\u003e(1,2)\n ├── scan uv\n │    ├── columns: u:7(int) v:8(int!null)\n │    └── stats: [rows=10000]\n └── filters (true)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [],
+                  "operator": "TRUE",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 1
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          },
+          {
+            "column": 3,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 6,
+            "type": "INT"
+          },
+          {
+            "column": 7,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "INNER",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              },
+              {
+                "column": 3,
+                "type": "DECIMAL"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 1
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

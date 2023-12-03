@@ -1,0 +1,147 @@
+{
+  "help": [
+    "project\n ├── columns: \"?column?\":5\n ├── cardinality: [1 - 1]\n ├── immutable, has-placeholder\n ├── key: ()\n ├── fd: ()--\u003e(5)\n ├── values\n │    ├── columns: column1:1!null column2:2 column3:3!null column4:4\n │    ├── cardinality: [1 - 1]\n │    ├── has-placeholder\n │    ├── key: ()\n │    ├── fd: ()--\u003e(1-4)\n │    └── (1, $1, 2, $2)\n └── projections\n      └── ((column1:1 + column2:2) + column3:3) + column4:4 [as=\"?column?\":5, outer=(1-4), immutable]\n",
+    "project\n ├── columns: \"?column?\":5\n ├── cardinality: [1 - 1]\n ├── immutable, has-placeholder\n ├── key: ()\n ├── fd: ()--\u003e(5)\n ├── values\n │    ├── columns: column2:2 column4:4\n │    ├── cardinality: [1 - 1]\n │    ├── has-placeholder\n │    ├── key: ()\n │    ├── fd: ()--\u003e(2,4)\n │    └── ($1, $2)\n └── projections\n      └── column4:4 + ((column2:2 + 1) + 2) [as=\"?column?\":5, outer=(2,4), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "values": {
+            "content": [
+              [
+                {
+                  "operand": [],
+                  "operator": "1",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "PLACEHOLDER",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "2",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "PLACEHOLDER",
+                  "type": "INT"
+                }
+              ]
+            ],
+            "schema": [
+              "INT",
+              "INT",
+              "INT",
+              "INT"
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "PLUS",
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "PLUS",
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "INT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "values": {
+            "content": [
+              [
+                {
+                  "operand": [],
+                  "operator": "PLACEHOLDER",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "PLACEHOLDER",
+                  "type": "INT"
+                }
+              ]
+            ],
+            "schema": [
+              "INT",
+              "INT"
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "1",
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "PLUS",
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "2",
+                    "type": "INT"
+                  }
+                ],
+                "operator": "PLUS",
+                "type": "INT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": []
+}

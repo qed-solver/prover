@@ -1,0 +1,601 @@
+{
+  "help": [
+    "project\n ├── columns: a1:1!null a2:2!null a3:3!null a4:4!null a1:7!null a2:8!null a3:9!null a4:10!null\n ├── immutable\n ├── key: (1-4,7-10)\n └── select\n      ├── columns: t1.a1:1!null t1.a2:2!null t1.a3:3!null t1.a4:4!null t1.crdb_internal_mvcc_timestamp:5 t1.tableoid:6 t2.a1:7!null t2.a2:8!null t2.a3:9!null t2.a4:10!null t2.crdb_internal_mvcc_timestamp:11 t2.tableoid:12\n      ├── immutable\n      ├── key: (1-4,7-10)\n      ├── fd: (1-4)--\u003e(5,6), (7-10)--\u003e(11,12)\n      ├── inner-join (cross)\n      │    ├── columns: t1.a1:1!null t1.a2:2!null t1.a3:3!null t1.a4:4!null t1.crdb_internal_mvcc_timestamp:5 t1.tableoid:6 t2.a1:7!null t2.a2:8!null t2.a3:9!null t2.a4:10!null t2.crdb_internal_mvcc_timestamp:11 t2.tableoid:12\n      │    ├── key: (1-4,7-10)\n      │    ├── fd: (1-4)--\u003e(5,6), (7-10)--\u003e(11,12)\n      │    ├── scan a [as=t1]\n      │    │    ├── columns: t1.a1:1!null t1.a2:2!null t1.a3:3!null t1.a4:4!null t1.crdb_internal_mvcc_timestamp:5 t1.tableoid:6\n      │    │    ├── key: (1-4)\n      │    │    └── fd: (1-4)--\u003e(5,6)\n      │    ├── scan a [as=t2]\n      │    │    ├── columns: t2.a1:7!null t2.a2:8!null t2.a3:9!null t2.a4:10!null t2.crdb_internal_mvcc_timestamp:11 t2.tableoid:12\n      │    │    ├── key: (7-10)\n      │    │    └── fd: (7-10)--\u003e(11,12)\n      │    └── filters (true)\n      └── filters\n           └── (((t1.a1:1 \u003e t2.a1:7) OR (t1.a1:1 \u003c= t2.a2:8)) AND ((t1.a2:2 \u003e (t2.a2:8 + 1)) OR (t1.a1:1 \u003c= (t2.a2:8 - 1)))) OR (((t1.a1:1 \u003e (t2.a1:7 + 5)) OR (t1.a1:1 \u003c= (t2.a2:8 + 5))) AND ((t1.a2:2 \u003e (t2.a2:8 + 7)) OR (t1.a1:1 \u003c= (t2.a2:8 - 9)))) [outer=(1,2,7,8), immutable, constraints=(/1: (/NULL - ])]\n",
+    "inner-join (cross)\n ├── columns: a1:1!null a2:2!null a3:3!null a4:4!null a1:7!null a2:8!null a3:9!null a4:10!null\n ├── immutable\n ├── key: (1-4,7-10)\n ├── scan a [as=t1]\n │    ├── columns: t1.a1:1!null t1.a2:2!null t1.a3:3!null t1.a4:4!null\n │    └── key: (1-4)\n ├── scan a [as=t2]\n │    ├── columns: t2.a1:7!null t2.a2:8!null t2.a3:9!null t2.a4:10!null\n │    └── key: (7-10)\n └── filters\n      └── (((t1.a1:1 \u003e t2.a1:7) OR (t1.a1:1 \u003c= t2.a2:8)) AND ((t1.a2:2 \u003e (t2.a2:8 + 1)) OR (t1.a1:1 \u003c= (t2.a2:8 - 1)))) OR (((t1.a1:1 \u003e (t2.a1:7 + 5)) OR (t1.a1:1 \u003c= (t2.a2:8 + 5))) AND ((t1.a2:2 \u003e (t2.a2:8 + 7)) OR (t1.a1:1 \u003c= (t2.a2:8 - 9)))) [outer=(1,2,7,8), immutable, constraints=(/1: (/NULL - ])]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                },
+                                {
+                                  "column": 6,
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "GT",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                },
+                                {
+                                  "column": 7,
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "LE",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "OR",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 1,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 7,
+                                      "type": "INT"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "1",
+                                      "type": "INT"
+                                    }
+                                  ],
+                                  "operator": "PLUS",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "GT",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 7,
+                                      "type": "INT"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "1",
+                                      "type": "INT"
+                                    }
+                                  ],
+                                  "operator": "MINUS",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "LE",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "OR",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 6,
+                                      "type": "INT"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "5",
+                                      "type": "INT"
+                                    }
+                                  ],
+                                  "operator": "PLUS",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "GT",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 7,
+                                      "type": "INT"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "5",
+                                      "type": "INT"
+                                    }
+                                  ],
+                                  "operator": "PLUS",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "LE",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "OR",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 1,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 7,
+                                      "type": "INT"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "7",
+                                      "type": "INT"
+                                    }
+                                  ],
+                                  "operator": "PLUS",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "GT",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 7,
+                                      "type": "INT"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "9",
+                                      "type": "INT"
+                                    }
+                                  ],
+                                  "operator": "MINUS",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "LE",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "OR",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "scan": 0
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          },
+          {
+            "column": 6,
+            "type": "INT"
+          },
+          {
+            "column": 7,
+            "type": "INT"
+          },
+          {
+            "column": 8,
+            "type": "INT"
+          },
+          {
+            "column": 9,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 4,
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GT",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 5,
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "OR",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 5,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "1",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "PLUS",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GT",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 5,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "1",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "MINUS",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "OR",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 4,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "5",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "PLUS",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GT",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 5,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "5",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "PLUS",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "OR",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 5,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "7",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "PLUS",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GT",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 5,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "9",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "MINUS",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "OR",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "OR",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "INNER",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

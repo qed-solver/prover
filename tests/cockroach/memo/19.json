@@ -1,0 +1,115 @@
+{
+  "help": [
+    "project\n ├── columns: x:1(int!null) y:2(int)\n ├── prune: (1,2)\n └── select\n      ├── columns: x:1(int!null) y:2(int) rowid:3(int!null) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n      ├── key: (3)\n      ├── fd: (3)--\u003e(1,2,4,5)\n      ├── scan a\n      │    ├── columns: x:1(int) y:2(int) rowid:3(int!null) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n      │    ├── key: (3)\n      │    ├── fd: (3)--\u003e(1,2,4,5)\n      │    └── prune: (1-5)\n      └── filters\n           └── lt [type=bool, outer=(1), constraints=(/1: (/NULL - /0]; tight)]\n                ├── variable: x:1 [type=int]\n                └── const: 1 [type=int]\n",
+    "select\n ├── columns: x:1(int!null) y:2(int)\n ├── prune: (2)\n ├── scan a\n │    ├── columns: x:1(int) y:2(int)\n │    └── prune: (1,2)\n └── filters\n      └── lt [type=bool, outer=(1), constraints=(/1: (/NULL - /0]; tight)]\n           ├── variable: x:1 [type=int]\n           └── const: 1 [type=int]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "LT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "1",
+                  "type": "INT"
+                }
+              ],
+              "operator": "LT",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

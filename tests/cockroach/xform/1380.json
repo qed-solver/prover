@@ -1,0 +1,500 @@
+{
+  "help": [
+    "sort\n ├── columns: neighborhood_name:3 population:19 white_pct:22 black_pct:23\n ├── immutable\n ├── key: (3)\n ├── fd: (3)--\u003e(19,22,23)\n ├── ordering: -22\n └── project\n      ├── columns: white_pct:22 black_pct:23 name:3 sum:19\n      ├── immutable\n      ├── key: (3)\n      ├── fd: (3)--\u003e(19,22,23)\n      ├── group-by (hash)\n      │    ├── columns: name:3 sum:19 sum:20 sum:21\n      │    ├── grouping columns: name:3\n      │    ├── immutable\n      │    ├── key: (3)\n      │    ├── fd: (3)--\u003e(19-21)\n      │    ├── project\n      │    │    ├── columns: name:3 popn_total:9 popn_white:10 popn_black:11\n      │    │    ├── immutable\n      │    │    └── select\n      │    │         ├── columns: neighborhoods.gid:1!null neighborhoods.boroname:2!null name:3 neighborhoods.geom:4!null neighborhoods.crdb_internal_mvcc_timestamp:5 neighborhoods.tableoid:6 census.gid:7!null blkid:8 popn_total:9 popn_white:10 popn_black:11 popn_nativ:12 popn_asian:13 popn_other:14 census.boroname:15 census.geom:16!null census.crdb_internal_mvcc_timestamp:17 census.tableoid:18\n      │    │         ├── immutable\n      │    │         ├── key: (1,7)\n      │    │         ├── fd: ()--\u003e(2), (1)--\u003e(3-6), (7)--\u003e(8-18)\n      │    │         ├── inner-join (cross)\n      │    │         │    ├── columns: neighborhoods.gid:1!null neighborhoods.boroname:2 name:3 neighborhoods.geom:4!null neighborhoods.crdb_internal_mvcc_timestamp:5 neighborhoods.tableoid:6 census.gid:7!null blkid:8 popn_total:9 popn_white:10 popn_black:11 popn_nativ:12 popn_asian:13 popn_other:14 census.boroname:15 census.geom:16!null census.crdb_internal_mvcc_timestamp:17 census.tableoid:18\n      │    │         │    ├── immutable\n      │    │         │    ├── key: (1,7)\n      │    │         │    ├── fd: (1)--\u003e(2-6), (7)--\u003e(8-18)\n      │    │         │    ├── scan nyc_neighborhoods [as=neighborhoods]\n      │    │         │    │    ├── columns: neighborhoods.gid:1!null neighborhoods.boroname:2 name:3 neighborhoods.geom:4 neighborhoods.crdb_internal_mvcc_timestamp:5 neighborhoods.tableoid:6\n      │    │         │    │    ├── key: (1)\n      │    │         │    │    └── fd: (1)--\u003e(2-6)\n      │    │         │    ├── scan nyc_census_blocks [as=census]\n      │    │         │    │    ├── columns: census.gid:7!null blkid:8 popn_total:9 popn_white:10 popn_black:11 popn_nativ:12 popn_asian:13 popn_other:14 census.boroname:15 census.geom:16 census.crdb_internal_mvcc_timestamp:17 census.tableoid:18\n      │    │         │    │    ├── key: (7)\n      │    │         │    │    └── fd: (7)--\u003e(8-18)\n      │    │         │    └── filters\n      │    │         │         └── st_intersects(neighborhoods.geom:4, census.geom:16) [outer=(4,16), immutable, constraints=(/4: (/NULL - ]; /16: (/NULL - ])]\n      │    │         └── filters\n      │    │              └── neighborhoods.boroname:2 = 'Manhattan' [outer=(2), constraints=(/2: [/'Manhattan' - /'Manhattan']; tight), fd=()--\u003e(2)]\n      │    └── aggregations\n      │         ├── sum [as=sum:19, outer=(9)]\n      │         │    └── popn_total:9\n      │         ├── sum [as=sum:20, outer=(10)]\n      │         │    └── popn_white:10\n      │         └── sum [as=sum:21, outer=(11)]\n      │              └── popn_black:11\n      └── projections\n           ├── (100.0 * sum:20) / sum:19 [as=white_pct:22, outer=(19,20), immutable]\n           └── (100.0 * sum:21) / sum:19 [as=black_pct:23, outer=(19,21), immutable]\n",
+    "sort\n ├── columns: neighborhood_name:3 population:19 white_pct:22 black_pct:23\n ├── immutable\n ├── key: (3)\n ├── fd: (3)--\u003e(19,22,23)\n ├── ordering: -22\n └── project\n      ├── columns: white_pct:22 black_pct:23 name:3 sum:19\n      ├── immutable\n      ├── key: (3)\n      ├── fd: (3)--\u003e(19,22,23)\n      ├── group-by (hash)\n      │    ├── columns: name:3 sum:19 sum:20 sum:21\n      │    ├── grouping columns: name:3\n      │    ├── immutable\n      │    ├── key: (3)\n      │    ├── fd: (3)--\u003e(19-21)\n      │    ├── inner-join (cross)\n      │    │    ├── columns: neighborhoods.boroname:2!null name:3 neighborhoods.geom:4!null popn_total:9 popn_white:10 popn_black:11 census.geom:16!null\n      │    │    ├── immutable\n      │    │    ├── fd: ()--\u003e(2)\n      │    │    ├── scan nyc_census_blocks [as=census]\n      │    │    │    └── columns: popn_total:9 popn_white:10 popn_black:11 census.geom:16\n      │    │    ├── select\n      │    │    │    ├── columns: neighborhoods.boroname:2!null name:3 neighborhoods.geom:4\n      │    │    │    ├── fd: ()--\u003e(2)\n      │    │    │    ├── scan nyc_neighborhoods [as=neighborhoods]\n      │    │    │    │    └── columns: neighborhoods.boroname:2 name:3 neighborhoods.geom:4\n      │    │    │    └── filters\n      │    │    │         └── neighborhoods.boroname:2 = 'Manhattan' [outer=(2), constraints=(/2: [/'Manhattan' - /'Manhattan']; tight), fd=()--\u003e(2)]\n      │    │    └── filters\n      │    │         └── st_intersects(neighborhoods.geom:4, census.geom:16) [outer=(4,16), immutable, constraints=(/4: (/NULL - ]; /16: (/NULL - ])]\n      │    └── aggregations\n      │         ├── sum [as=sum:19, outer=(9)]\n      │         │    └── popn_total:9\n      │         ├── sum [as=sum:20, outer=(10)]\n      │         │    └── popn_white:10\n      │         └── sum [as=sum:21, outer=(11)]\n      │              └── popn_black:11\n      └── projections\n           ├── (sum:20 * 100.0) / sum:19 [as=white_pct:22, outer=(19,20), immutable]\n           └── (sum:21 * 100.0) / sum:19 [as=black_pct:23, outer=(19,21), immutable]\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            2,
+            "FLOAT",
+            "DESCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "SUM",
+                    "type": "FLOAT"
+                  },
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 2,
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "SUM",
+                    "type": "FLOAT"
+                  },
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 3,
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "SUM",
+                    "type": "FLOAT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "VARCHAR"
+                  }
+                ],
+                "source": {
+                  "project": {
+                    "source": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 1,
+                                  "type": "VARCHAR"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'Manhattan'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "join": {
+                            "condition": {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [
+                                        {
+                                          "column": 3,
+                                          "type": "GEOMETRY"
+                                        },
+                                        {
+                                          "column": 15,
+                                          "type": "GEOMETRY"
+                                        }
+                                      ],
+                                      "operator": "SCALAR LIST",
+                                      "type": "ANYELEMENT"
+                                    }
+                                  ],
+                                  "operator": "FUNCTION",
+                                  "type": "BOOL"
+                                }
+                              ],
+                              "operator": "AND",
+                              "type": "BOOLEAN"
+                            },
+                            "kind": "INNER",
+                            "left": {
+                              "scan": 0
+                            },
+                            "right": {
+                              "scan": 1
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 2,
+                        "type": "VARCHAR"
+                      },
+                      {
+                        "column": 8,
+                        "type": "FLOAT"
+                      },
+                      {
+                        "column": 9,
+                        "type": "FLOAT"
+                      },
+                      {
+                        "column": 10,
+                        "type": "FLOAT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "VARCHAR"
+              },
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "operand": [],
+                        "operator": "100.0",
+                        "type": "FLOAT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "MULT",
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "FLOAT"
+                  }
+                ],
+                "operator": "DIV",
+                "type": "FLOAT"
+              },
+              {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "operand": [],
+                        "operator": "100.0",
+                        "type": "FLOAT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "MULT",
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "FLOAT"
+                  }
+                ],
+                "operator": "DIV",
+                "type": "FLOAT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [
+          [
+            2,
+            "FLOAT",
+            "DESCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "SUM",
+                    "type": "FLOAT"
+                  },
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "SUM",
+                    "type": "FLOAT"
+                  },
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 2,
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "SUM",
+                    "type": "FLOAT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 5,
+                    "type": "VARCHAR"
+                  }
+                ],
+                "source": {
+                  "join": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 6,
+                                  "type": "GEOMETRY"
+                                },
+                                {
+                                  "column": 3,
+                                  "type": "GEOMETRY"
+                                }
+                              ],
+                              "operator": "SCALAR LIST",
+                              "type": "ANYELEMENT"
+                            }
+                          ],
+                          "operator": "FUNCTION",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "kind": "INNER",
+                    "left": {
+                      "project": {
+                        "source": {
+                          "scan": 1
+                        },
+                        "target": [
+                          {
+                            "column": 2,
+                            "type": "FLOAT"
+                          },
+                          {
+                            "column": 3,
+                            "type": "FLOAT"
+                          },
+                          {
+                            "column": 4,
+                            "type": "FLOAT"
+                          },
+                          {
+                            "column": 9,
+                            "type": "GEOMETRY"
+                          }
+                        ]
+                      }
+                    },
+                    "right": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 0,
+                                  "type": "VARCHAR"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'Manhattan'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "project": {
+                            "source": {
+                              "scan": 0
+                            },
+                            "target": [
+                              {
+                                "column": 1,
+                                "type": "VARCHAR"
+                              },
+                              {
+                                "column": 2,
+                                "type": "VARCHAR"
+                              },
+                              {
+                                "column": 3,
+                                "type": "GEOMETRY"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "VARCHAR"
+              },
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "column": 2,
+                        "type": "FLOAT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "100.0",
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "MULT",
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "FLOAT"
+                  }
+                ],
+                "operator": "DIV",
+                "type": "FLOAT"
+              },
+              {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "column": 3,
+                        "type": "FLOAT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "100.0",
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "MULT",
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "FLOAT"
+                  }
+                ],
+                "operator": "DIV",
+                "type": "FLOAT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "VARCHAR",
+        "VARCHAR",
+        "GEOMETRY",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "VARCHAR",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "VARCHAR",
+        "GEOMETRY",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

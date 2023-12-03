@@ -1,0 +1,160 @@
+{
+  "help": [
+    "project\n ├── columns: y:2!null z:7!null  [hidden: x:1!null]\n ├── immutable\n ├── key: (1,2)\n ├── fd: (1)--\u003e(7)\n ├── ordering: +1,-2\n ├── select\n │    ├── columns: x:1!null y:2!null a.z:3 s:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n │    ├── key: (1,2)\n │    ├── fd: (1,2)--\u003e(3-6)\n │    ├── ordering: +1,-2\n │    ├── scan a\n │    │    ├── columns: x:1!null y:2!null a.z:3 s:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n │    │    ├── key: (1,2)\n │    │    ├── fd: (1,2)--\u003e(3-6)\n │    │    └── ordering: +1,-2\n │    └── filters\n │         └── x:1 \u003e y:2 [outer=(1,2)]\n └── projections\n      └── x:1 - 1 [as=z:7, outer=(1), immutable]\n",
+    "project\n ├── columns: y:2!null z:7!null  [hidden: x:1!null]\n ├── immutable\n ├── key: (1,2)\n ├── fd: (1)--\u003e(7)\n ├── ordering: +1,-2\n ├── select\n │    ├── columns: x:1!null y:2!null\n │    ├── key: (1,2)\n │    ├── ordering: +1,-2\n │    ├── scan a\n │    │    ├── columns: x:1!null y:2!null\n │    │    ├── key: (1,2)\n │    │    └── ordering: +1,-2\n │    └── filters\n │         └── x:1 \u003e y:2 [outer=(1,2)]\n └── projections\n      └── x:1 - 1 [as=z:7, outer=(1), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 1,
+                      "type": "FLOAT"
+                    }
+                  ],
+                  "operator": "GT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "FLOAT"
+          },
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "MINUS",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 1,
+                      "type": "FLOAT"
+                    }
+                  ],
+                  "operator": "GT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "FLOAT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "FLOAT"
+          },
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "MINUS",
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0,
+          1
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "FLOAT",
+        "DECIMAL",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

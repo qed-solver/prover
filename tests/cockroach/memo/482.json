@@ -1,0 +1,165 @@
+{
+  "help": [
+    "project\n ├── columns: a:1(int!null) b:2(jsonb) c:3(jsonb!null) d:4(int[])\n ├── immutable\n ├── stats: [rows=61.7284]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-4)\n └── select\n      ├── columns: a:1(int!null) b:2(jsonb) c:3(jsonb!null) d:4(int[]) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      ├── immutable\n      ├── stats: [rows=61.7284]\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-6)\n      ├── scan t_json_arr\n      │    ├── columns: a:1(int!null) b:2(jsonb) c:3(jsonb) d:4(int[]) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      │    ├── stats: [rows=5000, distinct(1)=5000, null(1)=0, distinct(3)=2500, null(3)=0]\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-6)\n      └── filters\n           └── c:3 @\u003e '{\"a\": \"b\", \"c\": \"d\"}' [type=bool, outer=(3), immutable, constraints=(/3: (/NULL - ])]\n",
+    "select\n ├── columns: a:1(int!null) b:2(jsonb) c:3(jsonb!null) d:4(int[])\n ├── immutable\n ├── stats: [rows=61.7284]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-4)\n ├── scan t_json_arr\n │    ├── columns: a:1(int!null) b:2(jsonb) c:3(jsonb) d:4(int[])\n │    ├── stats: [rows=5000, distinct(1)=5000, null(1)=0, distinct(3)=2500, null(3)=0]\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-4)\n └── filters\n      └── c:3 @\u003e '{\"a\": \"b\", \"c\": \"d\"}' [type=bool, outer=(3), immutable, constraints=(/3: (/NULL - ])]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "JSONB"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'{\"a\": \"b\", \"c\": \"d\"}'",
+                      "type": "JSONB"
+                    }
+                  ],
+                  "operator": "CONTAINS",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "JSONB"
+                  },
+                  {
+                    "column": 2,
+                    "type": "JSONB"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT[]"
+                  },
+                  {
+                    "column": 4,
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "column": 5,
+                    "type": "OID"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "JSONB"
+          },
+          {
+            "column": 2,
+            "type": "JSONB"
+          },
+          {
+            "column": 3,
+            "type": "INT[]"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 2,
+                  "type": "JSONB"
+                },
+                {
+                  "operand": [],
+                  "operator": "'{\"a\": \"b\", \"c\": \"d\"}'",
+                  "type": "JSONB"
+                }
+              ],
+              "operator": "CONTAINS",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "JSONB"
+              },
+              {
+                "column": 2,
+                "type": "JSONB"
+              },
+              {
+                "column": 3,
+                "type": "INT[]"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "types": [
+        "INT",
+        "JSONB",
+        "JSONB",
+        "INT[]",
+        "DECIMAL",
+        "OID",
+        "ENCODEDKEY"
+      ]
+    }
+  ]
+}

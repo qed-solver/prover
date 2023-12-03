@@ -1,0 +1,189 @@
+{
+  "help": [
+    "project\n ├── columns: m:1\n ├── cost: 11168.6733\n └── select\n      ├── columns: m:1 n:2 rowid:3!null small.crdb_internal_mvcc_timestamp:4 small.tableoid:5\n      ├── cost: 11168.62\n      ├── key: (3)\n      ├── fd: (3)--\u003e(1,2,4,5)\n      ├── scan small\n      │    ├── columns: m:1 n:2 rowid:3!null small.crdb_internal_mvcc_timestamp:4 small.tableoid:5\n      │    ├── cost: 39.62\n      │    ├── key: (3)\n      │    └── fd: (3)--\u003e(1,2,4,5)\n      └── filters\n           └── exists [outer=(2), correlated-subquery]\n                └── project\n                     ├── columns: \"?column?\":11!null\n                     ├── outer: (2)\n                     ├── cost: 11128.87\n                     ├── fd: ()--\u003e(11)\n                     ├── select\n                     │    ├── columns: k:6!null i:7!null s:8 partial_tab.crdb_internal_mvcc_timestamp:9 partial_tab.tableoid:10\n                     │    ├── outer: (2)\n                     │    ├── cost: 10928.85\n                     │    ├── key: (6)\n                     │    ├── fd: ()--\u003e(7), (6)--\u003e(8-10)\n                     │    ├── scan partial_tab\n                     │    │    ├── columns: k:6!null i:7 s:8 partial_tab.crdb_internal_mvcc_timestamp:9 partial_tab.tableoid:10\n                     │    │    ├── partial index predicates\n                     │    │    │    └── partial_idx: filters\n                     │    │    │         └── s:8 IN ('foo', 'bar', 'baz') [outer=(8), constraints=(/8: [/'bar' - /'bar'] [/'baz' - /'baz'] [/'foo' - /'foo']; tight)]\n                     │    │    ├── cost: 10828.82\n                     │    │    ├── key: (6)\n                     │    │    └── fd: (6)--\u003e(7-10)\n                     │    └── filters\n                     │         └── n:2 = i:7 [outer=(2,7), constraints=(/2: (/NULL - ]; /7: (/NULL - ]), fd=(2)==(7), (7)==(2)]\n                     └── projections\n                          └── 1 [as=\"?column?\":11]\n",
+    "project\n ├── columns: m:1\n ├── cost: 263.356\n └── semi-join (lookup partial_tab@full_idx)\n      ├── columns: m:1 n:2\n      ├── key columns: [2] = [7]\n      ├── cost: 263.236\n      ├── scan small\n      │    ├── columns: m:1 n:2\n      │    └── cost: 39.02\n      └── filters (true)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [],
+                  "operator": "EXISTS",
+                  "query": {
+                    "project": {
+                      "source": {
+                        "filter": {
+                          "condition": {
+                            "operand": [
+                              {
+                                "operand": [
+                                  {
+                                    "column": 1,
+                                    "type": "INT"
+                                  },
+                                  {
+                                    "column": 6,
+                                    "type": "INT"
+                                  }
+                                ],
+                                "operator": "EQ",
+                                "type": "BOOL"
+                              }
+                            ],
+                            "operator": "AND",
+                            "type": "BOOLEAN"
+                          },
+                          "source": {
+                            "scan": 1
+                          }
+                        }
+                      },
+                      "target": [
+                        {
+                          "operand": [],
+                          "operator": "1",
+                          "type": "INT"
+                        }
+                      ]
+                    }
+                  },
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "SEMI",
+            "left": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 1
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

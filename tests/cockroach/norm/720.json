@@ -1,0 +1,257 @@
+{
+  "help": [
+    "project\n ├── columns: length:8 f:3 k:9 i:10 f:11 s:12 j:13\n ├── immutable\n ├── fd: (9)--\u003e(10-13)\n └── full-join (hash)\n      ├── columns: a.f:3 length:8 a2.k:9 a2.i:10 a2.f:11 a2.s:12 a2.j:13 a2.crdb_internal_mvcc_timestamp:14 a2.tableoid:15\n      ├── immutable\n      ├── fd: (9)--\u003e(10-15)\n      ├── project\n      │    ├── columns: length:8 a.f:3!null\n      │    ├── immutable\n      │    ├── scan a\n      │    │    ├── columns: a.k:1!null a.i:2 a.f:3!null a.s:4 a.j:5 a.crdb_internal_mvcc_timestamp:6 a.tableoid:7\n      │    │    ├── key: (1)\n      │    │    └── fd: (1)--\u003e(2-7)\n      │    └── projections\n      │         └── length(a.s:4) [as=length:8, outer=(4), immutable]\n      ├── scan a [as=a2]\n      │    ├── columns: a2.k:9!null a2.i:10 a2.f:11!null a2.s:12 a2.j:13 a2.crdb_internal_mvcc_timestamp:14 a2.tableoid:15\n      │    ├── key: (9)\n      │    └── fd: (9)--\u003e(10-15)\n      └── filters\n           └── a.f:3 = a2.f:11 [outer=(3,11), constraints=(/3: (/NULL - ]; /11: (/NULL - ]), fd=(3)==(11), (11)==(3)]\n",
+    "inner-join (hash)\n ├── columns: length:8 f:3!null k:9!null i:10 f:11!null s:12 j:13\n ├── multiplicity: left-rows(one-or-more), right-rows(one-or-more)\n ├── immutable\n ├── fd: (9)--\u003e(10-13), (3)==(11), (11)==(3)\n ├── scan a [as=a2]\n │    ├── columns: a2.k:9!null a2.i:10 a2.f:11!null a2.s:12 a2.j:13\n │    ├── key: (9)\n │    └── fd: (9)--\u003e(10-13)\n ├── project\n │    ├── columns: length:8 a.f:3!null\n │    ├── immutable\n │    ├── scan a\n │    │    └── columns: a.f:3!null a.s:4\n │    └── projections\n │         └── length(a.s:4) [as=length:8, outer=(4), immutable]\n └── filters\n      └── a.f:3 = a2.f:11 [outer=(3,11), constraints=(/3: (/NULL - ]; /11: (/NULL - ]), fd=(3)==(11), (11)==(3)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "FLOAT"
+                    },
+                    {
+                      "column": 4,
+                      "type": "FLOAT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "FULL",
+            "left": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 2,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "operand": [
+                          {
+                            "column": 3,
+                            "type": "STRING"
+                          }
+                        ],
+                        "operator": "SCALAR LIST",
+                        "type": "ANYELEMENT"
+                      }
+                    ],
+                    "operator": "FUNCTION",
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "FLOAT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          },
+          {
+            "column": 4,
+            "type": "FLOAT"
+          },
+          {
+            "column": 5,
+            "type": "STRING"
+          },
+          {
+            "column": 6,
+            "type": "JSONB"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 5,
+                      "type": "FLOAT"
+                    },
+                    {
+                      "column": 2,
+                      "type": "FLOAT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 4,
+                    "type": "JSONB"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 2,
+                        "type": "FLOAT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "STRING"
+                      }
+                    ]
+                  }
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "operand": [
+                          {
+                            "column": 1,
+                            "type": "STRING"
+                          }
+                        ],
+                        "operator": "SCALAR LIST",
+                        "type": "ANYELEMENT"
+                      }
+                    ],
+                    "operator": "FUNCTION",
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 5,
+            "type": "FLOAT"
+          },
+          {
+            "column": 6,
+            "type": "INT"
+          },
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "FLOAT"
+          },
+          {
+            "column": 3,
+            "type": "STRING"
+          },
+          {
+            "column": 4,
+            "type": "JSONB"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

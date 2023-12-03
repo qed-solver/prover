@@ -1,0 +1,150 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null x:7!null\n ├── stats: [rows=990]\n ├── cost: 1e+100\n ├── fd: (1)==(7), (7)==(1)\n └── inner-join (hash)\n      ├── columns: k:1!null i:2 s:3 d:4!null a.crdb_internal_mvcc_timestamp:5 a.tableoid:6 x:7!null z:8!null rowid:9!null b.crdb_internal_mvcc_timestamp:10 b.tableoid:11\n      ├── flags: force lookup join (into right side)\n      ├── multiplicity: left-rows(zero-or-more), right-rows(zero-or-one)\n      ├── stats: [rows=990, distinct(1)=99, null(1)=0, distinct(7)=99, null(7)=0]\n      ├── cost: 1e+100\n      ├── key: (9)\n      ├── fd: (1)--\u003e(2-6), (9)--\u003e(7,8,10,11), (1)==(7), (7)==(1)\n      ├── scan a\n      │    ├── columns: k:1!null i:2 s:3 d:4!null a.crdb_internal_mvcc_timestamp:5 a.tableoid:6\n      │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(4)=100, null(4)=0]\n      │    ├── cost: 1129.02\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-6)\n      ├── scan b\n      │    ├── columns: x:7 z:8!null rowid:9!null b.crdb_internal_mvcc_timestamp:10 b.tableoid:11\n      │    ├── stats: [rows=1000, distinct(7)=100, null(7)=10, distinct(8)=100, null(8)=0, distinct(9)=1000, null(9)=0]\n      │    ├── cost: 1108.82\n      │    ├── key: (9)\n      │    └── fd: (9)--\u003e(7,8,10,11)\n      └── filters\n           └── k:1 = x:7 [outer=(1,7), constraints=(/1: (/NULL - ]; /7: (/NULL - ]), fd=(1)==(7), (7)==(1)]\n",
+    "inner-join (hash)\n ├── columns: k:1!null x:7!null\n ├── flags: force lookup join (into right side)\n ├── multiplicity: left-rows(zero-or-more), right-rows(zero-or-one)\n ├── stats: [rows=990, distinct(1)=99, null(1)=0, distinct(7)=99, null(7)=0]\n ├── cost: 1e+100\n ├── fd: (1)==(7), (7)==(1)\n ├── scan a\n │    ├── columns: k:1!null\n │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0]\n │    ├── cost: 1078.52\n │    └── key: (1)\n ├── scan b\n │    ├── columns: x:7\n │    ├── stats: [rows=1000, distinct(7)=100, null(7)=10]\n │    └── cost: 1068.42\n └── filters\n      └── k:1 = x:7 [outer=(1,7), constraints=(/1: (/NULL - ]; /7: (/NULL - ]), fd=(1)==(7), (7)==(1)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 6,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 1
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 6,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INT"
+                },
+                {
+                  "column": 1,
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "INNER",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 1
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

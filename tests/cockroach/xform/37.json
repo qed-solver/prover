@@ -1,0 +1,115 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null i:2 \"?column?\":7\n ├── immutable\n ├── stats: [rows=1000]\n ├── cost: 1149.04\n ├── key: (1)\n ├── fd: (1)--\u003e(2,7)\n ├── scan a\n │    ├── columns: k:1!null i:2 s:3 d:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n │    ├── stats: [rows=1000]\n │    ├── cost: 1129.02\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-6)\n └── projections\n      └── s:3 || 'foo' [as=\"?column?\":7, outer=(3), immutable]\n",
+    "project\n ├── columns: k:1!null i:2 \"?column?\":7\n ├── immutable\n ├── stats: [rows=1000]\n ├── cost: 1118.74\n ├── key: (1)\n ├── fd: (1)--\u003e(2,7)\n ├── scan a\n │    ├── columns: k:1!null i:2 s:3\n │    ├── stats: [rows=1000]\n │    ├── cost: 1098.72\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2,3)\n └── projections\n      └── s:3 || 'foo' [as=\"?column?\":7, outer=(3), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 2,
+                "type": "STRING"
+              },
+              {
+                "operand": [],
+                "operator": "'foo'",
+                "type": "STRING"
+              }
+            ],
+            "operator": "CONCAT",
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 2,
+                "type": "STRING"
+              },
+              {
+                "operand": [],
+                "operator": "'foo'",
+                "type": "STRING"
+              }
+            ],
+            "operator": "CONCAT",
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

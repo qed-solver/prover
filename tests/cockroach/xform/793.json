@@ -1,0 +1,291 @@
+{
+  "help": [
+    "project\n ├── columns: id:1!null name:2 metric_id:5 time:6 value:7\n ├── key: (1,5,6)\n ├── fd: (1)--\u003e(2), (5,6)--\u003e(7)\n └── left-join (cross)\n      ├── columns: id:1!null name:2 metrics.crdb_internal_mvcc_timestamp:3 metrics.tableoid:4 metric_id:5 time:6 value:7 metric_values.crdb_internal_mvcc_timestamp:8 metric_values.tableoid:9\n      ├── key: (1,5,6)\n      ├── fd: (1)--\u003e(2-4), (5,6)--\u003e(7-9)\n      ├── scan metrics\n      │    ├── columns: id:1!null name:2 metrics.crdb_internal_mvcc_timestamp:3 metrics.tableoid:4\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-4)\n      ├── scan metric_values\n      │    ├── columns: metric_id:5!null time:6!null value:7 metric_values.crdb_internal_mvcc_timestamp:8 metric_values.tableoid:9\n      │    ├── key: (5,6)\n      │    └── fd: (5,6)--\u003e(7-9)\n      └── filters\n           └── ((metric_id:5 = id:1) AND ((time:6 \u003e= '2020-01-01 00:00:00+00') AND (time:6 \u003c= '2020-01-01 00:10:00+00'))) AND (name:2 = 'cpu') [outer=(1,2,5,6), constraints=(/1: (/NULL - ]; /2: [/'cpu' - /'cpu']; /5: (/NULL - ]; /6: [/'2020-01-01 00:00:00+00' - /'2020-01-01 00:10:00+00']), fd=()--\u003e(2)]\n",
+    "left-join (lookup metric_values)\n ├── columns: id:1!null name:2 metric_id:5 time:6 value:7\n ├── lookup expression\n │    └── filters\n │         ├── id:1 = metric_id:5 [outer=(1,5), constraints=(/1: (/NULL - ]; /5: (/NULL - ]), fd=(1)==(5), (5)==(1)]\n │         └── (time:6 \u003e= '2020-01-01 00:00:00+00') AND (time:6 \u003c= '2020-01-01 00:10:00+00') [outer=(6), constraints=(/6: [/'2020-01-01 00:00:00+00' - /'2020-01-01 00:10:00+00']; tight)]\n ├── key: (1,5,6)\n ├── fd: (1)--\u003e(2), (5,6)--\u003e(7)\n ├── scan metrics\n │    ├── columns: id:1!null name:2\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2)\n └── filters\n      └── name:2 = 'cpu' [outer=(2), constraints=(/2: [/'cpu' - /'cpu']; tight), fd=()--\u003e(2)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 4,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "EQ",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 5,
+                                  "type": "TIMESTAMPTZ"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'2020-01-01 00:00:00+00'",
+                                  "type": "TIMESTAMPTZ"
+                                }
+                              ],
+                              "operator": "GE",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 5,
+                                  "type": "TIMESTAMPTZ"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'2020-01-01 00:10:00+00'",
+                                  "type": "TIMESTAMPTZ"
+                                }
+                              ],
+                              "operator": "LE",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'cpu'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "LEFT",
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 1
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "STRING"
+          },
+          {
+            "column": 4,
+            "type": "INT"
+          },
+          {
+            "column": 5,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "column": 6,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "STRING"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'cpu'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 3,
+                          "type": "TIMESTAMPTZ"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'2020-01-01 00:00:00+00'",
+                          "type": "TIMESTAMPTZ"
+                        }
+                      ],
+                      "operator": "GE",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 3,
+                          "type": "TIMESTAMPTZ"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'2020-01-01 00:10:00+00'",
+                          "type": "TIMESTAMPTZ"
+                        }
+                      ],
+                      "operator": "LE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "LEFT",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "STRING"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 1
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "TIMESTAMPTZ"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0,
+          1
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "TIMESTAMPTZ",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

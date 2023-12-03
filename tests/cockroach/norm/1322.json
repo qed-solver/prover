@@ -1,0 +1,165 @@
+{
+  "help": [
+    "project\n ├── columns: j:8\n ├── immutable\n ├── select\n │    ├── columns: k:1!null b.j:2 i:3 s:4 arr:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    ├── immutable\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2-7)\n │    ├── scan b\n │    │    ├── columns: k:1!null b.j:2 i:3 s:4 arr:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    │    ├── key: (1)\n │    │    └── fd: (1)--\u003e(2-7)\n │    └── filters\n │         └── b.j:2['a'] = '\"b\"' [outer=(2), immutable]\n └── projections\n      └── b.j:2['c'] [as=j:8, outer=(2)]\n",
+    "project\n ├── columns: j:8\n ├── immutable\n ├── select\n │    ├── columns: b.j:2\n │    ├── immutable\n │    ├── scan b\n │    │    └── columns: b.j:2\n │    └── filters\n │         └── (b.j:2-\u003e'a') = '\"b\"' [outer=(2), immutable]\n └── projections\n      └── b.j:2-\u003e'c' [as=j:8, outer=(2), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "JSONB"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'a'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "INDIRECTION",
+                      "type": "JSONB"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'\"b\"'",
+                      "type": "JSONB"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "JSONB"
+              },
+              {
+                "operand": [],
+                "operator": "'c'",
+                "type": "STRING"
+              }
+            ],
+            "operator": "INDIRECTION",
+            "type": "JSONB"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "JSONB"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'a'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "FETCH VAL",
+                      "type": "JSONB"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'\"b\"'",
+                      "type": "JSONB"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "JSONB"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "JSONB"
+              },
+              {
+                "operand": [],
+                "operator": "'c'",
+                "type": "STRING"
+              }
+            ],
+            "operator": "FETCH VAL",
+            "type": "JSONB"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "JSONB",
+        "INT",
+        "STRING",
+        "STRING[]",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

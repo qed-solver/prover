@@ -1,0 +1,254 @@
+{
+  "help": [
+    "limit\n ├── columns: k:1!null i:2 f:3 s:4 j:5\n ├── internal-ordering: -4\n ├── cardinality: [0 - 10]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-5)\n ├── ordering: -4\n ├── offset\n │    ├── columns: k:1!null i:2 f:3 s:4 j:5\n │    ├── internal-ordering: -4\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2-5)\n │    ├── ordering: -4\n │    ├── limit hint: 10.00\n │    ├── sort\n │    │    ├── columns: k:1!null i:2 f:3 s:4 j:5\n │    │    ├── key: (1)\n │    │    ├── fd: (1)--\u003e(2-5)\n │    │    ├── ordering: -4\n │    │    ├── limit hint: 20.00\n │    │    └── project\n │    │         ├── columns: k:1!null i:2 f:3 s:4 j:5\n │    │         ├── key: (1)\n │    │         ├── fd: (1)--\u003e(2-5)\n │    │         └── scan a\n │    │              ├── columns: k:1!null i:2 f:3 s:4 j:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    │              ├── key: (1)\n │    │              └── fd: (1)--\u003e(2-7)\n │    └── 10\n └── 10\n",
+    "offset\n ├── columns: k:1!null i:2 f:3 s:4 j:5\n ├── internal-ordering: -4\n ├── cardinality: [0 - 10]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-5)\n ├── ordering: -4\n ├── index-join a\n │    ├── columns: k:1!null i:2 f:3 s:4 j:5\n │    ├── cardinality: [0 - 20]\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2-5)\n │    ├── ordering: -4\n │    └── scan a@si_idx\n │         ├── columns: k:1!null i:2 s:4 j:5\n │         ├── limit: 20\n │         ├── key: (1)\n │         ├── fd: (1)--\u003e(2,4,5)\n │         └── ordering: -4\n └── 10\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            3,
+            "STRING",
+            "DESCENDING"
+          ]
+        ],
+        "limit": {
+          "operand": [],
+          "operator": "10",
+          "type": "INT"
+        },
+        "source": {
+          "sort": {
+            "collation": [
+              [
+                3,
+                "STRING",
+                "DESCENDING"
+              ]
+            ],
+            "offset": {
+              "operand": [],
+              "operator": "10",
+              "type": "INT"
+            },
+            "source": {
+              "sort": {
+                "collation": [
+                  [
+                    3,
+                    "STRING",
+                    "DESCENDING"
+                  ]
+                ],
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "FLOAT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 4,
+                        "type": "JSONB"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [
+          [
+            3,
+            "STRING",
+            "DESCENDING"
+          ]
+        ],
+        "offset": {
+          "operand": [],
+          "operator": "10",
+          "type": "INT"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 4,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "\u003c=\u003e",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 5,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "\u003c=\u003e",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "STRING"
+                        },
+                        {
+                          "column": 7,
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "\u003c=\u003e",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 3,
+                          "type": "JSONB"
+                        },
+                        {
+                          "column": 8,
+                          "type": "JSONB"
+                        }
+                      ],
+                      "operator": "\u003c=\u003e",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "sort": {
+                    "collation": [],
+                    "limit": {
+                      "operand": [],
+                      "operator": "20",
+                      "type": "INTEGER"
+                    },
+                    "source": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 1,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 3,
+                            "type": "STRING"
+                          },
+                          {
+                            "column": 4,
+                            "type": "JSONB"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "scan": 0
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 6,
+                "type": "FLOAT"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              },
+              {
+                "column": 3,
+                "type": "JSONB"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "help": [
+    "project\n ├── columns: x:1!null y:2!null z:3 s:4!null\n ├── key: (1,2)\n ├── fd: (1,2)--\u003e(3,4)\n ├── ordering: +1,-2\n └── select\n      ├── columns: x:1!null y:2!null z:3 s:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n      ├── key: (1,2)\n      ├── fd: (1,2)--\u003e(3-6)\n      ├── ordering: +1,-2\n      ├── scan a\n      │    ├── columns: x:1!null y:2!null z:3 s:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n      │    ├── key: (1,2)\n      │    ├── fd: (1,2)--\u003e(3-6)\n      │    └── ordering: +1,-2\n      └── filters\n           └── x:1 \u003e y:2 [outer=(1,2)]\n",
+    "select\n ├── columns: x:1!null y:2!null z:3 s:4!null\n ├── key: (1,2)\n ├── fd: (1,2)--\u003e(3,4)\n ├── ordering: +1,-2\n ├── scan a\n │    ├── columns: x:1!null y:2!null z:3 s:4!null\n │    ├── key: (1,2)\n │    ├── fd: (1,2)--\u003e(3,4)\n │    └── ordering: +1,-2\n └── filters\n      └── x:1 \u003e y:2 [outer=(1,2)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 1,
+                      "type": "FLOAT"
+                    }
+                  ],
+                  "operator": "GT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "FLOAT"
+          },
+          {
+            "column": 2,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 3,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INT"
+                },
+                {
+                  "column": 1,
+                  "type": "FLOAT"
+                }
+              ],
+              "operator": "GT",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "column": 2,
+                "type": "DECIMAL"
+              },
+              {
+                "column": 3,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0,
+          1
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "FLOAT",
+        "DECIMAL",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

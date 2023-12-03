@@ -1,0 +1,334 @@
+{
+  "help": [
+    "select\n ├── columns: k:15!null\n ├── cardinality: [0 - 8]\n ├── volatile\n ├── key: (15)\n ├── union\n │    ├── columns: k:15\n │    ├── left columns: b.k:1\n │    ├── right columns: a.i:9\n │    ├── key: (15)\n │    ├── project\n │    │    ├── columns: b.k:1!null\n │    │    ├── key: (1)\n │    │    └── scan b\n │    │         ├── columns: b.k:1!null b.i:2 b.f:3 b.s:4!null b.j:5 b.crdb_internal_mvcc_timestamp:6 b.tableoid:7\n │    │         ├── key: (1)\n │    │         └── fd: (1)--\u003e(2-7)\n │    └── project\n │         ├── columns: a.i:9\n │         └── scan a\n │              ├── columns: a.k:8!null a.i:9 a.f:10 a.s:11 a.j:12 a.crdb_internal_mvcc_timestamp:13 a.tableoid:14\n │              ├── key: (8)\n │              └── fd: (8)--\u003e(9-14)\n └── filters\n      └── ((k:15 \u003c 10) AND (k:15 \u003e 1)) AND (random() \u003c 0.5) [outer=(15), volatile, constraints=(/15: [/2 - /9])]\n",
+    "union\n ├── columns: k:15!null\n ├── left columns: b.k:1\n ├── right columns: a.i:9\n ├── volatile\n ├── key: (15)\n ├── select\n │    ├── columns: b.k:1!null\n │    ├── cardinality: [0 - 8]\n │    ├── volatile\n │    ├── key: (1)\n │    ├── scan b\n │    │    ├── columns: b.k:1!null\n │    │    └── key: (1)\n │    └── filters\n │         ├── (b.k:1 \u003c 10) AND (b.k:1 \u003e 1) [outer=(1), constraints=(/1: [/2 - /9]; tight)]\n │         └── random() \u003c 0.5 [volatile]\n └── select\n      ├── columns: a.i:9!null\n      ├── volatile\n      ├── scan a\n      │    └── columns: a.i:9\n      └── filters\n           ├── (a.i:9 \u003c 10) AND (a.i:9 \u003e 1) [outer=(9), constraints=(/9: [/2 - /9]; tight)]\n           └── random() \u003c 0.5 [volatile]\n"
+  ],
+  "queries": [
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "10",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "LT",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "1",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "GT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "FLOAT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "0.5",
+                      "type": "FLOAT"
+                    }
+                  ],
+                  "operator": "LT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "distinct": {
+            "union": [
+              {
+                "project": {
+                  "source": {
+                    "scan": 0
+                  },
+                  "target": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    }
+                  ]
+                }
+              },
+              {
+                "project": {
+                  "source": {
+                    "scan": 1
+                  },
+                  "target": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "distinct": {
+        "union": [
+          {
+            "filter": {
+              "condition": {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "operand": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          },
+                          {
+                            "operand": [],
+                            "operator": "10",
+                            "type": "INT"
+                          }
+                        ],
+                        "operator": "LT",
+                        "type": "BOOL"
+                      },
+                      {
+                        "operand": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          },
+                          {
+                            "operand": [],
+                            "operator": "1",
+                            "type": "INT"
+                          }
+                        ],
+                        "operator": "GT",
+                        "type": "BOOL"
+                      }
+                    ],
+                    "operator": "AND",
+                    "type": "BOOL"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "operand": [
+                          {
+                            "operand": [],
+                            "operator": "SCALAR LIST",
+                            "type": "ANYELEMENT"
+                          }
+                        ],
+                        "operator": "FUNCTION",
+                        "type": "FLOAT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "0.5",
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "LT",
+                    "type": "BOOL"
+                  }
+                ],
+                "operator": "AND",
+                "type": "BOOLEAN"
+              },
+              "source": {
+                "project": {
+                  "source": {
+                    "scan": 0
+                  },
+                  "target": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "filter": {
+              "condition": {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "operand": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          },
+                          {
+                            "operand": [],
+                            "operator": "10",
+                            "type": "INT"
+                          }
+                        ],
+                        "operator": "LT",
+                        "type": "BOOL"
+                      },
+                      {
+                        "operand": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          },
+                          {
+                            "operand": [],
+                            "operator": "1",
+                            "type": "INT"
+                          }
+                        ],
+                        "operator": "GT",
+                        "type": "BOOL"
+                      }
+                    ],
+                    "operator": "AND",
+                    "type": "BOOL"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "operand": [
+                          {
+                            "operand": [],
+                            "operator": "SCALAR LIST",
+                            "type": "ANYELEMENT"
+                          }
+                        ],
+                        "operator": "FUNCTION",
+                        "type": "FLOAT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "0.5",
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "LT",
+                    "type": "BOOL"
+                  }
+                ],
+                "operator": "AND",
+                "type": "BOOLEAN"
+              },
+              "source": {
+                "project": {
+                  "source": {
+                    "scan": 1
+                  },
+                  "target": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

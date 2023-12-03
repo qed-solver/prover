@@ -1,0 +1,169 @@
+{
+  "help": [
+    "project\n ├── columns: geom:1(geometry) geog:2(geography) val:3(float)\n ├── immutable\n └── select\n      ├── columns: geom:1(geometry) geog:2(geography) val:3(float) rowid:4(int!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      ├── immutable\n      ├── key: (4)\n      ├── fd: (4)--\u003e(1-3,5,6)\n      ├── scan geom_geog\n      │    ├── columns: geom:1(geometry) geog:2(geography) val:3(float) rowid:4(int!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      │    ├── key: (4)\n      │    └── fd: (4)--\u003e(1-3,5,6)\n      └── filters\n           └── lt [type=bool, outer=(2,3), immutable]\n                ├── function: st_distance [type=float]\n                │    ├── variable: geog:2 [type=geography]\n                │    └── const: '0101000020E610000000000000000000000000000000000000' [type=geography]\n                └── cast: INT8 [type=int]\n                     └── variable: val:3 [type=float]\n",
+    "select\n ├── columns: geom:1(geometry) geog:2(geography!null) val:3(float)\n ├── immutable\n ├── scan geom_geog\n │    └── columns: geom:1(geometry) geog:2(geography) val:3(float)\n └── filters\n      └── function: st_dwithinexclusive [type=bool, outer=(2,3), immutable, constraints=(/2: (/NULL - ])]\n           ├── variable: geog:2 [type=geography]\n           ├── const: '0101000020E610000000000000000000000000000000000000' [type=geography]\n           └── cast: FLOAT8 [type=float]\n                └── cast: INT8 [type=int]\n                     └── variable: val:3 [type=float]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "GEOGRAPHY"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'0101000020E610000000000000000000000000000000000000'",
+                              "type": "GEOGRAPHY"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "FLOAT"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "FLOAT"
+                        }
+                      ],
+                      "operator": "CAST",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "LT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "GEOMETRY"
+          },
+          {
+            "column": 1,
+            "type": "GEOGRAPHY"
+          },
+          {
+            "column": 2,
+            "type": "FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "GEOGRAPHY"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'0101000020E610000000000000000000000000000000000000'",
+                      "type": "GEOGRAPHY"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 2,
+                              "type": "FLOAT"
+                            }
+                          ],
+                          "operator": "CAST",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "CAST",
+                      "type": "FLOAT"
+                    }
+                  ],
+                  "operator": "SCALAR LIST",
+                  "type": "ANYELEMENT"
+                }
+              ],
+              "operator": "FUNCTION",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "GEOMETRY"
+              },
+              {
+                "column": 1,
+                "type": "GEOGRAPHY"
+              },
+              {
+                "column": 2,
+                "type": "FLOAT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          3
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "GEOMETRY",
+        "GEOGRAPHY",
+        "FLOAT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

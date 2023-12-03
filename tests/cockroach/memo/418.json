@@ -1,0 +1,299 @@
+{
+  "help": [
+    "project\n ├── columns: a:1(int) b:2(date) c:3(decimal!null) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string)\n ├── immutable\n ├── stats: [rows=120]\n └── select\n      ├── columns: a:1(int) b:2(date) c:3(decimal!null) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string) rowid:8(int!null) crdb_internal_mvcc_timestamp:9(decimal) tableoid:10(oid)\n      ├── immutable\n      ├── stats: [rows=120, distinct(3)=11, null(3)=0]\n      │   histogram(3)=  0  0  90  10  0  20\n      │                \u003c--- 0 ---- 10 --- 20\n      ├── key: (8)\n      ├── fd: (8)--\u003e(1-7,9,10)\n      ├── scan hist\n      │    ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string) rowid:8(int!null) crdb_internal_mvcc_timestamp:9(decimal) tableoid:10(oid)\n      │    ├── stats: [rows=1000, distinct(3)=45, null(3)=0, distinct(8)=1000, null(8)=0]\n      │    │   histogram(3)=  0  0  90  10  180  20  270  30  360  40\n      │    │                \u003c--- 0 ---- 10 ----- 20 ----- 30 ----- 40\n      │    ├── key: (8)\n      │    └── fd: (8)--\u003e(1-7,9,10)\n      └── filters\n           └── (c:3 = 20) OR (c:3 \u003c= 10) [type=bool, outer=(3), immutable, constraints=(/3: (/NULL - /10] [/20 - /20]; tight)]\n",
+    "index-join hist\n ├── columns: a:1(int) b:2(date) c:3(decimal!null) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string)\n ├── immutable\n ├── stats: [rows=120, distinct(3)=11, null(3)=0]\n │   histogram(3)=  0  0  90  10  0  20\n │                \u003c--- 0 ---- 10 --- 20\n └── scan hist@idx_c\n      ├── columns: c:3(decimal!null) rowid:8(int!null)\n      ├── constraint: /3/8\n      │    ├── (/NULL - /10]\n      │    └── [/20 - /20]\n      ├── stats: [rows=120, distinct(3)=11, null(3)=0]\n      │   histogram(3)=  0  0  90  10  0  20\n      │                \u003c--- 0 ---- 10 --- 20\n      ├── key: (8)\n      └── fd: (8)--\u003e(3)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "DECIMAL"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "20",
+                          "type": "DECIMAL"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "DECIMAL"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "10",
+                          "type": "DECIMAL"
+                        }
+                      ],
+                      "operator": "LE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "DATE"
+          },
+          {
+            "column": 2,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 3,
+            "type": "FLOAT"
+          },
+          {
+            "column": 4,
+            "type": "TIMESTAMP"
+          },
+          {
+            "column": 5,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "column": 6,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "DECIMAL"
+                    },
+                    {
+                      "column": 4,
+                      "type": "DECIMAL"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 9,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "NULL",
+                              "type": "DECIMAL"
+                            },
+                            {
+                              "column": 0,
+                              "type": "DECIMAL"
+                            }
+                          ],
+                          "operator": "IS NOT",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "DECIMAL"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "10",
+                              "type": "DECIMAL"
+                            }
+                          ],
+                          "operator": "\u003c",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "20",
+                              "type": "DECIMAL"
+                            },
+                            {
+                              "column": 0,
+                              "type": "DECIMAL"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "DECIMAL"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "20",
+                              "type": "DECIMAL"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 2,
+                        "type": "DECIMAL"
+                      },
+                      {
+                        "column": 7,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "DATE"
+          },
+          {
+            "column": 0,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 5,
+            "type": "FLOAT"
+          },
+          {
+            "column": 6,
+            "type": "TIMESTAMP"
+          },
+          {
+            "column": 7,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "column": 8,
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          7
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "DATE",
+        "DECIMAL",
+        "FLOAT",
+        "TIMESTAMP",
+        "TIMESTAMPTZ",
+        "STRING",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

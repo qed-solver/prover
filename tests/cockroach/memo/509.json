@@ -1,0 +1,239 @@
+{
+  "help": [
+    "project\n ├── columns: x:1(int!null) y:2(int)\n ├── cardinality: [0 - 26]\n ├── stats: [rows=26]\n ├── key: (1)\n ├── fd: (1)--\u003e(2)\n └── select\n      ├── columns: x:1(int!null) y:2(int) crdb_internal_mvcc_timestamp:3(decimal) tableoid:4(oid)\n      ├── cardinality: [0 - 26]\n      ├── stats: [rows=26, distinct(1)=26, null(1)=0]\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-4)\n      ├── scan a\n      │    ├── columns: x:1(int!null) y:2(int) crdb_internal_mvcc_timestamp:3(decimal) tableoid:4(oid)\n      │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0]\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-4)\n      └── filters\n           └── ((x:1 \u003e= 25) AND (x:1 \u003c= 50)) OR ((x:1 \u003e= 50) AND (x:1 \u003c= 25)) [type=bool, outer=(1), constraints=(/1: [/25 - /50]; tight)]\n",
+    "select\n ├── columns: x:1(int!null) y:2(int)\n ├── cardinality: [0 - 26]\n ├── stats: [rows=26, distinct(1)=26, null(1)=0]\n ├── key: (1)\n ├── fd: (1)--\u003e(2)\n ├── scan a\n │    ├── columns: x:1(int!null) y:2(int)\n │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0]\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2)\n └── filters\n      └── ((x:1 \u003e= 25) AND (x:1 \u003c= 50)) OR ((x:1 \u003e= 50) AND (x:1 \u003c= 25)) [type=bool, outer=(1), constraints=(/1: [/25 - /50]; tight)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "25",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GE",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "50",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "50",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GE",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "25",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "25",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "GE",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "50",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "LE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "50",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "GE",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "25",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "LE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "OR",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

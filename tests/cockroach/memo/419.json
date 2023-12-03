@@ -1,0 +1,305 @@
+{
+  "help": [
+    "project\n ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float!null) e:5(timestamp) f:6(timestamptz) g:7(string)\n ├── stats: [rows=131]\n └── select\n      ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float!null) e:5(timestamp) f:6(timestamptz) g:7(string) rowid:8(int!null) crdb_internal_mvcc_timestamp:9(decimal) tableoid:10(oid)\n      ├── stats: [rows=131, distinct(4)=8.5, null(4)=0]\n      │   histogram(4)=  0          0          45   10   36          0           0   40\n      │                \u003c--- 4.999999999999999 ---- 10.0 ---- 11.999999999999998 --- 40.0\n      ├── key: (8)\n      ├── fd: (8)--\u003e(1-7,9,10)\n      ├── scan hist\n      │    ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string) rowid:8(int!null) crdb_internal_mvcc_timestamp:9(decimal) tableoid:10(oid)\n      │    ├── stats: [rows=1000, distinct(4)=45, null(4)=0, distinct(8)=1000, null(8)=0]\n      │    │   histogram(4)=  0   0   90   10   180   20   270   30   360   40\n      │    │                \u003c--- 0.0 ---- 10.0 ----- 20.0 ----- 30.0 ----- 40.0\n      │    ├── key: (8)\n      │    └── fd: (8)--\u003e(1-7,9,10)\n      └── filters\n           └── ((d:4 \u003e= 5.0) AND (d:4 \u003c 12.0)) OR (d:4 \u003e= 40.0) [type=bool, outer=(4), constraints=(/4: [/5.0 - /11.999999999999998] [/40.0 - ]; tight)]\n",
+    "index-join hist\n ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float!null) e:5(timestamp) f:6(timestamptz) g:7(string)\n ├── stats: [rows=131, distinct(4)=8.5, null(4)=0]\n │   histogram(4)=  0          0          45   10   36          0           0   40\n │                \u003c--- 4.999999999999999 ---- 10.0 ---- 11.999999999999998 --- 40.0\n └── scan hist@idx_d\n      ├── columns: d:4(float!null) rowid:8(int!null)\n      ├── constraint: /4/8\n      │    ├── [/5.0 - /11.999999999999998]\n      │    └── [/40.0 - ]\n      ├── stats: [rows=131, distinct(4)=8.5, null(4)=0]\n      │   histogram(4)=  0          0          45   10   36          0           0   40\n      │                \u003c--- 4.999999999999999 ---- 10.0 ---- 11.999999999999998 --- 40.0\n      ├── key: (8)\n      └── fd: (8)--\u003e(4)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 3,
+                              "type": "FLOAT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "5.0",
+                              "type": "FLOAT"
+                            }
+                          ],
+                          "operator": "GE",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 3,
+                              "type": "FLOAT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "12.0",
+                              "type": "FLOAT"
+                            }
+                          ],
+                          "operator": "LT",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 3,
+                          "type": "FLOAT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "40.0",
+                          "type": "FLOAT"
+                        }
+                      ],
+                      "operator": "GE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "DATE"
+          },
+          {
+            "column": 2,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 3,
+            "type": "FLOAT"
+          },
+          {
+            "column": 4,
+            "type": "TIMESTAMP"
+          },
+          {
+            "column": 5,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "column": 6,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "FLOAT"
+                    },
+                    {
+                      "column": 5,
+                      "type": "FLOAT"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 9,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "5.0",
+                              "type": "FLOAT"
+                            },
+                            {
+                              "column": 0,
+                              "type": "FLOAT"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "FLOAT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "11.999999999999998",
+                              "type": "FLOAT"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "40.0",
+                              "type": "FLOAT"
+                            },
+                            {
+                              "column": 0,
+                              "type": "FLOAT"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 3,
+                        "type": "FLOAT"
+                      },
+                      {
+                        "column": 7,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "DATE"
+          },
+          {
+            "column": 4,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 0,
+            "type": "FLOAT"
+          },
+          {
+            "column": 6,
+            "type": "TIMESTAMP"
+          },
+          {
+            "column": 7,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "column": 8,
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          7
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "DATE",
+        "DECIMAL",
+        "FLOAT",
+        "TIMESTAMP",
+        "TIMESTAMPTZ",
+        "STRING",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

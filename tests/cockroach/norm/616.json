@@ -1,0 +1,81 @@
+{
+  "help": [
+    "inner-join (hash)\n ├── columns: one:1!null two:2!null\n ├── cardinality: [0 - 1]\n ├── multiplicity: left-rows(zero-or-one), right-rows(zero-or-one)\n ├── key: ()\n ├── fd: ()--\u003e(1,2), (2)==(1), (1)==(2)\n ├── project\n │    ├── columns: one:1!null\n │    ├── cardinality: [1 - 1]\n │    ├── key: ()\n │    ├── fd: ()--\u003e(1)\n │    ├── values\n │    │    ├── cardinality: [1 - 1]\n │    │    ├── key: ()\n │    │    └── ()\n │    └── projections\n │         └── 1 [as=one:1]\n ├── project\n │    ├── columns: two:2!null\n │    ├── cardinality: [1 - 1]\n │    ├── key: ()\n │    ├── fd: ()--\u003e(2)\n │    ├── values\n │    │    ├── cardinality: [1 - 1]\n │    │    ├── key: ()\n │    │    └── ()\n │    └── projections\n │         └── 2 [as=two:2]\n └── filters\n      └── one:1 = two:2 [outer=(1,2), constraints=(/1: (/NULL - ]; /2: (/NULL - ]), fd=(1)==(2), (2)==(1)]\n",
+    "values\n ├── columns: one:1!null two:2!null\n ├── cardinality: [0 - 0]\n ├── key: ()\n └── fd: ()--\u003e(1,2)\n"
+  ],
+  "queries": [
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INT"
+                },
+                {
+                  "column": 1,
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "INNER",
+        "left": {
+          "project": {
+            "source": {
+              "values": {
+                "content": [
+                  []
+                ],
+                "schema": []
+              }
+            },
+            "target": [
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "values": {
+                "content": [
+                  []
+                ],
+                "schema": []
+              }
+            },
+            "target": [
+              {
+                "operand": [],
+                "operator": "2",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "values": {
+        "content": [],
+        "schema": [
+          "INT",
+          "INT"
+        ]
+      }
+    }
+  ],
+  "schemas": []
+}

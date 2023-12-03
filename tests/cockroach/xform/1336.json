@@ -1,0 +1,204 @@
+{
+  "help": [
+    "project\n ├── columns: id1_4_:1!null phone_nu2_4_:2 person_i4_4_:4 phone_ty3_4_:3\n ├── key: (1)\n ├── fd: (1)--\u003e(2-4)\n └── select\n      ├── columns: phone0_.id:1!null phone_number:2 phone_type:3 person_id:4 order_id:5 phone0_.crdb_internal_mvcc_timestamp:6 phone0_.tableoid:7\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-7)\n      ├── scan phone [as=phone0_]\n      │    ├── columns: phone0_.id:1!null phone_number:2 phone_type:3 person_id:4 order_id:5 phone0_.crdb_internal_mvcc_timestamp:6 phone0_.tableoid:7\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-7)\n      └── filters\n           └── not [outer=(1), correlated-subquery]\n                └── exists\n                     └── project\n                          ├── columns: calls1_.id:8!null\n                          ├── outer: (1)\n                          ├── key: (8)\n                          └── select\n                               ├── columns: calls1_.id:8!null duration:9!null call_timestamp:10 phone_id:11!null calls1_.crdb_internal_mvcc_timestamp:12 calls1_.tableoid:13\n                               ├── outer: (1)\n                               ├── key: (8)\n                               ├── fd: ()--\u003e(11), (8)--\u003e(9,10,12,13)\n                               ├── scan phone_call [as=calls1_]\n                               │    ├── columns: calls1_.id:8!null duration:9!null call_timestamp:10 phone_id:11 calls1_.crdb_internal_mvcc_timestamp:12 calls1_.tableoid:13\n                               │    ├── key: (8)\n                               │    └── fd: (8)--\u003e(9-13)\n                               └── filters\n                                    └── phone0_.id:1 = phone_id:11 [outer=(1,11), constraints=(/1: (/NULL - ]; /11: (/NULL - ]), fd=(1)==(11), (11)==(1)]\n",
+    "anti-join (hash)\n ├── columns: id1_4_:1!null phone_nu2_4_:2 person_i4_4_:4 phone_ty3_4_:3\n ├── key: (1)\n ├── fd: (1)--\u003e(2-4)\n ├── scan phone [as=phone0_]\n │    ├── columns: phone0_.id:1!null phone_number:2 phone_type:3 person_id:4\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-4)\n ├── scan phone_call [as=calls1_]\n │    └── columns: phone_id:11\n └── filters\n      └── phone0_.id:1 = phone_id:11 [outer=(1,11), constraints=(/1: (/NULL - ]; /11: (/NULL - ]), fd=(1)==(11), (11)==(1)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "EXISTS",
+                      "query": {
+                        "project": {
+                          "source": {
+                            "filter": {
+                              "condition": {
+                                "operand": [
+                                  {
+                                    "operand": [
+                                      {
+                                        "column": 0,
+                                        "type": "INT"
+                                      },
+                                      {
+                                        "column": 10,
+                                        "type": "INT"
+                                      }
+                                    ],
+                                    "operator": "EQ",
+                                    "type": "BOOL"
+                                  }
+                                ],
+                                "operator": "AND",
+                                "type": "BOOLEAN"
+                              },
+                              "source": {
+                                "scan": 1
+                              }
+                            }
+                          },
+                          "target": [
+                            {
+                              "column": 7,
+                              "type": "INT"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "NOT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "VARCHAR"
+          },
+          {
+            "column": 2,
+            "type": "VARCHAR"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INT"
+                },
+                {
+                  "column": 4,
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "ANTI",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "VARCHAR"
+              },
+              {
+                "column": 2,
+                "type": "VARCHAR"
+              },
+              {
+                "column": 3,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 1
+            },
+            "target": [
+              {
+                "column": 3,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "VARCHAR",
+        "VARCHAR",
+        "INT",
+        "INT4",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT4",
+        "TIMESTAMP",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

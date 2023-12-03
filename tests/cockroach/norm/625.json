@@ -1,0 +1,153 @@
+{
+  "help": [
+    "select\n ├── columns: expr:8!null\n ├── immutable\n ├── project\n │    ├── columns: expr:8\n │    ├── immutable\n │    ├── scan a\n │    │    ├── columns: k:1!null i:2 f:3 s:4 j:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    │    ├── key: (1)\n │    │    └── fd: (1)--\u003e(2-7)\n │    └── projections\n │         └── f:3 + 1.0 [as=expr:8, outer=(3), immutable]\n └── filters\n      └── expr:8 = expr:8 [outer=(8), constraints=(/8: (/NULL - ])]\n",
+    "project\n ├── columns: expr:8\n ├── immutable\n ├── select\n │    ├── columns: f:3\n │    ├── immutable\n │    ├── scan a\n │    │    └── columns: f:3\n │    └── filters\n │         └── (f:3 + 1.0) IS DISTINCT FROM CAST(NULL AS FLOAT8) [outer=(3), immutable]\n └── projections\n      └── f:3 + 1.0 [as=expr:8, outer=(3), immutable]\n"
+  ],
+  "queries": [
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "FLOAT"
+                },
+                {
+                  "column": 0,
+                  "type": "FLOAT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "operand": [
+                  {
+                    "column": 2,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "1.0",
+                    "type": "FLOAT"
+                  }
+                ],
+                "operator": "PLUS",
+                "type": "FLOAT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "FLOAT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "1.0",
+                          "type": "FLOAT"
+                        }
+                      ],
+                      "operator": "PLUS",
+                      "type": "FLOAT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "NULL",
+                      "type": "FLOAT"
+                    }
+                  ],
+                  "operator": "IS NOT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 2,
+                    "type": "FLOAT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "FLOAT"
+              },
+              {
+                "operand": [],
+                "operator": "1.0",
+                "type": "FLOAT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "FLOAT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

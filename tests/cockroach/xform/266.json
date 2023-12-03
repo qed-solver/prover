@@ -1,0 +1,509 @@
+{
+  "help": [
+    "sort\n └── project\n      └── select\n           ├── inner-join (cross)\n           │    ├── scan table87806 [as=tab_171967]\n           │    ├── inner-join (cross)\n           │    │    ├── scan table87806 [as=tab_171968]\n           │    │    ├── scan table87806 [as=tab_171969]\n           │    │    │    └── flags: force-index=table87806_col1_3_idx\n           │    │    └── filters\n           │    │         └── ((tab_171968.col1_1 = tab_171969.col1_1) AND (tab_171968.col1_3 = tab_171969.col1_3)) AND (tab_171968.col1_3 = tab_171969.tableoid)\n           │    └── filters\n           │         └── (tab_171967.col1_2 = tab_171968.tableoid) AND (tab_171967.col1_3 = tab_171968.col1_3)\n           └── filters\n                └── tab_171967.col1_1\n",
+    "project\n └── inner-join (lookup table87806@table87806_col1_3_idx [as=tab_171967])\n      ├── lookup columns are key\n      ├── project\n      │    ├── inner-join (lookup table87806 [as=tab_171968])\n      │    │    ├── lookup columns are key\n      │    │    ├── select\n      │    │    │    ├── index-join table87806\n      │    │    │    │    └── scan table87806@table87806_col1_3_idx [as=tab_171969]\n      │    │    │    │         ├── constraint: /16/14/15: (/NULL - ]\n      │    │    │    │         └── flags: force-index=table87806_col1_3_idx\n      │    │    │    └── filters\n      │    │    │         └── tab_171969.col1_3 = tab_171969.tableoid\n      │    │    └── filters\n      │    │         └── tab_171968.col1_3 = tab_171969.col1_3\n      │    └── projections\n      │         └── true\n      └── filters (true)\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            0,
+            "BOOL",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "join": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 2,
+                                  "type": "REGPROC"
+                                },
+                                {
+                                  "column": 11,
+                                  "type": "OID"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 3,
+                                  "type": "REGNAMESPACE"
+                                },
+                                {
+                                  "column": 9,
+                                  "type": "REGNAMESPACE"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "kind": "INNER",
+                    "left": {
+                      "scan": 0
+                    },
+                    "right": {
+                      "join": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [
+                                        {
+                                          "column": 1,
+                                          "type": "BOOL"
+                                        },
+                                        {
+                                          "column": 7,
+                                          "type": "BOOL"
+                                        }
+                                      ],
+                                      "operator": "EQ",
+                                      "type": "BOOL"
+                                    },
+                                    {
+                                      "operand": [
+                                        {
+                                          "column": 3,
+                                          "type": "REGNAMESPACE"
+                                        },
+                                        {
+                                          "column": 9,
+                                          "type": "REGNAMESPACE"
+                                        }
+                                      ],
+                                      "operator": "EQ",
+                                      "type": "BOOL"
+                                    }
+                                  ],
+                                  "operator": "AND",
+                                  "type": "BOOL"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 3,
+                                      "type": "REGNAMESPACE"
+                                    },
+                                    {
+                                      "column": 11,
+                                      "type": "OID"
+                                    }
+                                  ],
+                                  "operator": "EQ",
+                                  "type": "BOOL"
+                                }
+                              ],
+                              "operator": "AND",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "kind": "INNER",
+                        "left": {
+                          "scan": 0
+                        },
+                        "right": {
+                          "scan": 0
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 13,
+                "type": "BOOL"
+              },
+              {
+                "column": 15,
+                "type": "REGNAMESPACE"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 9,
+                          "type": "REGNAMESPACE"
+                        },
+                        {
+                          "column": 1,
+                          "type": "REGNAMESPACE"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    },
+                    {
+                      "column": 7,
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 8,
+                          "type": "REGPROC"
+                        },
+                        {
+                          "column": 2,
+                          "type": "OID"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "project": {
+                "source": {
+                  "join": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 10,
+                                  "type": "REGNAMESPACE"
+                                },
+                                {
+                                  "column": 2,
+                                  "type": "REGNAMESPACE"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 9,
+                                  "type": "BOOL"
+                                },
+                                {
+                                  "column": 0,
+                                  "type": "BOOL"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "kind": "INNER",
+                    "left": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 2,
+                                  "type": "REGNAMESPACE"
+                                },
+                                {
+                                  "column": 8,
+                                  "type": "OID"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "join": {
+                            "condition": {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 0,
+                                      "type": "BOOL"
+                                    },
+                                    {
+                                      "column": 4,
+                                      "type": "BOOL"
+                                    }
+                                  ],
+                                  "operator": "\u003c=\u003e",
+                                  "type": "BOOLEAN"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 1,
+                                      "type": "REGPROC"
+                                    },
+                                    {
+                                      "column": 5,
+                                      "type": "REGPROC"
+                                    }
+                                  ],
+                                  "operator": "\u003c=\u003e",
+                                  "type": "BOOLEAN"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 2,
+                                      "type": "REGNAMESPACE"
+                                    },
+                                    {
+                                      "column": 6,
+                                      "type": "REGNAMESPACE"
+                                    }
+                                  ],
+                                  "operator": "\u003c=\u003e",
+                                  "type": "BOOLEAN"
+                                }
+                              ],
+                              "operator": "AND",
+                              "type": "BOOLEAN"
+                            },
+                            "kind": "INNER",
+                            "left": {
+                              "filter": {
+                                "condition": {
+                                  "operand": [
+                                    {
+                                      "operand": [
+                                        {
+                                          "operand": [
+                                            {
+                                              "operand": [],
+                                              "operator": "NULL",
+                                              "type": "REGNAMESPACE"
+                                            },
+                                            {
+                                              "column": 2,
+                                              "type": "REGNAMESPACE"
+                                            }
+                                          ],
+                                          "operator": "IS NOT",
+                                          "type": "BOOLEAN"
+                                        }
+                                      ],
+                                      "operator": "AND",
+                                      "type": "BOOLEAN"
+                                    }
+                                  ],
+                                  "operator": "OR",
+                                  "type": "BOOLEAN"
+                                },
+                                "source": {
+                                  "project": {
+                                    "source": {
+                                      "scan": 0
+                                    },
+                                    "target": [
+                                      {
+                                        "column": 1,
+                                        "type": "BOOL"
+                                      },
+                                      {
+                                        "column": 2,
+                                        "type": "REGPROC"
+                                      },
+                                      {
+                                        "column": 3,
+                                        "type": "REGNAMESPACE"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            },
+                            "right": {
+                              "scan": 0
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "right": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 1,
+                            "type": "BOOL"
+                          },
+                          {
+                            "column": 3,
+                            "type": "REGNAMESPACE"
+                          },
+                          {
+                            "column": 5,
+                            "type": "OID"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "target": [
+                  {
+                    "column": 9,
+                    "type": "BOOL"
+                  },
+                  {
+                    "column": 10,
+                    "type": "REGNAMESPACE"
+                  },
+                  {
+                    "column": 11,
+                    "type": "OID"
+                  },
+                  {
+                    "column": 0,
+                    "type": "BOOL"
+                  },
+                  {
+                    "column": 2,
+                    "type": "REGNAMESPACE"
+                  },
+                  {
+                    "column": 8,
+                    "type": "OID"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "TRUE",
+                    "type": "BOOL"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "BOOL"
+                  },
+                  {
+                    "column": 2,
+                    "type": "REGPROC"
+                  },
+                  {
+                    "column": 3,
+                    "type": "REGNAMESPACE"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 3,
+            "type": "BOOL"
+          },
+          {
+            "column": 4,
+            "type": "REGNAMESPACE"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          1,
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "TIMESTAMPTZ",
+        "BOOL",
+        "REGPROC",
+        "REGNAMESPACE",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,241 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null geom:2 k:6!null geom:7\n ├── immutable\n ├── stats: [rows=333333.3]\n ├── cost: 1e+100\n ├── key: (1,6)\n ├── fd: (1)--\u003e(2), (6)--\u003e(7)\n └── inner-join (cross)\n      ├── columns: g1.k:1!null g1.geom:2 g1.crdb_internal_mvcc_timestamp:3 g1.tableoid:4 g2.k:6!null g2.geom:7 g2.crdb_internal_mvcc_timestamp:8 g2.tableoid:9\n      ├── flags: force inverted join (into right side)\n      ├── immutable\n      ├── stats: [rows=333333.3]\n      ├── cost: 1e+100\n      ├── key: (1,6)\n      ├── fd: (1)--\u003e(2-4), (6)--\u003e(7-9)\n      ├── scan g [as=g1]\n      │    ├── columns: g1.k:1!null g1.geom:2 g1.crdb_internal_mvcc_timestamp:3 g1.tableoid:4\n      │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0]\n      │    ├── cost: 1088.62\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-4)\n      ├── scan g [as=g2]\n      │    ├── columns: g2.k:6!null g2.geom:7 g2.crdb_internal_mvcc_timestamp:8 g2.tableoid:9\n      │    ├── stats: [rows=1000, distinct(6)=1000, null(6)=0]\n      │    ├── cost: 1088.62\n      │    ├── key: (6)\n      │    └── fd: (6)--\u003e(7-9)\n      └── filters\n           └── st_contains(g1.geom:2, g2.geom:7) OR (g1.k:1 = 5) [outer=(1,2,7), immutable]\n",
+    "inner-join (cross)\n ├── columns: k:1!null geom:2 k:6!null geom:7\n ├── flags: force inverted join (into right side)\n ├── immutable\n ├── stats: [rows=333333.3]\n ├── cost: 1e+100\n ├── key: (1,6)\n ├── fd: (1)--\u003e(2), (6)--\u003e(7)\n ├── scan g [as=g1]\n │    ├── columns: g1.k:1!null g1.geom:2\n │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0]\n │    ├── cost: 1068.42\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2)\n ├── scan g [as=g2]\n │    ├── columns: g2.k:6!null g2.geom:7\n │    ├── stats: [rows=1000, distinct(6)=1000, null(6)=0]\n │    ├── cost: 1068.42\n │    ├── key: (6)\n │    └── fd: (6)--\u003e(7)\n └── filters\n      └── st_contains(g1.geom:2, g2.geom:7) OR (g1.k:1 = 5) [outer=(1,2,7), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "GEOMETRY"
+                            },
+                            {
+                              "column": 5,
+                              "type": "GEOMETRY"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "5",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "GEOMETRY"
+                  },
+                  {
+                    "column": 2,
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "column": 3,
+                    "type": "OID"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "GEOMETRY"
+                  },
+                  {
+                    "column": 2,
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "column": 3,
+                    "type": "OID"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "GEOMETRY"
+          },
+          {
+            "column": 4,
+            "type": "INT"
+          },
+          {
+            "column": 5,
+            "type": "GEOMETRY"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "GEOMETRY"
+                        },
+                        {
+                          "column": 3,
+                          "type": "GEOMETRY"
+                        }
+                      ],
+                      "operator": "SCALAR LIST",
+                      "type": "ANYELEMENT"
+                    }
+                  ],
+                  "operator": "FUNCTION",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "5",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "OR",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "INNER",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "GEOMETRY"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "GEOMETRY"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "types": [
+        "INT",
+        "GEOMETRY",
+        "DECIMAL",
+        "OID",
+        "ENCODEDKEY"
+      ]
+    }
+  ]
+}

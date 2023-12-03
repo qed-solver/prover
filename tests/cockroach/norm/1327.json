@@ -1,0 +1,123 @@
+{
+  "help": [
+    "project\n ├── columns: arr:8 arr:9\n ├── scan b\n │    ├── columns: k:1!null j:2 i:3 s:4 b.arr:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-7)\n └── projections\n      ├── b.arr:5[1] [as=arr:8, outer=(5)]\n      └── b.arr:5[2] [as=arr:9, outer=(5)]\n",
+    "project\n ├── columns: arr:8 arr:9\n ├── scan b\n │    └── columns: b.arr:5\n └── projections\n      ├── b.arr:5[1] [as=arr:8, outer=(5)]\n      └── b.arr:5[2] [as=arr:9, outer=(5)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 4,
+                "type": "STRING[]"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "INDIRECTION",
+            "type": "STRING"
+          },
+          {
+            "operand": [
+              {
+                "column": 4,
+                "type": "STRING[]"
+              },
+              {
+                "operand": [],
+                "operator": "2",
+                "type": "INT"
+              }
+            ],
+            "operator": "INDIRECTION",
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 4,
+                "type": "STRING[]"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "STRING[]"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "INDIRECTION",
+            "type": "STRING"
+          },
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "STRING[]"
+              },
+              {
+                "operand": [],
+                "operator": "2",
+                "type": "INT"
+              }
+            ],
+            "operator": "INDIRECTION",
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "JSONB",
+        "INT",
+        "STRING",
+        "STRING[]",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

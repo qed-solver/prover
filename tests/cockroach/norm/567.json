@@ -1,0 +1,139 @@
+{
+  "help": [
+    "project\n ├── columns: count:9!null\n ├── immutable\n └── group-by (hash)\n      ├── columns: s:5 count:9!null\n      ├── grouping columns: s:5\n      ├── immutable\n      ├── key: (5)\n      ├── fd: (5)--\u003e(9)\n      ├── project\n      │    ├── columns: column8:8!null s:5\n      │    ├── immutable\n      │    ├── scan xyzbs\n      │    │    ├── columns: x:1!null y:2 z:3!null b:4!null s:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n      │    │    ├── key: (1)\n      │    │    └── fd: (1)--\u003e(2-7)\n      │    └── projections\n      │         └── 1 + z:3 [as=column8:8, outer=(3), immutable]\n      └── aggregations\n           └── count [as=count:9, outer=(8)]\n                └── column8:8\n",
+    "project\n ├── columns: count:9!null\n └── group-by (hash)\n      ├── columns: s:5 count:9!null\n      ├── grouping columns: s:5\n      ├── key: (5)\n      ├── fd: (5)--\u003e(9)\n      ├── scan xyzbs\n      │    └── columns: s:5\n      └── aggregations\n           └── count-rows [as=count:9]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "COUNT",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "STRING"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 4,
+                    "type": "STRING"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "operand": [],
+                        "operator": "1",
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "PLUS",
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [],
+                "operator": "COUNT ROWS",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "STRING"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 4,
+                    "type": "STRING"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "BOOL",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

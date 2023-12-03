@@ -1,0 +1,296 @@
+{
+  "help": [
+    "project\n ├── columns: l_orderkey:1(int!null) l_partkey:2(int!null) l_suppkey:3(int!null) l_linenumber:4(int!null) l_quantity:5(float!null) l_extendedprice:6(float!null) l_discount:7(float!null) l_tax:8(float!null) l_returnflag:9(char!null) l_linestatus:10(char!null) l_shipdate:11(date!null) l_commitdate:12(date!null) l_receiptdate:13(date!null) l_shipinstruct:14(char!null) l_shipmode:15(char!null) l_comment:16(varchar!null)\n ├── stats: [rows=300]\n ├── key: (1,4)\n ├── fd: (1,4)--\u003e(2,3,5-16)\n └── select\n      ├── columns: l_orderkey:1(int!null) l_partkey:2(int!null) l_suppkey:3(int!null) l_linenumber:4(int!null) l_quantity:5(float!null) l_extendedprice:6(float!null) l_discount:7(float!null) l_tax:8(float!null) l_returnflag:9(char!null) l_linestatus:10(char!null) l_shipdate:11(date!null) l_commitdate:12(date!null) l_receiptdate:13(date!null) l_shipinstruct:14(char!null) l_shipmode:15(char!null) l_comment:16(varchar!null) crdb_internal_mvcc_timestamp:17(decimal) tableoid:18(oid)\n      ├── stats: [rows=300, distinct(11)=30, null(11)=0]\n      ├── key: (1,4)\n      ├── fd: (1,4)--\u003e(2,3,5-18)\n      ├── scan lineitem\n      │    ├── columns: l_orderkey:1(int!null) l_partkey:2(int!null) l_suppkey:3(int!null) l_linenumber:4(int!null) l_quantity:5(float!null) l_extendedprice:6(float!null) l_discount:7(float!null) l_tax:8(float!null) l_returnflag:9(char!null) l_linestatus:10(char!null) l_shipdate:11(date!null) l_commitdate:12(date!null) l_receiptdate:13(date!null) l_shipinstruct:14(char!null) l_shipmode:15(char!null) l_comment:16(varchar!null) crdb_internal_mvcc_timestamp:17(decimal) tableoid:18(oid)\n      │    ├── stats: [rows=1000, distinct(1)=100, null(1)=0, distinct(2)=100, null(2)=0, distinct(3)=100, null(3)=0, distinct(4)=100, null(4)=0, distinct(5)=100, null(5)=0, distinct(6)=100, null(6)=0, distinct(7)=100, null(7)=0, distinct(8)=100, null(8)=0, distinct(9)=100, null(9)=0, distinct(10)=100, null(10)=0, distinct(11)=100, null(11)=0, distinct(12)=100, null(12)=0, distinct(13)=100, null(13)=0, distinct(14)=100, null(14)=0, distinct(15)=100, null(15)=0, distinct(16)=100, null(16)=0]\n      │    ├── key: (1,4)\n      │    └── fd: (1,4)--\u003e(2,3,5-18)\n      └── filters\n           └── (l_shipdate:11 \u003e= '1995-09-01') AND (l_shipdate:11 \u003c '1995-10-01') [type=bool, outer=(11), constraints=(/11: [/'1995-09-01' - /'1995-09-30']; tight)]\n",
+    "select\n ├── columns: l_orderkey:1(int!null) l_partkey:2(int!null) l_suppkey:3(int!null) l_linenumber:4(int!null) l_quantity:5(float!null) l_extendedprice:6(float!null) l_discount:7(float!null) l_tax:8(float!null) l_returnflag:9(char!null) l_linestatus:10(char!null) l_shipdate:11(date!null) l_commitdate:12(date!null) l_receiptdate:13(date!null) l_shipinstruct:14(char!null) l_shipmode:15(char!null) l_comment:16(varchar!null)\n ├── stats: [rows=300, distinct(11)=30, null(11)=0]\n ├── key: (1,4)\n ├── fd: (1,4)--\u003e(2,3,5-16)\n ├── scan lineitem\n │    ├── columns: l_orderkey:1(int!null) l_partkey:2(int!null) l_suppkey:3(int!null) l_linenumber:4(int!null) l_quantity:5(float!null) l_extendedprice:6(float!null) l_discount:7(float!null) l_tax:8(float!null) l_returnflag:9(char!null) l_linestatus:10(char!null) l_shipdate:11(date!null) l_commitdate:12(date!null) l_receiptdate:13(date!null) l_shipinstruct:14(char!null) l_shipmode:15(char!null) l_comment:16(varchar!null)\n │    ├── stats: [rows=1000, distinct(1)=100, null(1)=0, distinct(2)=100, null(2)=0, distinct(3)=100, null(3)=0, distinct(4)=100, null(4)=0, distinct(5)=100, null(5)=0, distinct(6)=100, null(6)=0, distinct(7)=100, null(7)=0, distinct(8)=100, null(8)=0, distinct(9)=100, null(9)=0, distinct(10)=100, null(10)=0, distinct(11)=100, null(11)=0, distinct(12)=100, null(12)=0, distinct(13)=100, null(13)=0, distinct(14)=100, null(14)=0, distinct(15)=100, null(15)=0, distinct(16)=100, null(16)=0]\n │    ├── key: (1,4)\n │    └── fd: (1,4)--\u003e(2,3,5-16)\n └── filters\n      └── (l_shipdate:11 \u003e= '1995-09-01') AND (l_shipdate:11 \u003c '1995-10-01') [type=bool, outer=(11), constraints=(/11: [/'1995-09-01' - /'1995-09-30']; tight)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 10,
+                          "type": "DATE"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'1995-09-01'",
+                          "type": "DATE"
+                        }
+                      ],
+                      "operator": "GE",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 10,
+                          "type": "DATE"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'1995-10-01'",
+                          "type": "DATE"
+                        }
+                      ],
+                      "operator": "LT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          },
+          {
+            "column": 4,
+            "type": "FLOAT"
+          },
+          {
+            "column": 5,
+            "type": "FLOAT"
+          },
+          {
+            "column": 6,
+            "type": "FLOAT"
+          },
+          {
+            "column": 7,
+            "type": "FLOAT"
+          },
+          {
+            "column": 8,
+            "type": "CHAR"
+          },
+          {
+            "column": 9,
+            "type": "CHAR"
+          },
+          {
+            "column": 10,
+            "type": "DATE"
+          },
+          {
+            "column": 11,
+            "type": "DATE"
+          },
+          {
+            "column": 12,
+            "type": "DATE"
+          },
+          {
+            "column": 13,
+            "type": "CHAR"
+          },
+          {
+            "column": 14,
+            "type": "CHAR"
+          },
+          {
+            "column": 15,
+            "type": "VARCHAR"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 10,
+                      "type": "DATE"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'1995-09-01'",
+                      "type": "DATE"
+                    }
+                  ],
+                  "operator": "GE",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 10,
+                      "type": "DATE"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'1995-10-01'",
+                      "type": "DATE"
+                    }
+                  ],
+                  "operator": "LT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "INT"
+              },
+              {
+                "column": 4,
+                "type": "FLOAT"
+              },
+              {
+                "column": 5,
+                "type": "FLOAT"
+              },
+              {
+                "column": 6,
+                "type": "FLOAT"
+              },
+              {
+                "column": 7,
+                "type": "FLOAT"
+              },
+              {
+                "column": 8,
+                "type": "CHAR"
+              },
+              {
+                "column": 9,
+                "type": "CHAR"
+              },
+              {
+                "column": 10,
+                "type": "DATE"
+              },
+              {
+                "column": 11,
+                "type": "DATE"
+              },
+              {
+                "column": 12,
+                "type": "DATE"
+              },
+              {
+                "column": 13,
+                "type": "CHAR"
+              },
+              {
+                "column": 14,
+                "type": "CHAR"
+              },
+              {
+                "column": 15,
+                "type": "VARCHAR"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0,
+          3
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "CHAR",
+        "CHAR",
+        "DATE",
+        "DATE",
+        "DATE",
+        "CHAR",
+        "CHAR",
+        "VARCHAR",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

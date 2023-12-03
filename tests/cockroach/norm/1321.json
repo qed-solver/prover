@@ -1,0 +1,145 @@
+{
+  "help": [
+    "project\n ├── columns: \"?column?\":8\n ├── immutable\n ├── scan g\n │    ├── columns: id1:1!null geom1:2 geom2:3 crdb_internal_mvcc_timestamp:4 tableoid:5\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-5)\n └── projections\n      └── NOT st_intersects(geom1:2, geom2:3) [as=\"?column?\":8, outer=(2,3), immutable]\n",
+    "project\n ├── columns: \"?column?\":8\n ├── immutable\n ├── scan g\n │    └── columns: geom1:2 geom2:3\n └── projections\n      └── NOT st_intersects(geom1:2, geom2:3) [as=\"?column?\":8, outer=(2,3), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "GEOMETRY"
+              },
+              {
+                "column": 2,
+                "type": "GEOMETRY"
+              },
+              {
+                "column": 3,
+                "type": "DECIMAL"
+              },
+              {
+                "column": 4,
+                "type": "OID"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "GEOMETRY"
+                      },
+                      {
+                        "column": 2,
+                        "type": "GEOMETRY"
+                      }
+                    ],
+                    "operator": "SCALAR LIST",
+                    "type": "ANYELEMENT"
+                  }
+                ],
+                "operator": "FUNCTION",
+                "type": "BOOL"
+              }
+            ],
+            "operator": "NOT",
+            "type": "BOOL"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "GEOMETRY"
+              },
+              {
+                "column": 2,
+                "type": "GEOMETRY"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "GEOMETRY"
+                      },
+                      {
+                        "column": 1,
+                        "type": "GEOMETRY"
+                      }
+                    ],
+                    "operator": "SCALAR LIST",
+                    "type": "ANYELEMENT"
+                  }
+                ],
+                "operator": "FUNCTION",
+                "type": "BOOL"
+              }
+            ],
+            "operator": "NOT",
+            "type": "BOOL"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "types": [
+        "INT",
+        "GEOMETRY",
+        "GEOMETRY",
+        "DECIMAL",
+        "OID",
+        "ENCODEDKEY",
+        "ENCODEDKEY"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "help": [
+    "left-join (hash)\n ├── columns: x:1(int!null) x:2(int)\n ├── cardinality: [1 - 1]\n ├── multiplicity: left-rows(exactly-one), right-rows(zero-or-one)\n ├── stats: [rows=1, distinct(2)=1, null(2)=0]\n ├── key: ()\n ├── fd: ()--\u003e(1,2)\n ├── project\n │    ├── columns: \"?column?\":1(int!null)\n │    ├── cardinality: [1 - 1]\n │    ├── stats: [rows=1, distinct(1)=1, null(1)=0]\n │    ├── key: ()\n │    ├── fd: ()--\u003e(1)\n │    ├── values\n │    │    ├── cardinality: [1 - 1]\n │    │    ├── stats: [rows=1]\n │    │    ├── key: ()\n │    │    └── () [type=tuple]\n │    └── projections\n │         └── 1 [as=\"?column?\":1, type=int]\n ├── project\n │    ├── columns: \"?column?\":2(int!null)\n │    ├── cardinality: [1 - 1]\n │    ├── stats: [rows=1, distinct(2)=1, null(2)=0]\n │    ├── key: ()\n │    ├── fd: ()--\u003e(2)\n │    ├── values\n │    │    ├── cardinality: [1 - 1]\n │    │    ├── stats: [rows=1]\n │    │    ├── key: ()\n │    │    └── () [type=tuple]\n │    └── projections\n │         └── 2 [as=\"?column?\":2, type=int]\n └── filters\n      └── \"?column?\":1 = \"?column?\":2 [type=bool, outer=(1,2), constraints=(/1: (/NULL - ]; /2: (/NULL - ]), fd=(1)==(2), (2)==(1)]\n",
+    "left-join (cross)\n ├── columns: x:1(int!null) x:2(int)\n ├── cardinality: [1 - 1]\n ├── multiplicity: left-rows(exactly-one), right-rows(exactly-one)\n ├── stats: [rows=1]\n ├── key: ()\n ├── fd: ()--\u003e(1,2)\n ├── values\n │    ├── columns: \"?column?\":1(int!null)\n │    ├── cardinality: [1 - 1]\n │    ├── stats: [rows=1]\n │    ├── key: ()\n │    ├── fd: ()--\u003e(1)\n │    └── (1,) [type=tuple{int}]\n ├── values\n │    ├── columns: \"?column?\":2(int!null)\n │    ├── cardinality: [0 - 0]\n │    ├── stats: [rows=0]\n │    ├── key: ()\n │    └── fd: ()--\u003e(2)\n └── filters (true)\n"
+  ],
+  "queries": [
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INT"
+                },
+                {
+                  "column": 1,
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "LEFT",
+        "left": {
+          "project": {
+            "source": {
+              "values": {
+                "content": [
+                  []
+                ],
+                "schema": []
+              }
+            },
+            "target": [
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "values": {
+                "content": [
+                  []
+                ],
+                "schema": []
+              }
+            },
+            "target": [
+              {
+                "operand": [],
+                "operator": "2",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "LEFT",
+        "left": {
+          "values": {
+            "content": [
+              [
+                {
+                  "operand": [],
+                  "operator": "1",
+                  "type": "INT"
+                }
+              ]
+            ],
+            "schema": [
+              "INT"
+            ]
+          }
+        },
+        "right": {
+          "values": {
+            "content": [],
+            "schema": [
+              "INT"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": []
+}

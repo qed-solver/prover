@@ -1,0 +1,119 @@
+{
+  "help": [
+    "project\n ├── columns: \"?column?\":6(int!null)\n ├── immutable\n ├── fd: ()--\u003e(6)\n ├── prune: (6)\n ├── select\n │    ├── columns: k:1(int!null) j:2(jsonb!null) a:3(int[]) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n │    ├── immutable\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2-5)\n │    ├── scan f\n │    │    ├── columns: k:1(int!null) j:2(jsonb) a:3(int[]) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n │    │    ├── key: (1)\n │    │    ├── fd: (1)--\u003e(2-5)\n │    │    └── prune: (1-5)\n │    └── filters\n │         └── contains [type=bool, outer=(2), immutable, constraints=(/2: (/NULL - ])]\n │              ├── variable: j:2 [type=jsonb]\n │              └── const: '{\"x\": \"y\"}' [type=jsonb]\n └── projections\n      └── const: 1 [as=\"?column?\":6, type=int]\n",
+    "project\n ├── columns: \"?column?\":6(int!null)\n ├── immutable\n ├── fd: ()--\u003e(6)\n ├── prune: (6)\n ├── select\n │    ├── columns: j:2(jsonb!null)\n │    ├── immutable\n │    ├── scan f\n │    │    ├── columns: j:2(jsonb)\n │    │    └── prune: (2)\n │    └── filters\n │         └── contains [type=bool, outer=(2), immutable, constraints=(/2: (/NULL - ])]\n │              ├── variable: j:2 [type=jsonb]\n │              └── const: '{\"x\": \"y\"}' [type=jsonb]\n └── projections\n      └── const: 1 [as=\"?column?\":6, type=int]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "JSONB"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'{\"x\": \"y\"}'",
+                      "type": "JSONB"
+                    }
+                  ],
+                  "operator": "CONTAINS",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "operand": [],
+            "operator": "1",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "JSONB"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'{\"x\": \"y\"}'",
+                      "type": "JSONB"
+                    }
+                  ],
+                  "operator": "CONTAINS",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "JSONB"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "operand": [],
+            "operator": "1",
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "JSONB",
+        "INT[]",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

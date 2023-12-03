@@ -1,0 +1,299 @@
+{
+  "help": [
+    "project\n ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string!null)\n ├── stats: [rows=60]\n └── select\n      ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string!null) rowid:8(int!null) crdb_internal_mvcc_timestamp:9(decimal) tableoid:10(oid)\n      ├── stats: [rows=60, distinct(7)=2, null(7)=0]\n      │   histogram(7)=  0   30    0    30\n      │                \u003c--- 'foo' --- 'mango'\n      ├── key: (8)\n      ├── fd: (8)--\u003e(1-7,9,10)\n      ├── scan hist\n      │    ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string) rowid:8(int!null) crdb_internal_mvcc_timestamp:9(decimal) tableoid:10(oid)\n      │    ├── stats: [rows=1000, distinct(7)=40, null(7)=0, distinct(8)=1000, null(8)=0]\n      │    │   histogram(7)=  0     0     90     10     180     20     270    30     360      40\n      │    │                \u003c--- 'apple' ---- 'banana' ----- 'cherry' ----- 'mango' ----- 'pineapple'\n      │    ├── key: (8)\n      │    └── fd: (8)--\u003e(1-7,9,10)\n      └── filters\n           └── (g:7 = 'mango') OR (g:7 = 'foo') [type=bool, outer=(7), constraints=(/7: [/'foo' - /'foo'] [/'mango' - /'mango']; tight)]\n",
+    "index-join hist\n ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string!null)\n ├── stats: [rows=60, distinct(7)=2, null(7)=0]\n │   histogram(7)=  0   30    0    30\n │                \u003c--- 'foo' --- 'mango'\n └── scan hist@idx_g\n      ├── columns: g:7(string!null) rowid:8(int!null)\n      ├── constraint: /7/8\n      │    ├── [/'foo' - /'foo']\n      │    └── [/'mango' - /'mango']\n      ├── stats: [rows=60, distinct(7)=2, null(7)=0]\n      │   histogram(7)=  0   30    0    30\n      │                \u003c--- 'foo' --- 'mango'\n      ├── key: (8)\n      └── fd: (8)--\u003e(7)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 6,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'mango'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 6,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'foo'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "DATE"
+          },
+          {
+            "column": 2,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 3,
+            "type": "FLOAT"
+          },
+          {
+            "column": 4,
+            "type": "TIMESTAMP"
+          },
+          {
+            "column": 5,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "column": 6,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "STRING"
+                    },
+                    {
+                      "column": 8,
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 9,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "'foo'",
+                              "type": "STRING"
+                            },
+                            {
+                              "column": 0,
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'foo'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "'mango'",
+                              "type": "STRING"
+                            },
+                            {
+                              "column": 0,
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'mango'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 6,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 7,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "DATE"
+          },
+          {
+            "column": 4,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 5,
+            "type": "FLOAT"
+          },
+          {
+            "column": 6,
+            "type": "TIMESTAMP"
+          },
+          {
+            "column": 7,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "column": 0,
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          7
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "DATE",
+        "DECIMAL",
+        "FLOAT",
+        "TIMESTAMP",
+        "TIMESTAMPTZ",
+        "STRING",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,493 @@
+{
+  "help": [
+    "limit\n ├── columns: id:1!null val:2 region:3!null latitude:4 longitude:5 data1:6!null data2:7!null geom:8\n ├── internal-ordering: +6\n ├── cardinality: [0 - 10]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-8)\n ├── ordering: +6\n ├── sort\n │    ├── columns: id:1!null val:2 region:3!null latitude:4 longitude:5 data1:6!null data2:7!null geom:8\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2-8)\n │    ├── ordering: +6\n │    ├── limit hint: 10.00\n │    └── project\n │         ├── columns: id:1!null val:2 region:3!null latitude:4 longitude:5 data1:6!null data2:7!null geom:8\n │         ├── key: (1)\n │         ├── fd: (1)--\u003e(2-8)\n │         └── select\n │              ├── columns: id:1!null val:2 region:3!null latitude:4 longitude:5 data1:6!null data2:7!null geom:8 crdb_internal_mvcc_timestamp:9 tableoid:10\n │              ├── key: (1)\n │              ├── fd: (1)--\u003e(2-10)\n │              ├── scan index_tab\n │              │    ├── columns: id:1!null val:2 region:3 latitude:4 longitude:5 data1:6!null data2:7!null geom:8 crdb_internal_mvcc_timestamp:9 tableoid:10\n │              │    ├── key: (1)\n │              │    └── fd: (1)--\u003e(2-10)\n │              └── filters\n │                   └── (region:3 = 'US_WEST') OR (region:3 = 'US_EAST') [outer=(3), constraints=(/3: [/'US_EAST' - /'US_EAST'] [/'US_WEST' - /'US_WEST']; tight)]\n └── 10\n",
+    "index-join index_tab\n ├── columns: id:1!null val:2 region:3!null latitude:4 longitude:5 data1:6!null data2:7!null geom:8\n ├── cardinality: [0 - 10]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-8)\n ├── ordering: +6\n └── limit\n      ├── columns: id:1!null region:3!null data1:6!null data2:7!null\n      ├── internal-ordering: +6\n      ├── cardinality: [0 - 10]\n      ├── key: (1)\n      ├── fd: (1)--\u003e(3,6,7)\n      ├── ordering: +6\n      ├── union-all\n      │    ├── columns: id:1!null region:3!null data1:6!null data2:7!null\n      │    ├── left columns: id:12 region:14 data1:17 data2:18\n      │    ├── right columns: id:23 region:25 data1:28 data2:29\n      │    ├── cardinality: [0 - 20]\n      │    ├── ordering: +6\n      │    ├── limit hint: 10.00\n      │    ├── scan index_tab@c\n      │    │    ├── columns: id:12!null region:14!null data1:17!null data2:18!null\n      │    │    ├── constraint: /14/17/18/12: [/'US_EAST' - /'US_EAST']\n      │    │    ├── limit: 10\n      │    │    ├── key: (12)\n      │    │    ├── fd: ()--\u003e(14), (12)--\u003e(17,18)\n      │    │    ├── ordering: +17 opt(14) [actual: +17]\n      │    │    └── limit hint: 10.00\n      │    └── scan index_tab@c\n      │         ├── columns: id:23!null region:25!null data1:28!null data2:29!null\n      │         ├── constraint: /25/28/29/23: [/'US_WEST' - /'US_WEST']\n      │         ├── limit: 10\n      │         ├── key: (23)\n      │         ├── fd: ()--\u003e(25), (23)--\u003e(28,29)\n      │         ├── ordering: +28 opt(25) [actual: +28]\n      │         └── limit hint: 10.00\n      └── 10\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            5,
+            "INT",
+            "ASCENDING"
+          ]
+        ],
+        "limit": {
+          "operand": [],
+          "operator": "10",
+          "type": "INT"
+        },
+        "source": {
+          "sort": {
+            "collation": [
+              [
+                5,
+                "INT",
+                "ASCENDING"
+              ]
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "filter": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 2,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'US_WEST'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 2,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'US_EAST'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "OR",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "source": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 1,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 2,
+                            "type": "STRING"
+                          },
+                          {
+                            "column": 3,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 4,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 5,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 6,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 7,
+                            "type": "GEOMETRY"
+                          },
+                          {
+                            "column": 8,
+                            "type": "DECIMAL"
+                          },
+                          {
+                            "column": 9,
+                            "type": "OID"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 4,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 5,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 6,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 7,
+                    "type": "GEOMETRY"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 4,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "STRING"
+                    },
+                    {
+                      "column": 6,
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 9,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 3,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 10,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "sort": {
+                "collation": [
+                  [
+                    2,
+                    "INT",
+                    "ASCENDING"
+                  ]
+                ],
+                "limit": {
+                  "operand": [],
+                  "operator": "10",
+                  "type": "INT"
+                },
+                "source": {
+                  "union": [
+                    {
+                      "sort": {
+                        "collation": [],
+                        "limit": {
+                          "operand": [],
+                          "operator": "10",
+                          "type": "INTEGER"
+                        },
+                        "source": {
+                          "filter": {
+                            "condition": {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [
+                                        {
+                                          "operand": [],
+                                          "operator": "'US_EAST'",
+                                          "type": "STRING"
+                                        },
+                                        {
+                                          "column": 1,
+                                          "type": "STRING"
+                                        }
+                                      ],
+                                      "operator": "\u003c=",
+                                      "type": "BOOLEAN"
+                                    },
+                                    {
+                                      "operand": [
+                                        {
+                                          "column": 1,
+                                          "type": "STRING"
+                                        },
+                                        {
+                                          "operand": [],
+                                          "operator": "'US_EAST'",
+                                          "type": "STRING"
+                                        }
+                                      ],
+                                      "operator": "\u003c=",
+                                      "type": "BOOLEAN"
+                                    }
+                                  ],
+                                  "operator": "AND",
+                                  "type": "BOOLEAN"
+                                }
+                              ],
+                              "operator": "OR",
+                              "type": "BOOLEAN"
+                            },
+                            "source": {
+                              "project": {
+                                "source": {
+                                  "scan": 0
+                                },
+                                "target": [
+                                  {
+                                    "column": 0,
+                                    "type": "INT"
+                                  },
+                                  {
+                                    "column": 2,
+                                    "type": "STRING"
+                                  },
+                                  {
+                                    "column": 5,
+                                    "type": "INT"
+                                  },
+                                  {
+                                    "column": 6,
+                                    "type": "INT"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "sort": {
+                        "collation": [],
+                        "limit": {
+                          "operand": [],
+                          "operator": "10",
+                          "type": "INTEGER"
+                        },
+                        "source": {
+                          "filter": {
+                            "condition": {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [
+                                        {
+                                          "operand": [],
+                                          "operator": "'US_WEST'",
+                                          "type": "STRING"
+                                        },
+                                        {
+                                          "column": 1,
+                                          "type": "STRING"
+                                        }
+                                      ],
+                                      "operator": "\u003c=",
+                                      "type": "BOOLEAN"
+                                    },
+                                    {
+                                      "operand": [
+                                        {
+                                          "column": 1,
+                                          "type": "STRING"
+                                        },
+                                        {
+                                          "operand": [],
+                                          "operator": "'US_WEST'",
+                                          "type": "STRING"
+                                        }
+                                      ],
+                                      "operator": "\u003c=",
+                                      "type": "BOOLEAN"
+                                    }
+                                  ],
+                                  "operator": "AND",
+                                  "type": "BOOLEAN"
+                                }
+                              ],
+                              "operator": "OR",
+                              "type": "BOOLEAN"
+                            },
+                            "source": {
+                              "project": {
+                                "source": {
+                                  "scan": 0
+                                },
+                                "target": [
+                                  {
+                                    "column": 0,
+                                    "type": "INT"
+                                  },
+                                  {
+                                    "column": 2,
+                                    "type": "STRING"
+                                  },
+                                  {
+                                    "column": 5,
+                                    "type": "INT"
+                                  },
+                                  {
+                                    "column": 6,
+                                    "type": "INT"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "right": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 5,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "STRING"
+          },
+          {
+            "column": 7,
+            "type": "INT"
+          },
+          {
+            "column": 8,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          },
+          {
+            "column": 11,
+            "type": "GEOMETRY"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "GEOMETRY",
+        "DECIMAL",
+        "OID",
+        "ENCODEDKEY"
+      ]
+    }
+  ]
+}

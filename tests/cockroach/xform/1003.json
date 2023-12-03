@@ -1,0 +1,136 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null time:2!null\n ├── stable\n ├── key: (1)\n ├── fd: (1)--\u003e(2)\n └── select\n      ├── columns: k:1!null time:2!null crdb_internal_mvcc_timestamp:3 tableoid:4\n      ├── stable\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-4)\n      ├── scan with_time_index\n      │    ├── columns: k:1!null time:2 crdb_internal_mvcc_timestamp:3 tableoid:4\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-4)\n      └── filters\n           └── time:2 \u003e (now() - '01:00:00') [outer=(2), stable, constraints=(/2: (/NULL - ])]\n",
+    "scan with_time_index@with_time_index_\"time\"_idx\n ├── columns: k:1!null time:2!null\n ├── constraint: /2/1: [/'2017-05-10 12:00:00.000001' - ]\n ├── key: (1)\n └── fd: (1)--\u003e(2)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "TIMESTAMP"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "SCALAR LIST",
+                              "type": "ANYELEMENT"
+                            }
+                          ],
+                          "operator": "FUNCTION",
+                          "type": "TIMESTAMPTZ"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'01:00:00'",
+                          "type": "INTERVAL"
+                        }
+                      ],
+                      "operator": "MINUS",
+                      "type": "TIMESTAMPTZ"
+                    }
+                  ],
+                  "operator": "GT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "TIMESTAMP"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "'2017-05-10 12:00:00.000001'",
+                      "type": "TIMESTAMP"
+                    },
+                    {
+                      "column": 1,
+                      "type": "TIMESTAMP"
+                    }
+                  ],
+                  "operator": "\u003c=",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            }
+          ],
+          "operator": "OR",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "TIMESTAMP"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "TIMESTAMP",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,331 @@
+{
+  "help": [
+    "group-by (hash)\n ├── columns: file_id:2!null sum_int:14\n ├── grouping columns: f.file_id:2!null\n ├── cardinality: [0 - 1]\n ├── immutable\n ├── stats: [rows=1, distinct(2)=1, null(2)=0]\n ├── cost: 2308.33625\n ├── key: ()\n ├── fd: ()--\u003e(2,14)\n ├── project\n │    ├── columns: column13:13 f.file_id:2!null\n │    ├── immutable\n │    ├── stats: [rows=1, distinct(2)=1, null(2)=0]\n │    ├── cost: 2308.27625\n │    ├── fd: ()--\u003e(2)\n │    ├── select\n │    │    ├── columns: filename:1!null f.file_id:2!null file_size:3!null username:4!null upload_time:5 f.crdb_internal_mvcc_timestamp:6 f.tableoid:7 p.file_id:8 byte_offset:9 payload:10 p.crdb_internal_mvcc_timestamp:11 p.tableoid:12\n │    │    ├── stats: [rows=1, distinct(1)=1, null(1)=0, distinct(2)=1, null(2)=0]\n │    │    ├── cost: 2308.23625\n │    │    ├── key: (8,9)\n │    │    ├── fd: ()--\u003e(1-7), (8,9)--\u003e(10-12)\n │    │    ├── left-join (hash)\n │    │    │    ├── columns: filename:1!null f.file_id:2!null file_size:3!null username:4!null upload_time:5 f.crdb_internal_mvcc_timestamp:6 f.tableoid:7 p.file_id:8 byte_offset:9 payload:10 p.crdb_internal_mvcc_timestamp:11 p.tableoid:12\n │    │    │    ├── multiplicity: left-rows(one-or-more), right-rows(zero-or-one)\n │    │    │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(2)=1000, null(2)=0, distinct(3)=100, null(3)=0, distinct(4)=100, null(4)=0, distinct(8)=100, null(8)=0]\n │    │    │    ├── cost: 2298.20625\n │    │    │    ├── key: (1,8,9)\n │    │    │    ├── fd: (1)--\u003e(2-7), (2)--\u003e(1,3-7), (8,9)--\u003e(10-12)\n │    │    │    ├── scan f\n │    │    │    │    ├── columns: filename:1!null f.file_id:2!null file_size:3!null username:4!null upload_time:5 f.crdb_internal_mvcc_timestamp:6 f.tableoid:7\n │    │    │    │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(2)=1000, null(2)=0, distinct(3)=100, null(3)=0, distinct(4)=100, null(4)=0]\n │    │    │    │    ├── cost: 1149.22\n │    │    │    │    ├── key: (1)\n │    │    │    │    └── fd: (1)--\u003e(2-7), (2)--\u003e(1,3-7)\n │    │    │    ├── scan p\n │    │    │    │    ├── columns: p.file_id:8!null byte_offset:9!null payload:10 p.crdb_internal_mvcc_timestamp:11 p.tableoid:12\n │    │    │    │    ├── stats: [rows=1000, distinct(8)=100, null(8)=0]\n │    │    │    │    ├── cost: 1108.82\n │    │    │    │    ├── key: (8,9)\n │    │    │    │    └── fd: (8,9)--\u003e(10-12)\n │    │    │    └── filters\n │    │    │         └── p.file_id:8 = f.file_id:2 [outer=(2,8), constraints=(/2: (/NULL - ]; /8: (/NULL - ]), fd=(2)==(8), (8)==(2)]\n │    │    └── filters\n │    │         └── filename:1 = 'abc' [outer=(1), constraints=(/1: [/'abc' - /'abc']; tight), fd=()--\u003e(1)]\n │    └── projections\n │         └── length(payload:10) [as=column13:13, outer=(10), immutable]\n └── aggregations\n      └── sum-int [as=sum_int:14, outer=(13)]\n           └── column13:13\n",
+    "group-by (streaming)\n ├── columns: file_id:2!null sum_int:14\n ├── cardinality: [0 - 1]\n ├── immutable\n ├── stats: [rows=1]\n ├── cost: 54.15\n ├── key: ()\n ├── fd: ()--\u003e(2,14)\n ├── project\n │    ├── columns: column13:13 f.file_id:2!null\n │    ├── immutable\n │    ├── stats: [rows=10]\n │    ├── cost: 53.92\n │    ├── fd: ()--\u003e(2)\n │    ├── left-join (lookup p)\n │    │    ├── columns: filename:1!null f.file_id:2!null p.file_id:8 payload:10\n │    │    ├── key columns: [2] = [8]\n │    │    ├── stats: [rows=10, distinct(8)=1, null(8)=0]\n │    │    ├── cost: 53.7\n │    │    ├── fd: ()--\u003e(1,2,8)\n │    │    ├── scan f\n │    │    │    ├── columns: filename:1!null f.file_id:2!null\n │    │    │    ├── constraint: /1: [/'abc' - /'abc']\n │    │    │    ├── cardinality: [0 - 1]\n │    │    │    ├── stats: [rows=1, distinct(1)=1, null(1)=0, distinct(2)=1, null(2)=0]\n │    │    │    ├── cost: 9.08\n │    │    │    ├── key: ()\n │    │    │    └── fd: ()--\u003e(1,2)\n │    │    └── filters (true)\n │    └── projections\n │         └── length(payload:10) [as=column13:13, outer=(10), immutable]\n └── aggregations\n      ├── sum-int [as=sum_int:14, outer=(13)]\n      │    └── column13:13\n      └── const-agg [as=f.file_id:2, outer=(2)]\n           └── f.file_id:2\n"
+  ],
+  "queries": [
+    {
+      "group": {
+        "function": [
+          {
+            "distinct": false,
+            "ignoreNulls": true,
+            "operand": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "operator": "SUM INT",
+            "type": "INT"
+          }
+        ],
+        "keys": [
+          {
+            "column": 0,
+            "type": "UUID"
+          }
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "STRING"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'abc'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "join": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 7,
+                              "type": "UUID"
+                            },
+                            {
+                              "column": 1,
+                              "type": "UUID"
+                            }
+                          ],
+                          "operator": "EQ",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "kind": "LEFT",
+                    "left": {
+                      "scan": 0
+                    },
+                    "right": {
+                      "scan": 1
+                    }
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "UUID"
+              },
+              {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "column": 9,
+                        "type": "BYTES"
+                      }
+                    ],
+                    "operator": "SCALAR LIST",
+                    "type": "ANYELEMENT"
+                  }
+                ],
+                "operator": "FUNCTION",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "group": {
+        "function": [
+          {
+            "distinct": false,
+            "ignoreNulls": true,
+            "operand": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "operator": "SUM INT",
+            "type": "INT"
+          },
+          {
+            "distinct": false,
+            "ignoreNulls": false,
+            "operand": [
+              {
+                "column": 0,
+                "type": "UUID"
+              }
+            ],
+            "operator": "CONST AGG",
+            "type": "UUID"
+          }
+        ],
+        "keys": [],
+        "source": {
+          "project": {
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 2,
+                              "type": "UUID"
+                            },
+                            {
+                              "column": 1,
+                              "type": "UUID"
+                            }
+                          ],
+                          "operator": "EQ",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "LEFT",
+                "left": {
+                  "filter": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "operand": [],
+                                  "operator": "'abc'",
+                                  "type": "STRING"
+                                },
+                                {
+                                  "column": 0,
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "\u003c=",
+                              "type": "BOOLEAN"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 0,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'abc'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "\u003c=",
+                              "type": "BOOLEAN"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "OR",
+                      "type": "BOOLEAN"
+                    },
+                    "source": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "STRING"
+                          },
+                          {
+                            "column": 1,
+                            "type": "UUID"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "project": {
+                    "source": {
+                      "scan": 1
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "UUID"
+                      },
+                      {
+                        "column": 2,
+                        "type": "BYTES"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "UUID"
+              },
+              {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "column": 3,
+                        "type": "BYTES"
+                      }
+                    ],
+                    "operator": "SCALAR LIST",
+                    "type": "ANYELEMENT"
+                  }
+                ],
+                "operator": "FUNCTION",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "STRING",
+        "UUID",
+        "INT",
+        "STRING",
+        "TIMESTAMP",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0,
+          1
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "UUID",
+        "INT",
+        "BYTES",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

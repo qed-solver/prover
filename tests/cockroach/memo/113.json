@@ -1,0 +1,204 @@
+{
+  "help": [
+    "project\n ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null)\n ├── key: (1)\n ├── fd: (1)--\u003e(2-4), (3,4)~~\u003e(1,2)\n ├── prune: (1-4)\n └── select\n      ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) xysd.crdb_internal_mvcc_timestamp:5(decimal) xysd.tableoid:6(oid)\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6)\n      ├── scan xysd\n      │    ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) xysd.crdb_internal_mvcc_timestamp:5(decimal) xysd.tableoid:6(oid)\n      │    ├── key: (1)\n      │    ├── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6)\n      │    └── prune: (1-6)\n      └── filters\n           └── not [type=bool, outer=(1), correlated-subquery]\n                └── exists [type=bool]\n                     └── project\n                          ├── columns: u:7(int!null) v:8(int!null)\n                          ├── outer: (1)\n                          ├── fd: ()--\u003e(7)\n                          └── select\n                               ├── columns: u:7(int!null) v:8(int!null) rowid:9(int!null) uv.crdb_internal_mvcc_timestamp:10(decimal) uv.tableoid:11(oid)\n                               ├── outer: (1)\n                               ├── key: (9)\n                               ├── fd: ()--\u003e(7), (9)--\u003e(8,10,11)\n                               ├── scan uv\n                               │    ├── columns: u:7(int) v:8(int!null) rowid:9(int!null) uv.crdb_internal_mvcc_timestamp:10(decimal) uv.tableoid:11(oid)\n                               │    ├── key: (9)\n                               │    ├── fd: (9)--\u003e(7,8,10,11)\n                               │    └── prune: (7-11)\n                               └── filters\n                                    └── eq [type=bool, outer=(1,7), constraints=(/1: (/NULL - ]; /7: (/NULL - ]), fd=(1)==(7), (7)==(1)]\n                                         ├── variable: x:1 [type=int]\n                                         └── variable: u:7 [type=int]\n",
+    "anti-join (hash)\n ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null)\n ├── key: (1)\n ├── fd: (1)--\u003e(2-4), (3,4)~~\u003e(1,2)\n ├── prune: (2-4)\n ├── scan xysd\n │    ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null)\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2-4), (3,4)~~\u003e(1,2)\n │    ├── prune: (1-4)\n │    ├── interesting orderings: (+1) (-3,+4,+1)\n │    └── unfiltered-cols: (1-6)\n ├── scan uv\n │    ├── columns: u:7(int)\n │    ├── prune: (7)\n │    └── unfiltered-cols: (7-11)\n └── filters\n      └── eq [type=bool, outer=(1,7), constraints=(/1: (/NULL - ]; /7: (/NULL - ]), fd=(1)==(7), (7)==(1)]\n           ├── variable: x:1 [type=int]\n           └── variable: u:7 [type=int]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "EXISTS",
+                      "query": {
+                        "project": {
+                          "source": {
+                            "filter": {
+                              "condition": {
+                                "operand": [
+                                  {
+                                    "operand": [
+                                      {
+                                        "column": 0,
+                                        "type": "INT"
+                                      },
+                                      {
+                                        "column": 6,
+                                        "type": "INT"
+                                      }
+                                    ],
+                                    "operator": "EQ",
+                                    "type": "BOOL"
+                                  }
+                                ],
+                                "operator": "AND",
+                                "type": "BOOLEAN"
+                              },
+                              "source": {
+                                "scan": 1
+                              }
+                            }
+                          },
+                          "target": [
+                            {
+                              "column": 6,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 7,
+                              "type": "INT"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "NOT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          },
+          {
+            "column": 3,
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INT"
+                },
+                {
+                  "column": 4,
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "ANTI",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              },
+              {
+                "column": 3,
+                "type": "DECIMAL"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 1
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

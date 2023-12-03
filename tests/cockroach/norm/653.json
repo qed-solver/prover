@@ -1,0 +1,151 @@
+{
+  "help": [
+    "project\n ├── columns: add:11\n ├── volatile\n ├── scan a\n │    ├── columns: k:1!null i:2 f:3 s:4 j:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-7)\n └── projections\n      └── add((random() * 10.0)::INT8, i:2) [as=add:11, outer=(2), volatile, udf]\n",
+    "project\n ├── columns: add:11\n ├── volatile\n ├── scan a\n │    └── columns: i:2\n └── projections\n      └── add((random() * 10.0)::INT8, i:2) [as=add:11, outer=(2), volatile, udf]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "operand": [
+                          {
+                            "operand": [
+                              {
+                                "operand": [],
+                                "operator": "SCALAR LIST",
+                                "type": "ANYELEMENT"
+                              }
+                            ],
+                            "operator": "FUNCTION",
+                            "type": "FLOAT"
+                          },
+                          {
+                            "operand": [],
+                            "operator": "10.0",
+                            "type": "FLOAT"
+                          }
+                        ],
+                        "operator": "MULT",
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "CAST",
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "U D F",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "operand": [
+                          {
+                            "operand": [
+                              {
+                                "operand": [],
+                                "operator": "SCALAR LIST",
+                                "type": "ANYELEMENT"
+                              }
+                            ],
+                            "operator": "FUNCTION",
+                            "type": "FLOAT"
+                          },
+                          {
+                            "operand": [],
+                            "operator": "10.0",
+                            "type": "FLOAT"
+                          }
+                        ],
+                        "operator": "MULT",
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "CAST",
+                    "type": "INT"
+                  },
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "U D F",
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

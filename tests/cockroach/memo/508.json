@@ -1,0 +1,125 @@
+{
+  "help": [
+    "project\n ├── columns: user_id:1(uuid!null) name:2(varchar!null) created:3(timestamptz)\n ├── stats: [rows=3090.897]\n └── select\n      ├── columns: user_id:1(uuid!null) name:2(varchar!null) created:3(timestamptz) rowid:4(int!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      ├── stats: [rows=3090.897, distinct(2)=309.433, null(2)=0]\n      │   histogram(2)=  0    0    3089.9   1\n      │                \u003c--- 'bbb' -------- 'c'\n      ├── key: (4)\n      ├── fd: (4)--\u003e(1-3,5,6)\n      ├── scan data\n      │    ├── columns: user_id:1(uuid!null) name:2(varchar) created:3(timestamptz) rowid:4(int!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      │    ├── stats: [rows=10000, distinct(1)=1000, null(1)=0, distinct(2)=1000, null(2)=0, distinct(4)=10000, null(4)=0]\n      │    │   histogram(1)=  0                    1                     4998                    1                     4999                    1\n      │    │                \u003c--- '3b57b3e4-a68a-9b47-2752-e365d7d8954e' ------ '6b49a786-387b-d5a2-6582-4e963eb4d537' ------ 'd9739a48-d5be-9a62-e752-34d877e56ba5'\n      │    │   histogram(2)=  0   1   4998   1   4999   1\n      │    │                \u003c--- 'a' ------ 'b' ------ 'c'\n      │    ├── key: (4)\n      │    └── fd: (4)--\u003e(1-3,5,6)\n      └── filters\n           └── name:2 \u003e= 'bbb' [type=bool, outer=(2), constraints=(/2: [/'bbb' - ]; tight)]\n",
+    "select\n ├── columns: user_id:1(uuid!null) name:2(varchar!null) created:3(timestamptz)\n ├── stats: [rows=3090.897, distinct(2)=309.433, null(2)=0]\n │   histogram(2)=  0    0    3089.9   1\n │                \u003c--- 'bbb' -------- 'c'\n ├── scan data\n │    ├── columns: user_id:1(uuid!null) name:2(varchar) created:3(timestamptz)\n │    └── stats: [rows=10000, distinct(1)=1000, null(1)=0, distinct(2)=1000, null(2)=0]\n │        histogram(1)=  0                    1                     4998                    1                     4999                    1\n │                     \u003c--- '3b57b3e4-a68a-9b47-2752-e365d7d8954e' ------ '6b49a786-387b-d5a2-6582-4e963eb4d537' ------ 'd9739a48-d5be-9a62-e752-34d877e56ba5'\n │        histogram(2)=  0   1   4998   1   4999   1\n │                     \u003c--- 'a' ------ 'b' ------ 'c'\n └── filters\n      └── name:2 \u003e= 'bbb' [type=bool, outer=(2), constraints=(/2: [/'bbb' - ]; tight)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "VARCHAR"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'bbb'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "GE",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "UUID"
+          },
+          {
+            "column": 1,
+            "type": "VARCHAR"
+          },
+          {
+            "column": 2,
+            "type": "TIMESTAMPTZ"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 1,
+                  "type": "VARCHAR"
+                },
+                {
+                  "operand": [],
+                  "operator": "'bbb'",
+                  "type": "STRING"
+                }
+              ],
+              "operator": "GE",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "UUID"
+              },
+              {
+                "column": 1,
+                "type": "VARCHAR"
+              },
+              {
+                "column": 2,
+                "type": "TIMESTAMPTZ"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          3
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "UUID",
+        "VARCHAR",
+        "TIMESTAMPTZ",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

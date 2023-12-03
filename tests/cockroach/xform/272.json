@@ -1,0 +1,99 @@
+{
+  "help": [
+    "project\n ├── columns: plus:5 x:1!null\n ├── immutable\n ├── key: (1)\n ├── fd: (1)--\u003e(5)\n ├── scan a\n │    ├── columns: x:1!null y:2 crdb_internal_mvcc_timestamp:3 tableoid:4\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-4)\n └── projections\n      └── 1 + y:2 [as=plus:5, outer=(2), immutable]\n",
+    "project\n ├── columns: plus:5 x:1!null\n ├── immutable\n ├── key: (1)\n ├── fd: (1)--\u003e(5)\n ├── scan a\n │    ├── columns: x:1!null y:2\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2)\n └── projections\n      └── y:2 + 1 [as=plus:5, outer=(2), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

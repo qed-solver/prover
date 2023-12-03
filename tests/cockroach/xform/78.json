@@ -1,0 +1,199 @@
+{
+  "help": [
+    "project\n ├── columns: id:1!null\n ├── immutable\n ├── stats: [rows=166666.7]\n ├── cost: 1556695.74\n ├── key: (1)\n └── select\n      ├── columns: id:1!null a:2 b:3 geog:4 crdb_internal_mvcc_timestamp:5 tableoid:6\n      ├── immutable\n      ├── stats: [rows=166666.7]\n      ├── cost: 1555029.05\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-6)\n      ├── scan g\n      │    ├── columns: id:1!null a:2 b:3 geog:4 crdb_internal_mvcc_timestamp:5 tableoid:6\n      │    ├── stats: [rows=500000, distinct(1)=500000, null(1)=0]\n      │    ├── cost: 550029.02\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-6)\n      └── filters\n           └── st_distance(geog:4, st_makepoint(a:2, 1.0)::GEOGRAPHY) \u003c 200.0 [outer=(2,4), immutable]\n",
+    "project\n ├── columns: id:1!null\n ├── immutable\n ├── stats: [rows=55000]\n ├── cost: 1040578.77\n ├── key: (1)\n └── select\n      ├── columns: id:1!null a:2 geog:4!null\n      ├── immutable\n      ├── stats: [rows=55000, distinct(4)=50000, null(4)=0]\n      ├── cost: 1040028.75\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2,4)\n      ├── scan g\n      │    ├── columns: id:1!null a:2 geog:4\n      │    ├── stats: [rows=500000, distinct(1)=500000, null(1)=0, distinct(4)=50000, null(4)=5000]\n      │    ├── cost: 535028.72\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2,4)\n      └── filters\n           └── st_dwithinexclusive(geog:4, st_makepoint(a:2, 1.0)::GEOGRAPHY, 200.0) [outer=(2,4), immutable, constraints=(/4: (/NULL - ])]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 3,
+                              "type": "GEOGRAPHY"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [
+                                        {
+                                          "column": 1,
+                                          "type": "FLOAT"
+                                        },
+                                        {
+                                          "operand": [],
+                                          "operator": "1.0",
+                                          "type": "FLOAT"
+                                        }
+                                      ],
+                                      "operator": "SCALAR LIST",
+                                      "type": "ANYELEMENT"
+                                    }
+                                  ],
+                                  "operator": "FUNCTION",
+                                  "type": "GEOMETRY"
+                                }
+                              ],
+                              "operator": "CAST",
+                              "type": "GEOGRAPHY"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "FLOAT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "200.0",
+                      "type": "FLOAT"
+                    }
+                  ],
+                  "operator": "LT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "GEOGRAPHY"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 1,
+                                      "type": "FLOAT"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "1.0",
+                                      "type": "FLOAT"
+                                    }
+                                  ],
+                                  "operator": "SCALAR LIST",
+                                  "type": "ANYELEMENT"
+                                }
+                              ],
+                              "operator": "FUNCTION",
+                              "type": "GEOMETRY"
+                            }
+                          ],
+                          "operator": "CAST",
+                          "type": "GEOGRAPHY"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "200.0",
+                          "type": "FLOAT"
+                        }
+                      ],
+                      "operator": "SCALAR LIST",
+                      "type": "ANYELEMENT"
+                    }
+                  ],
+                  "operator": "FUNCTION",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "GEOGRAPHY"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "FLOAT",
+        "BOOL",
+        "GEOGRAPHY",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

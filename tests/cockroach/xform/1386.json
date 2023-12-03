@@ -1,0 +1,452 @@
+{
+  "help": [
+    "sort\n ├── columns: name:15!null popn_per_sqkm:20\n ├── immutable\n ├── ordering: +15\n └── project\n      ├── columns: popn_per_sqkm:20 name:15!null\n      ├── immutable\n      ├── group-by (hash)\n      │    ├── columns: name:15!null n.geom:16!null sum:19\n      │    ├── grouping columns: name:15!null n.geom:16!null\n      │    ├── immutable\n      │    ├── key: (15,16)\n      │    ├── fd: (15,16)--\u003e(19)\n      │    ├── project\n      │    │    ├── columns: popn_total:3 name:15!null n.geom:16!null\n      │    │    ├── immutable\n      │    │    └── select\n      │    │         ├── columns: c.gid:1!null blkid:2 popn_total:3 popn_white:4 popn_black:5 popn_nativ:6 popn_asian:7 popn_other:8 c.boroname:9 c.geom:10!null c.crdb_internal_mvcc_timestamp:11 c.tableoid:12 n.gid:13!null n.boroname:14 name:15!null n.geom:16!null n.crdb_internal_mvcc_timestamp:17 n.tableoid:18\n      │    │         ├── immutable\n      │    │         ├── key: (1,13)\n      │    │         ├── fd: (1)--\u003e(2-12), (13)--\u003e(14-18)\n      │    │         ├── inner-join (cross)\n      │    │         │    ├── columns: c.gid:1!null blkid:2 popn_total:3 popn_white:4 popn_black:5 popn_nativ:6 popn_asian:7 popn_other:8 c.boroname:9 c.geom:10!null c.crdb_internal_mvcc_timestamp:11 c.tableoid:12 n.gid:13!null n.boroname:14 name:15 n.geom:16!null n.crdb_internal_mvcc_timestamp:17 n.tableoid:18\n      │    │         │    ├── immutable\n      │    │         │    ├── key: (1,13)\n      │    │         │    ├── fd: (1)--\u003e(2-12), (13)--\u003e(14-18)\n      │    │         │    ├── scan nyc_census_blocks [as=c]\n      │    │         │    │    ├── columns: c.gid:1!null blkid:2 popn_total:3 popn_white:4 popn_black:5 popn_nativ:6 popn_asian:7 popn_other:8 c.boroname:9 c.geom:10 c.crdb_internal_mvcc_timestamp:11 c.tableoid:12\n      │    │         │    │    ├── key: (1)\n      │    │         │    │    └── fd: (1)--\u003e(2-12)\n      │    │         │    ├── scan nyc_neighborhoods [as=n]\n      │    │         │    │    ├── columns: n.gid:13!null n.boroname:14 name:15 n.geom:16 n.crdb_internal_mvcc_timestamp:17 n.tableoid:18\n      │    │         │    │    ├── key: (13)\n      │    │         │    │    └── fd: (13)--\u003e(14-18)\n      │    │         │    └── filters\n      │    │         │         └── st_intersects(c.geom:10, n.geom:16) [outer=(10,16), immutable, constraints=(/10: (/NULL - ]; /16: (/NULL - ])]\n      │    │         └── filters\n      │    │              └── (name:15 = 'Upper West Side') OR (name:15 = 'Upper East Side') [outer=(15), constraints=(/15: [/'Upper East Side' - /'Upper East Side'] [/'Upper West Side' - /'Upper West Side']; tight)]\n      │    └── aggregations\n      │         └── sum [as=sum:19, outer=(3)]\n      │              └── popn_total:3\n      └── projections\n           └── sum:19 / (st_area(n.geom:16) / 1e+06) [as=popn_per_sqkm:20, outer=(16,19), immutable]\n",
+    "sort\n ├── columns: name:15!null popn_per_sqkm:20\n ├── immutable\n ├── ordering: +15\n └── project\n      ├── columns: popn_per_sqkm:20 name:15!null\n      ├── immutable\n      ├── group-by (hash)\n      │    ├── columns: name:15!null n.geom:16!null sum:19\n      │    ├── grouping columns: name:15!null n.geom:16!null\n      │    ├── immutable\n      │    ├── key: (15,16)\n      │    ├── fd: (15,16)--\u003e(19)\n      │    ├── inner-join (cross)\n      │    │    ├── columns: popn_total:3 c.geom:10!null name:15!null n.geom:16!null\n      │    │    ├── immutable\n      │    │    ├── scan nyc_census_blocks [as=c]\n      │    │    │    └── columns: popn_total:3 c.geom:10\n      │    │    ├── select\n      │    │    │    ├── columns: name:15!null n.geom:16\n      │    │    │    ├── scan nyc_neighborhoods [as=n]\n      │    │    │    │    └── columns: name:15 n.geom:16\n      │    │    │    └── filters\n      │    │    │         └── (name:15 = 'Upper West Side') OR (name:15 = 'Upper East Side') [outer=(15), constraints=(/15: [/'Upper East Side' - /'Upper East Side'] [/'Upper West Side' - /'Upper West Side']; tight)]\n      │    │    └── filters\n      │    │         └── st_intersects(c.geom:10, n.geom:16) [outer=(10,16), immutable, constraints=(/10: (/NULL - ]; /16: (/NULL - ])]\n      │    └── aggregations\n      │         └── sum [as=sum:19, outer=(3)]\n      │              └── popn_total:3\n      └── projections\n           └── sum:19 / (st_area(n.geom:16) / 1e+06) [as=popn_per_sqkm:20, outer=(16,19), immutable]\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            0,
+            "VARCHAR",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "SUM",
+                    "type": "FLOAT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 1,
+                    "type": "VARCHAR"
+                  },
+                  {
+                    "column": 2,
+                    "type": "GEOMETRY"
+                  }
+                ],
+                "source": {
+                  "project": {
+                    "source": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 14,
+                                      "type": "VARCHAR"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "'Upper West Side'",
+                                      "type": "STRING"
+                                    }
+                                  ],
+                                  "operator": "EQ",
+                                  "type": "BOOL"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 14,
+                                      "type": "VARCHAR"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "'Upper East Side'",
+                                      "type": "STRING"
+                                    }
+                                  ],
+                                  "operator": "EQ",
+                                  "type": "BOOL"
+                                }
+                              ],
+                              "operator": "OR",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "join": {
+                            "condition": {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [
+                                        {
+                                          "column": 9,
+                                          "type": "GEOMETRY"
+                                        },
+                                        {
+                                          "column": 15,
+                                          "type": "GEOMETRY"
+                                        }
+                                      ],
+                                      "operator": "SCALAR LIST",
+                                      "type": "ANYELEMENT"
+                                    }
+                                  ],
+                                  "operator": "FUNCTION",
+                                  "type": "BOOL"
+                                }
+                              ],
+                              "operator": "AND",
+                              "type": "BOOLEAN"
+                            },
+                            "kind": "INNER",
+                            "left": {
+                              "scan": 0
+                            },
+                            "right": {
+                              "scan": 1
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 2,
+                        "type": "FLOAT"
+                      },
+                      {
+                        "column": 14,
+                        "type": "VARCHAR"
+                      },
+                      {
+                        "column": 15,
+                        "type": "GEOMETRY"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "VARCHAR"
+              },
+              {
+                "operand": [
+                  {
+                    "column": 2,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "operand": [
+                          {
+                            "operand": [
+                              {
+                                "column": 1,
+                                "type": "GEOMETRY"
+                              }
+                            ],
+                            "operator": "SCALAR LIST",
+                            "type": "ANYELEMENT"
+                          }
+                        ],
+                        "operator": "FUNCTION",
+                        "type": "FLOAT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "1e+06",
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "DIV",
+                    "type": "FLOAT"
+                  }
+                ],
+                "operator": "DIV",
+                "type": "FLOAT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [
+          [
+            0,
+            "VARCHAR",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 0,
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "SUM",
+                    "type": "FLOAT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 2,
+                    "type": "VARCHAR"
+                  },
+                  {
+                    "column": 3,
+                    "type": "GEOMETRY"
+                  }
+                ],
+                "source": {
+                  "join": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 1,
+                                  "type": "GEOMETRY"
+                                },
+                                {
+                                  "column": 3,
+                                  "type": "GEOMETRY"
+                                }
+                              ],
+                              "operator": "SCALAR LIST",
+                              "type": "ANYELEMENT"
+                            }
+                          ],
+                          "operator": "FUNCTION",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "kind": "INNER",
+                    "left": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 2,
+                            "type": "FLOAT"
+                          },
+                          {
+                            "column": 9,
+                            "type": "GEOMETRY"
+                          }
+                        ]
+                      }
+                    },
+                    "right": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 0,
+                                      "type": "VARCHAR"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "'Upper West Side'",
+                                      "type": "STRING"
+                                    }
+                                  ],
+                                  "operator": "EQ",
+                                  "type": "BOOL"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 0,
+                                      "type": "VARCHAR"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "'Upper East Side'",
+                                      "type": "STRING"
+                                    }
+                                  ],
+                                  "operator": "EQ",
+                                  "type": "BOOL"
+                                }
+                              ],
+                              "operator": "OR",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "project": {
+                            "source": {
+                              "scan": 1
+                            },
+                            "target": [
+                              {
+                                "column": 2,
+                                "type": "VARCHAR"
+                              },
+                              {
+                                "column": 3,
+                                "type": "GEOMETRY"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "VARCHAR"
+              },
+              {
+                "operand": [
+                  {
+                    "column": 2,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "operand": [
+                      {
+                        "operand": [
+                          {
+                            "operand": [
+                              {
+                                "column": 1,
+                                "type": "GEOMETRY"
+                              }
+                            ],
+                            "operator": "SCALAR LIST",
+                            "type": "ANYELEMENT"
+                          }
+                        ],
+                        "operator": "FUNCTION",
+                        "type": "FLOAT"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "1e+06",
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "DIV",
+                    "type": "FLOAT"
+                  }
+                ],
+                "operator": "DIV",
+                "type": "FLOAT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "VARCHAR",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "VARCHAR",
+        "GEOMETRY",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "VARCHAR",
+        "VARCHAR",
+        "GEOMETRY",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

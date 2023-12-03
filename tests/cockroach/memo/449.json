@@ -1,0 +1,336 @@
+{
+  "help": [
+    "limit\n ├── columns: w:1(string!null) x:2(string!null) y:3(string!null) z:4(string)\n ├── cardinality: [0 - 1]\n ├── stats: [rows=1]\n ├── key: ()\n ├── fd: ()--\u003e(1-4)\n ├── project\n │    ├── columns: w:1(string!null) x:2(string!null) y:3(string!null) z:4(string)\n │    ├── cardinality: [0 - 2]\n │    ├── stats: [rows=2]\n │    ├── key: (1)\n │    ├── fd: ()--\u003e(2), (1)--\u003e(3,4), (3)--\u003e(1,4)\n │    ├── limit hint: 1.00\n │    └── select\n │         ├── columns: w:1(string!null) x:2(string!null) y:3(string!null) z:4(string) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n │         ├── cardinality: [0 - 2]\n │         ├── stats: [rows=2, distinct(2)=1, null(2)=0, distinct(3)=2, null(3)=0, distinct(2,3)=2, null(2,3)=0]\n │         ├── key: (1)\n │         ├── fd: ()--\u003e(2), (1)--\u003e(3-6), (3)--\u003e(1,4-6)\n │         ├── limit hint: 1.00\n │         ├── scan stale\n │         │    ├── columns: w:1(string!null) x:2(string) y:3(string) z:4(string) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n │         │    ├── stats: [rows=110, distinct(1)=110, null(1)=0, distinct(2)=10, null(2)=0, distinct(3)=11, null(3)=0, distinct(2,3)=110, null(2,3)=0]\n │         │    │   histogram(2)=  0    11    0    11     0    11    0    11    0    11    0    11    0    11    0    11    0    11    0    11\n │         │    │                \u003c--- 'foo1' --- 'foo10' --- 'foo2' --- 'foo3' --- 'foo4' --- 'foo5' --- 'foo6' --- 'foo7' --- 'foo8' --- 'foo9'\n │         │    │   histogram(3)=  0     10      0     10      0     10      0     10      0     10      0     10      0     10      0     10      0     10      0     10      0     10\n │         │    │                \u003c--- 'bar1000' --- 'bar1001' --- 'bar1002' --- 'bar1003' --- 'bar1004' --- 'bar1005' --- 'bar1006' --- 'bar1007' --- 'bar1008' --- 'bar1009' --- 'bar1010'\n │         │    ├── key: (1)\n │         │    ├── fd: (1)--\u003e(2-6), (2,3)~~\u003e(1,4-6)\n │         │    └── limit hint: 55.00\n │         └── filters\n │              └── (x:2 = 'bar1') AND ((y:3 = 'bar1000') OR (y:3 = 'bar1001')) [type=bool, outer=(2,3), constraints=(/2: [/'bar1' - /'bar1']; /3: [/'bar1000' - /'bar1000'] [/'bar1001' - /'bar1001']; tight), fd=()--\u003e(2)]\n └── 1 [type=int]\n",
+    "limit\n ├── columns: w:1(string!null) x:2(string!null) y:3(string!null) z:4(string)\n ├── cardinality: [0 - 1]\n ├── stats: [rows=1]\n ├── key: ()\n ├── fd: ()--\u003e(1-4)\n ├── select\n │    ├── columns: w:1(string!null) x:2(string!null) y:3(string!null) z:4(string)\n │    ├── cardinality: [0 - 2]\n │    ├── stats: [rows=2, distinct(2)=1, null(2)=0, distinct(3)=2, null(3)=0, distinct(2,3)=2, null(2,3)=0]\n │    ├── key: (1)\n │    ├── fd: ()--\u003e(2), (1)--\u003e(3,4), (3)--\u003e(1,4)\n │    ├── limit hint: 1.00\n │    ├── index-join stale\n │    │    ├── columns: w:1(string!null) x:2(string) y:3(string) z:4(string)\n │    │    ├── stats: [rows=2.2e-08]\n │    │    ├── key: (1)\n │    │    ├── fd: ()--\u003e(2), (1)--\u003e(3,4), (2,3)~~\u003e(1,4)\n │    │    ├── limit hint: 0.00\n │    │    └── scan stale@stale_x_z_idx\n │    │         ├── columns: w:1(string!null) x:2(string!null) z:4(string)\n │    │         ├── constraint: /2/4/1: [/'bar1' - /'bar1']\n │    │         ├── stats: [rows=2.2e-08, distinct(2)=2.2e-08, null(2)=0]\n │    │         │   histogram(2)=\n │    │         ├── key: (1)\n │    │         ├── fd: ()--\u003e(2), (1)--\u003e(4)\n │    │         └── limit hint: 0.00\n │    └── filters\n │         └── (y:3 = 'bar1000') OR (y:3 = 'bar1001') [type=bool, outer=(3), constraints=(/3: [/'bar1000' - /'bar1000'] [/'bar1001' - /'bar1001']; tight)]\n └── 1 [type=int]\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "1",
+          "type": "INT"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'bar1'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "EQ",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 2,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'bar1000'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 2,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'bar1001'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "OR",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "scan": 0
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "STRING"
+              },
+              {
+                "column": 1,
+                "type": "STRING"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              },
+              {
+                "column": 3,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "1",
+          "type": "INT"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 5,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'bar1000'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "EQ",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 5,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'bar1001'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "EQ",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "OR",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "join": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "STRING"
+                            },
+                            {
+                              "column": 3,
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=\u003e",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "STRING"
+                            },
+                            {
+                              "column": 4,
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=\u003e",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 2,
+                              "type": "STRING"
+                            },
+                            {
+                              "column": 6,
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=\u003e",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "kind": "INNER",
+                    "left": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [],
+                                      "operator": "'bar1'",
+                                      "type": "STRING"
+                                    },
+                                    {
+                                      "column": 1,
+                                      "type": "STRING"
+                                    }
+                                  ],
+                                  "operator": "\u003c=",
+                                  "type": "BOOLEAN"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 1,
+                                      "type": "STRING"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "'bar1'",
+                                      "type": "STRING"
+                                    }
+                                  ],
+                                  "operator": "\u003c=",
+                                  "type": "BOOLEAN"
+                                }
+                              ],
+                              "operator": "AND",
+                              "type": "BOOLEAN"
+                            }
+                          ],
+                          "operator": "OR",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "project": {
+                            "source": {
+                              "scan": 0
+                            },
+                            "target": [
+                              {
+                                "column": 0,
+                                "type": "STRING"
+                              },
+                              {
+                                "column": 1,
+                                "type": "STRING"
+                              },
+                              {
+                                "column": 3,
+                                "type": "STRING"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "right": {
+                      "scan": 0
+                    }
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "STRING"
+              },
+              {
+                "column": 1,
+                "type": "STRING"
+              },
+              {
+                "column": 5,
+                "type": "STRING"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

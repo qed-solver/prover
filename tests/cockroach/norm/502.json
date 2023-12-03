@@ -1,0 +1,217 @@
+{
+  "help": [
+    "project\n ├── columns: sum:8!null stddev:9 avg:10!null\n └── group-by (hash)\n      ├── columns: v:2!null sum:8!null stddev:9 avg:10!null\n      ├── grouping columns: v:2!null\n      ├── key: (2)\n      ├── fd: (2)--\u003e(8-10)\n      ├── project\n      │    ├── columns: u:1!null v:2!null w:3!null z:4!null\n      │    ├── key: (2,3)\n      │    ├── fd: (1,2)--\u003e(3,4), (2,3)--\u003e(1,4)\n      │    └── scan uvwz\n      │         ├── columns: u:1!null v:2!null w:3!null z:4!null rowid:5!null crdb_internal_mvcc_timestamp:6 tableoid:7\n      │         ├── key: (5)\n      │         └── fd: (5)--\u003e(1-4,6,7), (1,2)--\u003e(3-7), (2,3)--\u003e(1,4-7)\n      └── aggregations\n           ├── agg-distinct [as=sum:8, outer=(1)]\n           │    └── sum\n           │         └── u:1\n           ├── agg-distinct [as=stddev:9, outer=(3)]\n           │    └── std-dev\n           │         └── w:3\n           └── agg-distinct [as=avg:10, outer=(4)]\n                └── avg\n                     └── z:4\n",
+    "project\n ├── columns: sum:8!null stddev:9 avg:10!null\n └── group-by (hash)\n      ├── columns: v:2!null sum:8!null stddev:9 avg:10!null\n      ├── grouping columns: v:2!null\n      ├── key: (2)\n      ├── fd: (2)--\u003e(8-10)\n      ├── scan uvwz\n      │    ├── columns: u:1!null v:2!null w:3!null z:4!null\n      │    ├── key: (2,3)\n      │    └── fd: (1,2)--\u003e(3,4), (2,3)--\u003e(1,4)\n      └── aggregations\n           ├── sum [as=sum:8, outer=(1)]\n           │    └── u:1\n           ├── std-dev [as=stddev:9, outer=(3)]\n           │    └── w:3\n           └── agg-distinct [as=avg:10, outer=(4)]\n                └── avg\n                     └── z:4\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": true,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "SUM",
+                "type": "DECIMAL"
+              },
+              {
+                "distinct": true,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "STD DEV",
+                "type": "DECIMAL"
+              },
+              {
+                "distinct": true,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "AVG",
+                "type": "DECIMAL"
+              }
+            ],
+            "keys": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 2,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 3,
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "SUM",
+                "type": "DECIMAL"
+              },
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "STD DEV",
+                "type": "DECIMAL"
+              },
+              {
+                "distinct": true,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "AVG",
+                "type": "DECIMAL"
+              }
+            ],
+            "keys": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 2,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 3,
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          4
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

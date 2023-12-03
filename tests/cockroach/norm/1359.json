@@ -1,0 +1,245 @@
+{
+  "help": [
+    "select\n ├── columns: i:2!null div:8 f:3\n ├── immutable\n ├── fd: ()--\u003e(2,8)\n ├── project\n │    ├── columns: div:8 i:2 f:3\n │    ├── fd: (2)--\u003e(8)\n │    ├── scan a\n │    │    ├── columns: k:1!null i:2 f:3 s:4 j:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    │    ├── key: (1)\n │    │    └── fd: (1)--\u003e(2-7)\n │    └── projections\n │         └── i:2 / 2 [as=div:8, outer=(2)]\n └── filters\n      └── ((10.0 = f:3) AND (2 = div:8)) AND (i:2 = 1) [outer=(2,3,8), immutable, constraints=(/2: [/1 - /1]), fd=()--\u003e(2)]\n",
+    "select\n ├── columns: i:2!null div:8!null f:3!null\n ├── immutable\n ├── fd: ()--\u003e(2,3,8)\n ├── project\n │    ├── columns: div:8!null i:2!null f:3!null\n │    ├── fd: ()--\u003e(2,3,8)\n │    ├── select\n │    │    ├── columns: i:2!null f:3!null\n │    │    ├── fd: ()--\u003e(2,3)\n │    │    ├── scan a\n │    │    │    └── columns: i:2 f:3\n │    │    └── filters\n │    │         ├── f:3 = 10.0 [outer=(3), constraints=(/3: [/10.0 - /10.0]; tight), fd=()--\u003e(3)]\n │    │         └── i:2 = 1 [outer=(2), constraints=(/2: [/1 - /1]; tight), fd=()--\u003e(2)]\n │    └── projections\n │         └── i:2 / 2 [as=div:8, outer=(2)]\n └── filters\n      └── div:8 = 2 [outer=(8), immutable, constraints=(/8: [/2 - /2]; tight), fd=()--\u003e(8)]\n"
+  ],
+  "queries": [
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "10.0",
+                          "type": "FLOAT"
+                        },
+                        {
+                          "column": 1,
+                          "type": "FLOAT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "2",
+                          "type": "DECIMAL"
+                        },
+                        {
+                          "column": 2,
+                          "type": "DECIMAL"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "FLOAT"
+              },
+              {
+                "operand": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "2",
+                    "type": "INT"
+                  }
+                ],
+                "operator": "DIV",
+                "type": "DECIMAL"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 2,
+                  "type": "DECIMAL"
+                },
+                {
+                  "operand": [],
+                  "operator": "2",
+                  "type": "DECIMAL"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "FLOAT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "10.0",
+                          "type": "FLOAT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "1",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "FLOAT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "2",
+                    "type": "INT"
+                  }
+                ],
+                "operator": "DIV",
+                "type": "DECIMAL"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,233 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null value:13!null\n ├── cardinality: [0 - 2]\n ├── key: (1,13)\n └── inner-join (hash)\n      ├── columns: k:1!null i:2 f:3!null s:4 j:5 crdb_internal_mvcc_timestamp:6 tableoid:7 \"?column?\":12!null \"?column?\":13!null\n      ├── cardinality: [0 - 2]\n      ├── multiplicity: left-rows(zero-or-more), right-rows(zero-or-one)\n      ├── key: (12,13)\n      ├── fd: (1)--\u003e(2-7), (1)==(12), (12)==(1)\n      ├── scan a\n      │    ├── columns: k:1!null i:2 f:3!null s:4 j:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-7)\n      ├── union\n      │    ├── columns: \"?column?\":12!null \"?column?\":13!null\n      │    ├── left columns: \"?column?\":8 \"?column?\":9\n      │    ├── right columns: \"?column?\":10 \"?column?\":11\n      │    ├── cardinality: [1 - 2]\n      │    ├── key: (12,13)\n      │    ├── project\n      │    │    ├── columns: \"?column?\":8!null \"?column?\":9!null\n      │    │    ├── cardinality: [1 - 1]\n      │    │    ├── key: ()\n      │    │    ├── fd: ()--\u003e(8,9)\n      │    │    ├── values\n      │    │    │    ├── cardinality: [1 - 1]\n      │    │    │    ├── key: ()\n      │    │    │    └── ()\n      │    │    └── projections\n      │    │         ├── 1 [as=\"?column?\":8]\n      │    │         └── 10 [as=\"?column?\":9]\n      │    └── project\n      │         ├── columns: \"?column?\":10!null \"?column?\":11!null\n      │         ├── cardinality: [1 - 1]\n      │         ├── key: ()\n      │         ├── fd: ()--\u003e(10,11)\n      │         ├── values\n      │         │    ├── cardinality: [1 - 1]\n      │         │    ├── key: ()\n      │         │    └── ()\n      │         └── projections\n      │              ├── 2 [as=\"?column?\":10]\n      │              └── 20 [as=\"?column?\":11]\n      └── filters\n           └── k:1 = \"?column?\":12 [outer=(1,12), constraints=(/1: (/NULL - ]; /12: (/NULL - ]), fd=(1)==(12), (12)==(1)]\n",
+    "project\n ├── columns: k:1!null value:13!null\n ├── cardinality: [0 - 2]\n ├── key: (1,13)\n └── inner-join (hash)\n      ├── columns: k:1!null \"?column?\":12!null \"?column?\":13!null\n      ├── cardinality: [0 - 2]\n      ├── multiplicity: left-rows(zero-or-more), right-rows(zero-or-one)\n      ├── key: (12,13)\n      ├── fd: (1)==(12), (12)==(1)\n      ├── scan a\n      │    ├── columns: k:1!null\n      │    └── key: (1)\n      ├── union\n      │    ├── columns: \"?column?\":12!null \"?column?\":13!null\n      │    ├── left columns: \"?column?\":8 \"?column?\":9\n      │    ├── right columns: \"?column?\":10 \"?column?\":11\n      │    ├── cardinality: [1 - 2]\n      │    ├── key: (12,13)\n      │    ├── values\n      │    │    ├── columns: \"?column?\":8!null \"?column?\":9!null\n      │    │    ├── cardinality: [1 - 1]\n      │    │    ├── key: ()\n      │    │    ├── fd: ()--\u003e(8,9)\n      │    │    └── (1, 10)\n      │    └── values\n      │         ├── columns: \"?column?\":10!null \"?column?\":11!null\n      │         ├── cardinality: [1 - 1]\n      │         ├── key: ()\n      │         ├── fd: ()--\u003e(10,11)\n      │         └── (2, 20)\n      └── filters\n           └── k:1 = \"?column?\":12 [outer=(1,12), constraints=(/1: (/NULL - ]; /12: (/NULL - ]), fd=(1)==(12), (12)==(1)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 7,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "distinct": {
+                "union": [
+                  {
+                    "project": {
+                      "source": {
+                        "values": {
+                          "content": [
+                            []
+                          ],
+                          "schema": []
+                        }
+                      },
+                      "target": [
+                        {
+                          "operand": [],
+                          "operator": "1",
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "10",
+                          "type": "INT"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "project": {
+                      "source": {
+                        "values": {
+                          "content": [
+                            []
+                          ],
+                          "schema": []
+                        }
+                      },
+                      "target": [
+                        {
+                          "operand": [],
+                          "operator": "2",
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "20",
+                          "type": "INT"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 8,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "distinct": {
+                "union": [
+                  {
+                    "values": {
+                      "content": [
+                        [
+                          {
+                            "operand": [],
+                            "operator": "1",
+                            "type": "INT"
+                          },
+                          {
+                            "operand": [],
+                            "operator": "10",
+                            "type": "INT"
+                          }
+                        ]
+                      ],
+                      "schema": [
+                        "INT",
+                        "INT"
+                      ]
+                    }
+                  },
+                  {
+                    "values": {
+                      "content": [
+                        [
+                          {
+                            "operand": [],
+                            "operator": "2",
+                            "type": "INT"
+                          },
+                          {
+                            "operand": [],
+                            "operator": "20",
+                            "type": "INT"
+                          }
+                        ]
+                      ],
+                      "schema": [
+                        "INT",
+                        "INT"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

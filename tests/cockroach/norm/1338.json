@@ -1,0 +1,145 @@
+{
+  "help": [
+    "project\n ├── columns: a:1 b:2 c:3 d:4 e:5\n └── select\n      ├── columns: a:1 b:2 c:3 d:4 e:5 rowid:6!null crdb_internal_mvcc_timestamp:7 tableoid:8\n      ├── key: (6)\n      ├── fd: (6)--\u003e(1-5,7,8)\n      ├── scan c\n      │    ├── columns: a:1 b:2 c:3 d:4 e:5 rowid:6!null crdb_internal_mvcc_timestamp:7 tableoid:8\n      │    ├── key: (6)\n      │    └── fd: (6)--\u003e(1-5,7,8)\n      └── filters\n           └── a:1 IS NOT true [outer=(1), constraints=(/1: [ - /false]; tight)]\n",
+    "select\n ├── columns: a:1 b:2 c:3 d:4 e:5\n ├── scan c\n │    └── columns: a:1 b:2 c:3 d:4 e:5\n └── filters\n      └── a:1 IS NOT true [outer=(1), constraints=(/1: [ - /false]; tight)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "TRUE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "IS NOT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "BOOL"
+          },
+          {
+            "column": 1,
+            "type": "BOOL"
+          },
+          {
+            "column": 2,
+            "type": "BOOL"
+          },
+          {
+            "column": 3,
+            "type": "BOOL"
+          },
+          {
+            "column": 4,
+            "type": "BOOL"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [],
+                  "operator": "TRUE",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "IS NOT",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "BOOL"
+              },
+              {
+                "column": 1,
+                "type": "BOOL"
+              },
+              {
+                "column": 2,
+                "type": "BOOL"
+              },
+              {
+                "column": 3,
+                "type": "BOOL"
+              },
+              {
+                "column": 4,
+                "type": "BOOL"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          5
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "BOOL",
+        "BOOL",
+        "BOOL",
+        "BOOL",
+        "BOOL",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

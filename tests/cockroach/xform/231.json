@@ -1,0 +1,259 @@
+{
+  "help": [
+    "sort\n ├── columns: b:2!null c:3!null\n ├── key: (3)\n ├── fd: (2)==(3), (3)==(2)\n ├── ordering: +3,+2\n └── select\n      ├── columns: b:2!null c:3!null\n      ├── key: (3)\n      ├── fd: (2)==(3), (3)==(2)\n      ├── except\n      │    ├── columns: b:2!null c:3!null\n      │    ├── left columns: b:2!null c:3!null\n      │    ├── right columns: y:7 x:6\n      │    ├── key: (2,3)\n      │    ├── project\n      │    │    ├── columns: b:2!null c:3!null\n      │    │    └── scan abc\n      │    │         ├── columns: a:1!null b:2!null c:3!null abc.crdb_internal_mvcc_timestamp:4 abc.tableoid:5\n      │    │         ├── key: (1-3)\n      │    │         └── fd: (1-3)--\u003e(4,5)\n      │    └── project\n      │         ├── columns: x:6!null y:7!null\n      │         └── scan xyz\n      │              ├── columns: x:6!null y:7!null z:8!null xyz.crdb_internal_mvcc_timestamp:9 xyz.tableoid:10\n      │              ├── key: (6-8)\n      │              └── fd: (6-8)--\u003e(9,10)\n      └── filters\n           └── b:2 = c:3 [outer=(2,3), fd=(2)==(3), (3)==(2)]\n",
+    "except\n ├── columns: b:2!null c:3!null\n ├── left columns: b:2!null c:3!null\n ├── right columns: y:7 x:6\n ├── internal-ordering: +(2|3)\n ├── key: (3)\n ├── fd: (2)==(3), (3)==(2)\n ├── ordering: +(2|3) [actual: +2]\n ├── sort\n │    ├── columns: b:2!null c:3!null\n │    ├── fd: (2)==(3), (3)==(2)\n │    ├── ordering: +(2|3) [actual: +2]\n │    └── select\n │         ├── columns: b:2!null c:3!null\n │         ├── fd: (2)==(3), (3)==(2)\n │         ├── scan abc\n │         │    └── columns: b:2!null c:3!null\n │         └── filters\n │              └── b:2 = c:3 [outer=(2,3), fd=(2)==(3), (3)==(2)]\n └── select\n      ├── columns: x:6!null y:7!null\n      ├── fd: (6)==(7), (7)==(6)\n      ├── ordering: +(6|7) [actual: +6]\n      ├── scan xyz\n      │    ├── columns: x:6!null y:7!null\n      │    └── ordering: +6\n      └── filters\n           └── y:7 = x:6 [outer=(6,7), fd=(6)==(7), (7)==(6)]\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            1,
+            "INT",
+            "ASCENDING"
+          ],
+          [
+            0,
+            "INT",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "except": [
+                {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "project": {
+                    "source": {
+                      "project": {
+                        "source": {
+                          "scan": 1
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 1,
+                            "type": "INT"
+                          }
+                        ]
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "except": [
+        {
+          "sort": {
+            "collation": [
+              [
+                0,
+                "INT",
+                "ASCENDING"
+              ]
+            ],
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 1
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0,
+          1,
+          2
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0,
+          1,
+          2
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

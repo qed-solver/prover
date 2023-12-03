@@ -1,0 +1,183 @@
+{
+  "help": [
+    "limit\n ├── columns: x:11!null y:12 z:13\n ├── cardinality: [0 - 10]\n ├── key: (11-13)\n ├── union\n │    ├── columns: x:11!null y:12 z:13\n │    ├── left columns: t.x:1 t.y:2 t.z:3\n │    ├── right columns: t.x:6 t.z:8 t.y:7\n │    ├── key: (11-13)\n │    ├── limit hint: 10.00\n │    ├── project\n │    │    ├── columns: t.x:1!null t.y:2 t.z:3\n │    │    ├── key: (1)\n │    │    ├── fd: (1)--\u003e(2,3)\n │    │    ├── limit hint: 10.00\n │    │    └── scan t\n │    │         ├── columns: t.x:1!null t.y:2 t.z:3 crdb_internal_mvcc_timestamp:4 tableoid:5\n │    │         ├── key: (1)\n │    │         ├── fd: (1)--\u003e(2-5)\n │    │         └── limit hint: 10.00\n │    └── project\n │         ├── columns: t.x:6!null t.y:7 t.z:8\n │         ├── key: (6)\n │         ├── fd: (6)--\u003e(7,8)\n │         ├── limit hint: 10.00\n │         └── scan t\n │              ├── columns: t.x:6!null t.y:7 t.z:8 crdb_internal_mvcc_timestamp:9 tableoid:10\n │              ├── key: (6)\n │              ├── fd: (6)--\u003e(7-10)\n │              └── limit hint: 10.00\n └── 10\n",
+    "limit\n ├── columns: x:11!null y:12 z:13\n ├── cardinality: [0 - 10]\n ├── key: (11-13)\n ├── union\n │    ├── columns: x:11!null y:12 z:13\n │    ├── left columns: t.x:1 t.y:2 t.z:3\n │    ├── right columns: t.x:6 t.z:8 t.y:7\n │    ├── internal-ordering: +11,+12,+13\n │    ├── key: (11-13)\n │    ├── limit hint: 10.00\n │    ├── scan t\n │    │    ├── columns: t.x:1!null t.y:2 t.z:3\n │    │    ├── key: (1)\n │    │    ├── fd: (1)--\u003e(2,3)\n │    │    ├── ordering: +1\n │    │    └── limit hint: 10.00\n │    └── scan t\n │         ├── columns: t.x:6!null t.y:7 t.z:8\n │         ├── key: (6)\n │         ├── fd: (6)--\u003e(7,8)\n │         ├── ordering: +6\n │         └── limit hint: 10.00\n └── 10\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "10",
+          "type": "INT"
+        },
+        "source": {
+          "distinct": {
+            "union": [
+              {
+                "project": {
+                  "source": {
+                    "scan": 0
+                  },
+                  "target": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    }
+                  ]
+                }
+              },
+              {
+                "project": {
+                  "source": {
+                    "project": {
+                      "source": {
+                        "scan": 0
+                      },
+                      "target": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        }
+                      ]
+                    }
+                  },
+                  "target": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "10",
+          "type": "INT"
+        },
+        "source": {
+          "distinct": {
+            "union": [
+              {
+                "project": {
+                  "source": {
+                    "scan": 0
+                  },
+                  "target": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    }
+                  ]
+                }
+              },
+              {
+                "project": {
+                  "source": {
+                    "project": {
+                      "source": {
+                        "scan": 0
+                      },
+                      "target": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        }
+                      ]
+                    }
+                  },
+                  "target": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

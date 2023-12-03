@@ -1,0 +1,290 @@
+{
+  "help": [
+    "project\n ├── columns: a1:1!null a2:2!null a3:3!null a4:4!null a1:7!null a2:8!null a3:9!null a4:10!null a1:13 a2:14 a3:15 a4:16\n ├── key: (1-4,7-10,13-16)\n └── left-join (cross)\n      ├── columns: t2.a1:1!null t2.a2:2!null t2.a3:3!null t2.a4:4!null t2.crdb_internal_mvcc_timestamp:5 t2.tableoid:6 t1.a1:7!null t1.a2:8!null t1.a3:9!null t1.a4:10!null t1.crdb_internal_mvcc_timestamp:11 t1.tableoid:12 t3.a1:13 t3.a2:14 t3.a3:15 t3.a4:16 t3.crdb_internal_mvcc_timestamp:17 t3.tableoid:18\n      ├── key: (1-4,7-10,13-16)\n      ├── fd: (1-4)--\u003e(5,6), (7-10)--\u003e(11,12), (13-16)--\u003e(17,18)\n      ├── inner-join (cross)\n      │    ├── columns: t2.a1:1!null t2.a2:2!null t2.a3:3!null t2.a4:4!null t2.crdb_internal_mvcc_timestamp:5 t2.tableoid:6 t1.a1:7!null t1.a2:8!null t1.a3:9!null t1.a4:10!null t1.crdb_internal_mvcc_timestamp:11 t1.tableoid:12\n      │    ├── key: (1-4,7-10)\n      │    ├── fd: (1-4)--\u003e(5,6), (7-10)--\u003e(11,12)\n      │    ├── scan a [as=t2]\n      │    │    ├── columns: t2.a1:1!null t2.a2:2!null t2.a3:3!null t2.a4:4!null t2.crdb_internal_mvcc_timestamp:5 t2.tableoid:6\n      │    │    ├── key: (1-4)\n      │    │    └── fd: (1-4)--\u003e(5,6)\n      │    ├── scan a [as=t1]\n      │    │    ├── columns: t1.a1:7!null t1.a2:8!null t1.a3:9!null t1.a4:10!null t1.crdb_internal_mvcc_timestamp:11 t1.tableoid:12\n      │    │    ├── key: (7-10)\n      │    │    └── fd: (7-10)--\u003e(11,12)\n      │    └── filters\n      │         └── true\n      ├── scan a [as=t3]\n      │    ├── columns: t3.a1:13!null t3.a2:14!null t3.a3:15!null t3.a4:16!null t3.crdb_internal_mvcc_timestamp:17 t3.tableoid:18\n      │    ├── key: (13-16)\n      │    └── fd: (13-16)--\u003e(17,18)\n      └── filters\n           └── (t1.a1:7 = t3.a1:13) OR (t2.a2:2 = t3.a2:14) [outer=(2,7,13,14)]\n",
+    "left-join (cross)\n ├── columns: a1:1!null a2:2!null a3:3!null a4:4!null a1:7!null a2:8!null a3:9!null a4:10!null a1:13 a2:14 a3:15 a4:16\n ├── key: (1-4,7-10,13-16)\n ├── inner-join (cross)\n │    ├── columns: t2.a1:1!null t2.a2:2!null t2.a3:3!null t2.a4:4!null t1.a1:7!null t1.a2:8!null t1.a3:9!null t1.a4:10!null\n │    ├── key: (1-4,7-10)\n │    ├── scan a [as=t2]\n │    │    ├── columns: t2.a1:1!null t2.a2:2!null t2.a3:3!null t2.a4:4!null\n │    │    └── key: (1-4)\n │    ├── scan a [as=t1]\n │    │    ├── columns: t1.a1:7!null t1.a2:8!null t1.a3:9!null t1.a4:10!null\n │    │    └── key: (7-10)\n │    └── filters (true)\n ├── scan a [as=t3]\n │    ├── columns: t3.a1:13!null t3.a2:14!null t3.a3:15!null t3.a4:16!null\n │    └── key: (13-16)\n └── filters\n      └── (t1.a1:7 = t3.a1:13) OR (t2.a2:2 = t3.a2:14) [outer=(2,7,13,14)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 6,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 12,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 13,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "LEFT",
+            "left": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "TRUE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "scan": 0
+                }
+              }
+            },
+            "right": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          },
+          {
+            "column": 6,
+            "type": "INT"
+          },
+          {
+            "column": 7,
+            "type": "INT"
+          },
+          {
+            "column": 8,
+            "type": "INT"
+          },
+          {
+            "column": 9,
+            "type": "INT"
+          },
+          {
+            "column": 12,
+            "type": "INT"
+          },
+          {
+            "column": 13,
+            "type": "INT"
+          },
+          {
+            "column": 14,
+            "type": "INT"
+          },
+          {
+            "column": 15,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 4,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 8,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 9,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "OR",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "LEFT",
+        "left": {
+          "join": {
+            "condition": {
+              "operand": [],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

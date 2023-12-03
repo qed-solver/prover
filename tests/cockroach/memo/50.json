@@ -1,0 +1,125 @@
+{
+  "help": [
+    "project\n ├── columns: a:1(int) b:2(bool) c:3(string!null)\n ├── prune: (1-3)\n └── select\n      ├── columns: a:1(int) b:2(bool) c:3(string!null) rowid:4(int!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      ├── key: (4)\n      ├── fd: (4)--\u003e(1-3,5,6)\n      ├── scan abc\n      │    ├── columns: a:1(int) b:2(bool) c:3(string) rowid:4(int!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      │    ├── key: (4)\n      │    ├── fd: (4)--\u003e(1-3,5,6)\n      │    └── prune: (1-6)\n      └── filters\n           └── ne [type=bool, outer=(3), constraints=(/3: (/NULL - /'foo') [/e'foo\\x00' - ]; tight)]\n                ├── variable: c:3 [type=string]\n                └── const: 'foo' [type=string]\n",
+    "select\n ├── columns: a:1(int) b:2(bool) c:3(string!null)\n ├── prune: (1,2)\n ├── scan abc\n │    ├── columns: a:1(int) b:2(bool) c:3(string)\n │    └── prune: (1-3)\n └── filters\n      └── ne [type=bool, outer=(3), constraints=(/3: (/NULL - /'foo') [/e'foo\\x00' - ]; tight)]\n           ├── variable: c:3 [type=string]\n           └── const: 'foo' [type=string]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "STRING"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'foo'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "NE",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "BOOL"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 2,
+                  "type": "STRING"
+                },
+                {
+                  "operand": [],
+                  "operator": "'foo'",
+                  "type": "STRING"
+                }
+              ],
+              "operator": "NE",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "BOOL"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          3
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "BOOL",
+        "STRING",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

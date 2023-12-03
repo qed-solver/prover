@@ -1,0 +1,133 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null a:2 b:3 c:4!null\n ├── stats: [rows=33003.3]\n ├── cost: 1e+100\n ├── key: (1)\n ├── fd: (1)--\u003e(2-4)\n └── select\n      ├── columns: k:1!null a:2 b:3 c:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n      ├── stats: [rows=33003.3, distinct(4)=3333.33, null(4)=0]\n      ├── cost: 1e+100\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-6)\n      ├── scan t\n      │    ├── columns: k:1!null a:2 b:3 c:4 crdb_internal_mvcc_timestamp:5 tableoid:6\n      │    ├── partial index predicates\n      │    │    └── b_partial: filters\n      │    │         └── c:4 \u003e 0 [outer=(4), constraints=(/4: [/1 - ]; tight)]\n      │    ├── flags: force-index=b_partial no-full-scan\n      │    ├── stats: [rows=100000, distinct(1)=3, null(1)=0, distinct(4)=10000, null(4)=1000]\n      │    ├── cost: 1e+100\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-6)\n      └── filters\n           └── c:4 \u003e 0 [outer=(4), constraints=(/4: [/1 - ]; tight)]\n",
+    "select\n ├── columns: k:1!null a:2 b:3 c:4!null\n ├── stats: [rows=33003.3, distinct(4)=3333.33, null(4)=0]\n ├── cost: 1e+100\n ├── key: (1)\n ├── fd: (1)--\u003e(2-4)\n ├── scan t\n │    ├── columns: k:1!null a:2 b:3 c:4\n │    ├── partial index predicates\n │    │    └── b_partial: filters\n │    │         └── c:4 \u003e 0 [outer=(4), constraints=(/4: [/1 - ]; tight)]\n │    ├── flags: force-index=b_partial no-full-scan\n │    ├── stats: [rows=100000, distinct(1)=3, null(1)=0, distinct(4)=10000, null(4)=1000]\n │    ├── cost: 1e+100\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-4)\n └── filters\n      └── c:4 \u003e 0 [outer=(4), constraints=(/4: [/1 - ]; tight)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 3,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "0",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "GT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 3,
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "0",
+                  "type": "INT"
+                }
+              ],
+              "operator": "GT",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

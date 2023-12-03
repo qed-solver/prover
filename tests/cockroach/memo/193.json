@@ -1,0 +1,161 @@
+{
+  "help": [
+    "project\n ├── columns: count:4(int!null)\n ├── stats: [rows=2.005091e+16]\n └── group-by (hash)\n      ├── columns: col:1(timetz!null) count_rows:4(int!null)\n      ├── grouping columns: col:1(timetz!null)\n      ├── stats: [rows=2.005091e+16, distinct(1)=2.00509e+16, null(1)=0]\n      ├── key: (1)\n      ├── fd: (1)--\u003e(4)\n      ├── project\n      │    ├── columns: col:1(timetz!null)\n      │    ├── stats: [rows=4.52141e+17, distinct(1)=2.00509e+16, null(1)=0]\n      │    ├── key: (1)\n      │    └── select\n      │         ├── columns: col:1(timetz!null) crdb_internal_mvcc_timestamp:2(decimal) tableoid:3(oid)\n      │         ├── stats: [rows=4.52141e+17, distinct(1)=2.00509e+16, null(1)=0]\n      │         │   histogram(1)=  0     4.3209e+17     44624        3.3468e+08         2.0051e+16              0\n      │         │                \u003c--- '00:00:00+15:59' ------- '04:40:23.558699+11:08' ------------ '03:33:06.598931+07:11:01'\n      │         ├── key: (1)\n      │         ├── fd: (1)--\u003e(2,3)\n      │         ├── scan t74667\n      │         │    ├── columns: col:1(timetz!null) crdb_internal_mvcc_timestamp:2(decimal) tableoid:3(oid)\n      │         │    ├── stats: [rows=1.188522e+18, distinct(1)=9.50815e+17, null(1)=0]\n      │         │    │   histogram(1)=  0     4.3209e+17     44624        3.3468e+08         4.252e+16        7.1391e+17\n      │         │    │                \u003c--- '00:00:00+15:59' ------- '04:40:23.558699+11:08' ----------- '06:12:15.740051+06:40'\n      │         │    ├── key: (1)\n      │         │    └── fd: (1)--\u003e(2,3)\n      │         └── filters\n      │              └── col:1 \u003c '03:33:05.598931+07:11' [type=bool, outer=(1), constraints=(/1: (/NULL - /'03:33:06.598931+07:11:01']; tight)]\n      └── aggregations\n           └── count-rows [as=count_rows:4, type=int]\n",
+    "project\n ├── columns: count:4(int!null)\n ├── stats: [rows=2.005091e+16]\n └── group-by (hash)\n      ├── columns: col:1(timetz!null) count_rows:4(int!null)\n      ├── grouping columns: col:1(timetz!null)\n      ├── stats: [rows=2.005091e+16, distinct(1)=2.00509e+16, null(1)=0]\n      ├── key: (1)\n      ├── fd: (1)--\u003e(4)\n      ├── select\n      │    ├── columns: col:1(timetz!null)\n      │    ├── stats: [rows=4.52141e+17, distinct(1)=2.00509e+16, null(1)=0]\n      │    │   histogram(1)=  0     4.3209e+17     44624        3.3468e+08         2.0051e+16              0\n      │    │                \u003c--- '00:00:00+15:59' ------- '04:40:23.558699+11:08' ------------ '03:33:06.598931+07:11:01'\n      │    ├── key: (1)\n      │    ├── scan t74667\n      │    │    ├── columns: col:1(timetz!null)\n      │    │    ├── stats: [rows=1.188522e+18, distinct(1)=9.50815e+17, null(1)=0]\n      │    │    │   histogram(1)=  0     4.3209e+17     44624        3.3468e+08         4.252e+16        7.1391e+17\n      │    │    │                \u003c--- '00:00:00+15:59' ------- '04:40:23.558699+11:08' ----------- '06:12:15.740051+06:40'\n      │    │    └── key: (1)\n      │    └── filters\n      │         └── col:1 \u003c '03:33:05.598931+07:11' [type=bool, outer=(1), constraints=(/1: (/NULL - /'03:33:06.598931+07:11:01']; tight)]\n      └── aggregations\n           └── count-rows [as=count_rows:4, type=int]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [],
+                "operator": "COUNT ROWS",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "TIMETZ"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "filter": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "TIMETZ"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'03:33:05.598931+07:11'",
+                              "type": "TIMETZ"
+                            }
+                          ],
+                          "operator": "LT",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "source": {
+                      "scan": 0
+                    }
+                  }
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "TIMETZ"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [],
+                "operator": "COUNT ROWS",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "TIMETZ"
+              }
+            ],
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "TIMETZ"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'03:33:05.598931+07:11'",
+                          "type": "TIMETZ"
+                        }
+                      ],
+                      "operator": "LT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "TIMETZ"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "TIMETZ",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

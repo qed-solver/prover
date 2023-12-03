@@ -1,0 +1,95 @@
+{
+  "help": [
+    "project\n ├── columns: arr:9\n ├── scan a\n │    ├── columns: k:1!null i:2 f:3 s:4 j:5 a.arr:6 crdb_internal_mvcc_timestamp:7 tableoid:8\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-8)\n └── projections\n      └── a.arr:6[0] [as=arr:9, outer=(6)]\n",
+    "project\n ├── columns: arr:9\n ├── scan a\n │    └── columns: a.arr:6\n └── projections\n      └── a.arr:6[0] [as=arr:9, outer=(6)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 5,
+                "type": "INT[]"
+              },
+              {
+                "operand": [],
+                "operator": "0",
+                "type": "INT"
+              }
+            ],
+            "operator": "INDIRECTION",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 5,
+                "type": "INT[]"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT[]"
+              },
+              {
+                "operand": [],
+                "operator": "0",
+                "type": "INT"
+              }
+            ],
+            "operator": "INDIRECTION",
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "INT[]",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

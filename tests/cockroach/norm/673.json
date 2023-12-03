@@ -1,0 +1,231 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null i:2 f:3!null s:4 j:5 x:8 y:9\n ├── key: (1,8)\n ├── fd: (1)--\u003e(2-5), (8)--\u003e(9)\n └── left-join (cross)\n      ├── columns: k:1!null i:2 f:3!null s:4 j:5 a.crdb_internal_mvcc_timestamp:6 a.tableoid:7 x:8 y:9 b.crdb_internal_mvcc_timestamp:10 b.tableoid:11\n      ├── key: (1,8)\n      ├── fd: (1)--\u003e(2-7), (8)--\u003e(9-11)\n      ├── scan a\n      │    ├── columns: k:1!null i:2 f:3!null s:4 j:5 a.crdb_internal_mvcc_timestamp:6 a.tableoid:7\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-7)\n      ├── scan b\n      │    ├── columns: x:8!null y:9 b.crdb_internal_mvcc_timestamp:10 b.tableoid:11\n      │    ├── key: (8)\n      │    └── fd: (8)--\u003e(9-11)\n      └── filters\n           └── ((k:1 \u003c 1) AND (k:1 \u003e 2)) OR ((k:1 \u003c 4) AND (k:1 \u003e 5)) [outer=(1), constraints=(contradiction; tight)]\n",
+    "left-join (cross)\n ├── columns: k:1!null i:2 f:3!null s:4 j:5 x:8 y:9\n ├── multiplicity: left-rows(exactly-one), right-rows(zero-or-more)\n ├── key: (1)\n ├── fd: (1)--\u003e(2-5,8,9)\n ├── scan a\n │    ├── columns: k:1!null i:2 f:3!null s:4 j:5\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-5)\n ├── values\n │    ├── columns: x:8!null y:9!null\n │    ├── cardinality: [0 - 0]\n │    ├── key: ()\n │    └── fd: ()--\u003e(8,9)\n └── filters (true)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "1",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LT",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "2",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GT",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "4",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LT",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "5",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GT",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "LEFT",
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 1
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "FLOAT"
+          },
+          {
+            "column": 3,
+            "type": "STRING"
+          },
+          {
+            "column": 4,
+            "type": "JSONB"
+          },
+          {
+            "column": 7,
+            "type": "INT"
+          },
+          {
+            "column": 8,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "LEFT",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "FLOAT"
+              },
+              {
+                "column": 3,
+                "type": "STRING"
+              },
+              {
+                "column": 4,
+                "type": "JSONB"
+              }
+            ]
+          }
+        },
+        "right": {
+          "values": {
+            "content": [],
+            "schema": [
+              "INT",
+              "INT"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

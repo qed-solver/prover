@@ -1,0 +1,176 @@
+{
+  "help": [
+    "sort\n ├── columns: k:1!null  [hidden: column3:10]\n ├── immutable\n ├── key: (1)\n ├── fd: (1)--\u003e(10)\n ├── ordering: -10\n └── project\n      ├── columns: k:1!null column3:10\n      ├── immutable\n      ├── key: (1)\n      ├── fd: (1)--\u003e(10)\n      └── inner-join-apply\n           ├── columns: k:1!null i:2 f:3!null s:4 j:5 crdb_internal_mvcc_timestamp:6 tableoid:7 column1:8 column2:9 column3:10 column4:11!null\n           ├── immutable\n           ├── key: (1)\n           ├── fd: (1)--\u003e(2-7,9-11), (1)==(8), (8)==(1)\n           ├── scan a\n           │    ├── columns: k:1!null i:2 f:3!null s:4 j:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n           │    ├── key: (1)\n           │    └── fd: (1)--\u003e(2-7)\n           ├── values\n           │    ├── columns: column1:8 column2:9 column3:10 column4:11!null\n           │    ├── outer: (1,4)\n           │    ├── cardinality: [1 - 1]\n           │    ├── immutable\n           │    ├── key: ()\n           │    ├── fd: ()--\u003e(8-11)\n           │    └── (k:1, k:1 + 1, s:4, 10)\n           └── filters\n                └── k:1 = column1:8 [outer=(1,8), constraints=(/1: (/NULL - ]; /8: (/NULL - ]), fd=(1)==(8), (8)==(1)]\n",
+    "sort\n ├── columns: k:1!null  [hidden: column3:10]\n ├── key: (1)\n ├── fd: (1)--\u003e(10)\n ├── ordering: -10\n └── project\n      ├── columns: column3:10 k:1!null\n      ├── key: (1)\n      ├── fd: (1)--\u003e(10)\n      ├── scan a\n      │    ├── columns: k:1!null s:4\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(4)\n      └── projections\n           └── s:4 [as=column3:10, outer=(4)]\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            1,
+            "STRING",
+            "DESCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 7,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "correlate": {
+                    "kind": "INNER",
+                    "left": {
+                      "scan": 0
+                    },
+                    "right": {
+                      "values": {
+                        "content": [
+                          [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "1",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "PLUS",
+                              "type": "INT"
+                            },
+                            {
+                              "column": 3,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "10",
+                              "type": "INT"
+                            }
+                          ]
+                        ],
+                        "schema": [
+                          "INT",
+                          "INT",
+                          "STRING",
+                          "INT"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 9,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [
+          [
+            1,
+            "STRING",
+            "DESCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "STRING"
+                  }
+                ]
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

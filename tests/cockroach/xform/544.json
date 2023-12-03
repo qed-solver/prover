@@ -1,0 +1,229 @@
+{
+  "help": [
+    "project\n ├── columns: m:1 n:2\n └── select\n      ├── columns: m:1 n:2 small.rowid:3!null small.crdb_internal_mvcc_timestamp:4 small.tableoid:5\n      ├── key: (3)\n      ├── fd: (3)--\u003e(1,2,4,5)\n      ├── scan small\n      │    ├── columns: m:1 n:2 small.rowid:3!null small.crdb_internal_mvcc_timestamp:4 small.tableoid:5\n      │    ├── key: (3)\n      │    └── fd: (3)--\u003e(1,2,4,5)\n      └── filters\n           └── not [outer=(1), correlated-subquery]\n                └── exists\n                     └── project\n                          ├── columns: \"?column?\":12!null\n                          ├── outer: (1)\n                          ├── fd: ()--\u003e(12)\n                          ├── select\n                          │    ├── columns: a:6!null b:7!null c:8 abcd.rowid:9!null abcd.crdb_internal_mvcc_timestamp:10 abcd.tableoid:11\n                          │    ├── outer: (1)\n                          │    ├── key: (9)\n                          │    ├── fd: (9)--\u003e(6-8,10,11)\n                          │    ├── scan abcd\n                          │    │    ├── columns: a:6 b:7 c:8 abcd.rowid:9!null abcd.crdb_internal_mvcc_timestamp:10 abcd.tableoid:11\n                          │    │    ├── key: (9)\n                          │    │    └── fd: (9)--\u003e(6-8,10,11)\n                          │    └── filters\n                          │         └── (m:1 = a:6) AND (a:6 \u003e b:7) [outer=(1,6,7), constraints=(/1: (/NULL - ]; /6: (/NULL - ]; /7: (/NULL - ])]\n                          └── projections\n                               └── 1 [as=\"?column?\":12]\n",
+    "anti-join (lookup abcd@abcd_a_b_idx)\n ├── columns: m:1 n:2\n ├── key columns: [1] = [6]\n ├── scan small\n │    └── columns: m:1 n:2\n └── filters\n      └── a:6 \u003e b:7 [outer=(6,7), constraints=(/6: (/NULL - ]; /7: (/NULL - ])]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "EXISTS",
+                      "query": {
+                        "project": {
+                          "source": {
+                            "filter": {
+                              "condition": {
+                                "operand": [
+                                  {
+                                    "operand": [
+                                      {
+                                        "operand": [
+                                          {
+                                            "column": 0,
+                                            "type": "INT"
+                                          },
+                                          {
+                                            "column": 5,
+                                            "type": "INT"
+                                          }
+                                        ],
+                                        "operator": "EQ",
+                                        "type": "BOOL"
+                                      },
+                                      {
+                                        "operand": [
+                                          {
+                                            "column": 5,
+                                            "type": "INT"
+                                          },
+                                          {
+                                            "column": 6,
+                                            "type": "INT"
+                                          }
+                                        ],
+                                        "operator": "GT",
+                                        "type": "BOOL"
+                                      }
+                                    ],
+                                    "operator": "AND",
+                                    "type": "BOOL"
+                                  }
+                                ],
+                                "operator": "AND",
+                                "type": "BOOLEAN"
+                              },
+                              "source": {
+                                "scan": 1
+                              }
+                            }
+                          },
+                          "target": [
+                            {
+                              "operand": [],
+                              "operator": "1",
+                              "type": "INT"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "NOT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 3,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "GT",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "ANTI",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 1
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          3
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

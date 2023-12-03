@@ -1,0 +1,156 @@
+{
+  "help": [
+    "project\n ├── columns: k:6!null x:1!null\n ├── stats: [rows=990]\n ├── cost: 1e+100\n ├── fd: (1)==(6), (6)==(1)\n └── inner-join (hash)\n      ├── columns: x:1!null z:2!null rowid:3!null b.crdb_internal_mvcc_timestamp:4 b.tableoid:5 k:6!null i:7 s:8 d:9!null a.crdb_internal_mvcc_timestamp:10 a.tableoid:11\n      ├── flags: force lookup join (into right side)\n      ├── multiplicity: left-rows(zero-or-one), right-rows(zero-or-more)\n      ├── stats: [rows=990, distinct(1)=99, null(1)=0, distinct(6)=99, null(6)=0]\n      ├── cost: 1e+100\n      ├── key: (3)\n      ├── fd: (3)--\u003e(1,2,4,5), (6)--\u003e(7-11), (1)==(6), (6)==(1)\n      ├── scan b\n      │    ├── columns: x:1 z:2!null rowid:3!null b.crdb_internal_mvcc_timestamp:4 b.tableoid:5\n      │    ├── stats: [rows=1000, distinct(1)=100, null(1)=10, distinct(2)=100, null(2)=0, distinct(3)=1000, null(3)=0]\n      │    ├── cost: 1108.82\n      │    ├── key: (3)\n      │    └── fd: (3)--\u003e(1,2,4,5)\n      ├── scan a\n      │    ├── columns: k:6!null i:7 s:8 d:9!null a.crdb_internal_mvcc_timestamp:10 a.tableoid:11\n      │    ├── stats: [rows=1000, distinct(6)=1000, null(6)=0, distinct(9)=100, null(9)=0]\n      │    ├── cost: 1129.02\n      │    ├── key: (6)\n      │    └── fd: (6)--\u003e(7-11)\n      └── filters\n           └── k:6 = x:1 [outer=(1,6), constraints=(/1: (/NULL - ]; /6: (/NULL - ]), fd=(1)==(6), (6)==(1)]\n",
+    "inner-join (lookup a)\n ├── columns: k:6!null x:1!null\n ├── flags: force lookup join (into right side)\n ├── key columns: [1] = [6]\n ├── lookup columns are key\n ├── stats: [rows=990, distinct(1)=99, null(1)=0, distinct(6)=99, null(6)=0]\n ├── cost: 7111.84\n ├── fd: (1)==(6), (6)==(1)\n ├── scan b\n │    ├── columns: x:1\n │    ├── stats: [rows=1000, distinct(1)=100, null(1)=10]\n │    └── cost: 1068.42\n └── filters (true)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 5,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 1
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 5,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "INNER",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 1
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

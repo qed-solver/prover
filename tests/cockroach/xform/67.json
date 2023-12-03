@@ -1,0 +1,117 @@
+{
+  "help": [
+    "sort\n ├── columns: a:1 b:2 c:3\n ├── stats: [rows=1000]\n ├── cost: 1400.5843\n ├── ordering: +2,+3,+1\n └── project\n      ├── columns: a:1 b:2 c:3\n      ├── stats: [rows=1000]\n      ├── cost: 1139.04\n      └── scan abc\n           ├── columns: a:1 b:2 c:3 rowid:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n           ├── stats: [rows=1000]\n           ├── cost: 1129.02\n           ├── key: (4)\n           └── fd: (4)--\u003e(1-3,5,6)\n",
+    "sort\n ├── columns: a:1 b:2 c:3\n ├── stats: [rows=1000]\n ├── cost: 1360.2643\n ├── ordering: +2,+3,+1\n └── scan abc\n      ├── columns: a:1 b:2 c:3\n      ├── stats: [rows=1000]\n      └── cost: 1098.72\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            1,
+            "INT",
+            "ASCENDING"
+          ],
+          [
+            2,
+            "INT",
+            "ASCENDING"
+          ],
+          [
+            0,
+            "INT",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [
+          [
+            1,
+            "INT",
+            "ASCENDING"
+          ],
+          [
+            2,
+            "INT",
+            "ASCENDING"
+          ],
+          [
+            0,
+            "INT",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          3
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

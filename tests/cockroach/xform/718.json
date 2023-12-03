@@ -1,0 +1,292 @@
+{
+  "help": [
+    "project\n └── inner-join (cross)\n      ├── scan json_arr2 [as=t2]\n      ├── scan json_arr1 [as=t1]\n      └── filters\n           └── ((t1.j @\u003e t2.j) AND (t1.k \u003e 500)) AND (t1.k \u003c 600)\n",
+    "project\n └── inner-join (cross)\n      ├── scan json_arr1 [as=t1]\n      │    └── constraint: /7: [/501 - /599]\n      ├── scan json_arr2 [as=t2]\n      └── filters\n           └── t1.j @\u003e t2.j\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 8,
+                              "type": "JSONB"
+                            },
+                            {
+                              "column": 2,
+                              "type": "JSONB"
+                            }
+                          ],
+                          "operator": "CONTAINS",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 6,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "500",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GT",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 6,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "600",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "LT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 1
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "JSONB"
+                  },
+                  {
+                    "column": 3,
+                    "type": "STRING[]"
+                  },
+                  {
+                    "column": 4,
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "column": 5,
+                    "type": "OID"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 6,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "JSONB"
+                    },
+                    {
+                      "column": 2,
+                      "type": "JSONB"
+                    }
+                  ],
+                  "operator": "CONTAINS",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "501",
+                              "type": "INT"
+                            },
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "599",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 1
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "JSONB"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 2,
+                    "type": "JSONB"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "JSONB",
+        "STRING[]",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "JSONB",
+        "STRING[]",
+        "DECIMAL",
+        "OID",
+        "ENCODEDKEY",
+        "ENCODEDKEY",
+        "ENCODEDKEY",
+        "ENCODEDKEY",
+        "ENCODEDKEY",
+        "ENCODEDKEY"
+      ]
+    }
+  ]
+}

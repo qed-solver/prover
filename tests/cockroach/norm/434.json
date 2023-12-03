@@ -1,0 +1,84 @@
+{
+  "help": [
+    "project\n ├── columns: now:1 current_user:2 current_database:3\n ├── cardinality: [1 - 1]\n ├── stable\n ├── key: ()\n ├── fd: ()--\u003e(1-3)\n ├── values\n │    ├── cardinality: [1 - 1]\n │    ├── key: ()\n │    └── ()\n └── projections\n      ├── now() [as=now:1, stable]\n      ├── current_user() [as=current_user:2, stable]\n      └── current_database() [as=current_database:3, stable]\n",
+    "values\n ├── columns: now:1!null current_user:2!null current_database:3!null\n ├── cardinality: [1 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(1-3)\n └── ('2017-05-10 13:00:00+00', 'opttester', 'defaultdb')\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "values": {
+            "content": [
+              []
+            ],
+            "schema": []
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "FUNCTION",
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "operand": [
+              {
+                "operand": [],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "FUNCTION",
+            "type": "STRING"
+          },
+          {
+            "operand": [
+              {
+                "operand": [],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "FUNCTION",
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "values": {
+        "content": [
+          [
+            {
+              "operand": [],
+              "operator": "'2017-05-10 13:00:00+00'",
+              "type": "TIMESTAMPTZ"
+            },
+            {
+              "operand": [],
+              "operator": "'opttester'",
+              "type": "STRING"
+            },
+            {
+              "operand": [],
+              "operator": "'defaultdb'",
+              "type": "STRING"
+            }
+          ]
+        ],
+        "schema": [
+          "TIMESTAMPTZ",
+          "STRING",
+          "STRING"
+        ]
+      }
+    }
+  ],
+  "schemas": []
+}

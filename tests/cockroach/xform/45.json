@@ -1,0 +1,213 @@
+{
+  "help": [
+    "project\n ├── columns: id:1!null\n ├── cardinality: [0 - 1000]\n ├── immutable\n ├── stats: [rows=333.3333]\n ├── cost: 1081.78333\n ├── key: (1)\n └── select\n      ├── columns: id:1!null crdb_internal_mvcc_timestamp:2 tableoid:3\n      ├── cardinality: [0 - 1000]\n      ├── immutable\n      ├── stats: [rows=333.3333, distinct(1)=333.333, null(1)=0]\n      ├── cost: 1078.44\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2,3)\n      ├── scan speed_test\n      │    ├── columns: id:1!null crdb_internal_mvcc_timestamp:2 tableoid:3\n      │    ├── flags: force-index=speed_test_pkey\n      │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0]\n      │    ├── cost: 1068.42\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2,3)\n      └── filters\n           └── ((id:1 \u003e= 1) AND (id:1 \u003c= 1000)) AND ((id:1 % 16) = 0) [outer=(1), immutable, constraints=(/1: [/1 - /1000])]\n",
+    "select\n ├── columns: id:1!null\n ├── cardinality: [0 - 1000]\n ├── immutable\n ├── stats: [rows=333.3333, distinct(1)=333.333, null(1)=0]\n ├── cost: 1038.03\n ├── key: (1)\n ├── scan speed_test\n │    ├── columns: id:1!null\n │    ├── constraint: /1: [/1 - /1000]\n │    ├── flags: force-index=speed_test_pkey\n │    ├── cardinality: [0 - 1000]\n │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0]\n │    ├── cost: 1028.01\n │    └── key: (1)\n └── filters\n      └── (id:1 % 16) = 0 [outer=(1), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "1",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GE",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "1000",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "16",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "MOD",
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "0",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "16",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "MOD",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "0",
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "1",
+                          "type": "INT"
+                        },
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "\u003c=",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "1000",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "\u003c=",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "OR",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

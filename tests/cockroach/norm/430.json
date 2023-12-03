@@ -1,0 +1,56 @@
+{
+  "help": [
+    "project\n ├── columns: crdb_internal.locality_value:1\n ├── cardinality: [1 - 1]\n ├── stable\n ├── key: ()\n ├── fd: ()--\u003e(1)\n ├── distribution: east\n ├── values\n │    ├── cardinality: [1 - 1]\n │    ├── key: ()\n │    ├── distribution: east\n │    └── ()\n └── projections\n      └── crdb_internal.locality_value('dc') [as=crdb_internal.locality_value:1, stable]\n",
+    "values\n ├── columns: crdb_internal.locality_value:1!null\n ├── cardinality: [1 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(1)\n ├── distribution: east\n └── ('east1-b',)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "values": {
+            "content": [
+              []
+            ],
+            "schema": []
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "operand": [],
+                    "operator": "'dc'",
+                    "type": "STRING"
+                  }
+                ],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "FUNCTION",
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "values": {
+        "content": [
+          [
+            {
+              "operand": [],
+              "operator": "'east1-b'",
+              "type": "STRING"
+            }
+          ]
+        ],
+        "schema": [
+          "STRING"
+        ]
+      }
+    }
+  ],
+  "schemas": []
+}

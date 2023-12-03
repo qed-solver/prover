@@ -1,0 +1,126 @@
+{
+  "help": [
+    "limit\n ├── columns: b:2\n ├── cardinality: [0 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(2)\n ├── group-by (hash)\n │    ├── columns: b:2\n │    ├── grouping columns: b:2\n │    ├── cardinality: [0 - 1]\n │    ├── key: ()\n │    ├── fd: ()--\u003e(2)\n │    ├── limit hint: 5.00\n │    └── project\n │         ├── columns: b:2\n │         ├── fd: ()--\u003e(2)\n │         └── scan tab_76102\n │              ├── columns: a:1 b:2 rowid:3!null crdb_internal_mvcc_timestamp:4 tableoid:5\n │              ├── computed column expressions\n │              │    └── b:2\n │              │         └── NULL::INT2\n │              ├── flags: force-index=tab_76102_a_key\n │              ├── key: (3)\n │              └── fd: ()--\u003e(2), (3)--\u003e(1,4,5), (1)~~\u003e(3-5)\n └── 5\n",
+    "index-join tab_76102\n ├── columns: b:2\n ├── cardinality: [0 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(2)\n └── scan tab_76102@tab_76102_a_key\n      ├── columns: rowid:3!null\n      ├── limit: 1\n      ├── flags: force-index=tab_76102_a_key\n      ├── key: ()\n      └── fd: ()--\u003e(3)\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "5",
+          "type": "INT"
+        },
+        "source": {
+          "group": {
+            "function": [],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT2"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "INT2"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 3,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "sort": {
+                "collation": [],
+                "limit": {
+                  "operand": [],
+                  "operator": "1",
+                  "type": "INTEGER"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 2,
+            "type": "INT2"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT2",
+        "INT2",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

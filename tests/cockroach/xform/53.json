@@ -1,0 +1,61 @@
+{
+  "help": [
+    "project\n ├── columns: x:1\n ├── stats: [rows=1000]\n ├── cost: 1255.19\n └── scan b\n      ├── columns: x:1 y:2 z:3 s:4 rowid:5!null crdb_internal_mvcc_timestamp:6 tableoid:7\n      ├── stats: [rows=1000]\n      ├── cost: 1245.17\n      ├── key: (5)\n      └── fd: (5)--\u003e(1-4,6,7)\n",
+    "scan b@xyz\n ├── columns: x:1\n ├── stats: [rows=1000]\n └── cost: 1055.795\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          4
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "STRING",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

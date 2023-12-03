@@ -1,0 +1,265 @@
+{
+  "help": [
+    "project\n ├── sort\n │    └── group-by (hash)\n │         ├── project\n │         │    └── select\n │         │         ├── scan t\n │         │         └── filters\n │         │              └── (k + a) \u003e b\n │         └── aggregations\n │              └── min\n │                   └── b\n └── projections\n      └── a + 1\n",
+    "project\n ├── sort\n │    └── group-by (hash)\n │         ├── select\n │         │    ├── scan t\n │         │    └── filters\n │         │         └── b \u003c (k + a)\n │         └── aggregations\n │              └── min\n │                   └── b\n └── projections\n      └── a + 1\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "sort": {
+            "collation": [
+              [
+                0,
+                "INT",
+                "ASCENDING"
+              ]
+            ],
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "MIN",
+                    "type": "INT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "source": {
+                  "project": {
+                    "source": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 2,
+                                      "type": "INT"
+                                    },
+                                    {
+                                      "column": 0,
+                                      "type": "INT"
+                                    }
+                                  ],
+                                  "operator": "PLUS",
+                                  "type": "INT"
+                                },
+                                {
+                                  "column": 1,
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "GT",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "scan": 0
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "sort": {
+            "collation": [
+              [
+                0,
+                "INT",
+                "ASCENDING"
+              ]
+            ],
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "MIN",
+                    "type": "INT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "source": {
+                  "filter": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 2,
+                                  "type": "INT"
+                                },
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "PLUS",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LT",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "source": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 1,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 2,
+                            "type": "INT"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

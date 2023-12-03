@@ -1,0 +1,148 @@
+{
+  "help": [
+    "sort (segmented)\n ├── columns: y:2!null x:1!null r:7\n ├── immutable\n ├── key: (1,2)\n ├── fd: (1,2)--\u003e(7)\n ├── ordering: +1,+2\n └── project\n      ├── columns: r:7 x:1!null y:2!null\n      ├── immutable\n      ├── key: (1,2)\n      ├── fd: (1,2)--\u003e(7)\n      ├── ordering: +1\n      ├── scan a\n      │    ├── columns: x:1!null y:2!null z:3 s:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n      │    ├── key: (1,2)\n      │    ├── fd: (1,2)--\u003e(3-6)\n      │    └── ordering: +1\n      └── projections\n           └── z:3 + 1 [as=r:7, outer=(3), immutable]\n",
+    "sort (segmented)\n ├── columns: y:2!null x:1!null r:7\n ├── immutable\n ├── key: (1,2)\n ├── fd: (1,2)--\u003e(7)\n ├── ordering: +1,+2\n └── project\n      ├── columns: r:7 x:1!null y:2!null\n      ├── immutable\n      ├── key: (1,2)\n      ├── fd: (1,2)--\u003e(7)\n      ├── ordering: +1\n      ├── scan a\n      │    ├── columns: x:1!null y:2!null z:3\n      │    ├── key: (1,2)\n      │    ├── fd: (1,2)--\u003e(3)\n      │    └── ordering: +1\n      └── projections\n           └── z:3 + 1 [as=r:7, outer=(3), immutable]\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            0,
+            "INT",
+            "ASCENDING"
+          ],
+          [
+            1,
+            "FLOAT",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "operand": [
+                  {
+                    "column": 2,
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "1",
+                    "type": "DECIMAL"
+                  }
+                ],
+                "operator": "PLUS",
+                "type": "DECIMAL"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [
+          [
+            0,
+            "INT",
+            "ASCENDING"
+          ],
+          [
+            1,
+            "FLOAT",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "DECIMAL"
+                  }
+                ]
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "operand": [
+                  {
+                    "column": 2,
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "1",
+                    "type": "DECIMAL"
+                  }
+                ],
+                "operator": "PLUS",
+                "type": "DECIMAL"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0,
+          1
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "FLOAT",
+        "DECIMAL",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

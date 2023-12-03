@@ -1,0 +1,106 @@
+{
+  "help": [
+    "project\n ├── columns: \"?column?\":6\n ├── immutable\n ├── scan t\n │    ├── columns: ts:1 tz:2 rowid:3!null crdb_internal_mvcc_timestamp:4 tableoid:5\n │    ├── key: (3)\n │    └── fd: (3)--\u003e(1,2,4,5)\n └── projections\n      └── timezone('America/Denver', ts:1) \u003e= '2020-06-01 12:35:55-07' [as=\"?column?\":6, outer=(1), immutable]\n",
+    "project\n ├── columns: \"?column?\":6\n ├── scan t\n │    └── columns: ts:1\n └── projections\n      └── ts:1 \u003e= '2020-06-01 13:35:55' [as=\"?column?\":6, outer=(1)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "operand": [
+                      {
+                        "operand": [],
+                        "operator": "'America/Denver'",
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 0,
+                        "type": "TIMESTAMP"
+                      }
+                    ],
+                    "operator": "SCALAR LIST",
+                    "type": "ANYELEMENT"
+                  }
+                ],
+                "operator": "FUNCTION",
+                "type": "TIMESTAMPTZ"
+              },
+              {
+                "operand": [],
+                "operator": "'2020-06-01 12:35:55-07'",
+                "type": "TIMESTAMPTZ"
+              }
+            ],
+            "operator": "GE",
+            "type": "BOOL"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "TIMESTAMP"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "TIMESTAMP"
+              },
+              {
+                "operand": [],
+                "operator": "'2020-06-01 13:35:55'",
+                "type": "TIMESTAMP"
+              }
+            ],
+            "operator": "GE",
+            "type": "BOOL"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "TIMESTAMP",
+        "TIMESTAMPTZ",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

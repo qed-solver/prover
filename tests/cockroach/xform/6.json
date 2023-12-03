@@ -1,0 +1,135 @@
+{
+  "help": [
+    "limit\n ├── columns: b:2 d:4 count:8!null\n ├── cardinality: [0 - 10]\n ├── stats: [rows=10]\n ├── cost: 1209.52625\n ├── key: (2,4)\n ├── fd: (2,4)--\u003e(8)\n ├── group-by (hash)\n │    ├── columns: b:2 d:4 count_rows:8!null\n │    ├── grouping columns: b:2 d:4\n │    ├── stats: [rows=1000, distinct(2,4)=1000, null(2,4)=0.1]\n │    ├── cost: 1209.41625\n │    ├── key: (2,4)\n │    ├── fd: (2,4)--\u003e(8)\n │    ├── limit hint: 10.00\n │    ├── project\n │    │    ├── columns: b:2 d:4\n │    │    ├── stats: [rows=1000, distinct(2,4)=1000, null(2,4)=0.1]\n │    │    ├── cost: 1159.24\n │    │    └── scan c\n │    │         ├── columns: a:1 b:2 c:3 d:4 rowid:5!null crdb_internal_mvcc_timestamp:6 tableoid:7\n │    │         ├── stats: [rows=1000, distinct(2,4)=1000, null(2,4)=0.1]\n │    │         ├── cost: 1149.22\n │    │         ├── key: (5)\n │    │         └── fd: (5)--\u003e(1-4,6,7)\n │    └── aggregations\n │         └── count-rows [as=count_rows:8]\n └── 10\n",
+    "limit\n ├── columns: b:2 d:4 count:8!null\n ├── cardinality: [0 - 10]\n ├── stats: [rows=10]\n ├── cost: 39.16\n ├── key: (2,4)\n ├── fd: (2,4)--\u003e(8)\n ├── group-by (partial streaming)\n │    ├── columns: b:2 d:4 count_rows:8!null\n │    ├── grouping columns: b:2 d:4\n │    ├── internal-ordering: +2\n │    ├── stats: [rows=1000, distinct(2,4)=1000, null(2,4)=0.1]\n │    ├── cost: 39.05\n │    ├── key: (2,4)\n │    ├── fd: (2,4)--\u003e(8)\n │    ├── limit hint: 10.00\n │    ├── scan c@c_b_c_d_idx\n │    │    ├── columns: b:2 d:4\n │    │    ├── stats: [rows=1000, distinct(2,4)=1000, null(2,4)=0.1]\n │    │    ├── cost: 28.62\n │    │    ├── ordering: +2\n │    │    └── limit hint: 10.00\n │    └── aggregations\n │         └── count-rows [as=count_rows:8]\n └── 10\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "10",
+          "type": "INT"
+        },
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [],
+                "operator": "COUNT ROWS",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "10",
+          "type": "INT"
+        },
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [],
+                "operator": "COUNT ROWS",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          4
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "help": [
+    "project\n ├── columns: a:1(int!null) b:2(int!null)\n ├── fd: (1)==(2), (2)==(1)\n ├── prune: (1,2)\n └── select\n      ├── columns: a:1(int!null) b:2(int!null) rowid:3(int!null) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n      ├── key: (3)\n      ├── fd: (3)--\u003e(1,2,4,5), (1)==(2), (2)==(1)\n      ├── scan ab\n      │    ├── columns: a:1(int) b:2(int) rowid:3(int!null) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n      │    ├── key: (3)\n      │    ├── fd: (3)--\u003e(1,2,4,5)\n      │    └── prune: (1-5)\n      └── filters\n           └── eq [type=bool, outer=(1,2), constraints=(/1: (/NULL - ]; /2: (/NULL - ]), fd=(1)==(2), (2)==(1)]\n                ├── variable: a:1 [type=int]\n                └── variable: b:2 [type=int]\n",
+    "select\n ├── columns: a:1(int!null) b:2(int!null)\n ├── fd: (1)==(2), (2)==(1)\n ├── scan ab\n │    ├── columns: a:1(int) b:2(int)\n │    └── prune: (1,2)\n └── filters\n      └── eq [type=bool, outer=(1,2), constraints=(/1: (/NULL - ]; /2: (/NULL - ]), fd=(1)==(2), (2)==(1)]\n           ├── variable: a:1 [type=int]\n           └── variable: b:2 [type=int]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INT"
+                },
+                {
+                  "column": 1,
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

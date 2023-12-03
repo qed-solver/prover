@@ -1,0 +1,110 @@
+{
+  "help": [
+    "project\n ├── columns: a:1(int) b:2(bool!null)\n ├── stats: [rows=900]\n ├── fd: ()--\u003e(2)\n └── select\n      ├── columns: a:1(int) b:2(bool!null) rowid:3(int!null) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n      ├── stats: [rows=900, distinct(2)=1, null(2)=0]\n      │   histogram(2)=  0   900\n      │                \u003c--- false\n      ├── key: (3)\n      ├── fd: ()--\u003e(2), (3)--\u003e(1,4,5)\n      ├── scan hist_bool\n      │    ├── columns: a:1(int) b:2(bool) rowid:3(int!null) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n      │    ├── stats: [rows=1000, distinct(2)=2, null(2)=0, distinct(3)=1000, null(3)=0]\n      │    │   histogram(2)=  0   900   0  100\n      │    │                \u003c--- false --- true\n      │    ├── key: (3)\n      │    └── fd: (3)--\u003e(1,2,4,5)\n      └── filters\n           └── b:2 = false [type=bool, outer=(2), constraints=(/2: [/false - /false]; tight), fd=()--\u003e(2)]\n",
+    "select\n ├── columns: a:1(int) b:2(bool!null)\n ├── stats: [rows=900, distinct(2)=1, null(2)=0]\n │   histogram(2)=  0   900\n │                \u003c--- false\n ├── fd: ()--\u003e(2)\n ├── scan hist_bool\n │    ├── columns: a:1(int) b:2(bool)\n │    └── stats: [rows=1000, distinct(2)=2, null(2)=0]\n │        histogram(2)=  0   900   0  100\n │                     \u003c--- false --- true\n └── filters\n      └── NOT b:2 [type=bool, outer=(2), constraints=(/2: [/false - /false]; tight), fd=()--\u003e(2)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "FALSE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "BOOL"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 1,
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "NOT",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "BOOL"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "BOOL",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

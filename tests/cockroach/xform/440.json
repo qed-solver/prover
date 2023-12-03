@@ -1,0 +1,167 @@
+{
+  "help": [
+    "group-by (hash)\n ├── columns: max:8!null a:1\n ├── grouping columns: a:1\n ├── key: (1)\n ├── fd: (1)--\u003e(8)\n ├── project\n │    ├── columns: a:1 c:3!null\n │    └── select\n │         ├── columns: a:1 b:2 c:3!null d:4 rowid:5!null crdb_internal_mvcc_timestamp:6 tableoid:7\n │         ├── key: (5)\n │         ├── fd: (5)--\u003e(1-4,6,7)\n │         ├── scan abcd\n │         │    ├── columns: a:1 b:2 c:3 d:4 rowid:5!null crdb_internal_mvcc_timestamp:6 tableoid:7\n │         │    ├── partial index predicates\n │         │    │    ├── partial_ab: filters\n │         │    │    │    └── c:3 \u003e 0 [outer=(3), constraints=(/3: [/1 - ]; tight)]\n │         │    │    └── partial_cb: filters\n │         │    │         └── d:4 = 1 [outer=(4), constraints=(/4: [/1 - /1]; tight), fd=()--\u003e(4)]\n │         │    ├── key: (5)\n │         │    └── fd: (5)--\u003e(1-4,6,7)\n │         └── filters\n │              └── c:3 \u003e 0 [outer=(3), constraints=(/3: [/1 - ]; tight)]\n └── aggregations\n      └── max [as=max:8, outer=(3)]\n           └── c:3\n",
+    "group-by (hash)\n ├── columns: max:8!null a:1\n ├── grouping columns: a:1\n ├── key: (1)\n ├── fd: (1)--\u003e(8)\n ├── select\n │    ├── columns: a:1 c:3!null\n │    ├── scan abcd\n │    │    ├── columns: a:1 c:3\n │    │    └── partial index predicates\n │    │         ├── partial_ab: filters\n │    │         │    └── c:3 \u003e 0 [outer=(3), constraints=(/3: [/1 - ]; tight)]\n │    │         └── partial_cb: filters\n │    │              └── d:4 = 1 [outer=(4), constraints=(/4: [/1 - /1]; tight), fd=()--\u003e(4)]\n │    └── filters\n │         └── c:3 \u003e 0 [outer=(3), constraints=(/3: [/1 - ]; tight)]\n └── aggregations\n      └── max [as=max:8, outer=(3)]\n           └── c:3\n"
+  ],
+  "queries": [
+    {
+      "group": {
+        "function": [
+          {
+            "distinct": false,
+            "ignoreNulls": true,
+            "operand": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "operator": "MAX",
+            "type": "INT"
+          }
+        ],
+        "keys": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "0",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "GT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "scan": 0
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "group": {
+        "function": [
+          {
+            "distinct": false,
+            "ignoreNulls": true,
+            "operand": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "operator": "MAX",
+            "type": "INT"
+          }
+        ],
+        "keys": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ],
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "0",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "GT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          4
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "FLOAT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

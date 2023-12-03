@@ -1,0 +1,189 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null g:2!null\n ├── immutable\n ├── key: (1)\n ├── fd: (1)--\u003e(2)\n └── select\n      ├── columns: k:1!null g:2!null crdb_internal_mvcc_timestamp:3 tableoid:4\n      ├── immutable\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-4)\n      ├── scan t59702\n      │    ├── columns: k:1!null g:2 crdb_internal_mvcc_timestamp:3 tableoid:4\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-4)\n      └── filters\n           └── st_intersects(g:2, st_buffer(st_makepoint(1.0, 1.0)::GEOGRAPHY, 0.0)) [outer=(2), immutable, constraints=(/2: (/NULL - ])]\n",
+    "select\n ├── columns: k:1!null g:2!null\n ├── immutable\n ├── key: (1)\n ├── fd: (1)--\u003e(2)\n ├── scan t59702\n │    ├── columns: k:1!null g:2\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2)\n └── filters\n      └── st_intersects(g:2, '0103000020E610000000000000') [outer=(2), immutable, constraints=(/2: (/NULL - ])]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "GEOGRAPHY"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [
+                                        {
+                                          "operand": [
+                                            {
+                                              "operand": [],
+                                              "operator": "1.0",
+                                              "type": "FLOAT"
+                                            },
+                                            {
+                                              "operand": [],
+                                              "operator": "1.0",
+                                              "type": "FLOAT"
+                                            }
+                                          ],
+                                          "operator": "SCALAR LIST",
+                                          "type": "ANYELEMENT"
+                                        }
+                                      ],
+                                      "operator": "FUNCTION",
+                                      "type": "GEOMETRY"
+                                    }
+                                  ],
+                                  "operator": "CAST",
+                                  "type": "GEOGRAPHY"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "0.0",
+                                  "type": "FLOAT"
+                                }
+                              ],
+                              "operator": "SCALAR LIST",
+                              "type": "ANYELEMENT"
+                            }
+                          ],
+                          "operator": "FUNCTION",
+                          "type": "GEOGRAPHY"
+                        }
+                      ],
+                      "operator": "SCALAR LIST",
+                      "type": "ANYELEMENT"
+                    }
+                  ],
+                  "operator": "FUNCTION",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "GEOGRAPHY"
+                  },
+                  {
+                    "column": 2,
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "column": 3,
+                    "type": "OID"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "GEOGRAPHY"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "GEOGRAPHY"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'0103000020E610000000000000'",
+                      "type": "GEOGRAPHY"
+                    }
+                  ],
+                  "operator": "SCALAR LIST",
+                  "type": "ANYELEMENT"
+                }
+              ],
+              "operator": "FUNCTION",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "GEOGRAPHY"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "types": [
+        "INT",
+        "GEOGRAPHY",
+        "DECIMAL",
+        "OID",
+        "ENCODEDKEY"
+      ]
+    }
+  ]
+}

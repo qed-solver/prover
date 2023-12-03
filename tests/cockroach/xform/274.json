@@ -1,0 +1,127 @@
+{
+  "help": [
+    "group-by (hash)\n ├── columns: max:5 y:2 y:2 x:1!null\n ├── grouping columns: x:1!null y:2\n ├── key: (1)\n ├── fd: (1)--\u003e(2,5)\n ├── project\n │    ├── columns: x:1!null y:2\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2)\n │    └── scan a\n │         ├── columns: x:1!null y:2 crdb_internal_mvcc_timestamp:3 tableoid:4\n │         ├── key: (1)\n │         └── fd: (1)--\u003e(2-4)\n └── aggregations\n      └── max [as=max:5, outer=(2)]\n           └── y:2\n",
+    "group-by (streaming)\n ├── columns: max:5 y:2 y:2 x:1!null\n ├── grouping columns: x:1!null\n ├── internal-ordering: +1\n ├── key: (1)\n ├── fd: (1)--\u003e(2,5)\n ├── scan a\n │    ├── columns: x:1!null y:2\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2)\n │    └── ordering: +1\n └── aggregations\n      ├── max [as=max:5, outer=(2)]\n      │    └── y:2\n      └── const-agg [as=y:2, outer=(2)]\n           └── y:2\n"
+  ],
+  "queries": [
+    {
+      "group": {
+        "function": [
+          {
+            "distinct": false,
+            "ignoreNulls": true,
+            "operand": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "operator": "MAX",
+            "type": "INT"
+          }
+        ],
+        "keys": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "group": {
+        "function": [
+          {
+            "distinct": false,
+            "ignoreNulls": true,
+            "operand": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "operator": "MAX",
+            "type": "INT"
+          },
+          {
+            "distinct": false,
+            "ignoreNulls": false,
+            "operand": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "operator": "CONST AGG",
+            "type": "INT"
+          }
+        ],
+        "keys": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

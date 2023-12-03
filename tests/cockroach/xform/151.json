@@ -1,0 +1,115 @@
+{
+  "help": [
+    "limit\n ├── columns: z:3 count:6!null\n ├── cardinality: [0 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(3,6)\n ├── group-by (hash)\n │    ├── columns: z:3 count_rows:6!null\n │    ├── grouping columns: z:3\n │    ├── key: (3)\n │    ├── fd: (3)--\u003e(6)\n │    ├── limit hint: 1.00\n │    ├── project\n │    │    ├── columns: z:3\n │    │    └── scan t\n │    │         ├── columns: x:1!null y:2 z:3 crdb_internal_mvcc_timestamp:4 tableoid:5\n │    │         ├── key: (1)\n │    │         └── fd: (1)--\u003e(2-5)\n │    └── aggregations\n │         └── count-rows [as=count_rows:6]\n └── 1\n",
+    "limit\n ├── columns: z:3 count:6!null\n ├── cardinality: [0 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(3,6)\n ├── group-by (hash)\n │    ├── columns: z:3 count_rows:6!null\n │    ├── grouping columns: z:3\n │    ├── key: (3)\n │    ├── fd: (3)--\u003e(6)\n │    ├── limit hint: 1.00\n │    ├── scan t\n │    │    └── columns: z:3\n │    └── aggregations\n │         └── count-rows [as=count_rows:6]\n └── 1\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "1",
+          "type": "INT"
+        },
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [],
+                "operator": "COUNT ROWS",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "1",
+          "type": "INT"
+        },
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [],
+                "operator": "COUNT ROWS",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

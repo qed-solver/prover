@@ -1,0 +1,288 @@
+{
+  "help": [
+    "project\n ├── columns: u:1(int!null) v:2(int) w:3(int!null) x:7(int!null) y:8(int) z:9(int)\n ├── stats: [rows=33]\n ├── fd: ()--\u003e(3,7)\n └── inner-join (cross)\n      ├── columns: u:1(int!null) v:2(int) w:3(int!null) x:7(int!null) y:8(int) z:9(int) xyz.rowid:10(int!null) xyz.crdb_internal_mvcc_timestamp:11(decimal) xyz.tableoid:12(oid)\n      ├── stats: [rows=33, distinct(1)=9.56179, null(1)=0, distinct(7)=1, null(7)=0]\n      ├── fd: ()--\u003e(3,7), (10)--\u003e(8,9,11,12)\n      ├── project\n      │    ├── columns: u:1(int) v:2(int) w:3(int!null)\n      │    ├── stats: [rows=10, distinct(1)=9.56179, null(1)=0.1, distinct(3)=1, null(3)=0]\n      │    ├── fd: ()--\u003e(3)\n      │    └── select\n      │         ├── columns: u:1(int) v:2(int) w:3(int!null) uvw.rowid:4(int!null) uvw.crdb_internal_mvcc_timestamp:5(decimal) uvw.tableoid:6(oid)\n      │         ├── stats: [rows=10, distinct(1)=9.56179, null(1)=0.1, distinct(3)=1, null(3)=0]\n      │         ├── key: (4)\n      │         ├── fd: ()--\u003e(3), (4)--\u003e(1,2,5,6)\n      │         ├── scan uvw\n      │         │    ├── columns: u:1(int) v:2(int) w:3(int) uvw.rowid:4(int!null) uvw.crdb_internal_mvcc_timestamp:5(decimal) uvw.tableoid:6(oid)\n      │         │    ├── stats: [rows=1000, distinct(1)=100, null(1)=10, distinct(3)=100, null(3)=10, distinct(4)=1000, null(4)=0]\n      │         │    ├── key: (4)\n      │         │    └── fd: (4)--\u003e(1-3,5,6)\n      │         └── filters\n      │              └── w:3 = 1 [type=bool, outer=(3), constraints=(/3: [/1 - /1]; tight), fd=()--\u003e(3)]\n      ├── scan xyz\n      │    ├── columns: x:7(int) y:8(int) z:9(int) xyz.rowid:10(int!null) xyz.crdb_internal_mvcc_timestamp:11(decimal) xyz.tableoid:12(oid)\n      │    ├── stats: [rows=1000, distinct(7)=100, null(7)=10, distinct(10)=1000, null(10)=0]\n      │    ├── key: (10)\n      │    └── fd: (10)--\u003e(7-9,11,12)\n      └── filters\n           └── (u:1 = x:7) AND (x:7 = 10) [type=bool, outer=(1,7), constraints=(/1: (/NULL - ]; /7: [/10 - /10]), fd=()--\u003e(7)]\n",
+    "inner-join (hash)\n ├── columns: u:1(int!null) v:2(int) w:3(int!null) x:7(int!null) y:8(int) z:9(int)\n ├── stats: [rows=10.35371, distinct(1)=1, null(1)=0, distinct(7)=1, null(7)=0]\n ├── fd: ()--\u003e(1,3,7), (1)==(7), (7)==(1)\n ├── select\n │    ├── columns: u:1(int) v:2(int) w:3(int!null)\n │    ├── stats: [rows=10, distinct(1)=9.56179, null(1)=0.1, distinct(3)=1, null(3)=0]\n │    ├── fd: ()--\u003e(3)\n │    ├── scan uvw\n │    │    ├── columns: u:1(int) v:2(int) w:3(int)\n │    │    └── stats: [rows=1000, distinct(1)=100, null(1)=10, distinct(3)=100, null(3)=10]\n │    └── filters\n │         └── w:3 = 1 [type=bool, outer=(3), constraints=(/3: [/1 - /1]; tight), fd=()--\u003e(3)]\n ├── scan xyz\n │    ├── columns: x:7(int) y:8(int) z:9(int)\n │    └── stats: [rows=1000, distinct(7)=100, null(7)=10]\n └── filters\n      ├── u:1 = x:7 [type=bool, outer=(1,7), constraints=(/1: (/NULL - ]; /7: (/NULL - ]), fd=(1)==(7), (7)==(1)]\n      └── x:7 = 10 [type=bool, outer=(7), constraints=(/7: [/10 - /10]; tight), fd=()--\u003e(7)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 3,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 3,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "10",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "project": {
+                "source": {
+                  "filter": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 2,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "1",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "EQ",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "source": {
+                      "scan": 0
+                    }
+                  }
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "scan": 1
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          },
+          {
+            "column": 4,
+            "type": "INT"
+          },
+          {
+            "column": 5,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INT"
+                },
+                {
+                  "column": 3,
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            },
+            {
+              "operand": [
+                {
+                  "column": 3,
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "10",
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "INNER",
+        "left": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 1
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          3
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          3
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

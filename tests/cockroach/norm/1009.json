@@ -1,0 +1,138 @@
+{
+  "help": [
+    "project\n ├── columns: \"?column?\":9!null\n ├── immutable\n ├── project\n │    ├── columns: k1:7!null \"?column?\":8\n │    ├── immutable\n │    ├── scan a\n │    │    ├── columns: k:1!null i:2 f:3 s:4 crdb_internal_mvcc_timestamp:5 tableoid:6\n │    │    ├── key: (1)\n │    │    └── fd: (1)--\u003e(2-6)\n │    └── projections\n │         ├── k:1 + 1 [as=k1:7, outer=(1), immutable]\n │         └── i:2 + 1 [as=\"?column?\":8, outer=(2), immutable]\n └── projections\n      └── k1:7 * 2 [as=\"?column?\":9, outer=(7), immutable]\n",
+    "project\n ├── columns: \"?column?\":9!null\n ├── immutable\n ├── scan a\n │    ├── columns: k:1!null\n │    └── key: (1)\n └── projections\n      └── (k:1 + 1) * 2 [as=\"?column?\":9, outer=(1), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "1",
+                    "type": "INT"
+                  }
+                ],
+                "operator": "PLUS",
+                "type": "INT"
+              },
+              {
+                "operand": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "1",
+                    "type": "INT"
+                  }
+                ],
+                "operator": "PLUS",
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "2",
+                "type": "INT"
+              }
+            ],
+            "operator": "MULT",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "1",
+                    "type": "INT"
+                  }
+                ],
+                "operator": "PLUS",
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "2",
+                "type": "INT"
+              }
+            ],
+            "operator": "MULT",
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

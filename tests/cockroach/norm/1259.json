@@ -1,0 +1,143 @@
+{
+  "help": [
+    "project\n ├── columns: case:8\n ├── scan a\n │    ├── columns: k:1!null i:2 f:3 s:4 arr:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-7)\n └── projections\n      └── CASE 1 WHEN 2 THEN 'one' WHEN k:1 THEN 'two' WHEN 1 THEN 'three' WHEN 1 THEN 'four' ELSE CAST(NULL AS STRING) END [as=case:8, outer=(1)]\n",
+    "project\n ├── columns: case:8!null\n ├── scan a\n │    ├── columns: k:1!null\n │    └── key: (1)\n └── projections\n      └── CASE 1 WHEN k:1 THEN 'two' ELSE 'three' END [as=case:8, outer=(1)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "2",
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "'one'",
+                "type": "STRING"
+              },
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "'two'",
+                "type": "STRING"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "'three'",
+                "type": "STRING"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "'four'",
+                "type": "STRING"
+              },
+              {
+                "operand": [],
+                "operator": "NULL",
+                "type": "STRING"
+              }
+            ],
+            "operator": "CASE",
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              },
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "'two'",
+                "type": "STRING"
+              },
+              {
+                "operand": [],
+                "operator": "'three'",
+                "type": "STRING"
+              }
+            ],
+            "operator": "CASE",
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "INT[]",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

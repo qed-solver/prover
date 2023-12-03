@@ -1,0 +1,245 @@
+{
+  "help": [
+    "project\n ├── columns: min:20!null\n └── group-by (hash)\n      ├── columns: i:16!null min:20!null\n      ├── grouping columns: i:16!null\n      ├── key: (16)\n      ├── fd: (16)--\u003e(20)\n      ├── project\n      │    ├── columns: i:16!null s:18!null\n      │    └── union\n      │         ├── columns: k:15!null i:16!null f:17 s:18!null j:19\n      │         ├── left columns: a.k:1 a.i:2 a.f:3 a.s:4 a.j:5\n      │         ├── right columns: a.k:8 a.i:9 a.f:10 a.s:11 a.j:12\n      │         ├── key: (15-19)\n      │         ├── project\n      │         │    ├── columns: a.k:1!null a.i:2!null a.f:3 a.s:4!null a.j:5\n      │         │    ├── key: (1)\n      │         │    ├── fd: (1)--\u003e(2-5), (2,4)--\u003e(1,3,5), (2,3)~~\u003e(1,4,5)\n      │         │    └── scan a\n      │         │         ├── columns: a.k:1!null a.i:2!null a.f:3 a.s:4!null a.j:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n      │         │         ├── key: (1)\n      │         │         └── fd: (1)--\u003e(2-7), (2,4)--\u003e(1,3,5-7), (2,3)~~\u003e(1,4-7)\n      │         └── project\n      │              ├── columns: a.k:8!null a.i:9!null a.f:10 a.s:11!null a.j:12\n      │              ├── key: (8)\n      │              ├── fd: (8)--\u003e(9-12), (9,11)--\u003e(8,10,12), (9,10)~~\u003e(8,11,12)\n      │              └── scan a\n      │                   ├── columns: a.k:8!null a.i:9!null a.f:10 a.s:11!null a.j:12 crdb_internal_mvcc_timestamp:13 tableoid:14\n      │                   ├── key: (8)\n      │                   └── fd: (8)--\u003e(9-14), (9,11)--\u003e(8,10,12-14), (9,10)~~\u003e(8,11-14)\n      └── aggregations\n           └── min [as=min:20, outer=(18)]\n                └── s:18\n",
+    "project\n ├── columns: min:20!null\n └── group-by (hash)\n      ├── columns: i:16!null min:20!null\n      ├── grouping columns: i:16!null\n      ├── key: (16)\n      ├── fd: (16)--\u003e(20)\n      ├── union\n      │    ├── columns: k:15!null i:16!null f:17 s:18!null j:19\n      │    ├── left columns: a.k:1 a.i:2 a.f:3 a.s:4 a.j:5\n      │    ├── right columns: a.k:8 a.i:9 a.f:10 a.s:11 a.j:12\n      │    ├── key: (15-19)\n      │    ├── scan a\n      │    │    ├── columns: a.k:1!null a.i:2!null a.f:3 a.s:4!null a.j:5\n      │    │    ├── key: (1)\n      │    │    └── fd: (1)--\u003e(2-5), (2,4)--\u003e(1,3,5), (2,3)~~\u003e(1,4,5)\n      │    └── scan a\n      │         ├── columns: a.k:8!null a.i:9!null a.f:10 a.s:11!null a.j:12\n      │         ├── key: (8)\n      │         └── fd: (8)--\u003e(9-12), (9,11)--\u003e(8,10,12), (9,10)~~\u003e(8,11,12)\n      └── aggregations\n           └── min [as=min:20, outer=(18)]\n                └── s:18\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 1,
+                    "type": "STRING"
+                  }
+                ],
+                "operator": "MIN",
+                "type": "STRING"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "distinct": {
+                    "union": [
+                      {
+                        "project": {
+                          "source": {
+                            "scan": 0
+                          },
+                          "target": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 2,
+                              "type": "FLOAT"
+                            },
+                            {
+                              "column": 3,
+                              "type": "STRING"
+                            },
+                            {
+                              "column": 4,
+                              "type": "JSONB"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "project": {
+                          "source": {
+                            "scan": 0
+                          },
+                          "target": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 2,
+                              "type": "FLOAT"
+                            },
+                            {
+                              "column": 3,
+                              "type": "STRING"
+                            },
+                            {
+                              "column": 4,
+                              "type": "JSONB"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "STRING"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 3,
+                    "type": "STRING"
+                  }
+                ],
+                "operator": "MIN",
+                "type": "STRING"
+              }
+            ],
+            "keys": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "distinct": {
+                "union": [
+                  {
+                    "project": {
+                      "source": {
+                        "scan": 0
+                      },
+                      "target": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 2,
+                          "type": "FLOAT"
+                        },
+                        {
+                          "column": 3,
+                          "type": "STRING"
+                        },
+                        {
+                          "column": 4,
+                          "type": "JSONB"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "project": {
+                      "source": {
+                        "scan": 0
+                      },
+                      "target": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 2,
+                          "type": "FLOAT"
+                        },
+                        {
+                          "column": 3,
+                          "type": "STRING"
+                        },
+                        {
+                          "column": 4,
+                          "type": "JSONB"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

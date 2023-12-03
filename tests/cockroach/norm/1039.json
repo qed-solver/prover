@@ -1,0 +1,117 @@
+{
+  "help": [
+    "project\n ├── columns: x:7!null y:8\n ├── fd: (7)--\u003e(8)\n └── inner-join (cross)\n      ├── columns: k:1!null i:2 f:3 s:4 a.crdb_internal_mvcc_timestamp:5 a.tableoid:6 x:7!null y:8 xy.crdb_internal_mvcc_timestamp:9 xy.tableoid:10\n      ├── key: (1,7)\n      ├── fd: (1)--\u003e(2-6), (7)--\u003e(8-10)\n      ├── scan a\n      │    ├── columns: k:1!null i:2 f:3 s:4 a.crdb_internal_mvcc_timestamp:5 a.tableoid:6\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-6)\n      ├── scan xy\n      │    ├── columns: x:7!null y:8 xy.crdb_internal_mvcc_timestamp:9 xy.tableoid:10\n      │    ├── key: (7)\n      │    └── fd: (7)--\u003e(8-10)\n      └── filters (true)\n",
+    "inner-join (cross)\n ├── columns: x:7!null y:8\n ├── fd: (7)--\u003e(8)\n ├── scan a\n ├── scan xy\n │    ├── columns: x:7!null y:8\n │    ├── key: (7)\n │    └── fd: (7)--\u003e(8)\n └── filters (true)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 1
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 6,
+            "type": "INT"
+          },
+          {
+            "column": 7,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "INNER",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": []
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 1
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

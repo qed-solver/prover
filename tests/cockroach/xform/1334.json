@@ -1,0 +1,224 @@
+{
+  "help": [
+    "project\n ├── columns: id1_2_:1!null address2_2_:2 createdo3_2_:3 name4_2_:4 nickname5_2_:5 version6_2_:6!null\n ├── key: (1)\n ├── fd: (1)--\u003e(2-6)\n └── select\n      ├── columns: person0_.id:1!null address:2 createdon:3 name:4 nickname:5 version:6!null person0_.crdb_internal_mvcc_timestamp:7 person0_.tableoid:8\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-8)\n      ├── scan person [as=person0_]\n      │    ├── columns: person0_.id:1!null address:2 createdon:3 name:4 nickname:5 version:6!null person0_.crdb_internal_mvcc_timestamp:7 person0_.tableoid:8\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-8)\n      └── filters\n           └── not [outer=(1), correlated-subquery]\n                └── exists\n                     └── project\n                          ├── columns: phones1_.id:9!null\n                          ├── outer: (1)\n                          ├── key: (9)\n                          └── select\n                               ├── columns: phones1_.id:9!null phone_number:10 phone_type:11 person_id:12!null order_id:13 phones1_.crdb_internal_mvcc_timestamp:14 phones1_.tableoid:15\n                               ├── outer: (1)\n                               ├── key: (9)\n                               ├── fd: ()--\u003e(12), (9)--\u003e(10,11,13-15)\n                               ├── scan phone [as=phones1_]\n                               │    ├── columns: phones1_.id:9!null phone_number:10 phone_type:11 person_id:12 order_id:13 phones1_.crdb_internal_mvcc_timestamp:14 phones1_.tableoid:15\n                               │    ├── key: (9)\n                               │    └── fd: (9)--\u003e(10-15)\n                               └── filters\n                                    └── person0_.id:1 = person_id:12 [outer=(1,12), constraints=(/1: (/NULL - ]; /12: (/NULL - ]), fd=(1)==(12), (12)==(1)]\n",
+    "anti-join (hash)\n ├── columns: id1_2_:1!null address2_2_:2 createdo3_2_:3 name4_2_:4 nickname5_2_:5 version6_2_:6!null\n ├── key: (1)\n ├── fd: (1)--\u003e(2-6)\n ├── scan person [as=person0_]\n │    ├── columns: person0_.id:1!null address:2 createdon:3 name:4 nickname:5 version:6!null\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-6)\n ├── scan phone [as=phones1_]\n │    └── columns: person_id:12\n └── filters\n      └── person0_.id:1 = person_id:12 [outer=(1,12), constraints=(/1: (/NULL - ]; /12: (/NULL - ]), fd=(1)==(12), (12)==(1)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "EXISTS",
+                      "query": {
+                        "project": {
+                          "source": {
+                            "filter": {
+                              "condition": {
+                                "operand": [
+                                  {
+                                    "operand": [
+                                      {
+                                        "column": 0,
+                                        "type": "INT"
+                                      },
+                                      {
+                                        "column": 11,
+                                        "type": "INT"
+                                      }
+                                    ],
+                                    "operator": "EQ",
+                                    "type": "BOOL"
+                                  }
+                                ],
+                                "operator": "AND",
+                                "type": "BOOLEAN"
+                              },
+                              "source": {
+                                "scan": 1
+                              }
+                            }
+                          },
+                          "target": [
+                            {
+                              "column": 8,
+                              "type": "INT"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "NOT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "VARCHAR"
+          },
+          {
+            "column": 2,
+            "type": "TIMESTAMP"
+          },
+          {
+            "column": 3,
+            "type": "VARCHAR"
+          },
+          {
+            "column": 4,
+            "type": "VARCHAR"
+          },
+          {
+            "column": 5,
+            "type": "INT4"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INT"
+                },
+                {
+                  "column": 6,
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "ANTI",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "VARCHAR"
+              },
+              {
+                "column": 2,
+                "type": "TIMESTAMP"
+              },
+              {
+                "column": 3,
+                "type": "VARCHAR"
+              },
+              {
+                "column": 4,
+                "type": "VARCHAR"
+              },
+              {
+                "column": 5,
+                "type": "INT4"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 1
+            },
+            "target": [
+              {
+                "column": 3,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "VARCHAR",
+        "TIMESTAMP",
+        "VARCHAR",
+        "VARCHAR",
+        "INT4",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "VARCHAR",
+        "VARCHAR",
+        "INT",
+        "INT4",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

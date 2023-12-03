@@ -1,0 +1,239 @@
+{
+  "help": [
+    "project\n ├── columns: a:1!null b:5!null\n ├── stable\n └── select\n      ├── columns: a:1!null t1.rowid:2!null t1.crdb_internal_mvcc_timestamp:3 t1.tableoid:4 b:5!null t2.rowid:6!null t2.crdb_internal_mvcc_timestamp:7 t2.tableoid:8\n      ├── stable\n      ├── key: (2,6)\n      ├── fd: (2)--\u003e(1,3,4), (6)--\u003e(5,7,8)\n      ├── inner-join (cross)\n      │    ├── columns: a:1 t1.rowid:2!null t1.crdb_internal_mvcc_timestamp:3 t1.tableoid:4 b:5 t2.rowid:6!null t2.crdb_internal_mvcc_timestamp:7 t2.tableoid:8\n      │    ├── key: (2,6)\n      │    ├── fd: (2)--\u003e(1,3,4), (6)--\u003e(5,7,8)\n      │    ├── scan t1\n      │    │    ├── columns: a:1 t1.rowid:2!null t1.crdb_internal_mvcc_timestamp:3 t1.tableoid:4\n      │    │    ├── key: (2)\n      │    │    └── fd: (2)--\u003e(1,3,4)\n      │    ├── scan t2\n      │    │    ├── columns: b:5 t2.rowid:6!null t2.crdb_internal_mvcc_timestamp:7 t2.tableoid:8\n      │    │    ├── key: (6)\n      │    │    └── fd: (6)--\u003e(5,7,8)\n      │    └── filters (true)\n      └── filters\n           └── (a:1 = b:5) AND (age(b:5, '2017-01-01'::TIMESTAMPTZ) \u003e '1 day') [outer=(1,5), stable, constraints=(/1: (/NULL - ]; /5: (/NULL - ])]\n",
+    "inner-join (cross)\n ├── columns: a:1!null b:5!null\n ├── stable\n ├── fd: (1)==(5), (5)==(1)\n ├── scan t1\n │    └── columns: a:1\n ├── select\n │    ├── columns: b:5\n │    ├── immutable\n │    ├── scan t2\n │    │    └── columns: b:5\n │    └── filters\n │         └── age(b:5, '2017-01-01 00:00:00+00') \u003e '1 day' [outer=(5), immutable]\n └── filters\n      └── a:1 = b:5 [outer=(1,5), stable, constraints=(/1: (/NULL - ]; /5: (/NULL - ]), fd=(1)==(5), (5)==(1)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "DATE"
+                        },
+                        {
+                          "column": 4,
+                          "type": "TIMESTAMPTZ"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 4,
+                                  "type": "TIMESTAMPTZ"
+                                },
+                                {
+                                  "operand": [
+                                    {
+                                      "operand": [],
+                                      "operator": "'2017-01-01'",
+                                      "type": "STRING"
+                                    }
+                                  ],
+                                  "operator": "CAST",
+                                  "type": "TIMESTAMPTZ"
+                                }
+                              ],
+                              "operator": "SCALAR LIST",
+                              "type": "ANYELEMENT"
+                            }
+                          ],
+                          "operator": "FUNCTION",
+                          "type": "INTERVAL"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'1 day'",
+                          "type": "INTERVAL"
+                        }
+                      ],
+                      "operator": "GT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "scan": 1
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "DATE"
+          },
+          {
+            "column": 4,
+            "type": "TIMESTAMPTZ"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "DATE"
+                },
+                {
+                  "column": 1,
+                  "type": "TIMESTAMPTZ"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "INNER",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "DATE"
+              }
+            ]
+          }
+        },
+        "right": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "TIMESTAMPTZ"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'2017-01-01 00:00:00+00'",
+                              "type": "TIMESTAMPTZ"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "INTERVAL"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'1 day'",
+                      "type": "INTERVAL"
+                    }
+                  ],
+                  "operator": "GT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 1
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "TIMESTAMPTZ"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          1
+        ]
+      ],
+      "nullable": [
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "DATE",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          1
+        ]
+      ],
+      "nullable": [
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "TIMESTAMPTZ",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

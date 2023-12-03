@@ -1,0 +1,141 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null k:4!null i:5 f:6 s:7!null j:8\n ├── cardinality: [0 - 0]\n ├── key: (4)\n ├── fd: (4)--\u003e(5-8), (1)==(4), (4)==(1)\n └── select\n      ├── columns: a.k:1!null a.crdb_internal_mvcc_timestamp:2 a.tableoid:3 b.k:4!null i:5 f:6 s:7!null j:8 b.crdb_internal_mvcc_timestamp:9 b.tableoid:10\n      ├── cardinality: [0 - 0]\n      ├── key: (4)\n      ├── fd: (1)--\u003e(2,3), (4)--\u003e(5-10), (1)==(4), (4)==(1)\n      ├── inner-join (hash)\n      │    ├── columns: a.k:1!null a.crdb_internal_mvcc_timestamp:2 a.tableoid:3 b.k:4!null i:5 f:6 s:7!null j:8 b.crdb_internal_mvcc_timestamp:9 b.tableoid:10\n      │    ├── multiplicity: left-rows(zero-or-one), right-rows(zero-or-one)\n      │    ├── key: (4)\n      │    ├── fd: (1)--\u003e(2,3), (4)--\u003e(5-10), (1)==(4), (4)==(1)\n      │    ├── scan a\n      │    │    ├── columns: a.k:1!null a.crdb_internal_mvcc_timestamp:2 a.tableoid:3\n      │    │    ├── key: (1)\n      │    │    └── fd: (1)--\u003e(2,3)\n      │    ├── scan b\n      │    │    ├── columns: b.k:4!null i:5 f:6 s:7!null j:8 b.crdb_internal_mvcc_timestamp:9 b.tableoid:10\n      │    │    ├── key: (4)\n      │    │    └── fd: (4)--\u003e(5-10)\n      │    └── filters\n      │         └── a.k:1 = b.k:4 [outer=(1,4), constraints=(/1: (/NULL - ]; /4: (/NULL - ]), fd=(1)==(4), (4)==(1)]\n      └── filters\n           └── false [constraints=(contradiction; tight)]\n",
+    "values\n ├── columns: k:1!null k:4!null i:5!null f:6!null s:7!null j:8!null\n ├── cardinality: [0 - 0]\n ├── key: ()\n └── fd: ()--\u003e(1,4-8)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [],
+                  "operator": "FALSE",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 3,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "scan": 1
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          },
+          {
+            "column": 4,
+            "type": "INT"
+          },
+          {
+            "column": 5,
+            "type": "FLOAT"
+          },
+          {
+            "column": 6,
+            "type": "STRING"
+          },
+          {
+            "column": 7,
+            "type": "JSONB"
+          }
+        ]
+      }
+    },
+    {
+      "values": {
+        "content": [],
+        "schema": [
+          "INT",
+          "INT",
+          "INT",
+          "FLOAT",
+          "STRING",
+          "JSONB"
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

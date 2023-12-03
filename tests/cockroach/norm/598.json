@@ -1,0 +1,163 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null\n ├── immutable\n ├── key: (1)\n └── select\n      ├── columns: k:1!null i:2!null f:3 s:4!null j:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n      ├── immutable\n      ├── key: (1)\n      ├── fd: ()--\u003e(2), (1)--\u003e(3-7)\n      ├── scan b\n      │    ├── columns: k:1!null i:2 f:3 s:4!null j:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-7)\n      └── filters\n           └── (i:2 = 8) AND (3 = mod(i:2, 5)) [outer=(2), immutable, constraints=(/2: [/8 - /8]), fd=()--\u003e(2)]\n",
+    "project\n ├── columns: k:1!null\n ├── key: (1)\n └── select\n      ├── columns: k:1!null i:2!null\n      ├── key: (1)\n      ├── fd: ()--\u003e(2)\n      ├── scan b\n      │    ├── columns: k:1!null i:2\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2)\n      └── filters\n           └── i:2 = 8 [outer=(2), constraints=(/2: [/8 - /8]; tight), fd=()--\u003e(2)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "8",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "3",
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 1,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "5",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "SCALAR LIST",
+                              "type": "ANYELEMENT"
+                            }
+                          ],
+                          "operator": "FUNCTION",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "8",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null\n ├── cardinality: [0 - 1]\n ├── volatile\n ├── key: ()\n ├── fd: ()--\u003e(1)\n └── select\n      ├── columns: k:1!null u:2 v:3 crdb_internal_mvcc_timestamp:4 tableoid:5\n      ├── cardinality: [0 - 1]\n      ├── volatile\n      ├── key: ()\n      ├── fd: ()--\u003e(1-5)\n      ├── scan a\n      │    ├── columns: k:1!null u:2 v:3 crdb_internal_mvcc_timestamp:4 tableoid:5\n      │    ├── locking: for-update\n      │    ├── volatile\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-5), (3)~~\u003e(1,2,4,5)\n      └── filters\n           └── k:1 = 1 [outer=(1), constraints=(/1: [/1 - /1]; tight), fd=()--\u003e(1)]\n",
+    "scan a\n ├── columns: k:1!null\n ├── constraint: /1: [/1 - /1]\n ├── locking: for-update\n ├── cardinality: [0 - 1]\n ├── volatile\n ├── key: ()\n └── fd: ()--\u003e(1)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "INT"
+                    },
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            }
+          ],
+          "operator": "OR",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

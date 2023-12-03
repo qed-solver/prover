@@ -1,0 +1,156 @@
+{
+  "help": [
+    "sort\n ├── columns: y:2!null z:3\n ├── ordering: +2\n └── project\n      ├── columns: y:2!null z:3\n      └── select\n           ├── columns: x:1!null y:2!null z:3 s:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n           ├── key: (1,2)\n           ├── fd: (1,2)--\u003e(3-6)\n           ├── scan a\n           │    ├── columns: x:1!null y:2!null z:3 s:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n           │    ├── key: (1,2)\n           │    └── fd: (1,2)--\u003e(3-6)\n           └── filters\n                └── x:1 \u003e y:2 [outer=(1,2)]\n",
+    "sort\n ├── columns: y:2!null z:3\n ├── ordering: +2\n └── project\n      ├── columns: y:2!null z:3\n      └── select\n           ├── columns: x:1!null y:2!null z:3\n           ├── key: (1,2)\n           ├── fd: (1,2)--\u003e(3)\n           ├── scan a\n           │    ├── columns: x:1!null y:2!null z:3\n           │    ├── key: (1,2)\n           │    └── fd: (1,2)--\u003e(3)\n           └── filters\n                └── x:1 \u003e y:2 [outer=(1,2)]\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            0,
+            "FLOAT",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 1,
+                          "type": "FLOAT"
+                        }
+                      ],
+                      "operator": "GT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "scan": 0
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "column": 2,
+                "type": "DECIMAL"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [
+          [
+            0,
+            "FLOAT",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 1,
+                          "type": "FLOAT"
+                        }
+                      ],
+                      "operator": "GT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "FLOAT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "DECIMAL"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "column": 2,
+                "type": "DECIMAL"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0,
+          1
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "FLOAT",
+        "DECIMAL",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

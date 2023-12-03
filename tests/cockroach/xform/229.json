@@ -1,0 +1,255 @@
+{
+  "help": [
+    "sort\n ├── columns: a:1 b:2 c:3 d:4\n ├── key: (1-4)\n ├── ordering: +3,+4\n └── intersect\n      ├── columns: a:1 b:2 c:3 d:4\n      ├── left columns: a:1 b:2 c:3 d:4\n      ├── right columns: c:10 d:11 a:8 b:9\n      ├── key: (1-4)\n      ├── project\n      │    ├── columns: a:1 b:2 c:3 d:4\n      │    └── scan abcd\n      │         ├── columns: a:1 b:2 c:3 d:4 rowid:5!null crdb_internal_mvcc_timestamp:6 tableoid:7\n      │         ├── key: (5)\n      │         └── fd: (5)--\u003e(1-4,6,7)\n      └── project\n           ├── columns: a:8 b:9 c:10 d:11\n           └── scan abcd\n                ├── columns: a:8 b:9 c:10 d:11 rowid:12!null crdb_internal_mvcc_timestamp:13 tableoid:14\n                ├── key: (12)\n                └── fd: (12)--\u003e(8-11,13,14)\n",
+    "intersect\n ├── columns: a:1 b:2 c:3 d:4\n ├── left columns: a:1 b:2 c:3 d:4\n ├── right columns: c:10 d:11 a:8 b:9\n ├── internal-ordering: +3,+4,+1,+2\n ├── key: (1-4)\n ├── ordering: +3,+4\n ├── sort (segmented)\n │    ├── columns: a:1 b:2 c:3 d:4\n │    ├── ordering: +3,+4,+1,+2\n │    └── scan abcd@cd\n │         ├── columns: a:1 b:2 c:3 d:4\n │         └── ordering: +3,+4\n └── sort (segmented)\n      ├── columns: a:8 b:9 c:10 d:11\n      ├── ordering: +8,+9,+10,+11\n      └── scan abcd@ab\n           ├── columns: a:8 b:9 c:10 d:11\n           └── ordering: +8,+9\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            2,
+            "INT",
+            "ASCENDING"
+          ],
+          [
+            3,
+            "INT",
+            "ASCENDING"
+          ]
+        ],
+        "source": {
+          "intersect": [
+            {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            {
+              "project": {
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                },
+                "target": [
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "intersect": [
+        {
+          "sort": {
+            "collation": [
+              [
+                2,
+                "INT",
+                "ASCENDING"
+              ],
+              [
+                3,
+                "INT",
+                "ASCENDING"
+              ],
+              [
+                0,
+                "INT",
+                "ASCENDING"
+              ],
+              [
+                1,
+                "INT",
+                "ASCENDING"
+              ]
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "project": {
+            "source": {
+              "sort": {
+                "collation": [
+                  [
+                    0,
+                    "INT",
+                    "ASCENDING"
+                  ],
+                  [
+                    1,
+                    "INT",
+                    "ASCENDING"
+                  ],
+                  [
+                    2,
+                    "INT",
+                    "ASCENDING"
+                  ],
+                  [
+                    3,
+                    "INT",
+                    "ASCENDING"
+                  ]
+                ],
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 2,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "INT"
+              },
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          4
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

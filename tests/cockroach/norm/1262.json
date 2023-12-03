@@ -1,0 +1,75 @@
+{
+  "help": [
+    "project\n ├── columns: case:1\n ├── cardinality: [1 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(1)\n ├── values\n │    ├── cardinality: [1 - 1]\n │    ├── key: ()\n │    └── ()\n └── projections\n      └── CASE WHEN false THEN 'one' WHEN true THEN 'two' ELSE CAST(NULL AS STRING) END [as=case:1]\n",
+    "values\n ├── columns: case:1!null\n ├── cardinality: [1 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(1)\n └── ('two',)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "values": {
+            "content": [
+              []
+            ],
+            "schema": []
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [],
+                "operator": "TRUE",
+                "type": "BOOL"
+              },
+              {
+                "operand": [],
+                "operator": "FALSE",
+                "type": "BOOL"
+              },
+              {
+                "operand": [],
+                "operator": "'one'",
+                "type": "STRING"
+              },
+              {
+                "operand": [],
+                "operator": "TRUE",
+                "type": "BOOL"
+              },
+              {
+                "operand": [],
+                "operator": "'two'",
+                "type": "STRING"
+              },
+              {
+                "operand": [],
+                "operator": "NULL",
+                "type": "STRING"
+              }
+            ],
+            "operator": "CASE",
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "values": {
+        "content": [
+          [
+            {
+              "operand": [],
+              "operator": "'two'",
+              "type": "STRING"
+            }
+          ]
+        ],
+        "schema": [
+          "STRING"
+        ]
+      }
+    }
+  ],
+  "schemas": []
+}

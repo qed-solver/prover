@@ -1,0 +1,387 @@
+{
+  "help": [
+    "project\n ├── columns: x:1(int!null) y:2(int) z:3(int) s:4(string!null)\n ├── stats: [rows=111.1111]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-4)\n └── select\n      ├── columns: x:1(int!null) y:2(int) z:3(int) s:4(string!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      ├── stats: [rows=111.1111, distinct(4)=11.1111, null(4)=0]\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-6)\n      ├── scan t\n      │    ├── columns: x:1(int!null) y:2(int) z:3(int) s:4(string) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(4)=100, null(4)=10]\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-6)\n      └── filters\n           └── (((s:4 \u003e= 'a') AND (s:4 \u003c= 'b')) OR ((s:4 \u003e= 'c') AND (s:4 \u003c= 'd'))) OR ((s:4 \u003e= 'e') AND (s:4 \u003c= 'f')) [type=bool, outer=(4), constraints=(/4: [/'a' - /'b'] [/'c' - /'d'] [/'e' - /'f']; tight)]\n",
+    "index-join t\n ├── columns: x:1(int!null) y:2(int) z:3(int) s:4(string!null)\n ├── stats: [rows=111.1111, distinct(4)=11.1111, null(4)=0]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-4)\n └── scan t@t_s_idx\n      ├── columns: x:1(int!null) s:4(string!null)\n      ├── constraint: /4/1\n      │    ├── [/'a' - /'b']\n      │    ├── [/'c' - /'d']\n      │    └── [/'e' - /'f']\n      ├── stats: [rows=111.1111, distinct(4)=11.1111, null(4)=0]\n      ├── key: (1)\n      └── fd: (1)--\u003e(4)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 3,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'a'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "GE",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 3,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'b'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "LE",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 3,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'c'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "GE",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 3,
+                                  "type": "STRING"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "'d'",
+                                  "type": "STRING"
+                                }
+                              ],
+                              "operator": "LE",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "OR",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 3,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'e'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "GE",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 3,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'f'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "LE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "STRING"
+                    },
+                    {
+                      "column": 5,
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "'a'",
+                              "type": "STRING"
+                            },
+                            {
+                              "column": 1,
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'b'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "'c'",
+                              "type": "STRING"
+                            },
+                            {
+                              "column": 1,
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'d'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "'e'",
+                              "type": "STRING"
+                            },
+                            {
+                              "column": 1,
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "STRING"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'f'",
+                              "type": "STRING"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "STRING"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          },
+          {
+            "column": 4,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

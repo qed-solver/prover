@@ -1,0 +1,120 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null i:2 f:3 s:4!null j:5 k:8!null i:9 f:10 s:11!null j:12\n ├── cardinality: [0 - 0]\n ├── key: (1,8)\n ├── fd: (1)--\u003e(2-5), (8)--\u003e(9-12)\n └── inner-join (cross)\n      ├── columns: b.k:1!null b.i:2 b.f:3 b.s:4!null b.j:5 b.crdb_internal_mvcc_timestamp:6 b.tableoid:7 b2.k:8!null b2.i:9 b2.f:10 b2.s:11!null b2.j:12 b2.crdb_internal_mvcc_timestamp:13 b2.tableoid:14\n      ├── cardinality: [0 - 0]\n      ├── key: (1,8)\n      ├── fd: (1)--\u003e(2-7), (8)--\u003e(9-14)\n      ├── scan b\n      │    ├── columns: b.k:1!null b.i:2 b.f:3 b.s:4!null b.j:5 b.crdb_internal_mvcc_timestamp:6 b.tableoid:7\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-7)\n      ├── scan b [as=b2]\n      │    ├── columns: b2.k:8!null b2.i:9 b2.f:10 b2.s:11!null b2.j:12 b2.crdb_internal_mvcc_timestamp:13 b2.tableoid:14\n      │    ├── key: (8)\n      │    └── fd: (8)--\u003e(9-14)\n      └── filters\n           └── false [constraints=(contradiction; tight)]\n",
+    "values\n ├── columns: k:1!null i:2!null f:3!null s:4!null j:5!null k:8!null i:9!null f:10!null s:11!null j:12!null\n ├── cardinality: [0 - 0]\n ├── key: ()\n └── fd: ()--\u003e(1-5,8-12)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [],
+                  "operator": "FALSE",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "FLOAT"
+          },
+          {
+            "column": 3,
+            "type": "STRING"
+          },
+          {
+            "column": 4,
+            "type": "JSONB"
+          },
+          {
+            "column": 7,
+            "type": "INT"
+          },
+          {
+            "column": 8,
+            "type": "INT"
+          },
+          {
+            "column": 9,
+            "type": "FLOAT"
+          },
+          {
+            "column": 10,
+            "type": "STRING"
+          },
+          {
+            "column": 11,
+            "type": "JSONB"
+          }
+        ]
+      }
+    },
+    {
+      "values": {
+        "content": [],
+        "schema": [
+          "INT",
+          "INT",
+          "FLOAT",
+          "STRING",
+          "JSONB",
+          "INT",
+          "INT",
+          "FLOAT",
+          "STRING",
+          "JSONB"
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

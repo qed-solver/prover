@@ -1,0 +1,201 @@
+{
+  "help": [
+    "project\n ├── columns: r:10!null i:2 s:11\n ├── immutable\n ├── project\n │    ├── columns: expr:8!null expr2:9 i:2\n │    ├── immutable\n │    ├── scan a\n │    │    ├── columns: k:1!null i:2 f:3 a.s:4 j:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    │    ├── key: (1)\n │    │    └── fd: (1)--\u003e(2-7)\n │    └── projections\n │         ├── k:1 + 1 [as=expr:8, outer=(1), immutable]\n │         └── a.s:4 || 'foo' [as=expr2:9, outer=(4), immutable]\n └── projections\n      ├── expr:8 + 1 [as=r:10, outer=(8), immutable]\n      └── expr2:9 || 'bar' [as=s:11, outer=(9), immutable]\n",
+    "project\n ├── columns: r:10!null i:2 s:11\n ├── immutable\n ├── scan a\n │    ├── columns: k:1!null i:2 a.s:4\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2,4)\n └── projections\n      ├── (k:1 + 1) + 1 [as=r:10, outer=(1), immutable]\n      └── (a.s:4 || 'foo') || 'bar' [as=s:11, outer=(4), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "1",
+                    "type": "INT"
+                  }
+                ],
+                "operator": "PLUS",
+                "type": "INT"
+              },
+              {
+                "operand": [
+                  {
+                    "column": 3,
+                    "type": "STRING"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "'foo'",
+                    "type": "STRING"
+                  }
+                ],
+                "operator": "CONCAT",
+                "type": "STRING"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 2,
+                "type": "STRING"
+              },
+              {
+                "operand": [],
+                "operator": "'bar'",
+                "type": "STRING"
+              }
+            ],
+            "operator": "CONCAT",
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "STRING"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "1",
+                    "type": "INT"
+                  }
+                ],
+                "operator": "PLUS",
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "column": 2,
+                    "type": "STRING"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "'foo'",
+                    "type": "STRING"
+                  }
+                ],
+                "operator": "CONCAT",
+                "type": "STRING"
+              },
+              {
+                "operand": [],
+                "operator": "'bar'",
+                "type": "STRING"
+              }
+            ],
+            "operator": "CONCAT",
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+{
+  "help": [
+    "select\n ├── columns: one:1 two:2!null three:3 four:4!null\n ├── cardinality: [0 - 1]\n ├── has-placeholder\n ├── key: ()\n ├── fd: ()--\u003e(1-4)\n ├── values\n │    ├── columns: column1:1 column2:2!null column3:3 column4:4!null\n │    ├── cardinality: [1 - 1]\n │    ├── has-placeholder\n │    ├── key: ()\n │    ├── fd: ()--\u003e(1-4)\n │    └── ($1, 1, $2, 2)\n └── filters\n      └── (column1:1 = column2:2) OR (column3:3 = column4:4) [outer=(1-4)]\n",
+    "select\n ├── columns: one:1 two:2!null three:3 four:4!null\n ├── cardinality: [0 - 1]\n ├── has-placeholder\n ├── key: ()\n ├── fd: ()--\u003e(1-4)\n ├── values\n │    ├── columns: column1:1 column2:2!null column3:3 column4:4!null\n │    ├── cardinality: [1 - 1]\n │    ├── has-placeholder\n │    ├── key: ()\n │    ├── fd: ()--\u003e(1-4)\n │    └── ($1, 1, $2, 2)\n └── filters\n      └── (column1:1 = 1) OR (column3:3 = 2.0) [outer=(1,3)]\n"
+  ],
+  "queries": [
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "FLOAT"
+                    },
+                    {
+                      "column": 3,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "OR",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "values": {
+            "content": [
+              [
+                {
+                  "operand": [],
+                  "operator": "PLACEHOLDER",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "1",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "PLACEHOLDER",
+                  "type": "FLOAT"
+                },
+                {
+                  "operand": [],
+                  "operator": "2",
+                  "type": "INT"
+                }
+              ]
+            ],
+            "schema": [
+              "INT",
+              "INT",
+              "FLOAT",
+              "INT"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "FLOAT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "2.0",
+                      "type": "FLOAT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "OR",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "values": {
+            "content": [
+              [
+                {
+                  "operand": [],
+                  "operator": "PLACEHOLDER",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "1",
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "PLACEHOLDER",
+                  "type": "FLOAT"
+                },
+                {
+                  "operand": [],
+                  "operator": "2",
+                  "type": "INT"
+                }
+              ]
+            ],
+            "schema": [
+              "INT",
+              "INT",
+              "FLOAT",
+              "INT"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": []
+}

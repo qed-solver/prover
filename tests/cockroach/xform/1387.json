@@ -1,0 +1,264 @@
+{
+  "help": [
+    "project\n ├── columns: blkid:2\n ├── immutable\n └── select\n      ├── columns: blocks.gid:1!null blkid:2 popn_total:3 popn_white:4 popn_black:5 popn_nativ:6 popn_asian:7 popn_other:8 boroname:9 blocks.geom:10!null blocks.crdb_internal_mvcc_timestamp:11 blocks.tableoid:12 subways.gid:13!null objectid:14 id:15 name:16!null alt_name:17 cross_st:18 long_name:19 label:20 borough:21 nghbhd:22 routes:23 transfers:24 color:25 express:26 closed:27 subways.geom:28!null subways.crdb_internal_mvcc_timestamp:29 subways.tableoid:30\n      ├── immutable\n      ├── key: (1,13)\n      ├── fd: ()--\u003e(16), (1)--\u003e(2-12), (13)--\u003e(14,15,17-30)\n      ├── inner-join (cross)\n      │    ├── columns: blocks.gid:1!null blkid:2 popn_total:3 popn_white:4 popn_black:5 popn_nativ:6 popn_asian:7 popn_other:8 boroname:9 blocks.geom:10!null blocks.crdb_internal_mvcc_timestamp:11 blocks.tableoid:12 subways.gid:13!null objectid:14 id:15 name:16 alt_name:17 cross_st:18 long_name:19 label:20 borough:21 nghbhd:22 routes:23 transfers:24 color:25 express:26 closed:27 subways.geom:28!null subways.crdb_internal_mvcc_timestamp:29 subways.tableoid:30\n      │    ├── immutable\n      │    ├── key: (1,13)\n      │    ├── fd: (1)--\u003e(2-12), (13)--\u003e(14-30)\n      │    ├── scan nyc_census_blocks [as=blocks]\n      │    │    ├── columns: blocks.gid:1!null blkid:2 popn_total:3 popn_white:4 popn_black:5 popn_nativ:6 popn_asian:7 popn_other:8 boroname:9 blocks.geom:10 blocks.crdb_internal_mvcc_timestamp:11 blocks.tableoid:12\n      │    │    ├── key: (1)\n      │    │    └── fd: (1)--\u003e(2-12)\n      │    ├── scan nyc_subway_stations [as=subways]\n      │    │    ├── columns: subways.gid:13!null objectid:14 id:15 name:16 alt_name:17 cross_st:18 long_name:19 label:20 borough:21 nghbhd:22 routes:23 transfers:24 color:25 express:26 closed:27 subways.geom:28 subways.crdb_internal_mvcc_timestamp:29 subways.tableoid:30\n      │    │    ├── key: (13)\n      │    │    └── fd: (13)--\u003e(14-30)\n      │    └── filters\n      │         └── st_contains(blocks.geom:10, subways.geom:28) [outer=(10,28), immutable, constraints=(/10: (/NULL - ]; /28: (/NULL - ])]\n      └── filters\n           └── name:16 = 'Broad St' [outer=(16), constraints=(/16: [/'Broad St' - /'Broad St']; tight), fd=()--\u003e(16)]\n",
+    "project\n ├── columns: blkid:2\n ├── immutable\n └── inner-join (cross)\n      ├── columns: blkid:2 blocks.geom:10!null name:16!null subways.geom:28!null\n      ├── immutable\n      ├── fd: ()--\u003e(16)\n      ├── scan nyc_census_blocks [as=blocks]\n      │    └── columns: blkid:2 blocks.geom:10\n      ├── select\n      │    ├── columns: name:16!null subways.geom:28\n      │    ├── fd: ()--\u003e(16)\n      │    ├── scan nyc_subway_stations [as=subways]\n      │    │    └── columns: name:16 subways.geom:28\n      │    └── filters\n      │         └── name:16 = 'Broad St' [outer=(16), constraints=(/16: [/'Broad St' - /'Broad St']; tight), fd=()--\u003e(16)]\n      └── filters\n           └── st_contains(blocks.geom:10, subways.geom:28) [outer=(10,28), immutable, constraints=(/10: (/NULL - ]; /28: (/NULL - ])]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 15,
+                      "type": "VARCHAR"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'Broad St'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 9,
+                              "type": "GEOMETRY"
+                            },
+                            {
+                              "column": 27,
+                              "type": "GEOMETRY"
+                            }
+                          ],
+                          "operator": "SCALAR LIST",
+                          "type": "ANYELEMENT"
+                        }
+                      ],
+                      "operator": "FUNCTION",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "scan": 1
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "VARCHAR"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "GEOMETRY"
+                        },
+                        {
+                          "column": 3,
+                          "type": "GEOMETRY"
+                        }
+                      ],
+                      "operator": "SCALAR LIST",
+                      "type": "ANYELEMENT"
+                    }
+                  ],
+                  "operator": "FUNCTION",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "VARCHAR"
+                  },
+                  {
+                    "column": 9,
+                    "type": "GEOMETRY"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "VARCHAR"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'Broad St'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 1
+                    },
+                    "target": [
+                      {
+                        "column": 3,
+                        "type": "VARCHAR"
+                      },
+                      {
+                        "column": 15,
+                        "type": "GEOMETRY"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "VARCHAR"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "VARCHAR",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "FLOAT",
+        "VARCHAR",
+        "GEOMETRY",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "DECIMAL",
+        "DECIMAL",
+        "VARCHAR",
+        "VARCHAR",
+        "VARCHAR",
+        "VARCHAR",
+        "VARCHAR",
+        "VARCHAR",
+        "VARCHAR",
+        "VARCHAR",
+        "VARCHAR",
+        "VARCHAR",
+        "VARCHAR",
+        "VARCHAR",
+        "GEOMETRY",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

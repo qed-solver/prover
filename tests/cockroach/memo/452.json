@@ -1,0 +1,70 @@
+{
+  "help": [
+    "project\n ├── columns: x:1(int!null) y:2(int)\n ├── cardinality: [0 - 0]\n ├── stats: [rows=0]\n ├── key: (1)\n ├── fd: (1)--\u003e(2)\n └── select\n      ├── columns: x:1(int!null) y:2(int) crdb_internal_mvcc_timestamp:3(decimal) tableoid:4(oid)\n      ├── cardinality: [0 - 0]\n      ├── stats: [rows=0]\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-4)\n      ├── scan a\n      │    ├── columns: x:1(int!null) y:2(int) crdb_internal_mvcc_timestamp:3(decimal) tableoid:4(oid)\n      │    ├── stats: [rows=4000]\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-4)\n      └── filters\n           └── false [type=bool, constraints=(contradiction; tight)]\n",
+    "values\n ├── columns: x:1(int!null) y:2(int!null)\n ├── cardinality: [0 - 0]\n ├── stats: [rows=0]\n ├── key: ()\n └── fd: ()--\u003e(1,2)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [],
+                  "operator": "FALSE",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "values": {
+        "content": [],
+        "schema": [
+          "INT",
+          "INT"
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

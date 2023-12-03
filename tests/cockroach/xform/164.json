@@ -1,0 +1,106 @@
+{
+  "help": [
+    "sort\n ├── columns: x:1!null y:2!null z:3 s:4!null\n ├── key: (1,2)\n ├── fd: (1,2)--\u003e(3,4)\n ├── ordering: -2\n └── project\n      ├── columns: x:1!null y:2!null z:3 s:4!null\n      ├── key: (1,2)\n      ├── fd: (1,2)--\u003e(3,4)\n      └── scan a\n           ├── columns: x:1!null y:2!null z:3 s:4!null crdb_internal_mvcc_timestamp:5 tableoid:6\n           ├── key: (1,2)\n           └── fd: (1,2)--\u003e(3-6)\n",
+    "sort\n ├── columns: x:1!null y:2!null z:3 s:4!null\n ├── key: (1,2)\n ├── fd: (1,2)--\u003e(3,4)\n ├── ordering: -2\n └── scan a\n      ├── columns: x:1!null y:2!null z:3 s:4!null\n      ├── key: (1,2)\n      └── fd: (1,2)--\u003e(3,4)\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [
+          [
+            1,
+            "FLOAT",
+            "DESCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "column": 2,
+                "type": "DECIMAL"
+              },
+              {
+                "column": 3,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [
+          [
+            1,
+            "FLOAT",
+            "DESCENDING"
+          ]
+        ],
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "column": 2,
+                "type": "DECIMAL"
+              },
+              {
+                "column": 3,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0,
+          1
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "FLOAT",
+        "DECIMAL",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

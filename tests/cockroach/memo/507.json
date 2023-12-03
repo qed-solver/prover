@@ -1,0 +1,125 @@
+{
+  "help": [
+    "project\n ├── columns: user_id:1(uuid!null) name:2(varchar) created:3(timestamptz!null)\n ├── stats: [rows=1.000001]\n ├── fd: ()--\u003e(3)\n └── select\n      ├── columns: user_id:1(uuid!null) name:2(varchar) created:3(timestamptz!null) rowid:4(int!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      ├── stats: [rows=1.000001, distinct(3)=1, null(3)=0]\n      │   histogram(3)=  0             1\n      │                \u003c--- '2020-04-11 06:25:41+00'\n      ├── key: (4)\n      ├── fd: ()--\u003e(3), (4)--\u003e(1,2,5,6)\n      ├── scan data\n      │    ├── columns: user_id:1(uuid!null) name:2(varchar) created:3(timestamptz) rowid:4(int!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n      │    ├── stats: [rows=10000, distinct(1)=1000, null(1)=0, distinct(3)=10000, null(3)=0, distinct(4)=10000, null(4)=0]\n      │    │   histogram(1)=  0                    1                     4998                    1                     4999                    1\n      │    │                \u003c--- '3b57b3e4-a68a-9b47-2752-e365d7d8954e' ------ '6b49a786-387b-d5a2-6582-4e963eb4d537' ------ 'd9739a48-d5be-9a62-e752-34d877e56ba5'\n      │    │   histogram(3)=  0             1              4998             1              4999             1\n      │    │                \u003c--- '2020-02-11 07:25:00+00' ------ '2020-03-21 06:45:41+00' ------ '2020-04-21 06:25:41+00'\n      │    ├── key: (4)\n      │    └── fd: (4)--\u003e(1-3,5,6)\n      └── filters\n           └── created:3 = '2020-04-11 06:25:41+00' [type=bool, outer=(3), constraints=(/3: [/'2020-04-11 06:25:41+00' - /'2020-04-11 06:25:41+00']; tight), fd=()--\u003e(3)]\n",
+    "select\n ├── columns: user_id:1(uuid!null) name:2(varchar) created:3(timestamptz!null)\n ├── stats: [rows=1.000001, distinct(3)=1, null(3)=0]\n │   histogram(3)=  0             1\n │                \u003c--- '2020-04-11 06:25:41+00'\n ├── fd: ()--\u003e(3)\n ├── scan data\n │    ├── columns: user_id:1(uuid!null) name:2(varchar) created:3(timestamptz)\n │    └── stats: [rows=10000, distinct(1)=1000, null(1)=0, distinct(3)=10000, null(3)=0]\n │        histogram(1)=  0                    1                     4998                    1                     4999                    1\n │                     \u003c--- '3b57b3e4-a68a-9b47-2752-e365d7d8954e' ------ '6b49a786-387b-d5a2-6582-4e963eb4d537' ------ 'd9739a48-d5be-9a62-e752-34d877e56ba5'\n │        histogram(3)=  0             1              4998             1              4999             1\n │                     \u003c--- '2020-02-11 07:25:00+00' ------ '2020-03-21 06:45:41+00' ------ '2020-04-21 06:25:41+00'\n └── filters\n      └── created:3 = '2020-04-11 06:25:41+00' [type=bool, outer=(3), constraints=(/3: [/'2020-04-11 06:25:41+00' - /'2020-04-11 06:25:41+00']; tight), fd=()--\u003e(3)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "TIMESTAMPTZ"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'2020-04-11 06:25:41+00'",
+                      "type": "TIMESTAMPTZ"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "UUID"
+          },
+          {
+            "column": 1,
+            "type": "VARCHAR"
+          },
+          {
+            "column": 2,
+            "type": "TIMESTAMPTZ"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 2,
+                  "type": "TIMESTAMPTZ"
+                },
+                {
+                  "operand": [],
+                  "operator": "'2020-04-11 06:25:41+00'",
+                  "type": "TIMESTAMPTZ"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "UUID"
+              },
+              {
+                "column": 1,
+                "type": "VARCHAR"
+              },
+              {
+                "column": 2,
+                "type": "TIMESTAMPTZ"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          3
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "UUID",
+        "VARCHAR",
+        "TIMESTAMPTZ",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

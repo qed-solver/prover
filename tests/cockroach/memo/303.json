@@ -1,0 +1,126 @@
+{
+  "help": [
+    "full-join (cross)\n ├── columns: \"?column?\":1(int) \"?column?\":2(int)\n ├── cardinality: [1 - 1]\n ├── multiplicity: left-rows(exactly-one), right-rows(exactly-one)\n ├── stats: [rows=1]\n ├── project\n │    ├── columns: \"?column?\":1(int!null)\n │    ├── cardinality: [0 - 0]\n │    ├── stats: [rows=0]\n │    ├── key: ()\n │    ├── fd: ()--\u003e(1)\n │    ├── select\n │    │    ├── cardinality: [0 - 0]\n │    │    ├── stats: [rows=0]\n │    │    ├── key: ()\n │    │    ├── values\n │    │    │    ├── cardinality: [1 - 1]\n │    │    │    ├── stats: [rows=1]\n │    │    │    ├── key: ()\n │    │    │    └── () [type=tuple]\n │    │    └── filters\n │    │         └── false [type=bool, constraints=(contradiction; tight)]\n │    └── projections\n │         └── 1 [as=\"?column?\":1, type=int]\n ├── project\n │    ├── columns: \"?column?\":2(int!null)\n │    ├── cardinality: [1 - 1]\n │    ├── stats: [rows=1]\n │    ├── key: ()\n │    ├── fd: ()--\u003e(2)\n │    ├── values\n │    │    ├── cardinality: [1 - 1]\n │    │    ├── stats: [rows=1]\n │    │    ├── key: ()\n │    │    └── () [type=tuple]\n │    └── projections\n │         └── 1 [as=\"?column?\":2, type=int]\n └── filters\n      └── true [type=bool]\n",
+    "left-join (cross)\n ├── columns: \"?column?\":1(int) \"?column?\":2(int!null)\n ├── cardinality: [1 - 1]\n ├── multiplicity: left-rows(exactly-one), right-rows(exactly-one)\n ├── stats: [rows=1]\n ├── key: ()\n ├── fd: ()--\u003e(1,2)\n ├── values\n │    ├── columns: \"?column?\":2(int!null)\n │    ├── cardinality: [1 - 1]\n │    ├── stats: [rows=1]\n │    ├── key: ()\n │    ├── fd: ()--\u003e(2)\n │    └── (1,) [type=tuple{int}]\n ├── values\n │    ├── columns: \"?column?\":1(int!null)\n │    ├── cardinality: [0 - 0]\n │    ├── stats: [rows=0]\n │    ├── key: ()\n │    └── fd: ()--\u003e(1)\n └── filters (true)\n"
+  ],
+  "queries": [
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [],
+              "operator": "TRUE",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "FULL",
+        "left": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [],
+                      "operator": "FALSE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "values": {
+                    "content": [
+                      []
+                    ],
+                    "schema": []
+                  }
+                }
+              }
+            },
+            "target": [
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "values": {
+                "content": [
+                  []
+                ],
+                "schema": []
+              }
+            },
+            "target": [
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "LEFT",
+            "left": {
+              "values": {
+                "content": [
+                  [
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "INT"
+                    }
+                  ]
+                ],
+                "schema": [
+                  "INT"
+                ]
+              }
+            },
+            "right": {
+              "values": {
+                "content": [],
+                "schema": [
+                  "INT"
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": []
+}

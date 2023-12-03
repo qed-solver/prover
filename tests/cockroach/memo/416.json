@@ -1,0 +1,263 @@
+{
+  "help": [
+    "project\n ├── columns: a:1(int) b:2(date!null) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string)\n ├── stats: [rows=24]\n └── select\n      ├── columns: a:1(int) b:2(date!null) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string) rowid:8(int!null) crdb_internal_mvcc_timestamp:9(decimal) tableoid:10(oid)\n      ├── stats: [rows=24, distinct(2)=3.9, null(2)=0]\n      │   histogram(2)=  0       0        18       6\n      │                \u003c--- '2018-07-31' ---- '2018-08-04'\n      ├── key: (8)\n      ├── fd: (8)--\u003e(1-7,9,10)\n      ├── scan hist\n      │    ├── columns: a:1(int) b:2(date) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string) rowid:8(int!null) crdb_internal_mvcc_timestamp:9(decimal) tableoid:10(oid)\n      │    ├── stats: [rows=1000, distinct(2)=120, null(2)=0, distinct(8)=1000, null(8)=0]\n      │    │   histogram(2)=  0       0        90       10       180       20       270       30       360       40\n      │    │                \u003c--- '2018-06-30' ---- '2018-07-31' ----- '2018-08-31' ----- '2018-09-30' ----- '2018-10-31'\n      │    ├── key: (8)\n      │    └── fd: (8)--\u003e(1-7,9,10)\n      └── filters\n           └── (b:2 \u003e '2018-07-31') AND (b:2 \u003c '2018-08-05') [type=bool, outer=(2), constraints=(/2: [/'2018-08-01' - /'2018-08-04']; tight)]\n",
+    "index-join hist\n ├── columns: a:1(int) b:2(date!null) c:3(decimal) d:4(float) e:5(timestamp) f:6(timestamptz) g:7(string)\n ├── stats: [rows=24, distinct(2)=3.9, null(2)=0]\n │   histogram(2)=  0       0        18       6\n │                \u003c--- '2018-07-31' ---- '2018-08-04'\n └── scan hist@idx_b\n      ├── columns: b:2(date!null) rowid:8(int!null)\n      ├── constraint: /2/8: [/'2018-08-01' - /'2018-08-04']\n      ├── stats: [rows=24, distinct(2)=3.9, null(2)=0]\n      │   histogram(2)=  0       0        18       6\n      │                \u003c--- '2018-07-31' ---- '2018-08-04'\n      ├── key: (8)\n      └── fd: (8)--\u003e(2)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "DATE"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'2018-07-31'",
+                          "type": "DATE"
+                        }
+                      ],
+                      "operator": "GT",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "DATE"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'2018-08-05'",
+                          "type": "DATE"
+                        }
+                      ],
+                      "operator": "LT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "DATE"
+          },
+          {
+            "column": 2,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 3,
+            "type": "FLOAT"
+          },
+          {
+            "column": 4,
+            "type": "TIMESTAMP"
+          },
+          {
+            "column": 5,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "column": 6,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "DATE"
+                    },
+                    {
+                      "column": 3,
+                      "type": "DATE"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 9,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "\u003c=\u003e",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "'2018-08-01'",
+                              "type": "DATE"
+                            },
+                            {
+                              "column": 0,
+                              "type": "DATE"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "DATE"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "'2018-08-04'",
+                              "type": "DATE"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 1,
+                        "type": "DATE"
+                      },
+                      {
+                        "column": 7,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 0,
+            "type": "DATE"
+          },
+          {
+            "column": 4,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 5,
+            "type": "FLOAT"
+          },
+          {
+            "column": 6,
+            "type": "TIMESTAMP"
+          },
+          {
+            "column": 7,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "column": 8,
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          7
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "DATE",
+        "DECIMAL",
+        "FLOAT",
+        "TIMESTAMP",
+        "TIMESTAMPTZ",
+        "STRING",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "help": [
+    "project\n ├── columns: s:1!null\n ├── key: (1)\n └── select\n      ├── columns: s:1!null crdb_internal_mvcc_timestamp:2 tableoid:3\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2,3)\n      ├── scan x\n      │    ├── columns: s:1!null crdb_internal_mvcc_timestamp:2 tableoid:3\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2,3)\n      └── filters\n           └── s:1 \u003c 'hello' COLLATE en_u_ks_level1 [outer=(1), constraints=(/1: (/NULL - ])]\n",
+    "scan x\n ├── columns: s:1!null\n ├── constraint: /1: [ - /'hello' COLLATE en_u_ks_level1)\n └── key: (1)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "COLLATEDSTRING{EN_U_KS_LEVEL1}"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "'hello'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "COLLATE",
+                      "type": "COLLATEDSTRING{EN_U_KS_LEVEL1}"
+                    }
+                  ],
+                  "operator": "LT",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "COLLATEDSTRING{EN_U_KS_LEVEL1}"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "COLLATEDSTRING{EN_U_KS_LEVEL1}"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'hello' COLLATE en_u_ks_level1",
+                      "type": "COLLATEDSTRING{EN_U_KS_LEVEL1}"
+                    }
+                  ],
+                  "operator": "\u003c=",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            }
+          ],
+          "operator": "OR",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "COLLATEDSTRING{EN_U_KS_LEVEL1}"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "COLLATEDSTRING{EN_U_KS_LEVEL1}",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

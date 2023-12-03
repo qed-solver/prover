@@ -1,0 +1,153 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null a:2 u:3\n ├── immutable\n ├── key: (1)\n ├── fd: (1)--\u003e(2,3)\n └── select\n      ├── columns: k:1!null a:2 u:3 crdb_internal_mvcc_timestamp:4 tableoid:5\n      ├── immutable\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-5)\n      ├── scan c\n      │    ├── columns: k:1!null a:2 u:3 crdb_internal_mvcc_timestamp:4 tableoid:5\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-5)\n      └── filters\n           └── a:2 \u003c@ ARRAY[2] [outer=(2), immutable]\n",
+    "select\n ├── columns: k:1!null a:2 u:3\n ├── immutable\n ├── key: (1)\n ├── fd: (1)--\u003e(2,3)\n ├── scan c\n │    ├── columns: k:1!null a:2 u:3\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2,3)\n └── filters\n      └── a:2 \u003c@ ARRAY[2] [outer=(2), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT[]"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "ARRAY[2]",
+                      "type": "INT[]"
+                    }
+                  ],
+                  "operator": "CONTAINED BY",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT[]"
+                  },
+                  {
+                    "column": 2,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 3,
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "column": 4,
+                    "type": "OID"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT[]"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 1,
+                  "type": "INT[]"
+                },
+                {
+                  "operand": [],
+                  "operator": "ARRAY[2]",
+                  "type": "INT[]"
+                }
+              ],
+              "operator": "CONTAINED BY",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT[]"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "types": [
+        "INT",
+        "INT[]",
+        "INT",
+        "DECIMAL",
+        "OID",
+        "ENCODEDKEY",
+        "ENCODEDKEY"
+      ]
+    }
+  ]
+}

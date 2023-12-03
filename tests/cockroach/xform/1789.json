@@ -1,0 +1,229 @@
+{
+  "help": [
+    "limit\n ├── columns: ycsb_key:1!null field0:2 field1:3 field2:4 field3:5 field4:6 field5:7 field6:8 field7:9 field8:10 field9:11\n ├── cardinality: [0 - 321]\n ├── key: (1)\n ├── fd: (1)--\u003e(2-11)\n ├── project\n │    ├── columns: ycsb_key:1!null field0:2 field1:3 field2:4 field3:5 field4:6 field5:7 field6:8 field7:9 field8:10 field9:11\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2-11)\n │    ├── limit hint: 321.00\n │    └── select\n │         ├── columns: ycsb_key:1!null field0:2 field1:3 field2:4 field3:5 field4:6 field5:7 field6:8 field7:9 field8:10 field9:11 crdb_internal_mvcc_timestamp:12 tableoid:13\n │         ├── key: (1)\n │         ├── fd: (1)--\u003e(2-13)\n │         ├── limit hint: 321.00\n │         ├── scan usertable\n │         │    ├── columns: ycsb_key:1!null field0:2 field1:3 field2:4 field3:5 field4:6 field5:7 field6:8 field7:9 field8:10 field9:11 crdb_internal_mvcc_timestamp:12 tableoid:13\n │         │    ├── key: (1)\n │         │    ├── fd: (1)--\u003e(2-13)\n │         │    └── limit hint: 963.00\n │         └── filters\n │              └── ycsb_key:1 \u003e= 'user123' [outer=(1), constraints=(/1: [/'user123' - ]; tight)]\n └── 321\n",
+    "scan usertable\n ├── columns: ycsb_key:1!null field0:2 field1:3 field2:4 field3:5 field4:6 field5:7 field6:8 field7:9 field8:10 field9:11\n ├── constraint: /1: [/'user123' - ]\n ├── limit: 321\n ├── key: (1)\n └── fd: (1)--\u003e(2-11)\n"
+  ],
+  "queries": [
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "321",
+          "type": "INT"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "VARCHAR"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'user123'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "GE",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "scan": 0
+                }
+              }
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "VARCHAR"
+              },
+              {
+                "column": 1,
+                "type": "STRING"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              },
+              {
+                "column": 3,
+                "type": "STRING"
+              },
+              {
+                "column": 4,
+                "type": "STRING"
+              },
+              {
+                "column": 5,
+                "type": "STRING"
+              },
+              {
+                "column": 6,
+                "type": "STRING"
+              },
+              {
+                "column": 7,
+                "type": "STRING"
+              },
+              {
+                "column": 8,
+                "type": "STRING"
+              },
+              {
+                "column": 9,
+                "type": "STRING"
+              },
+              {
+                "column": 10,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sort": {
+        "collation": [],
+        "limit": {
+          "operand": [],
+          "operator": "321",
+          "type": "INTEGER"
+        },
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "'user123'",
+                          "type": "VARCHAR"
+                        },
+                        {
+                          "column": 0,
+                          "type": "VARCHAR"
+                        }
+                      ],
+                      "operator": "\u003c=",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "OR",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "VARCHAR"
+                  },
+                  {
+                    "column": 1,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 2,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 3,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 4,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 5,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 6,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 7,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 8,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 9,
+                    "type": "STRING"
+                  },
+                  {
+                    "column": 10,
+                    "type": "STRING"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "VARCHAR",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

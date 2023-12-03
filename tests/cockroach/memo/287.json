@@ -1,0 +1,318 @@
+{
+  "help": [
+    "project\n ├── columns: count:12(int!null)\n ├── immutable\n ├── stats: [rows=397.4828]\n └── group-by (hash)\n      ├── columns: y:2(int) count_rows:12(int!null)\n      ├── grouping columns: y:2(int)\n      ├── immutable\n      ├── stats: [rows=397.4828, distinct(2)=397.483, null(2)=0]\n      ├── key: (2)\n      ├── fd: (2)--\u003e(12)\n      ├── project\n      │    ├── columns: y:2(int)\n      │    ├── immutable\n      │    ├── stats: [rows=1666.667, distinct(2)=397.483, null(2)=0]\n      │    └── project\n      │         ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null)\n      │         ├── immutable\n      │         ├── stats: [rows=1666.667, distinct(2)=397.483, null(2)=0]\n      │         ├── key: (1)\n      │         ├── fd: (1)--\u003e(2-4), (3,4)~~\u003e(1,2)\n      │         └── select\n      │              ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) xysd.crdb_internal_mvcc_timestamp:5(decimal) xysd.tableoid:6(oid)\n      │              ├── immutable\n      │              ├── stats: [rows=1666.667, distinct(2)=397.483, null(2)=0]\n      │              ├── key: (1)\n      │              ├── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6)\n      │              ├── scan xysd\n      │              │    ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) xysd.crdb_internal_mvcc_timestamp:5(decimal) xysd.tableoid:6(oid)\n      │              │    ├── stats: [rows=5000, distinct(2)=400, null(2)=0, distinct(4)=500, null(4)=0]\n      │              │    ├── key: (1)\n      │              │    └── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6)\n      │              └── filters\n      │                   └── exists [type=bool, outer=(1,2), immutable, correlated-subquery]\n      │                        └── project\n      │                             ├── columns: u:7(int!null) v:8(int!null)\n      │                             ├── outer: (1,2)\n      │                             ├── immutable\n      │                             ├── stats: [rows=3333.333]\n      │                             └── select\n      │                                  ├── columns: u:7(int!null) v:8(int!null) rowid:9(int!null) uv.crdb_internal_mvcc_timestamp:10(decimal) uv.tableoid:11(oid)\n      │                                  ├── outer: (1,2)\n      │                                  ├── immutable\n      │                                  ├── stats: [rows=3333.333, distinct(1)=1, null(1)=0, distinct(7)=500, null(7)=0]\n      │                                  ├── key: (9)\n      │                                  ├── fd: (9)--\u003e(7,8,10,11)\n      │                                  ├── scan uv\n      │                                  │    ├── columns: u:7(int) v:8(int!null) rowid:9(int!null) uv.crdb_internal_mvcc_timestamp:10(decimal) uv.tableoid:11(oid)\n      │                                  │    ├── stats: [rows=10000, distinct(7)=500, null(7)=0, distinct(9)=10000, null(9)=0]\n      │                                  │    ├── key: (9)\n      │                                  │    └── fd: (9)--\u003e(7,8,10,11)\n      │                                  └── filters\n      │                                       └── (x:1 = u:7) AND ((y:2 + v:8) = 5) [type=bool, outer=(1,2,7,8), immutable, constraints=(/1: (/NULL - ]; /7: (/NULL - ])]\n      └── aggregations\n           └── count-rows [as=count_rows:12, type=int]\n",
+    "project\n ├── columns: count:12(int!null)\n ├── immutable\n ├── stats: [rows=138.1701]\n └── group-by (hash)\n      ├── columns: y:2(int) count_rows:12(int!null)\n      ├── grouping columns: y:2(int)\n      ├── immutable\n      ├── stats: [rows=138.1701, distinct(2)=138.17, null(2)=0]\n      ├── key: (2)\n      ├── fd: (2)--\u003e(12)\n      ├── semi-join (hash)\n      │    ├── columns: x:1(int!null) y:2(int)\n      │    ├── immutable\n      │    ├── stats: [rows=166.6667, distinct(1)=166.667, null(1)=0, distinct(2)=138.17, null(2)=0]\n      │    ├── key: (1)\n      │    ├── fd: (1)--\u003e(2)\n      │    ├── scan xysd\n      │    │    ├── columns: x:1(int!null) y:2(int)\n      │    │    ├── stats: [rows=5000, distinct(1)=5000, null(1)=0, distinct(2)=400, null(2)=0]\n      │    │    ├── key: (1)\n      │    │    └── fd: (1)--\u003e(2)\n      │    ├── scan uv\n      │    │    ├── columns: u:7(int) v:8(int!null)\n      │    │    └── stats: [rows=10000, distinct(7)=500, null(7)=0, distinct(8)=100, null(8)=0]\n      │    └── filters\n      │         ├── x:1 = u:7 [type=bool, outer=(1,7), constraints=(/1: (/NULL - ]; /7: (/NULL - ]), fd=(1)==(7), (7)==(1)]\n      │         └── (y:2 + v:8) = 5 [type=bool, outer=(2,8), immutable]\n      └── aggregations\n           └── count-rows [as=count_rows:12, type=int]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [],
+                "operator": "COUNT ROWS",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "project": {
+                    "source": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "EXISTS",
+                              "query": {
+                                "project": {
+                                  "source": {
+                                    "filter": {
+                                      "condition": {
+                                        "operand": [
+                                          {
+                                            "operand": [
+                                              {
+                                                "operand": [
+                                                  {
+                                                    "column": 0,
+                                                    "type": "INT"
+                                                  },
+                                                  {
+                                                    "column": 6,
+                                                    "type": "INT"
+                                                  }
+                                                ],
+                                                "operator": "EQ",
+                                                "type": "BOOL"
+                                              },
+                                              {
+                                                "operand": [
+                                                  {
+                                                    "operand": [
+                                                      {
+                                                        "column": 1,
+                                                        "type": "INT"
+                                                      },
+                                                      {
+                                                        "column": 7,
+                                                        "type": "INT"
+                                                      }
+                                                    ],
+                                                    "operator": "PLUS",
+                                                    "type": "INT"
+                                                  },
+                                                  {
+                                                    "operand": [],
+                                                    "operator": "5",
+                                                    "type": "INT"
+                                                  }
+                                                ],
+                                                "operator": "EQ",
+                                                "type": "BOOL"
+                                              }
+                                            ],
+                                            "operator": "AND",
+                                            "type": "BOOL"
+                                          }
+                                        ],
+                                        "operator": "AND",
+                                        "type": "BOOLEAN"
+                                      },
+                                      "source": {
+                                        "scan": 1
+                                      }
+                                    }
+                                  },
+                                  "target": [
+                                    {
+                                      "column": 6,
+                                      "type": "INT"
+                                    },
+                                    {
+                                      "column": 7,
+                                      "type": "INT"
+                                    }
+                                  ]
+                                }
+                              },
+                              "type": "BOOLEAN"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "scan": 0
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 3,
+                        "type": "DECIMAL"
+                      }
+                    ]
+                  }
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [],
+                "operator": "COUNT ROWS",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 3,
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "PLUS",
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "5",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "SEMI",
+                "left": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                },
+                "right": {
+                  "project": {
+                    "source": {
+                      "scan": 1
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

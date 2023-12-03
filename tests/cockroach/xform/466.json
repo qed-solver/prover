@@ -1,0 +1,239 @@
+{
+  "help": [
+    "project\n ├── columns: a:1(int) b:2(int) c:3(int)\n ├── stats: [rows=33.33333]\n ├── cost: 11102.6067\n ├── prune: (1-3)\n └── select\n      ├── columns: t.public.abc.a:1(int) t.public.abc.b:2(int) t.public.abc.c:3(int) t.public.abc.rowid:4(int!null) t.public.abc.crdb_internal_mvcc_timestamp:5(decimal) t.public.abc.tableoid:6(oid)\n      ├── stats: [rows=33.33333]\n      ├── cost: 11102.2533\n      ├── key: (4)\n      ├── fd: (4)--\u003e(1-3,5,6)\n      ├── scan t.public.abc\n      │    ├── columns: t.public.abc.a:1(int) t.public.abc.b:2(int) t.public.abc.c:3(int) t.public.abc.rowid:4(int!null) t.public.abc.crdb_internal_mvcc_timestamp:5(decimal) t.public.abc.tableoid:6(oid)\n      │    ├── stats: [rows=100, distinct(4)=100, null(4)=0]\n      │    ├── cost: 139.02\n      │    ├── key: (4)\n      │    ├── fd: (4)--\u003e(1-3,5,6)\n      │    └── prune: (1-6)\n      └── filters\n           └── exists [type=bool, outer=(1,3), correlated-subquery]\n                └── project\n                     ├── columns: t.public.def.d:7(int!null) t.public.def.e:8(int!null) t.public.def.f:9(int)\n                     ├── outer: (1,3)\n                     ├── stats: [rows=3333.333]\n                     ├── cost: 10962.2033\n                     ├── key: (7,8)\n                     ├── fd: (7,8)--\u003e(9)\n                     └── select\n                          ├── columns: t.public.def.d:7(int!null) t.public.def.e:8(int!null) t.public.def.f:9(int) t.public.def.crdb_internal_mvcc_timestamp:10(decimal) t.public.def.tableoid:11(oid)\n                          ├── outer: (1,3)\n                          ├── stats: [rows=3333.333, distinct(1)=1, null(1)=0, distinct(3)=1, null(3)=0, distinct(7)=3333.33, null(7)=0, distinct(8)=3333.33, null(8)=0]\n                          ├── cost: 10928.85\n                          ├── key: (7,8)\n                          ├── fd: (7,8)--\u003e(9-11)\n                          ├── scan t.public.def\n                          │    ├── columns: t.public.def.d:7(int!null) t.public.def.e:8(int!null) t.public.def.f:9(int) t.public.def.crdb_internal_mvcc_timestamp:10(decimal) t.public.def.tableoid:11(oid)\n                          │    ├── stats: [rows=10000, distinct(7)=10000, null(7)=0, distinct(8)=10000, null(8)=0]\n                          │    ├── cost: 10828.82\n                          │    ├── key: (7,8)\n                          │    ├── fd: (7,8)--\u003e(9-11)\n                          │    └── prune: (7-11)\n                          └── filters\n                               └── and [type=bool, outer=(1,3,7,8), constraints=(/1: (/NULL - ]; /3: (/NULL - ]; /7: (/NULL - ]; /8: (/NULL - ])]\n                                    ├── eq [type=bool]\n                                    │    ├── variable: t.public.abc.a:1 [type=int]\n                                    │    └── variable: t.public.def.d:7 [type=int]\n                                    └── eq [type=bool]\n                                         ├── variable: t.public.abc.c:3 [type=int]\n                                         └── variable: t.public.def.e:8 [type=int]\n",
+    "semi-join (lookup t.public.def)\n ├── columns: a:1(int) b:2(int) c:3(int)\n ├── key columns: [1 3] = [7 8]\n ├── lookup columns are key\n ├── stats: [rows=100, distinct(1)=100, null(1)=0, distinct(3)=10, null(3)=0]\n ├── cost: 539.760394\n ├── prune: (2)\n ├── scan t.public.abc\n │    ├── columns: t.public.abc.a:1(int) t.public.abc.b:2(int) t.public.abc.c:3(int)\n │    ├── stats: [rows=100, distinct(1)=100, null(1)=0, distinct(3)=10, null(3)=1]\n │    ├── cost: 135.72\n │    ├── prune: (1-3)\n │    ├── interesting orderings: (+1,+2) (+2,+3)\n │    └── unfiltered-cols: (1-6)\n └── filters (true)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [],
+                  "operator": "EXISTS",
+                  "query": {
+                    "project": {
+                      "source": {
+                        "filter": {
+                          "condition": {
+                            "operand": [
+                              {
+                                "operand": [
+                                  {
+                                    "operand": [
+                                      {
+                                        "column": 0,
+                                        "type": "INT"
+                                      },
+                                      {
+                                        "column": 6,
+                                        "type": "INT"
+                                      }
+                                    ],
+                                    "operator": "EQ",
+                                    "type": "BOOL"
+                                  },
+                                  {
+                                    "operand": [
+                                      {
+                                        "column": 2,
+                                        "type": "INT"
+                                      },
+                                      {
+                                        "column": 7,
+                                        "type": "INT"
+                                      }
+                                    ],
+                                    "operator": "EQ",
+                                    "type": "BOOL"
+                                  }
+                                ],
+                                "operator": "AND",
+                                "type": "BOOL"
+                              }
+                            ],
+                            "operator": "AND",
+                            "type": "BOOLEAN"
+                          },
+                          "source": {
+                            "scan": 1
+                          }
+                        }
+                      },
+                      "target": [
+                        {
+                          "column": 6,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 7,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 8,
+                          "type": "INT"
+                        }
+                      ]
+                    }
+                  },
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 3,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                },
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 4,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "SEMI",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 1
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          3
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0,
+          1
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

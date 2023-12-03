@@ -1,0 +1,117 @@
+{
+  "help": [
+    "project\n ├── columns: add:5\n ├── cardinality: [3 - 3]\n ├── immutable\n ├── values\n │    ├── columns: column1:1!null\n │    ├── cardinality: [3 - 3]\n │    ├── (1,)\n │    ├── (2,)\n │    └── (3,)\n └── projections\n      └── add(1, column1:1) [as=add:5, outer=(1), immutable, udf]\n",
+    "project\n ├── columns: add:5!null\n ├── cardinality: [3 - 3]\n ├── immutable\n ├── values\n │    ├── columns: column1:1!null\n │    ├── cardinality: [3 - 3]\n │    ├── (1,)\n │    ├── (2,)\n │    └── (3,)\n └── projections\n      └── column1:1 + 1 [as=add:5, outer=(1), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "values": {
+            "content": [
+              [
+                {
+                  "operand": [],
+                  "operator": "1",
+                  "type": "INT"
+                }
+              ],
+              [
+                {
+                  "operand": [],
+                  "operator": "2",
+                  "type": "INT"
+                }
+              ],
+              [
+                {
+                  "operand": [],
+                  "operator": "3",
+                  "type": "INT"
+                }
+              ]
+            ],
+            "schema": [
+              "INT"
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "operand": [],
+                    "operator": "1",
+                    "type": "INT"
+                  },
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "U D F",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "values": {
+            "content": [
+              [
+                {
+                  "operand": [],
+                  "operator": "1",
+                  "type": "INT"
+                }
+              ],
+              [
+                {
+                  "operand": [],
+                  "operator": "2",
+                  "type": "INT"
+                }
+              ],
+              [
+                {
+                  "operand": [],
+                  "operator": "3",
+                  "type": "INT"
+                }
+              ]
+            ],
+            "schema": [
+              "INT"
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": []
+}

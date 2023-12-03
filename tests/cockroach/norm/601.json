@@ -1,0 +1,121 @@
+{
+  "help": [
+    "project\n ├── columns: x:1!null y:2!null\n ├── cardinality: [0 - 1]\n ├── key: ()\n ├── fd: ()--\u003e(1,2)\n └── select\n      ├── columns: x:1!null y:2!null crdb_internal_mvcc_timestamp:3 tableoid:4\n      ├── cardinality: [0 - 1]\n      ├── key: ()\n      ├── fd: ()--\u003e(1-4)\n      ├── scan xy\n      │    ├── columns: x:1!null y:2 crdb_internal_mvcc_timestamp:3 tableoid:4\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-4)\n      └── filters\n           └── ((x:1 = y:2) AND (y:2 = 4)) AND (x:1 = 3) [outer=(1,2), constraints=(/1: [/3 - /3]; /2: [/4 - /4]), fd=()--\u003e(1,2)]\n",
+    "values\n ├── columns: x:1!null y:2!null\n ├── cardinality: [0 - 0]\n ├── key: ()\n └── fd: ()--\u003e(1,2)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "EQ",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "4",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "EQ",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "3",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "values": {
+        "content": [],
+        "schema": [
+          "INT",
+          "INT"
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

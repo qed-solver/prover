@@ -1,0 +1,88 @@
+{
+  "help": [
+    "project\n ├── columns: \"?column?\":8\n ├── immutable\n ├── scan a\n │    ├── columns: k:1!null i:2 f:3 d:4 t:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-7)\n └── projections\n      └── 1 * i:2 [as=\"?column?\":8, outer=(2), immutable]\n",
+    "project\n ├── columns: \"?column?\":8\n ├── immutable\n ├── scan a\n │    └── columns: i:2\n └── projections\n      └── i:2::DECIMAL [as=\"?column?\":8, outer=(2), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "DECIMAL"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "operator": "MULT",
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "operator": "CAST",
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "DECIMAL",
+        "TIME",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

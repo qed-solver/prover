@@ -1,0 +1,305 @@
+{
+  "help": [
+    "project\n ├── columns: sum:11!null max:12\n ├── immutable\n ├── fd: ()--\u003e(11)\n └── select\n      ├── columns: k:1!null sum:11!null max:12\n      ├── immutable\n      ├── key: (1)\n      ├── fd: ()--\u003e(11), (1)--\u003e(12)\n      ├── group-by (hash)\n      │    ├── columns: k:1!null sum:11 max:12\n      │    ├── grouping columns: k:1!null\n      │    ├── key: (1)\n      │    ├── fd: (1)--\u003e(11,12)\n      │    ├── left-join (cross)\n      │    │    ├── columns: k:1!null y:8\n      │    │    ├── project\n      │    │    │    ├── columns: k:1!null\n      │    │    │    ├── key: (1)\n      │    │    │    └── scan a\n      │    │    │         ├── columns: k:1!null i:2 f:3 s:4 a.crdb_internal_mvcc_timestamp:5 a.tableoid:6\n      │    │    │         ├── key: (1)\n      │    │    │         └── fd: (1)--\u003e(2-6)\n      │    │    ├── project\n      │    │    │    ├── columns: y:8\n      │    │    │    └── scan xy\n      │    │    │         ├── columns: x:7!null y:8 xy.crdb_internal_mvcc_timestamp:9 xy.tableoid:10\n      │    │    │         ├── key: (7)\n      │    │    │         └── fd: (7)--\u003e(8-10)\n      │    │    └── filters\n      │    │         └── true\n      │    └── aggregations\n      │         ├── agg-distinct [as=sum:11, outer=(8)]\n      │         │    └── sum\n      │         │         └── y:8\n      │         └── max [as=max:12, outer=(8)]\n      │              └── y:8\n      └── filters\n           └── sum:11 = 1 [outer=(11), immutable, constraints=(/11: [/1 - /1]; tight), fd=()--\u003e(11)]\n",
+    "project\n ├── columns: sum:11!null max:12!null\n ├── immutable\n ├── fd: ()--\u003e(11)\n └── select\n      ├── columns: k:1!null sum:11!null max:12!null\n      ├── immutable\n      ├── key: (1)\n      ├── fd: ()--\u003e(11), (1)--\u003e(12)\n      ├── group-by (hash)\n      │    ├── columns: k:1!null sum:11!null max:12!null\n      │    ├── grouping columns: k:1!null\n      │    ├── key: (1)\n      │    ├── fd: (1)--\u003e(11,12)\n      │    ├── inner-join (cross)\n      │    │    ├── columns: k:1!null y:8!null\n      │    │    ├── scan a\n      │    │    │    ├── columns: k:1!null\n      │    │    │    └── key: (1)\n      │    │    ├── select\n      │    │    │    ├── columns: y:8!null\n      │    │    │    ├── scan xy\n      │    │    │    │    └── columns: y:8\n      │    │    │    └── filters\n      │    │    │         └── y:8 IS NOT NULL [outer=(8), constraints=(/8: (/NULL - ]; tight)]\n      │    │    └── filters (true)\n      │    └── aggregations\n      │         ├── agg-distinct [as=sum:11, outer=(8)]\n      │         │    └── sum\n      │         │         └── y:8\n      │         └── max [as=max:12, outer=(8)]\n      │              └── y:8\n      └── filters\n           └── sum:11 = 1 [outer=(11), immutable, constraints=(/11: [/1 - /1]; tight), fd=()--\u003e(11)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "DECIMAL"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "DECIMAL"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": true,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "SUM",
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "MAX",
+                    "type": "INT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "source": {
+                  "join": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "TRUE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "kind": "LEFT",
+                    "left": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          }
+                        ]
+                      }
+                    },
+                    "right": {
+                      "project": {
+                        "source": {
+                          "scan": 1
+                        },
+                        "target": [
+                          {
+                            "column": 1,
+                            "type": "INT"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "DECIMAL"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "DECIMAL"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": true,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "SUM",
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "MAX",
+                    "type": "INT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "source": {
+                  "join": {
+                    "condition": {
+                      "operand": [],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "kind": "INNER",
+                    "left": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          }
+                        ]
+                      }
+                    },
+                    "right": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "NULL",
+                                  "type": "ANYELEMENT"
+                                }
+                              ],
+                              "operator": "IS NOT",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "project": {
+                            "source": {
+                              "scan": 1
+                            },
+                            "target": [
+                              {
+                                "column": 1,
+                                "type": "INT"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

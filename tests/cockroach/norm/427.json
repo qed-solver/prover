@@ -1,0 +1,107 @@
+{
+  "help": [
+    "project\n ├── columns: lpad:9\n ├── immutable\n ├── scan a\n │    ├── columns: k:1!null i:2 f:3 s:4 j:5 arr:6 crdb_internal_mvcc_timestamp:7 tableoid:8\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-8)\n └── projections\n      └── lpad(s:4, 5) [as=lpad:9, outer=(4), immutable]\n",
+    "project\n ├── columns: lpad:9\n ├── immutable\n ├── scan a\n │    └── columns: s:4\n └── projections\n      └── lpad(s:4, 5) [as=lpad:9, outer=(4), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "column": 3,
+                    "type": "STRING"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "5",
+                    "type": "INT"
+                  }
+                ],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "FUNCTION",
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 3,
+                "type": "STRING"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "STRING"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "5",
+                    "type": "INT"
+                  }
+                ],
+                "operator": "SCALAR LIST",
+                "type": "ANYELEMENT"
+              }
+            ],
+            "operator": "FUNCTION",
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "INT[]",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

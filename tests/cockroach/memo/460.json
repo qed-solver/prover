@@ -1,0 +1,211 @@
+{
+  "help": [
+    "project\n ├── columns: count:10(int!null)\n ├── stats: [rows=0.9999734]\n └── group-by (hash)\n      ├── columns: col0:2(int) count_rows:10(int!null)\n      ├── grouping columns: col0:2(int)\n      ├── stats: [rows=0.9999734, distinct(2)=0.999973, null(2)=0.999973]\n      ├── key: (2)\n      ├── fd: (2)--\u003e(10)\n      ├── project\n      │    ├── columns: col0:2(int)\n      │    ├── stats: [rows=10, distinct(2)=0.999973, null(2)=10]\n      │    └── project\n      │         ├── columns: pk:1(int!null) col0:2(int) col1:3(float) col2:4(string) col3:5(int!null) col4:6(float) col5:7(string)\n      │         ├── stats: [rows=10, distinct(2)=0.999973, null(2)=10]\n      │         ├── key: (1)\n      │         ├── fd: ()--\u003e(5), (1)--\u003e(2-4,6,7)\n      │         └── select\n      │              ├── columns: pk:1(int!null) col0:2(int) col1:3(float) col2:4(string) col3:5(int!null) col4:6(float) col5:7(string) crdb_internal_mvcc_timestamp:8(decimal) tableoid:9(oid)\n      │              ├── stats: [rows=10, distinct(2)=0.999973, null(2)=10, distinct(5)=1, null(5)=0]\n      │              ├── key: (1)\n      │              ├── fd: ()--\u003e(5), (1)--\u003e(2-4,6-9)\n      │              ├── scan tab0\n      │              │    ├── columns: pk:1(int!null) col0:2(int) col1:3(float) col2:4(string) col3:5(int) col4:6(float) col5:7(string) crdb_internal_mvcc_timestamp:8(decimal) tableoid:9(oid)\n      │              │    ├── stats: [rows=100, distinct(1)=100, null(1)=0, distinct(2)=1, null(2)=100, distinct(5)=10, null(5)=0]\n      │              │    ├── key: (1)\n      │              │    └── fd: (1)--\u003e(2-9)\n      │              └── filters\n      │                   └── col3:5 = 10 [type=bool, outer=(5), constraints=(/5: [/10 - /10]; tight), fd=()--\u003e(5)]\n      └── aggregations\n           └── count-rows [as=count_rows:10, type=int]\n",
+    "project\n ├── columns: count:10(int!null)\n ├── stats: [rows=0.9999734]\n └── group-by (hash)\n      ├── columns: col0:2(int) count_rows:10(int!null)\n      ├── grouping columns: col0:2(int)\n      ├── stats: [rows=0.9999734, distinct(2)=0.999973, null(2)=0.999973]\n      ├── key: (2)\n      ├── fd: (2)--\u003e(10)\n      ├── select\n      │    ├── columns: col0:2(int) col3:5(int!null)\n      │    ├── stats: [rows=10, distinct(2)=0.999973, null(2)=10, distinct(5)=1, null(5)=0]\n      │    ├── fd: ()--\u003e(5)\n      │    ├── scan tab0\n      │    │    ├── columns: col0:2(int) col3:5(int)\n      │    │    └── stats: [rows=100, distinct(2)=1, null(2)=100, distinct(5)=10, null(5)=0]\n      │    └── filters\n      │         └── col3:5 = 10 [type=bool, outer=(5), constraints=(/5: [/10 - /10]; tight), fd=()--\u003e(5)]\n      └── aggregations\n           └── count-rows [as=count_rows:10, type=int]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [],
+                "operator": "COUNT ROWS",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "project": {
+                    "source": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 4,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "10",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "scan": 0
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "FLOAT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 4,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 5,
+                        "type": "FLOAT"
+                      },
+                      {
+                        "column": 6,
+                        "type": "STRING"
+                      }
+                    ]
+                  }
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": false,
+                "operand": [],
+                "operator": "COUNT ROWS",
+                "type": "INT"
+              }
+            ],
+            "keys": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "10",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 4,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

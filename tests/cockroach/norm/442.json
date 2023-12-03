@@ -1,0 +1,81 @@
+{
+  "help": [
+    "project\n ├── columns: other_col:9\n ├── fd: ()--\u003e(9)\n ├── scan a\n │    ├── columns: k:1!null i:2 f:3 s:4 j:5 arr:6 crdb_internal_mvcc_timestamp:7 tableoid:8\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-8)\n └── projections\n      └── '{\"a\": 1}'['a'] [as=other_col:9]\n",
+    "project\n ├── columns: other_col:9!null\n ├── fd: ()--\u003e(9)\n ├── scan a\n └── projections\n      └── '1' [as=other_col:9]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [],
+                "operator": "'{\"a\": 1}'",
+                "type": "JSONB"
+              },
+              {
+                "operand": [],
+                "operator": "'a'",
+                "type": "STRING"
+              }
+            ],
+            "operator": "INDIRECTION",
+            "type": "JSONB"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": []
+          }
+        },
+        "target": [
+          {
+            "operand": [],
+            "operator": "'1'",
+            "type": "JSONB"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "INT[]",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

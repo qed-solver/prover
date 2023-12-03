@@ -1,0 +1,177 @@
+{
+  "help": [
+    "project\n ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) x:7(int!null) y:8(int) s:9(string) d:10(decimal!null)\n ├── key: (7)\n ├── fd: (1)--\u003e(2-4), (3,4)~~\u003e(1,2,7-10), (7)--\u003e(8-10), (9,10)~~\u003e(1-4,7,8), (1)==(7), (7)==(1)\n ├── prune: (1-4,7-10)\n └── inner-join (hash)\n      ├── columns: xysd.x:1(int!null) xysd.y:2(int) xysd.s:3(string) xysd.d:4(decimal!null) xysd.crdb_internal_mvcc_timestamp:5(decimal) xysd.tableoid:6(oid) a.x:7(int!null) a.y:8(int) a.s:9(string) a.d:10(decimal!null) a.crdb_internal_mvcc_timestamp:11(decimal) a.tableoid:12(oid)\n      ├── multiplicity: left-rows(exactly-one), right-rows(exactly-one)\n      ├── key: (7)\n      ├── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6), (7)--\u003e(8-12), (9,10)~~\u003e(7,8,11,12), (1)==(7), (7)==(1)\n      ├── scan xysd\n      │    ├── columns: xysd.x:1(int!null) xysd.y:2(int) xysd.s:3(string) xysd.d:4(decimal!null) xysd.crdb_internal_mvcc_timestamp:5(decimal) xysd.tableoid:6(oid)\n      │    ├── key: (1)\n      │    ├── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6)\n      │    ├── prune: (1-6)\n      │    └── unfiltered-cols: (1-6)\n      ├── scan xysd [as=a]\n      │    ├── columns: a.x:7(int!null) a.y:8(int) a.s:9(string) a.d:10(decimal!null) a.crdb_internal_mvcc_timestamp:11(decimal) a.tableoid:12(oid)\n      │    ├── key: (7)\n      │    ├── fd: (7)--\u003e(8-12), (9,10)~~\u003e(7,8,11,12)\n      │    ├── prune: (7-12)\n      │    └── unfiltered-cols: (7-12)\n      └── filters\n           └── eq [type=bool, outer=(1,7), constraints=(/1: (/NULL - ]; /7: (/NULL - ]), fd=(1)==(7), (7)==(1)]\n                ├── variable: xysd.x:1 [type=int]\n                └── variable: a.x:7 [type=int]\n",
+    "inner-join (hash)\n ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) x:7(int!null) y:8(int) s:9(string) d:10(decimal!null)\n ├── multiplicity: left-rows(exactly-one), right-rows(exactly-one)\n ├── key: (7)\n ├── fd: (1)--\u003e(2-4), (3,4)~~\u003e(1,2), (7)--\u003e(8-10), (9,10)~~\u003e(7,8), (1)==(7), (7)==(1)\n ├── prune: (2-4,8-10)\n ├── scan xysd\n │    ├── columns: xysd.x:1(int!null) xysd.y:2(int) xysd.s:3(string) xysd.d:4(decimal!null)\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2-4), (3,4)~~\u003e(1,2)\n │    ├── prune: (1-4)\n │    └── unfiltered-cols: (1-6)\n ├── scan xysd [as=a]\n │    ├── columns: a.x:7(int!null) a.y:8(int) a.s:9(string) a.d:10(decimal!null)\n │    ├── key: (7)\n │    ├── fd: (7)--\u003e(8-10), (9,10)~~\u003e(7,8)\n │    ├── prune: (7-10)\n │    └── unfiltered-cols: (7-12)\n └── filters\n      └── eq [type=bool, outer=(1,7), constraints=(/1: (/NULL - ]; /7: (/NULL - ]), fd=(1)==(7), (7)==(1)]\n           ├── variable: xysd.x:1 [type=int]\n           └── variable: a.x:7 [type=int]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 6,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          },
+          {
+            "column": 3,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 6,
+            "type": "INT"
+          },
+          {
+            "column": 7,
+            "type": "INT"
+          },
+          {
+            "column": 8,
+            "type": "STRING"
+          },
+          {
+            "column": 9,
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INT"
+                },
+                {
+                  "column": 4,
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "INNER",
+        "left": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              },
+              {
+                "column": 3,
+                "type": "DECIMAL"
+              }
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "STRING"
+              },
+              {
+                "column": 3,
+                "type": "DECIMAL"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

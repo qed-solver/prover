@@ -1,0 +1,519 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null i:2 f:3 s:4 j:5\n ├── key: (1)\n ├── fd: (1)--\u003e(2-5)\n └── select\n      ├── columns: k:1!null i:2 f:3 s:4 j:5 a.crdb_internal_mvcc_timestamp:6 a.tableoid:7\n      ├── key: (1)\n      ├── fd: (1)--\u003e(2-7)\n      ├── scan a\n      │    ├── columns: k:1!null i:2 f:3 s:4 j:5 a.crdb_internal_mvcc_timestamp:6 a.tableoid:7\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-7)\n      └── filters\n           └── exists [outer=(2), correlated-subquery]\n                └── project\n                     ├── columns: x:8!null y:9 count:16!null sum:17\n                     ├── outer: (2)\n                     ├── fd: (8)--\u003e(9), (8)==(16), (16)==(8)\n                     └── inner-join (hash)\n                          ├── columns: x:8!null y:9 xy.crdb_internal_mvcc_timestamp:10 xy.tableoid:11 count:16!null sum:17\n                          ├── outer: (2)\n                          ├── multiplicity: left-rows(zero-or-more), right-rows(zero-or-one)\n                          ├── fd: (8)--\u003e(9-11), (8)==(16), (16)==(8)\n                          ├── scan xy\n                          │    ├── columns: x:8!null y:9 xy.crdb_internal_mvcc_timestamp:10 xy.tableoid:11\n                          │    ├── key: (8)\n                          │    └── fd: (8)--\u003e(9-11)\n                          ├── project\n                          │    ├── columns: count:16!null sum:17\n                          │    ├── outer: (2)\n                          │    └── group-by (hash)\n                          │         ├── columns: v:13 count:16!null sum:17\n                          │         ├── grouping columns: v:13\n                          │         ├── outer: (2)\n                          │         ├── key: (13)\n                          │         ├── fd: (13)--\u003e(16,17)\n                          │         ├── project\n                          │         │    ├── columns: v:13\n                          │         │    ├── outer: (2)\n                          │         │    └── select\n                          │         │         ├── columns: u:12!null v:13 uv.crdb_internal_mvcc_timestamp:14 uv.tableoid:15\n                          │         │         ├── outer: (2)\n                          │         │         ├── key: (12)\n                          │         │         ├── fd: (12)--\u003e(13-15)\n                          │         │         ├── scan uv\n                          │         │         │    ├── columns: u:12!null v:13 uv.crdb_internal_mvcc_timestamp:14 uv.tableoid:15\n                          │         │         │    ├── key: (12)\n                          │         │         │    └── fd: (12)--\u003e(13-15)\n                          │         │         └── filters\n                          │         │              └── i:2 = 5 [outer=(2), constraints=(/2: [/5 - /5]; tight), fd=()--\u003e(2)]\n                          │         └── aggregations\n                          │              ├── agg-distinct [as=count:16, outer=(13)]\n                          │              │    └── count\n                          │              │         └── v:13\n                          │              └── sum [as=sum:17, outer=(13)]\n                          │                   └── v:13\n                          └── filters\n                               └── x:8 = count:16 [outer=(8,16), constraints=(/8: (/NULL - ]; /16: (/NULL - ]), fd=(8)==(16), (16)==(8)]\n",
+    "group-by (hash)\n ├── columns: k:1!null i:2!null f:3 s:4 j:5\n ├── grouping columns: k:1!null\n ├── key: (1)\n ├── fd: ()--\u003e(2), (1)--\u003e(2-5)\n ├── select\n │    ├── columns: k:1!null i:2!null f:3 s:4 j:5 x:8!null v:13 count:16!null\n │    ├── key: (1,8,13)\n │    ├── fd: ()--\u003e(2), (1)--\u003e(3-5), (1,8,13)--\u003e(3-5,16), (8)==(16), (16)==(8)\n │    ├── group-by (hash)\n │    │    ├── columns: k:1!null i:2!null f:3 s:4 j:5 x:8!null v:13 count:16!null\n │    │    ├── grouping columns: k:1!null x:8!null v:13\n │    │    ├── key: (1,8,13)\n │    │    ├── fd: ()--\u003e(2), (1)--\u003e(3-5), (1,8,13)--\u003e(2-5,16)\n │    │    ├── inner-join (cross)\n │    │    │    ├── columns: k:1!null i:2!null f:3 s:4 j:5 x:8!null v:13\n │    │    │    ├── fd: ()--\u003e(2), (1)--\u003e(3-5)\n │    │    │    ├── select\n │    │    │    │    ├── columns: k:1!null i:2!null f:3 s:4 j:5\n │    │    │    │    ├── key: (1)\n │    │    │    │    ├── fd: ()--\u003e(2), (1)--\u003e(3-5)\n │    │    │    │    ├── scan a\n │    │    │    │    │    ├── columns: k:1!null i:2 f:3 s:4 j:5\n │    │    │    │    │    ├── key: (1)\n │    │    │    │    │    └── fd: (1)--\u003e(2-5)\n │    │    │    │    └── filters\n │    │    │    │         └── i:2 = 5 [outer=(2), constraints=(/2: [/5 - /5]; tight), fd=()--\u003e(2)]\n │    │    │    ├── inner-join (cross)\n │    │    │    │    ├── columns: x:8!null v:13\n │    │    │    │    ├── scan xy\n │    │    │    │    │    ├── columns: x:8!null\n │    │    │    │    │    └── key: (8)\n │    │    │    │    ├── scan uv\n │    │    │    │    │    └── columns: v:13\n │    │    │    │    └── filters (true)\n │    │    │    └── filters (true)\n │    │    └── aggregations\n │    │         ├── agg-distinct [as=count:16, outer=(13)]\n │    │         │    └── count\n │    │         │         └── v:13\n │    │         ├── const-agg [as=i:2, outer=(2)]\n │    │         │    └── i:2\n │    │         ├── const-agg [as=f:3, outer=(3)]\n │    │         │    └── f:3\n │    │         ├── const-agg [as=s:4, outer=(4)]\n │    │         │    └── s:4\n │    │         └── const-agg [as=j:5, outer=(5)]\n │    │              └── j:5\n │    └── filters\n │         └── x:8 = count:16 [outer=(8,16), constraints=(/8: (/NULL - ]; /16: (/NULL - ]), fd=(8)==(16), (16)==(8)]\n └── aggregations\n      ├── const-agg [as=i:2, outer=(2)]\n      │    └── i:2\n      ├── const-agg [as=f:3, outer=(3)]\n      │    └── f:3\n      ├── const-agg [as=s:4, outer=(4)]\n      │    └── s:4\n      └── const-agg [as=j:5, outer=(5)]\n           └── j:5\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [],
+                  "operator": "EXISTS",
+                  "query": {
+                    "project": {
+                      "source": {
+                        "join": {
+                          "condition": {
+                            "operand": [
+                              {
+                                "operand": [
+                                  {
+                                    "column": 7,
+                                    "type": "INT"
+                                  },
+                                  {
+                                    "column": 11,
+                                    "type": "INT"
+                                  }
+                                ],
+                                "operator": "EQ",
+                                "type": "BOOL"
+                              }
+                            ],
+                            "operator": "AND",
+                            "type": "BOOLEAN"
+                          },
+                          "kind": "INNER",
+                          "left": {
+                            "scan": 1
+                          },
+                          "right": {
+                            "project": {
+                              "source": {
+                                "group": {
+                                  "function": [
+                                    {
+                                      "distinct": true,
+                                      "ignoreNulls": true,
+                                      "operand": [
+                                        {
+                                          "column": 7,
+                                          "type": "INT"
+                                        }
+                                      ],
+                                      "operator": "COUNT",
+                                      "type": "INT"
+                                    },
+                                    {
+                                      "distinct": false,
+                                      "ignoreNulls": true,
+                                      "operand": [
+                                        {
+                                          "column": 7,
+                                          "type": "INT"
+                                        }
+                                      ],
+                                      "operator": "SUM",
+                                      "type": "DECIMAL"
+                                    }
+                                  ],
+                                  "keys": [
+                                    {
+                                      "column": 7,
+                                      "type": "INT"
+                                    }
+                                  ],
+                                  "source": {
+                                    "project": {
+                                      "source": {
+                                        "filter": {
+                                          "condition": {
+                                            "operand": [
+                                              {
+                                                "operand": [
+                                                  {
+                                                    "column": 1,
+                                                    "type": "INT"
+                                                  },
+                                                  {
+                                                    "operand": [],
+                                                    "operator": "5",
+                                                    "type": "INT"
+                                                  }
+                                                ],
+                                                "operator": "EQ",
+                                                "type": "BOOL"
+                                              }
+                                            ],
+                                            "operator": "AND",
+                                            "type": "BOOLEAN"
+                                          },
+                                          "source": {
+                                            "scan": 2
+                                          }
+                                        }
+                                      },
+                                      "target": [
+                                        {
+                                          "column": 8,
+                                          "type": "INT"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              },
+                              "target": [
+                                {
+                                  "column": 8,
+                                  "type": "INT"
+                                },
+                                {
+                                  "column": 9,
+                                  "type": "DECIMAL"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "target": [
+                        {
+                          "column": 7,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 8,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 11,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 12,
+                          "type": "DECIMAL"
+                        }
+                      ]
+                    }
+                  },
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "FLOAT"
+          },
+          {
+            "column": 3,
+            "type": "STRING"
+          },
+          {
+            "column": 4,
+            "type": "JSONB"
+          }
+        ]
+      }
+    },
+    {
+      "group": {
+        "function": [
+          {
+            "distinct": false,
+            "ignoreNulls": false,
+            "operand": [
+              {
+                "column": 3,
+                "type": "INT"
+              }
+            ],
+            "operator": "CONST AGG",
+            "type": "INT"
+          },
+          {
+            "distinct": false,
+            "ignoreNulls": false,
+            "operand": [
+              {
+                "column": 4,
+                "type": "FLOAT"
+              }
+            ],
+            "operator": "CONST AGG",
+            "type": "FLOAT"
+          },
+          {
+            "distinct": false,
+            "ignoreNulls": false,
+            "operand": [
+              {
+                "column": 5,
+                "type": "STRING"
+              }
+            ],
+            "operator": "CONST AGG",
+            "type": "STRING"
+          },
+          {
+            "distinct": false,
+            "ignoreNulls": false,
+            "operand": [
+              {
+                "column": 6,
+                "type": "JSONB"
+              }
+            ],
+            "operator": "CONST AGG",
+            "type": "JSONB"
+          }
+        ],
+        "keys": [
+          {
+            "column": 0,
+            "type": "INT"
+          }
+        ],
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 7,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": true,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 6,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "COUNT",
+                    "type": "INT"
+                  },
+                  {
+                    "distinct": false,
+                    "ignoreNulls": false,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "CONST AGG",
+                    "type": "INT"
+                  },
+                  {
+                    "distinct": false,
+                    "ignoreNulls": false,
+                    "operand": [
+                      {
+                        "column": 2,
+                        "type": "FLOAT"
+                      }
+                    ],
+                    "operator": "CONST AGG",
+                    "type": "FLOAT"
+                  },
+                  {
+                    "distinct": false,
+                    "ignoreNulls": false,
+                    "operand": [
+                      {
+                        "column": 3,
+                        "type": "STRING"
+                      }
+                    ],
+                    "operator": "CONST AGG",
+                    "type": "STRING"
+                  },
+                  {
+                    "distinct": false,
+                    "ignoreNulls": false,
+                    "operand": [
+                      {
+                        "column": 4,
+                        "type": "JSONB"
+                      }
+                    ],
+                    "operator": "CONST AGG",
+                    "type": "JSONB"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 5,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 6,
+                    "type": "INT"
+                  }
+                ],
+                "source": {
+                  "join": {
+                    "condition": {
+                      "operand": [],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "kind": "INNER",
+                    "left": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 1,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "5",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "EQ",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "project": {
+                            "source": {
+                              "scan": 0
+                            },
+                            "target": [
+                              {
+                                "column": 0,
+                                "type": "INT"
+                              },
+                              {
+                                "column": 1,
+                                "type": "INT"
+                              },
+                              {
+                                "column": 2,
+                                "type": "FLOAT"
+                              },
+                              {
+                                "column": 3,
+                                "type": "STRING"
+                              },
+                              {
+                                "column": 4,
+                                "type": "JSONB"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "right": {
+                      "join": {
+                        "condition": {
+                          "operand": [],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "kind": "INNER",
+                        "left": {
+                          "project": {
+                            "source": {
+                              "scan": 1
+                            },
+                            "target": [
+                              {
+                                "column": 0,
+                                "type": "INT"
+                              }
+                            ]
+                          }
+                        },
+                        "right": {
+                          "project": {
+                            "source": {
+                              "scan": 2
+                            },
+                            "target": [
+                              {
+                                "column": 1,
+                                "type": "INT"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

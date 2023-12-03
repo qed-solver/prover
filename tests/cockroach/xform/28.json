@@ -1,0 +1,342 @@
+{
+  "help": [
+    "project\n ├── columns: attname:3!null atttypid:4!null typbasetype:52 typtype:34\n ├── stats: [rows=99]\n ├── cost: 3656.84625\n ├── fd: ()--\u003e(3)\n └── select\n      ├── columns: a.crdb_internal_vtable_pk:1!null attrelid:2!null attname:3!null atttypid:4!null attstattarget:5 attlen:6 attnum:7 attndims:8 attcacheoff:9 atttypmod:10 attbyval:11 attstorage:12 attalign:13 attnotnull:14 atthasdef:15 attidentity:16 attgenerated:17 attisdropped:18 attislocal:19 attinhcount:20 attcollation:21 attacl:22 attoptions:23 attfdwoptions:24 atthasmissing:25 attmissingval:26 t.crdb_internal_vtable_pk:27!null oid:28!null typname:29!null typnamespace:30 typowner:31 typlen:32 typbyval:33 typtype:34 typcategory:35 typispreferred:36 typisdefined:37 typdelim:38 typrelid:39 typelem:40 typarray:41 typinput:42 typoutput:43 typreceive:44 typsend:45 typmodin:46 typmodout:47 typanalyze:48 typalign:49 typstorage:50 typnotnull:51 typbasetype:52 typtypmod:53 typndims:54 typcollation:55 typdefaultbin:56 typdefault:57 typacl:58\n      ├── stats: [rows=99, distinct(3)=1, null(3)=0]\n      ├── cost: 3655.83625\n      ├── fd: ()--\u003e(3), (4)==(28), (28)==(4)\n      ├── inner-join (hash)\n      │    ├── columns: a.crdb_internal_vtable_pk:1!null attrelid:2!null attname:3 atttypid:4!null attstattarget:5 attlen:6 attnum:7 attndims:8 attcacheoff:9 atttypmod:10 attbyval:11 attstorage:12 attalign:13 attnotnull:14 atthasdef:15 attidentity:16 attgenerated:17 attisdropped:18 attislocal:19 attinhcount:20 attcollation:21 attacl:22 attoptions:23 attfdwoptions:24 atthasmissing:25 attmissingval:26 t.crdb_internal_vtable_pk:27!null oid:28!null typname:29!null typnamespace:30 typowner:31 typlen:32 typbyval:33 typtype:34 typcategory:35 typispreferred:36 typisdefined:37 typdelim:38 typrelid:39 typelem:40 typarray:41 typinput:42 typoutput:43 typreceive:44 typsend:45 typmodin:46 typmodout:47 typanalyze:48 typalign:49 typstorage:50 typnotnull:51 typbasetype:52 typtypmod:53 typndims:54 typcollation:55 typdefaultbin:56 typdefault:57 typacl:58\n      │    ├── stats: [rows=9900, distinct(1)=100, null(1)=0, distinct(2)=100, null(2)=0, distinct(3)=100, null(3)=99, distinct(4)=99, null(4)=0, distinct(27)=100, null(27)=0, distinct(28)=99, null(28)=0, distinct(29)=100, null(29)=0]\n      │    ├── cost: 3556.80625\n      │    ├── fd: (4)==(28), (28)==(4)\n      │    ├── scan pg_attribute [as=a]\n      │    │    ├── columns: a.crdb_internal_vtable_pk:1!null attrelid:2!null attname:3 atttypid:4 attstattarget:5 attlen:6 attnum:7 attndims:8 attcacheoff:9 atttypmod:10 attbyval:11 attstorage:12 attalign:13 attnotnull:14 atthasdef:15 attidentity:16 attgenerated:17 attisdropped:18 attislocal:19 attinhcount:20 attcollation:21 attacl:22 attoptions:23 attfdwoptions:24 atthasmissing:25 attmissingval:26\n      │    │    ├── stats: [rows=1000, distinct(1)=100, null(1)=0, distinct(2)=100, null(2)=0, distinct(3)=100, null(3)=10, distinct(4)=100, null(4)=10]\n      │    │    └── cost: 1653.22\n      │    ├── scan pg_type [as=t]\n      │    │    ├── columns: t.crdb_internal_vtable_pk:27!null oid:28!null typname:29!null typnamespace:30 typowner:31 typlen:32 typbyval:33 typtype:34 typcategory:35 typispreferred:36 typisdefined:37 typdelim:38 typrelid:39 typelem:40 typarray:41 typinput:42 typoutput:43 typreceive:44 typsend:45 typmodin:46 typmodout:47 typanalyze:48 typalign:49 typstorage:50 typnotnull:51 typbasetype:52 typtypmod:53 typndims:54 typcollation:55 typdefaultbin:56 typdefault:57 typacl:58\n      │    │    ├── stats: [rows=1000, distinct(27)=100, null(27)=0, distinct(28)=100, null(28)=0, distinct(29)=100, null(29)=0]\n      │    │    └── cost: 1774.42\n      │    └── filters\n      │         └── atttypid:4 = oid:28 [outer=(4,28), constraints=(/4: (/NULL - ]; /28: (/NULL - ]), fd=(4)==(28), (28)==(4)]\n      └── filters\n           └── attname:3 = 'descriptor_id' [outer=(3), constraints=(/3: [/'descriptor_id' - /'descriptor_id']; tight), fd=()--\u003e(3)]\n",
+    "project\n ├── columns: attname:3!null atttypid:4!null typbasetype:52 typtype:34\n ├── stats: [rows=99]\n ├── cost: 2859.52001\n ├── fd: ()--\u003e(3)\n └── inner-join (lookup pg_type@pg_type_oid_idx [as=t])\n      ├── columns: attname:3!null atttypid:4!null oid:28!null typtype:34 typbasetype:52\n      ├── key columns: [4] = [28]\n      ├── stats: [rows=99, distinct(4)=8.56179, null(4)=0, distinct(28)=8.56179, null(28)=0]\n      ├── cost: 2858.51001\n      ├── fd: ()--\u003e(3), (4)==(28), (28)==(4)\n      ├── select\n      │    ├── columns: attname:3!null atttypid:4\n      │    ├── stats: [rows=10, distinct(3)=1, null(3)=0, distinct(4)=9.56179, null(4)=0.1]\n      │    ├── cost: 1420.85\n      │    ├── fd: ()--\u003e(3)\n      │    ├── scan pg_attribute [as=a]\n      │    │    ├── columns: attname:3 atttypid:4\n      │    │    ├── stats: [rows=1000, distinct(3)=100, null(3)=10, distinct(4)=100, null(4)=10]\n      │    │    └── cost: 1410.82\n      │    └── filters\n      │         └── attname:3 = 'descriptor_id' [outer=(3), constraints=(/3: [/'descriptor_id' - /'descriptor_id']; tight), fd=()--\u003e(3)]\n      └── filters (true)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 2,
+                      "type": "NAME"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'descriptor_id'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 3,
+                          "type": "OID"
+                        },
+                        {
+                          "column": 27,
+                          "type": "OID"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "scan": 1
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 2,
+            "type": "NAME"
+          },
+          {
+            "column": 3,
+            "type": "OID"
+          },
+          {
+            "column": 33,
+            "type": "\"CHAR\""
+          },
+          {
+            "column": 51,
+            "type": "OID"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "OID"
+                        },
+                        {
+                          "column": 2,
+                          "type": "OID"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 0,
+                          "type": "NAME"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "'descriptor_id'",
+                          "type": "STRING"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 2,
+                        "type": "NAME"
+                      },
+                      {
+                        "column": 3,
+                        "type": "OID"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 1
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "OID"
+                  },
+                  {
+                    "column": 7,
+                    "type": "\"CHAR\""
+                  },
+                  {
+                    "column": 25,
+                    "type": "OID"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "NAME"
+          },
+          {
+            "column": 1,
+            "type": "OID"
+          },
+          {
+            "column": 3,
+            "type": "\"CHAR\""
+          },
+          {
+            "column": 4,
+            "type": "OID"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "OID",
+        "NAME",
+        "OID",
+        "INT4",
+        "INT2",
+        "INT2",
+        "INT4",
+        "INT4",
+        "INT4",
+        "BOOL",
+        "\"CHAR\"",
+        "\"CHAR\"",
+        "BOOL",
+        "BOOL",
+        "\"CHAR\"",
+        "\"CHAR\"",
+        "BOOL",
+        "BOOL",
+        "INT4",
+        "OID",
+        "STRING[]",
+        "STRING[]",
+        "STRING[]",
+        "BOOL",
+        "STRING[]"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "OID",
+        "NAME",
+        "OID",
+        "OID",
+        "INT2",
+        "BOOL",
+        "\"CHAR\"",
+        "\"CHAR\"",
+        "BOOL",
+        "BOOL",
+        "\"CHAR\"",
+        "OID",
+        "OID",
+        "OID",
+        "REGPROC",
+        "REGPROC",
+        "REGPROC",
+        "REGPROC",
+        "REGPROC",
+        "REGPROC",
+        "REGPROC",
+        "\"CHAR\"",
+        "\"CHAR\"",
+        "BOOL",
+        "OID",
+        "INT4",
+        "INT4",
+        "OID",
+        "STRING",
+        "STRING",
+        "STRING[]"
+      ]
+    }
+  ]
+}

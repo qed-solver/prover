@@ -1,0 +1,63 @@
+{
+  "help": [
+    "project\n ├── columns: k:1!null v:2\n ├── key: (1)\n ├── fd: (1)--\u003e(2)\n └── scan c\n      ├── columns: k:1!null v:2 crdb_internal_mvcc_timestamp:3 tableoid:4\n      ├── partial index predicates\n      │    └── partial_v: filters\n      │         └── (k:1 \u003e 0) AND (k:1 \u003c 0) [outer=(1), constraints=(contradiction; tight)]\n      ├── key: (1)\n      └── fd: (1)--\u003e(2-4)\n",
+    "scan c\n ├── columns: k:1!null v:2\n ├── partial index predicates\n │    └── partial_v: filters\n │         └── false [constraints=(contradiction; tight)]\n ├── key: (1)\n └── fd: (1)--\u003e(2)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

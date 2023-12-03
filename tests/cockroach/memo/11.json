@@ -1,0 +1,265 @@
+{
+  "help": [
+    "project\n ├── columns: \"?column?\":7(int) min:6(int)  [hidden: t.public.t.a:1(int)]\n ├── immutable\n ├── cost: 1139.33055\n ├── key: (1)\n ├── fd: (1)--\u003e(6,7)\n ├── ordering: +1\n ├── prune: (1,6,7)\n ├── sort\n │    ├── columns: t.public.t.a:1(int) min:6(int)\n │    ├── immutable\n │    ├── cost: 1138.51058\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(6)\n │    ├── ordering: +1\n │    └── group-by (hash)\n │         ├── columns: t.public.t.a:1(int) min:6(int)\n │         ├── grouping columns: t.public.t.a:1(int)\n │         ├── immutable\n │         ├── cost: 1132.63332\n │         ├── key: (1)\n │         ├── fd: (1)--\u003e(6)\n │         ├── project\n │         │    ├── columns: t.public.t.a:1(int) t.public.t.b:2(int)\n │         │    ├── immutable\n │         │    ├── cost: 1122.20333\n │         │    ├── prune: (1,2)\n │         │    └── select\n │         │         ├── columns: t.public.t.a:1(int) t.public.t.b:2(int) t.public.t.k:3(int!null) t.public.t.crdb_internal_mvcc_timestamp:4(decimal) t.public.t.tableoid:5(oid)\n │         │         ├── immutable\n │         │         ├── cost: 1118.85\n │         │         ├── key: (3)\n │         │         ├── fd: (3)--\u003e(1,2,4,5)\n │         │         ├── interesting orderings: (+3)\n │         │         ├── scan t.public.t\n │         │         │    ├── columns: t.public.t.a:1(int) t.public.t.b:2(int) t.public.t.k:3(int!null) t.public.t.crdb_internal_mvcc_timestamp:4(decimal) t.public.t.tableoid:5(oid)\n │         │         │    ├── cost: 1108.82\n │         │         │    ├── key: (3)\n │         │         │    ├── fd: (3)--\u003e(1,2,4,5)\n │         │         │    ├── prune: (1-5)\n │         │         │    └── interesting orderings: (+3)\n │         │         └── filters\n │         │              └── gt [type=bool, outer=(1-3), immutable]\n │         │                   ├── plus [type=int]\n │         │                   │    ├── variable: t.public.t.k:3 [type=int]\n │         │                   │    └── variable: t.public.t.a:1 [type=int]\n │         │                   └── variable: t.public.t.b:2 [type=int]\n │         └── aggregations\n │              └── min [as=min:6, type=int, outer=(2)]\n │                   └── variable: t.public.t.b:2 [type=int]\n └── projections\n      └── plus [as=\"?column?\":7, type=int, outer=(1), immutable]\n           ├── variable: t.public.t.a:1 [type=int]\n           └── const: 1 [type=int]\n",
+    "project\n ├── columns: \"?column?\":7(int) min:6(int!null)  [hidden: t.public.t.a:1(int)]\n ├── immutable\n ├── cost: 1115.77722\n ├── key: (1)\n ├── fd: (1)--\u003e(6,7)\n ├── ordering: +1\n ├── prune: (1,6,7)\n ├── sort\n │    ├── columns: t.public.t.a:1(int) min:6(int!null)\n │    ├── immutable\n │    ├── cost: 1114.95725\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(6)\n │    ├── ordering: +1\n │    └── group-by (hash)\n │         ├── columns: t.public.t.a:1(int) min:6(int!null)\n │         ├── grouping columns: t.public.t.a:1(int)\n │         ├── immutable\n │         ├── cost: 1109.07998\n │         ├── key: (1)\n │         ├── fd: (1)--\u003e(6)\n │         ├── select\n │         │    ├── columns: t.public.t.a:1(int) t.public.t.b:2(int!null) t.public.t.k:3(int!null)\n │         │    ├── immutable\n │         │    ├── cost: 1098.65\n │         │    ├── key: (3)\n │         │    ├── fd: (3)--\u003e(1,2)\n │         │    ├── interesting orderings: (+3)\n │         │    ├── scan t.public.t\n │         │    │    ├── columns: t.public.t.a:1(int) t.public.t.b:2(int) t.public.t.k:3(int!null)\n │         │    │    ├── cost: 1088.62\n │         │    │    ├── key: (3)\n │         │    │    ├── fd: (3)--\u003e(1,2)\n │         │    │    ├── prune: (1-3)\n │         │    │    └── interesting orderings: (+3)\n │         │    └── filters\n │         │         └── lt [type=bool, outer=(1-3), immutable, constraints=(/2: (/NULL - ])]\n │         │              ├── variable: t.public.t.b:2 [type=int]\n │         │              └── plus [type=int]\n │         │                   ├── variable: t.public.t.k:3 [type=int]\n │         │                   └── variable: t.public.t.a:1 [type=int]\n │         └── aggregations\n │              └── min [as=min:6, type=int, outer=(2)]\n │                   └── variable: t.public.t.b:2 [type=int]\n └── projections\n      └── plus [as=\"?column?\":7, type=int, outer=(1), immutable]\n           ├── variable: t.public.t.a:1 [type=int]\n           └── const: 1 [type=int]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "sort": {
+            "collation": [
+              [
+                0,
+                "INT",
+                "ASCENDING"
+              ]
+            ],
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "MIN",
+                    "type": "INT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "source": {
+                  "project": {
+                    "source": {
+                      "filter": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 2,
+                                      "type": "INT"
+                                    },
+                                    {
+                                      "column": 0,
+                                      "type": "INT"
+                                    }
+                                  ],
+                                  "operator": "PLUS",
+                                  "type": "INT"
+                                },
+                                {
+                                  "column": 1,
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "GT",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "source": {
+                          "scan": 0
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "sort": {
+            "collation": [
+              [
+                0,
+                "INT",
+                "ASCENDING"
+              ]
+            ],
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "MIN",
+                    "type": "INT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "source": {
+                  "filter": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 1,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 2,
+                                  "type": "INT"
+                                },
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "PLUS",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LT",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "source": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 1,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 2,
+                            "type": "INT"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "1",
+                "type": "INT"
+              }
+            ],
+            "operator": "PLUS",
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

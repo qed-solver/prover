@@ -1,0 +1,230 @@
+{
+  "help": [
+    "project\n ├── columns: x:1!null z:2 j:3 x:7 \"?column?\":8\n ├── immutable\n ├── fd: (1)--\u003e(2,3)\n └── inner-join-apply\n      ├── columns: b.x:1!null z:2 j:3 crdb_internal_mvcc_timestamp:4 tableoid:5 x:7 \"?column?\":8\n      ├── immutable\n      ├── fd: (1)--\u003e(2-5)\n      ├── scan b\n      │    ├── columns: b.x:1!null z:2 j:3 crdb_internal_mvcc_timestamp:4 tableoid:5\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-5)\n      ├── project\n      │    ├── columns: x:7 \"?column?\":8\n      │    ├── outer: (3)\n      │    ├── cardinality: [2 - 2]\n      │    ├── immutable\n      │    ├── values\n      │    │    ├── columns: column1:6!null\n      │    │    ├── cardinality: [2 - 2]\n      │    │    ├── ('{\"x\": \"zero\"}',)\n      │    │    └── ('{\"x\": \"one\"}',)\n      │    └── projections\n      │         ├── j:3-\u003e'x' [as=x:7, outer=(3), immutable]\n      │         └── column1:6-\u003e'x' [as=\"?column?\":8, outer=(6), immutable]\n      └── filters\n           └── true\n",
+    "project\n ├── columns: x:1!null z:2 j:3 x:7 \"?column?\":8!null\n ├── immutable\n ├── fd: (1)--\u003e(2,3)\n ├── inner-join (cross)\n │    ├── columns: b.x:1!null z:2 j:3 \"?column?\":8!null\n │    ├── multiplicity: left-rows(one-or-more), right-rows(zero-or-more)\n │    ├── fd: (1)--\u003e(2,3)\n │    ├── scan b\n │    │    ├── columns: b.x:1!null z:2 j:3\n │    │    ├── key: (1)\n │    │    └── fd: (1)--\u003e(2,3)\n │    ├── values\n │    │    ├── columns: \"?column?\":8!null\n │    │    ├── cardinality: [2 - 2]\n │    │    ├── ('\"zero\"',)\n │    │    └── ('\"one\"',)\n │    └── filters (true)\n └── projections\n      └── j:3-\u003e'x' [as=x:7, outer=(3), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [],
+                  "operator": "TRUE",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "correlate": {
+                "kind": "INNER",
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "project": {
+                    "source": {
+                      "values": {
+                        "content": [
+                          [
+                            {
+                              "operand": [],
+                              "operator": "'{\"x\": \"zero\"}'",
+                              "type": "JSONB"
+                            }
+                          ],
+                          [
+                            {
+                              "operand": [],
+                              "operator": "'{\"x\": \"one\"}'",
+                              "type": "JSONB"
+                            }
+                          ]
+                        ],
+                        "schema": [
+                          "JSONB"
+                        ]
+                      }
+                    },
+                    "target": [
+                      {
+                        "operand": [
+                          {
+                            "column": 2,
+                            "type": "JSONB"
+                          },
+                          {
+                            "operand": [],
+                            "operator": "'x'",
+                            "type": "STRING"
+                          }
+                        ],
+                        "operator": "FETCH VAL",
+                        "type": "JSONB"
+                      },
+                      {
+                        "operand": [
+                          {
+                            "column": 5,
+                            "type": "JSONB"
+                          },
+                          {
+                            "operand": [],
+                            "operator": "'x'",
+                            "type": "STRING"
+                          }
+                        ],
+                        "operator": "FETCH VAL",
+                        "type": "JSONB"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "JSONB"
+          },
+          {
+            "column": 5,
+            "type": "JSONB"
+          },
+          {
+            "column": 6,
+            "type": "JSONB"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "project": {
+                "source": {
+                  "scan": 0
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "JSONB"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "values": {
+                "content": [
+                  [
+                    {
+                      "operand": [],
+                      "operator": "'\"zero\"'",
+                      "type": "JSONB"
+                    }
+                  ],
+                  [
+                    {
+                      "operand": [],
+                      "operator": "'\"one\"'",
+                      "type": "JSONB"
+                    }
+                  ]
+                ],
+                "schema": [
+                  "JSONB"
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "JSONB"
+          },
+          {
+            "operand": [
+              {
+                "column": 2,
+                "type": "JSONB"
+              },
+              {
+                "operand": [],
+                "operator": "'x'",
+                "type": "STRING"
+              }
+            ],
+            "operator": "FETCH VAL",
+            "type": "JSONB"
+          },
+          {
+            "column": 3,
+            "type": "JSONB"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "JSONB",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,225 @@
+{
+  "help": [
+    "project\n ├── columns: sum:6(decimal!null)\n ├── stats: [rows=100]\n └── group-by (hash)\n      ├── columns: z:2(int!null) sum:6(decimal!null)\n      ├── grouping columns: z:2(int!null)\n      ├── stats: [rows=100, distinct(2)=100, null(2)=0]\n      ├── key: (2)\n      ├── fd: (2)--\u003e(6)\n      ├── project\n      │    ├── columns: x:1(int!null) z:2(int!null)\n      │    ├── stats: [rows=2000, distinct(2)=100, null(2)=0]\n      │    └── select\n      │         ├── columns: x:1(int!null) z:2(int!null) rowid:3(int!null) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n      │         ├── stats: [rows=2000, distinct(1)=1000, null(1)=0, distinct(2)=100, null(2)=0]\n      │         ├── key: (3)\n      │         ├── fd: (3)--\u003e(1,2,4,5)\n      │         ├── scan b\n      │         │    ├── columns: x:1(int) z:2(int!null) rowid:3(int!null) crdb_internal_mvcc_timestamp:4(decimal) tableoid:5(oid)\n      │         │    ├── stats: [rows=10000, distinct(1)=5000, null(1)=0, distinct(2)=100, null(2)=0, distinct(3)=10000, null(3)=0]\n      │         │    ├── key: (3)\n      │         │    └── fd: (3)--\u003e(1,2,4,5)\n      │         └── filters\n      │              └── (x:1 \u003e 1000) AND (x:1 \u003c= 2000) [type=bool, outer=(1), constraints=(/1: [/1001 - /2000]; tight)]\n      └── aggregations\n           └── sum [as=sum:6, type=decimal, outer=(1)]\n                └── x:1 [type=int]\n",
+    "project\n ├── columns: sum:6(decimal!null)\n ├── stats: [rows=100]\n └── group-by (hash)\n      ├── columns: z:2(int!null) sum:6(decimal!null)\n      ├── grouping columns: z:2(int!null)\n      ├── stats: [rows=100, distinct(2)=100, null(2)=0]\n      ├── key: (2)\n      ├── fd: (2)--\u003e(6)\n      ├── select\n      │    ├── columns: x:1(int!null) z:2(int!null)\n      │    ├── stats: [rows=2000, distinct(1)=1000, null(1)=0, distinct(2)=100, null(2)=0]\n      │    ├── scan b\n      │    │    ├── columns: x:1(int) z:2(int!null)\n      │    │    └── stats: [rows=10000, distinct(1)=5000, null(1)=0, distinct(2)=100, null(2)=0]\n      │    └── filters\n      │         └── (x:1 \u003e 1000) AND (x:1 \u003c= 2000) [type=bool, outer=(1), constraints=(/1: [/1001 - /2000]; tight)]\n      └── aggregations\n           └── sum [as=sum:6, type=decimal, outer=(1)]\n                └── x:1 [type=int]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "SUM",
+                "type": "DECIMAL"
+              }
+            ],
+            "keys": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "project": {
+                "source": {
+                  "filter": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "1000",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "GT",
+                              "type": "BOOL"
+                            },
+                            {
+                              "operand": [
+                                {
+                                  "column": 0,
+                                  "type": "INT"
+                                },
+                                {
+                                  "operand": [],
+                                  "operator": "2000",
+                                  "type": "INT"
+                                }
+                              ],
+                              "operator": "LE",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "source": {
+                      "scan": 0
+                    }
+                  }
+                },
+                "target": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "group": {
+            "function": [
+              {
+                "distinct": false,
+                "ignoreNulls": true,
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "SUM",
+                "type": "DECIMAL"
+              }
+            ],
+            "keys": [
+              {
+                "column": 1,
+                "type": "INT"
+              }
+            ],
+            "source": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "1000",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "GT",
+                          "type": "BOOL"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "2000",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "LE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "DECIMAL"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

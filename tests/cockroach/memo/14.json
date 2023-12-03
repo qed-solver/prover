@@ -1,0 +1,169 @@
+{
+  "help": [
+    "project\n ├── columns: n:1(int!null) a:2(int!null) b:3(int!null) c:4(string)\n ├── stats: [rows=0.9108108]\n ├── cost: 1e+100\n ├── key: (1)\n ├── fd: ()--\u003e(2,3), (1)--\u003e(4), (3,4)~~\u003e(1)\n ├── prune: (1-4)\n └── select\n      ├── columns: t.public.zigzag.n:1(int!null) t.public.zigzag.a:2(int!null) t.public.zigzag.b:3(int!null) t.public.zigzag.c:4(string) t.public.zigzag.crdb_internal_mvcc_timestamp:5(decimal) t.public.zigzag.tableoid:6(oid)\n      ├── stats: [rows=0.9108108, distinct(2)=0.910811, null(2)=0, distinct(3)=0.910811, null(3)=0, distinct(2,3)=0.910811, null(2,3)=0]\n      ├── cost: 1e+100\n      ├── key: (1)\n      ├── fd: ()--\u003e(2,3), (1)--\u003e(4-6), (3,4)~~\u003e(1,5,6)\n      ├── scan t.public.zigzag\n      │    ├── columns: t.public.zigzag.n:1(int!null) t.public.zigzag.a:2(int) t.public.zigzag.b:3(int) t.public.zigzag.c:4(string) t.public.zigzag.crdb_internal_mvcc_timestamp:5(decimal) t.public.zigzag.tableoid:6(oid)\n      │    ├── flags: force-zigzag=b_idx\n      │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(2)=100, null(2)=10, distinct(3)=100, null(3)=10, distinct(2,3)=1000, null(2,3)=0.1]\n      │    ├── cost: 1e+100\n      │    ├── key: (1)\n      │    ├── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6)\n      │    └── prune: (1-6)\n      └── filters\n           └── and [type=bool, outer=(2,3), constraints=(/2: [/3 - /3]; /3: [/7 - /7]; tight), fd=()--\u003e(2,3)]\n                ├── eq [type=bool]\n                │    ├── variable: t.public.zigzag.a:2 [type=int]\n                │    └── const: 3 [type=int]\n                └── eq [type=bool]\n                     ├── variable: t.public.zigzag.b:3 [type=int]\n                     └── const: 7 [type=int]\n",
+    "select\n ├── columns: n:1(int!null) a:2(int!null) b:3(int!null) c:4(string)\n ├── stats: [rows=0.9108108, distinct(2)=0.910811, null(2)=0, distinct(3)=0.910811, null(3)=0, distinct(2,3)=0.910811, null(2,3)=0]\n ├── cost: 1e+100\n ├── key: (1)\n ├── fd: ()--\u003e(2,3), (1)--\u003e(4), (3,4)~~\u003e(1)\n ├── prune: (1,4)\n ├── scan t.public.zigzag\n │    ├── columns: t.public.zigzag.n:1(int!null) t.public.zigzag.a:2(int) t.public.zigzag.b:3(int) t.public.zigzag.c:4(string)\n │    ├── flags: force-zigzag=b_idx\n │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0, distinct(2)=100, null(2)=10, distinct(3)=100, null(3)=10, distinct(2,3)=1000, null(2,3)=0.1]\n │    ├── cost: 1e+100\n │    ├── key: (1)\n │    ├── fd: (1)--\u003e(2-4), (3,4)~~\u003e(1,2)\n │    └── prune: (1-4)\n └── filters\n      ├── eq [type=bool, outer=(2), constraints=(/2: [/3 - /3]; tight), fd=()--\u003e(2)]\n      │    ├── variable: t.public.zigzag.a:2 [type=int]\n      │    └── const: 3 [type=int]\n      └── eq [type=bool, outer=(3), constraints=(/3: [/7 - /7]; tight), fd=()--\u003e(3)]\n           ├── variable: t.public.zigzag.b:3 [type=int]\n           └── const: 7 [type=int]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "3",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    },
+                    {
+                      "operand": [
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "7",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "scan": 0
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 1,
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "3",
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            },
+            {
+              "operand": [
+                {
+                  "column": 2,
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "7",
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "INT"
+              },
+              {
+                "column": 3,
+                "type": "STRING"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

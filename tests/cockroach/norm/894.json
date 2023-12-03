@@ -1,0 +1,177 @@
+{
+  "help": [
+    "project\n ├── columns: r:8 s:9 t:10\n ├── immutable\n ├── scan a\n │    ├── columns: k:1!null i:2 f:3 d:4 a.t:5 crdb_internal_mvcc_timestamp:6 tableoid:7\n │    ├── key: (1)\n │    └── fd: (1)--\u003e(2-7)\n └── projections\n      ├── -(f:3 - f:3) [as=r:8, outer=(3), immutable]\n      ├── -(d:4 - i:2) [as=s:9, outer=(2,4), immutable]\n      └── -(a.t:5 - a.t:5) [as=t:10, outer=(5), immutable]\n",
+    "project\n ├── columns: r:8 s:9 t:10\n ├── immutable\n ├── scan a\n │    └── columns: i:2 f:3 d:4 a.t:5\n └── projections\n      ├── f:3 - f:3 [as=r:8, outer=(3), immutable]\n      ├── i:2 - d:4 [as=s:9, outer=(2,4), immutable]\n      └── a.t:5 - a.t:5 [as=t:10, outer=(5), immutable]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "column": 2,
+                    "type": "FLOAT"
+                  },
+                  {
+                    "column": 2,
+                    "type": "FLOAT"
+                  }
+                ],
+                "operator": "MINUS",
+                "type": "FLOAT"
+              }
+            ],
+            "operator": "UNARY MINUS",
+            "type": "FLOAT"
+          },
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "column": 3,
+                    "type": "DECIMAL"
+                  },
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ],
+                "operator": "MINUS",
+                "type": "DECIMAL"
+              }
+            ],
+            "operator": "UNARY MINUS",
+            "type": "DECIMAL"
+          },
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "column": 4,
+                    "type": "TIME"
+                  },
+                  {
+                    "column": 4,
+                    "type": "TIME"
+                  }
+                ],
+                "operator": "MINUS",
+                "type": "INTERVAL"
+              }
+            ],
+            "operator": "UNARY MINUS",
+            "type": "INTERVAL"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 1,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "FLOAT"
+              },
+              {
+                "column": 3,
+                "type": "DECIMAL"
+              },
+              {
+                "column": 4,
+                "type": "TIME"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "FLOAT"
+              },
+              {
+                "column": 1,
+                "type": "FLOAT"
+              }
+            ],
+            "operator": "MINUS",
+            "type": "FLOAT"
+          },
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "column": 2,
+                "type": "DECIMAL"
+              }
+            ],
+            "operator": "MINUS",
+            "type": "DECIMAL"
+          },
+          {
+            "operand": [
+              {
+                "column": 3,
+                "type": "TIME"
+              },
+              {
+                "column": 3,
+                "type": "TIME"
+              }
+            ],
+            "operator": "MINUS",
+            "type": "INTERVAL"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "DECIMAL",
+        "TIME",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

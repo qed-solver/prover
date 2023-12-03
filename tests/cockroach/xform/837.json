@@ -1,0 +1,401 @@
+{
+  "help": [
+    "project\n ├── columns: a:1(int!null) b:2(int) c:3(int) d:4(int) b:7(int!null) x:8(int) c:11(int!null) y:12(int) d:15(int!null) z:16(int)\n ├── stats: [rows=1e+09]\n ├── cost: 2.10376882e+10\n ├── key: (7,11,15)\n ├── fd: ()--\u003e(1-4), (7)--\u003e(8), (11)--\u003e(12), (15)--\u003e(16)\n ├── prune: (1-4,7,8,11,12,15,16)\n └── select\n      ├── columns: t.public.abc.a:1(int!null) t.public.abc.b:2(int) t.public.abc.c:3(int) t.public.abc.d:4(int) t.public.abc.crdb_internal_mvcc_timestamp:5(decimal) t.public.abc.tableoid:6(oid) t.public.bx.b:7(int!null) t.public.bx.x:8(int) t.public.bx.crdb_internal_mvcc_timestamp:9(decimal) t.public.bx.tableoid:10(oid) t.public.cy.c:11(int!null) t.public.cy.y:12(int) t.public.cy.crdb_internal_mvcc_timestamp:13(decimal) t.public.cy.tableoid:14(oid) t.public.dz.d:15(int!null) t.public.dz.z:16(int) t.public.dz.crdb_internal_mvcc_timestamp:17(decimal) t.public.dz.tableoid:18(oid)\n      ├── stats: [rows=1e+09, distinct(1)=1, null(1)=0]\n      ├── cost: 2.10276882e+10\n      ├── key: (7,11,15)\n      ├── fd: ()--\u003e(1-6), (7)--\u003e(8-10), (11)--\u003e(12-14), (15)--\u003e(16-18)\n      ├── inner-join (cross)\n      │    ├── columns: t.public.abc.a:1(int!null) t.public.abc.b:2(int) t.public.abc.c:3(int) t.public.abc.d:4(int) t.public.abc.crdb_internal_mvcc_timestamp:5(decimal) t.public.abc.tableoid:6(oid) t.public.bx.b:7(int!null) t.public.bx.x:8(int) t.public.bx.crdb_internal_mvcc_timestamp:9(decimal) t.public.bx.tableoid:10(oid) t.public.cy.c:11(int!null) t.public.cy.y:12(int) t.public.cy.crdb_internal_mvcc_timestamp:13(decimal) t.public.cy.tableoid:14(oid) t.public.dz.d:15(int!null) t.public.dz.z:16(int) t.public.dz.crdb_internal_mvcc_timestamp:17(decimal) t.public.dz.tableoid:18(oid)\n      │    ├── stats: [rows=1e+12, distinct(1)=1000, null(1)=0, distinct(7)=1000, null(7)=0, distinct(11)=1000, null(11)=0, distinct(15)=1000, null(15)=0]\n      │    ├── cost: 1.10276882e+10\n      │    ├── key: (1,7,11,15)\n      │    ├── fd: (1)--\u003e(2-6), (7)--\u003e(8-10), (11)--\u003e(12-14), (15)--\u003e(16-18)\n      │    ├── prune: (1-18)\n      │    ├── scan t.public.abc\n      │    │    ├── columns: t.public.abc.a:1(int!null) t.public.abc.b:2(int) t.public.abc.c:3(int) t.public.abc.d:4(int) t.public.abc.crdb_internal_mvcc_timestamp:5(decimal) t.public.abc.tableoid:6(oid)\n      │    │    ├── stats: [rows=1000, distinct(1)=1000, null(1)=0]\n      │    │    ├── cost: 1129.02\n      │    │    ├── key: (1)\n      │    │    ├── fd: (1)--\u003e(2-6)\n      │    │    ├── prune: (1-6)\n      │    │    └── unfiltered-cols: (1-6)\n      │    ├── inner-join (cross)\n      │    │    ├── columns: t.public.bx.b:7(int!null) t.public.bx.x:8(int) t.public.bx.crdb_internal_mvcc_timestamp:9(decimal) t.public.bx.tableoid:10(oid) t.public.cy.c:11(int!null) t.public.cy.y:12(int) t.public.cy.crdb_internal_mvcc_timestamp:13(decimal) t.public.cy.tableoid:14(oid) t.public.dz.d:15(int!null) t.public.dz.z:16(int) t.public.dz.crdb_internal_mvcc_timestamp:17(decimal) t.public.dz.tableoid:18(oid)\n      │    │    ├── stats: [rows=1e+09, distinct(7)=1000, null(7)=0, distinct(11)=1000, null(11)=0, distinct(15)=1000, null(15)=0]\n      │    │    ├── cost: 10187050.1\n      │    │    ├── key: (7,11,15)\n      │    │    ├── fd: (7)--\u003e(8-10), (11)--\u003e(12-14), (15)--\u003e(16-18)\n      │    │    ├── prune: (7-18)\n      │    │    ├── scan t.public.bx\n      │    │    │    ├── columns: t.public.bx.b:7(int!null) t.public.bx.x:8(int) t.public.bx.crdb_internal_mvcc_timestamp:9(decimal) t.public.bx.tableoid:10(oid)\n      │    │    │    ├── stats: [rows=1000, distinct(7)=1000, null(7)=0]\n      │    │    │    ├── cost: 1088.62\n      │    │    │    ├── key: (7)\n      │    │    │    ├── fd: (7)--\u003e(8-10)\n      │    │    │    ├── prune: (7-10)\n      │    │    │    └── unfiltered-cols: (7-10)\n      │    │    ├── inner-join (cross)\n      │    │    │    ├── columns: t.public.cy.c:11(int!null) t.public.cy.y:12(int) t.public.cy.crdb_internal_mvcc_timestamp:13(decimal) t.public.cy.tableoid:14(oid) t.public.dz.d:15(int!null) t.public.dz.z:16(int) t.public.dz.crdb_internal_mvcc_timestamp:17(decimal) t.public.dz.tableoid:18(oid)\n      │    │    │    ├── stats: [rows=1000000, distinct(11)=1000, null(11)=0, distinct(15)=1000, null(15)=0]\n      │    │    │    ├── cost: 12207.4063\n      │    │    │    ├── key: (11,15)\n      │    │    │    ├── fd: (11)--\u003e(12-14), (15)--\u003e(16-18)\n      │    │    │    ├── prune: (11-18)\n      │    │    │    ├── scan t.public.cy\n      │    │    │    │    ├── columns: t.public.cy.c:11(int!null) t.public.cy.y:12(int) t.public.cy.crdb_internal_mvcc_timestamp:13(decimal) t.public.cy.tableoid:14(oid)\n      │    │    │    │    ├── stats: [rows=1000, distinct(11)=1000, null(11)=0]\n      │    │    │    │    ├── cost: 1088.62\n      │    │    │    │    ├── key: (11)\n      │    │    │    │    ├── fd: (11)--\u003e(12-14)\n      │    │    │    │    ├── prune: (11-14)\n      │    │    │    │    └── unfiltered-cols: (11-14)\n      │    │    │    ├── scan t.public.dz\n      │    │    │    │    ├── columns: t.public.dz.d:15(int!null) t.public.dz.z:16(int) t.public.dz.crdb_internal_mvcc_timestamp:17(decimal) t.public.dz.tableoid:18(oid)\n      │    │    │    │    ├── stats: [rows=1000, distinct(15)=1000, null(15)=0]\n      │    │    │    │    ├── cost: 1088.62\n      │    │    │    │    ├── key: (15)\n      │    │    │    │    ├── fd: (15)--\u003e(16-18)\n      │    │    │    │    ├── prune: (15-18)\n      │    │    │    │    └── unfiltered-cols: (15-18)\n      │    │    │    └── filters (true)\n      │    │    └── filters (true)\n      │    └── filters (true)\n      └── filters\n           └── eq [type=bool, outer=(1), constraints=(/1: [/1 - /1]; tight), fd=()--\u003e(1)]\n                ├── variable: t.public.abc.a:1 [type=int]\n                └── const: 1 [type=int]\n",
+    "inner-join (cross)\n ├── columns: a:1(int!null) b:2(int) c:3(int) d:4(int) b:7(int!null) x:8(int) c:11(int!null) y:12(int) d:15(int!null) z:16(int)\n ├── multiplicity: left-rows(zero-or-one), right-rows(zero-or-more)\n ├── stats: [rows=1e+09]\n ├── cost: 32525762.2\n ├── key: (7,11,15)\n ├── fd: ()--\u003e(1-4), (7)--\u003e(8), (11)--\u003e(12), (15)--\u003e(16)\n ├── prune: (2-4,7,8,11,12,15,16)\n ├── inner-join (cross)\n │    ├── columns: t.public.bx.b:7(int!null) t.public.bx.x:8(int) t.public.cy.c:11(int!null) t.public.cy.y:12(int) t.public.dz.d:15(int!null) t.public.dz.z:16(int)\n │    ├── stats: [rows=1e+09]\n │    ├── cost: 10025753.1\n │    ├── key: (7,11,15)\n │    ├── fd: (7)--\u003e(8), (11)--\u003e(12), (15)--\u003e(16)\n │    ├── prune: (7,8,11,12,15,16)\n │    ├── inner-join (cross)\n │    │    ├── columns: t.public.cy.c:11(int!null) t.public.cy.y:12(int) t.public.dz.d:15(int!null) t.public.dz.z:16(int)\n │    │    ├── stats: [rows=1000000]\n │    │    ├── cost: 12167.0063\n │    │    ├── key: (11,15)\n │    │    ├── fd: (11)--\u003e(12), (15)--\u003e(16)\n │    │    ├── prune: (11,12,15,16)\n │    │    ├── scan t.public.cy\n │    │    │    ├── columns: t.public.cy.c:11(int!null) t.public.cy.y:12(int)\n │    │    │    ├── stats: [rows=1000]\n │    │    │    ├── cost: 1068.42\n │    │    │    ├── key: (11)\n │    │    │    ├── fd: (11)--\u003e(12)\n │    │    │    ├── prune: (11,12)\n │    │    │    └── unfiltered-cols: (11-14)\n │    │    ├── scan t.public.dz\n │    │    │    ├── columns: t.public.dz.d:15(int!null) t.public.dz.z:16(int)\n │    │    │    ├── stats: [rows=1000]\n │    │    │    ├── cost: 1068.42\n │    │    │    ├── key: (15)\n │    │    │    ├── fd: (15)--\u003e(16)\n │    │    │    ├── prune: (15,16)\n │    │    │    └── unfiltered-cols: (15-18)\n │    │    └── filters (true)\n │    ├── scan t.public.bx\n │    │    ├── columns: t.public.bx.b:7(int!null) t.public.bx.x:8(int)\n │    │    ├── stats: [rows=1000]\n │    │    ├── cost: 1068.42\n │    │    ├── key: (7)\n │    │    ├── fd: (7)--\u003e(8)\n │    │    ├── prune: (7,8)\n │    │    └── unfiltered-cols: (7-10)\n │    └── filters (true)\n ├── scan t.public.abc\n │    ├── columns: t.public.abc.a:1(int!null) t.public.abc.b:2(int) t.public.abc.c:3(int) t.public.abc.d:4(int)\n │    ├── constraint: /1: [/1 - /1]\n │    ├── cardinality: [0 - 1]\n │    ├── stats: [rows=1, distinct(1)=1, null(1)=0]\n │    ├── cost: 9.09\n │    ├── key: ()\n │    ├── fd: ()--\u003e(1-4)\n │    └── prune: (2-4)\n └── filters (true)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 0,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "join": {
+                    "condition": {
+                      "operand": [],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "kind": "INNER",
+                    "left": {
+                      "scan": 1
+                    },
+                    "right": {
+                      "join": {
+                        "condition": {
+                          "operand": [],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "kind": "INNER",
+                        "left": {
+                          "scan": 2
+                        },
+                        "right": {
+                          "scan": 3
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          },
+          {
+            "column": 6,
+            "type": "INT"
+          },
+          {
+            "column": 7,
+            "type": "INT"
+          },
+          {
+            "column": 10,
+            "type": "INT"
+          },
+          {
+            "column": 11,
+            "type": "INT"
+          },
+          {
+            "column": 14,
+            "type": "INT"
+          },
+          {
+            "column": 15,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "join": {
+                "condition": {
+                  "operand": [],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "INNER",
+                "left": {
+                  "join": {
+                    "condition": {
+                      "operand": [],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "kind": "INNER",
+                    "left": {
+                      "project": {
+                        "source": {
+                          "scan": 2
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 1,
+                            "type": "INT"
+                          }
+                        ]
+                      }
+                    },
+                    "right": {
+                      "project": {
+                        "source": {
+                          "scan": 3
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          },
+                          {
+                            "column": 1,
+                            "type": "INT"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "project": {
+                    "source": {
+                      "scan": 1
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "1",
+                              "type": "INT"
+                            },
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        },
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "1",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "\u003c=",
+                          "type": "BOOLEAN"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    }
+                  ],
+                  "operator": "OR",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 3,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 6,
+            "type": "INT"
+          },
+          {
+            "column": 7,
+            "type": "INT"
+          },
+          {
+            "column": 8,
+            "type": "INT"
+          },
+          {
+            "column": 9,
+            "type": "INT"
+          },
+          {
+            "column": 4,
+            "type": "INT"
+          },
+          {
+            "column": 5,
+            "type": "INT"
+          },
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "INT"
+          },
+          {
+            "column": 3,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

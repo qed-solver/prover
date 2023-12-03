@@ -1,0 +1,119 @@
+{
+  "help": [
+    "project\n ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) u:7(int) v:8(int!null)\n ├── cardinality: [0 - 0]\n ├── stats: [rows=0]\n ├── fd: (1)--\u003e(2-4), (3,4)~~\u003e(1,2)\n └── inner-join (cross)\n      ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) xysd.crdb_internal_mvcc_timestamp:5(decimal) xysd.tableoid:6(oid) u:7(int) v:8(int!null) rowid:9(int!null) uv.crdb_internal_mvcc_timestamp:10(decimal) uv.tableoid:11(oid)\n      ├── cardinality: [0 - 0]\n      ├── stats: [rows=0]\n      ├── key: (1,9)\n      ├── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6), (9)--\u003e(7,8,10,11)\n      ├── scan xysd\n      │    ├── columns: x:1(int!null) y:2(int) s:3(string) d:4(decimal!null) xysd.crdb_internal_mvcc_timestamp:5(decimal) xysd.tableoid:6(oid)\n      │    ├── stats: [rows=5000]\n      │    ├── key: (1)\n      │    └── fd: (1)--\u003e(2-6), (3,4)~~\u003e(1,2,5,6)\n      ├── scan uv\n      │    ├── columns: u:7(int) v:8(int!null) rowid:9(int!null) uv.crdb_internal_mvcc_timestamp:10(decimal) uv.tableoid:11(oid)\n      │    ├── stats: [rows=10000]\n      │    ├── key: (9)\n      │    └── fd: (9)--\u003e(7,8,10,11)\n      └── filters\n           └── false [type=bool, constraints=(contradiction; tight)]\n",
+    "values\n ├── columns: x:1(int!null) y:2(int!null) s:3(string!null) d:4(decimal!null) u:7(int!null) v:8(int!null)\n ├── cardinality: [0 - 0]\n ├── stats: [rows=0]\n ├── key: ()\n └── fd: ()--\u003e(1-4,7,8)\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [],
+                  "operator": "FALSE",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "INNER",
+            "left": {
+              "scan": 0
+            },
+            "right": {
+              "scan": 1
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 0,
+            "type": "INT"
+          },
+          {
+            "column": 1,
+            "type": "INT"
+          },
+          {
+            "column": 2,
+            "type": "STRING"
+          },
+          {
+            "column": 3,
+            "type": "DECIMAL"
+          },
+          {
+            "column": 6,
+            "type": "INT"
+          },
+          {
+            "column": 7,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "values": {
+        "content": [],
+        "schema": [
+          "INT",
+          "INT",
+          "STRING",
+          "DECIMAL",
+          "INT",
+          "INT"
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "STRING",
+        "DECIMAL",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "help": [
+    "select\n ├── columns: column1:1(int!null)\n ├── cardinality: [0 - 2]\n ├── values\n │    ├── columns: column1:1(int!null)\n │    ├── cardinality: [2 - 2]\n │    ├── prune: (1)\n │    ├── tuple [type=tuple{int}]\n │    │    └── const: 1 [type=int]\n │    └── tuple [type=tuple{int}]\n │         └── const: 2 [type=int]\n └── filters\n      └── not [type=bool, outer=(1), correlated-subquery]\n           └── exists [type=bool]\n                └── project\n                     ├── columns: u:2(int!null) v:3(int!null)\n                     ├── outer: (1)\n                     ├── fd: ()--\u003e(2)\n                     └── select\n                          ├── columns: u:2(int!null) v:3(int!null) rowid:4(int!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n                          ├── outer: (1)\n                          ├── key: (4)\n                          ├── fd: ()--\u003e(2), (4)--\u003e(3,5,6)\n                          ├── scan uv\n                          │    ├── columns: u:2(int) v:3(int!null) rowid:4(int!null) crdb_internal_mvcc_timestamp:5(decimal) tableoid:6(oid)\n                          │    ├── key: (4)\n                          │    ├── fd: (4)--\u003e(2,3,5,6)\n                          │    └── prune: (2-6)\n                          └── filters\n                               └── eq [type=bool, outer=(1,2), constraints=(/1: (/NULL - ]; /2: (/NULL - ]), fd=(1)==(2), (2)==(1)]\n                                    ├── variable: u:2 [type=int]\n                                    └── variable: column1:1 [type=int]\n",
+    "anti-join (hash)\n ├── columns: column1:1(int!null)\n ├── cardinality: [0 - 2]\n ├── values\n │    ├── columns: column1:1(int!null)\n │    ├── cardinality: [2 - 2]\n │    ├── prune: (1)\n │    ├── tuple [type=tuple{int}]\n │    │    └── const: 1 [type=int]\n │    └── tuple [type=tuple{int}]\n │         └── const: 2 [type=int]\n ├── scan uv\n │    ├── columns: u:2(int)\n │    ├── prune: (2)\n │    └── unfiltered-cols: (2-6)\n └── filters\n      └── eq [type=bool, outer=(1,2), constraints=(/1: (/NULL - ]; /2: (/NULL - ]), fd=(1)==(2), (2)==(1)]\n           ├── variable: u:2 [type=int]\n           └── variable: column1:1 [type=int]\n"
+  ],
+  "queries": [
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "operand": [],
+                  "operator": "EXISTS",
+                  "query": {
+                    "project": {
+                      "source": {
+                        "filter": {
+                          "condition": {
+                            "operand": [
+                              {
+                                "operand": [
+                                  {
+                                    "column": 1,
+                                    "type": "INT"
+                                  },
+                                  {
+                                    "column": 0,
+                                    "type": "INT"
+                                  }
+                                ],
+                                "operator": "EQ",
+                                "type": "BOOL"
+                              }
+                            ],
+                            "operator": "AND",
+                            "type": "BOOLEAN"
+                          },
+                          "source": {
+                            "scan": 0
+                          }
+                        }
+                      },
+                      "target": [
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 2,
+                          "type": "INT"
+                        }
+                      ]
+                    }
+                  },
+                  "type": "BOOLEAN"
+                }
+              ],
+              "operator": "NOT",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "values": {
+            "content": [
+              [
+                {
+                  "operand": [],
+                  "operator": "1",
+                  "type": "INT"
+                }
+              ],
+              [
+                {
+                  "operand": [],
+                  "operator": "2",
+                  "type": "INT"
+                }
+              ]
+            ],
+            "schema": [
+              "INT"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "join": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 1,
+                  "type": "INT"
+                },
+                {
+                  "column": 0,
+                  "type": "INT"
+                }
+              ],
+              "operator": "EQ",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "kind": "ANTI",
+        "left": {
+          "values": {
+            "content": [
+              [
+                {
+                  "operand": [],
+                  "operator": "1",
+                  "type": "INT"
+                }
+              ],
+              [
+                {
+                  "operand": [],
+                  "operator": "2",
+                  "type": "INT"
+                }
+              ]
+            ],
+            "schema": [
+              "INT"
+            ]
+          }
+        },
+        "right": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          2
+        ]
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

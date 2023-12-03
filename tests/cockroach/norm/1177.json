@@ -1,0 +1,322 @@
+{
+  "help": [
+    "project\n ├── columns: string_agg:12!null\n ├── fd: ()--\u003e(12)\n └── select\n      ├── columns: k:5 string_agg:12!null\n      ├── key: (5)\n      ├── fd: ()--\u003e(12)\n      ├── group-by (hash)\n      │    ├── columns: k:5 string_agg:12\n      │    ├── grouping columns: k:5\n      │    ├── key: (5)\n      │    ├── fd: (5)--\u003e(12)\n      │    ├── project\n      │    │    ├── columns: column11:11!null k:5 s:8\n      │    │    ├── fd: ()--\u003e(11), (5)--\u003e(8)\n      │    │    ├── left-join (cross)\n      │    │    │    ├── columns: x:1!null k:5 s:8\n      │    │    │    ├── key: (1,5)\n      │    │    │    ├── fd: (5)--\u003e(8)\n      │    │    │    ├── project\n      │    │    │    │    ├── columns: x:1!null\n      │    │    │    │    ├── key: (1)\n      │    │    │    │    └── scan xy\n      │    │    │    │         ├── columns: x:1!null y:2 xy.crdb_internal_mvcc_timestamp:3 xy.tableoid:4\n      │    │    │    │         ├── key: (1)\n      │    │    │    │         └── fd: (1)--\u003e(2-4)\n      │    │    │    ├── project\n      │    │    │    │    ├── columns: k:5!null s:8\n      │    │    │    │    ├── key: (5)\n      │    │    │    │    ├── fd: (5)--\u003e(8)\n      │    │    │    │    └── scan a\n      │    │    │    │         ├── columns: k:5!null i:6 f:7 s:8 a.crdb_internal_mvcc_timestamp:9 a.tableoid:10\n      │    │    │    │         ├── key: (5)\n      │    │    │    │         └── fd: (5)--\u003e(6-10)\n      │    │    │    └── filters\n      │    │    │         └── true\n      │    │    └── projections\n      │    │         └── ',' [as=column11:11]\n      │    └── aggregations\n      │         └── string-agg [as=string_agg:12, outer=(8,11)]\n      │              ├── s:8\n      │              └── column11:11\n      └── filters\n           └── string_agg:12 = 'foo' [outer=(12), constraints=(/12: [/'foo' - /'foo']; tight), fd=()--\u003e(12)]\n",
+    "project\n ├── columns: string_agg:12!null\n ├── fd: ()--\u003e(12)\n └── select\n      ├── columns: k:5!null string_agg:12!null\n      ├── key: (5)\n      ├── fd: ()--\u003e(12)\n      ├── group-by (hash)\n      │    ├── columns: k:5!null string_agg:12!null\n      │    ├── grouping columns: k:5!null\n      │    ├── key: (5)\n      │    ├── fd: (5)--\u003e(12)\n      │    ├── project\n      │    │    ├── columns: column11:11!null k:5!null s:8!null\n      │    │    ├── fd: ()--\u003e(11), (5)--\u003e(8)\n      │    │    ├── inner-join (cross)\n      │    │    │    ├── columns: k:5!null s:8!null\n      │    │    │    ├── fd: (5)--\u003e(8)\n      │    │    │    ├── scan xy\n      │    │    │    ├── select\n      │    │    │    │    ├── columns: k:5!null s:8!null\n      │    │    │    │    ├── key: (5)\n      │    │    │    │    ├── fd: (5)--\u003e(8)\n      │    │    │    │    ├── scan a\n      │    │    │    │    │    ├── columns: k:5!null s:8\n      │    │    │    │    │    ├── key: (5)\n      │    │    │    │    │    └── fd: (5)--\u003e(8)\n      │    │    │    │    └── filters\n      │    │    │    │         └── s:8 IS NOT NULL [outer=(8), constraints=(/8: (/NULL - ]; tight)]\n      │    │    │    └── filters (true)\n      │    │    └── projections\n      │    │         └── ',' [as=column11:11]\n      │    └── aggregations\n      │         └── string-agg [as=string_agg:12, outer=(8,11)]\n      │              ├── s:8\n      │              └── column11:11\n      └── filters\n           └── string_agg:12 = 'foo' [outer=(12), constraints=(/12: [/'foo' - /'foo']; tight), fd=()--\u003e(12)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "STRING"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'foo'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 2,
+                        "type": "STRING"
+                      }
+                    ],
+                    "operator": "STRING AGG",
+                    "type": "STRING"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "source": {
+                  "project": {
+                    "source": {
+                      "join": {
+                        "condition": {
+                          "operand": [
+                            {
+                              "operand": [],
+                              "operator": "TRUE",
+                              "type": "BOOL"
+                            }
+                          ],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "kind": "LEFT",
+                        "left": {
+                          "project": {
+                            "source": {
+                              "scan": 0
+                            },
+                            "target": [
+                              {
+                                "column": 0,
+                                "type": "INT"
+                              }
+                            ]
+                          }
+                        },
+                        "right": {
+                          "project": {
+                            "source": {
+                              "scan": 1
+                            },
+                            "target": [
+                              {
+                                "column": 0,
+                                "type": "INT"
+                              },
+                              {
+                                "column": 3,
+                                "type": "STRING"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 2,
+                        "type": "STRING"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "','",
+                        "type": "STRING"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "STRING"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "STRING"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "'foo'",
+                      "type": "STRING"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "STRING"
+                      },
+                      {
+                        "column": 2,
+                        "type": "STRING"
+                      }
+                    ],
+                    "operator": "STRING AGG",
+                    "type": "STRING"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "source": {
+                  "project": {
+                    "source": {
+                      "join": {
+                        "condition": {
+                          "operand": [],
+                          "operator": "AND",
+                          "type": "BOOLEAN"
+                        },
+                        "kind": "INNER",
+                        "left": {
+                          "project": {
+                            "source": {
+                              "scan": 0
+                            },
+                            "target": []
+                          }
+                        },
+                        "right": {
+                          "filter": {
+                            "condition": {
+                              "operand": [
+                                {
+                                  "operand": [
+                                    {
+                                      "column": 1,
+                                      "type": "STRING"
+                                    },
+                                    {
+                                      "operand": [],
+                                      "operator": "NULL",
+                                      "type": "ANYELEMENT"
+                                    }
+                                  ],
+                                  "operator": "IS NOT",
+                                  "type": "BOOL"
+                                }
+                              ],
+                              "operator": "AND",
+                              "type": "BOOLEAN"
+                            },
+                            "source": {
+                              "project": {
+                                "source": {
+                                  "scan": 1
+                                },
+                                "target": [
+                                  {
+                                    "column": 0,
+                                    "type": "INT"
+                                  },
+                                  {
+                                    "column": 3,
+                                    "type": "STRING"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "STRING"
+                      },
+                      {
+                        "operand": [],
+                        "operator": "','",
+                        "type": "STRING"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

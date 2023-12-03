@@ -1,0 +1,241 @@
+{
+  "help": [
+    "select\n ├── columns: p:11!null\n ├── immutable\n ├── project\n │    ├── columns: \"?column?\":11!null\n │    ├── immutable\n │    ├── left-join (hash)\n │    │    ├── columns: k:1!null i:2 f:3 s:4 a.crdb_internal_mvcc_timestamp:5 a.tableoid:6 x:7 y:8 xy.crdb_internal_mvcc_timestamp:9 xy.tableoid:10\n │    │    ├── key: (1,7)\n │    │    ├── fd: (1)--\u003e(2-6), (7)--\u003e(8-10)\n │    │    ├── scan a\n │    │    │    ├── columns: k:1!null i:2 f:3 s:4 a.crdb_internal_mvcc_timestamp:5 a.tableoid:6\n │    │    │    ├── key: (1)\n │    │    │    └── fd: (1)--\u003e(2-6)\n │    │    ├── scan xy\n │    │    │    ├── columns: x:7!null y:8 xy.crdb_internal_mvcc_timestamp:9 xy.tableoid:10\n │    │    │    ├── key: (7)\n │    │    │    └── fd: (7)--\u003e(8-10)\n │    │    └── filters\n │    │         └── i:2 = y:8 [outer=(2,8), constraints=(/2: (/NULL - ]; /8: (/NULL - ]), fd=(2)==(8), (8)==(2)]\n │    └── projections\n │         └── k:1 * 3 [as=\"?column?\":11, outer=(1), immutable]\n └── filters\n      └── \"?column?\":11 \u003e 5 [outer=(11), constraints=(/11: [/6 - ]; tight)]\n",
+    "project\n ├── columns: p:11!null\n ├── immutable\n ├── left-join (hash)\n │    ├── columns: k:1!null i:2 y:8\n │    ├── immutable\n │    ├── fd: (1)--\u003e(2)\n │    ├── select\n │    │    ├── columns: k:1!null i:2\n │    │    ├── immutable\n │    │    ├── key: (1)\n │    │    ├── fd: (1)--\u003e(2)\n │    │    ├── scan a\n │    │    │    ├── columns: k:1!null i:2\n │    │    │    ├── key: (1)\n │    │    │    └── fd: (1)--\u003e(2)\n │    │    └── filters\n │    │         └── (k:1 * 3) \u003e 5 [outer=(1), immutable]\n │    ├── scan xy\n │    │    └── columns: y:8\n │    └── filters\n │         └── i:2 = y:8 [outer=(2,8), constraints=(/2: (/NULL - ]; /8: (/NULL - ]), fd=(2)==(8), (8)==(2)]\n └── projections\n      └── k:1 * 3 [as=\"?column?\":11, outer=(1), immutable]\n"
+  ],
+  "queries": [
+    {
+      "filter": {
+        "condition": {
+          "operand": [
+            {
+              "operand": [
+                {
+                  "column": 0,
+                  "type": "INT"
+                },
+                {
+                  "operand": [],
+                  "operator": "5",
+                  "type": "INT"
+                }
+              ],
+              "operator": "GT",
+              "type": "BOOL"
+            }
+          ],
+          "operator": "AND",
+          "type": "BOOLEAN"
+        },
+        "source": {
+          "project": {
+            "source": {
+              "join": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "column": 1,
+                          "type": "INT"
+                        },
+                        {
+                          "column": 7,
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "EQ",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "kind": "LEFT",
+                "left": {
+                  "scan": 0
+                },
+                "right": {
+                  "scan": 1
+                }
+              }
+            },
+            "target": [
+              {
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  },
+                  {
+                    "operand": [],
+                    "operator": "3",
+                    "type": "INT"
+                  }
+                ],
+                "operator": "MULT",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "join": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "column": 2,
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "kind": "LEFT",
+            "left": {
+              "filter": {
+                "condition": {
+                  "operand": [
+                    {
+                      "operand": [
+                        {
+                          "operand": [
+                            {
+                              "column": 0,
+                              "type": "INT"
+                            },
+                            {
+                              "operand": [],
+                              "operator": "3",
+                              "type": "INT"
+                            }
+                          ],
+                          "operator": "MULT",
+                          "type": "INT"
+                        },
+                        {
+                          "operand": [],
+                          "operator": "5",
+                          "type": "INT"
+                        }
+                      ],
+                      "operator": "GT",
+                      "type": "BOOL"
+                    }
+                  ],
+                  "operator": "AND",
+                  "type": "BOOLEAN"
+                },
+                "source": {
+                  "project": {
+                    "source": {
+                      "scan": 0
+                    },
+                    "target": [
+                      {
+                        "column": 0,
+                        "type": "INT"
+                      },
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "right": {
+              "project": {
+                "source": {
+                  "scan": 1
+                },
+                "target": [
+                  {
+                    "column": 1,
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 0,
+                "type": "INT"
+              },
+              {
+                "operand": [],
+                "operator": "3",
+                "type": "INT"
+              }
+            ],
+            "operator": "MULT",
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

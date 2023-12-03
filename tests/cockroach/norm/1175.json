@@ -1,0 +1,248 @@
+{
+  "help": [
+    "project\n ├── columns: count:11!null\n ├── fd: ()--\u003e(11)\n └── select\n      ├── columns: k:1!null count:11!null\n      ├── key: (1)\n      ├── fd: ()--\u003e(11)\n      ├── group-by (hash)\n      │    ├── columns: k:1!null count:11!null\n      │    ├── grouping columns: k:1!null\n      │    ├── key: (1)\n      │    ├── fd: (1)--\u003e(11)\n      │    ├── left-join (cross)\n      │    │    ├── columns: k:1!null x:7\n      │    │    ├── key: (1,7)\n      │    │    ├── project\n      │    │    │    ├── columns: k:1!null\n      │    │    │    ├── key: (1)\n      │    │    │    └── scan a\n      │    │    │         ├── columns: k:1!null i:2 f:3 s:4 a.crdb_internal_mvcc_timestamp:5 a.tableoid:6\n      │    │    │         ├── key: (1)\n      │    │    │         └── fd: (1)--\u003e(2-6)\n      │    │    ├── project\n      │    │    │    ├── columns: x:7!null\n      │    │    │    ├── key: (7)\n      │    │    │    └── scan xy\n      │    │    │         ├── columns: x:7!null y:8 xy.crdb_internal_mvcc_timestamp:9 xy.tableoid:10\n      │    │    │         ├── key: (7)\n      │    │    │         └── fd: (7)--\u003e(8-10)\n      │    │    └── filters\n      │    │         └── true\n      │    └── aggregations\n      │         └── count [as=count:11, outer=(7)]\n      │              └── x:7\n      └── filters\n           └── count:11 = 1 [outer=(11), constraints=(/11: [/1 - /1]; tight), fd=()--\u003e(11)]\n",
+    "project\n ├── columns: count:11!null\n ├── fd: ()--\u003e(11)\n └── select\n      ├── columns: k:1!null count:11!null\n      ├── key: (1)\n      ├── fd: ()--\u003e(11)\n      ├── group-by (hash)\n      │    ├── columns: k:1!null count:11!null\n      │    ├── grouping columns: k:1!null\n      │    ├── key: (1)\n      │    ├── fd: (1)--\u003e(11)\n      │    ├── left-join (cross)\n      │    │    ├── columns: k:1!null x:7\n      │    │    ├── key: (1,7)\n      │    │    ├── scan a\n      │    │    │    ├── columns: k:1!null\n      │    │    │    └── key: (1)\n      │    │    ├── scan xy\n      │    │    │    ├── columns: x:7!null\n      │    │    │    └── key: (7)\n      │    │    └── filters (true)\n      │    └── aggregations\n      │         └── count [as=count:11, outer=(7)]\n      │              └── x:7\n      └── filters\n           └── count:11 = 1 [outer=(11), constraints=(/11: [/1 - /1]; tight), fd=()--\u003e(11)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "COUNT",
+                    "type": "INT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "source": {
+                  "join": {
+                    "condition": {
+                      "operand": [
+                        {
+                          "operand": [],
+                          "operator": "TRUE",
+                          "type": "BOOL"
+                        }
+                      ],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "kind": "LEFT",
+                    "left": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          }
+                        ]
+                      }
+                    },
+                    "right": {
+                      "project": {
+                        "source": {
+                          "scan": 1
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "filter": {
+            "condition": {
+              "operand": [
+                {
+                  "operand": [
+                    {
+                      "column": 1,
+                      "type": "INT"
+                    },
+                    {
+                      "operand": [],
+                      "operator": "1",
+                      "type": "INT"
+                    }
+                  ],
+                  "operator": "EQ",
+                  "type": "BOOL"
+                }
+              ],
+              "operator": "AND",
+              "type": "BOOLEAN"
+            },
+            "source": {
+              "group": {
+                "function": [
+                  {
+                    "distinct": false,
+                    "ignoreNulls": true,
+                    "operand": [
+                      {
+                        "column": 1,
+                        "type": "INT"
+                      }
+                    ],
+                    "operator": "COUNT",
+                    "type": "INT"
+                  }
+                ],
+                "keys": [
+                  {
+                    "column": 0,
+                    "type": "INT"
+                  }
+                ],
+                "source": {
+                  "join": {
+                    "condition": {
+                      "operand": [],
+                      "operator": "AND",
+                      "type": "BOOLEAN"
+                    },
+                    "kind": "LEFT",
+                    "left": {
+                      "project": {
+                        "source": {
+                          "scan": 0
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          }
+                        ]
+                      }
+                    },
+                    "right": {
+                      "project": {
+                        "source": {
+                          "scan": 1
+                        },
+                        "target": [
+                          {
+                            "column": 0,
+                            "type": "INT"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "target": [
+          {
+            "column": 1,
+            "type": "INT"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "FLOAT",
+        "STRING",
+        "DECIMAL",
+        "OID"
+      ]
+    },
+    {
+      "key": [
+        [
+          0
+        ]
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "types": [
+        "INT",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}

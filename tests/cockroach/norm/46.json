@@ -1,0 +1,117 @@
+{
+  "help": [
+    "project\n ├── columns: \"?column?\":9\n ├── scan c\n │    ├── columns: a:1 b:2 c:3 d:4 e:5 rowid:6!null crdb_internal_mvcc_timestamp:7 tableoid:8\n │    ├── key: (6)\n │    └── fd: (6)--\u003e(1-5,7,8)\n └── projections\n      └── (a:1 AND b:2) OR (b:2 AND a:1) [as=\"?column?\":9, outer=(1,2)]\n",
+    "project\n ├── columns: \"?column?\":9\n ├── scan c\n │    └── columns: a:1 b:2\n └── projections\n      └── b:2 AND a:1 [as=\"?column?\":9, outer=(1,2)]\n"
+  ],
+  "queries": [
+    {
+      "project": {
+        "source": {
+          "scan": 0
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "operand": [
+                  {
+                    "column": 0,
+                    "type": "BOOL"
+                  },
+                  {
+                    "column": 1,
+                    "type": "BOOL"
+                  }
+                ],
+                "operator": "AND",
+                "type": "BOOL"
+              },
+              {
+                "operand": [
+                  {
+                    "column": 1,
+                    "type": "BOOL"
+                  },
+                  {
+                    "column": 0,
+                    "type": "BOOL"
+                  }
+                ],
+                "operator": "AND",
+                "type": "BOOL"
+              }
+            ],
+            "operator": "OR",
+            "type": "BOOL"
+          }
+        ]
+      }
+    },
+    {
+      "project": {
+        "source": {
+          "project": {
+            "source": {
+              "scan": 0
+            },
+            "target": [
+              {
+                "column": 0,
+                "type": "BOOL"
+              },
+              {
+                "column": 1,
+                "type": "BOOL"
+              }
+            ]
+          }
+        },
+        "target": [
+          {
+            "operand": [
+              {
+                "column": 1,
+                "type": "BOOL"
+              },
+              {
+                "column": 0,
+                "type": "BOOL"
+              }
+            ],
+            "operator": "AND",
+            "type": "BOOL"
+          }
+        ]
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "key": [
+        [
+          5
+        ]
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "types": [
+        "BOOL",
+        "BOOL",
+        "BOOL",
+        "BOOL",
+        "BOOL",
+        "INT",
+        "DECIMAL",
+        "OID"
+      ]
+    }
+  ]
+}
