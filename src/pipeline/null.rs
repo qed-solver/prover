@@ -1,6 +1,11 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use paste::paste;
 use z3::ast::{forall_const, Ast, Bool, Datatype, Dynamic, Int, Real, String};
 use z3::{DatatypeAccessor, DatatypeBuilder, DatatypeSort, FuncDecl, Pattern, Solver, Sort};
+
+use super::Stats;
 
 macro_rules! repeat_with {
 	($_t:tt $sub:expr) => {
@@ -63,8 +68,8 @@ macro_rules! optional_fn {
 			#[allow(non_snake_case)]
 			#[allow(dead_code)]
 			pub fn [<$ilsort _ $name>] (&self, $($v: &Dynamic<'c>),*) -> Dynamic<'c> {
-            let input_sort = &self.$ilsort.sort;
-			let output_sort = &self.$olsort.sort;
+            let input_sort = &self.sorts.$ilsort.sort;
+			let output_sort = &self.sorts.$olsort.sort;
             let func = FuncDecl::new(
 				self.solver.get_context(),
 				format!("n-{}-{}", stringify!($ilsort), stringify!($name)),
@@ -79,33 +84,45 @@ macro_rules! optional_fn {
     };
 }
 
+pub struct Ctx<'c> {
+	pub solver: Solver<'c>,
+	pub stats: Rc<RefCell<Stats>>,
+	sorts: Sorts<'c>,
+}
+
 macro_rules! ctx_impl {
     ($($sort:ident {$($def:ident $args:tt -> $ret:ident);* $(;)*});* $(;)*) => {
         paste!(ctx_impl!($($sort [<$sort:snake>] $($def $args [<$ret:snake>]),*);*););
     };
     ($($sort:ident $lsort:ident $($def:ident $args:tt $olsort:ident),*);*) => {
-		pub struct Ctx<'c> {
-			pub solver: Solver<'c>,
-			$(pub $lsort: DatatypeSort<'c>),*
+		struct Sorts<'c> {
+			$($lsort: DatatypeSort<'c>),*
 		}
 
         impl<'c> Ctx<'c> {
-            pub fn new(solver: Solver<'c>) -> Self {
+            pub fn new_with_stats(solver: Solver<'c>, stats: Stats) -> Self {
                 let ctx = solver.get_context();
                 $(let $lsort = DatatypeBuilder::new(ctx, format!("Option<{}>", stringify!($sort)))
                     .variant(&format!("None{}", stringify!($sort)), vec![])
                     .variant("Some", vec![("val", DatatypeAccessor::Sort(Sort::$lsort(ctx)))])
                     .finish();)*
 				$($(optional_op!(solver, $sort, $lsort, $olsort; $def $args));*);*;
-                Self { solver, $($lsort),* }
+				let sorts = Sorts { $($lsort),* };
+                Self { solver, stats: Rc::new(RefCell::new(stats)), sorts }
+            }
+            pub fn new(solver: Solver<'c>) -> Self {
+            	Self::new_with_stats(solver, Default::default())
             }
             $($(optional_fn!($lsort $olsort $def $args);)*)*
 			paste!($(
+			pub fn [<$lsort _sort>](&self) -> Sort<'c> {
+				self.sorts.$lsort.sort.clone()
+			}
 			pub fn [<$lsort _none>](&self) -> Dynamic<'c> {
-				self.$lsort.variants[0].constructor.apply(&[])
+				self.sorts.$lsort.variants[0].constructor.apply(&[])
 			}
 			pub fn [<$lsort _some>](&self, val: $sort<'c>) -> Dynamic<'c> {
-				self.$lsort.variants[1].constructor.apply(&[&val])
+				self.sorts.$lsort.variants[1].constructor.apply(&[&val])
 			}
 			)*);
         }
@@ -202,11 +219,19 @@ impl<'c> Ctx<'c> {
 			})
 	}
 
+	pub fn bool(&self, val: Option<bool>) -> Dynamic<'c> {
+		let ctx = self.solver.get_context();
+		match val {
+			Some(b) => self.bool_some(Bool::from_bool(ctx, b)),
+			None => self.bool_none(),
+		}
+	}
+
 	pub fn bool_is_true(&self, expr: &Dynamic<'c>) -> Bool<'c> {
 		let ctx = self.solver.get_context();
-		self.bool.variants[0].tester.apply(&[expr]).as_bool().unwrap().ite(
+		self.sorts.bool.variants[0].tester.apply(&[expr]).as_bool().unwrap().ite(
 			&Bool::from_bool(ctx, false),
-			&self.bool.variants[1].accessors[0].apply(&[expr]).as_bool().unwrap(),
+			&self.sorts.bool.variants[1].accessors[0].apply(&[expr]).as_bool().unwrap(),
 		)
 	}
 
@@ -226,13 +251,13 @@ impl<'c> Ctx<'c> {
 
 	pub fn bool_and(&self, e1: &Dynamic<'c>, e2: &Dynamic<'c>) -> Dynamic<'c> {
 		let ctx = self.solver.get_context();
-		self.bool.variants[0].tester.apply(&[e1]).as_bool().unwrap().ite(
+		self.sorts.bool.variants[0].tester.apply(&[e1]).as_bool().unwrap().ite(
 			// NULL, b
-			&self.bool.variants[0].tester.apply(&[e2]).as_bool().unwrap().ite(
+			&self.sorts.bool.variants[0].tester.apply(&[e2]).as_bool().unwrap().ite(
 				// NULL, NULL
 				e2,
 				// NULL, Some(b)
-				&self.bool.variants[1].accessors[0].apply(&[e2]).as_bool().unwrap().ite(
+				&self.sorts.bool.variants[1].accessors[0].apply(&[e2]).as_bool().unwrap().ite(
 					// NULL, Some(True)
 					&self.bool_none(),
 					// NULL, Some(False)
@@ -240,7 +265,7 @@ impl<'c> Ctx<'c> {
 				),
 			),
 			// Some(a), b
-			&self.bool.variants[1].accessors[0].apply(&[e1]).as_bool().unwrap().ite(
+			&self.sorts.bool.variants[1].accessors[0].apply(&[e1]).as_bool().unwrap().ite(
 				// Some(True), b
 				e2,
 				// Some(False), b
@@ -251,13 +276,13 @@ impl<'c> Ctx<'c> {
 
 	pub fn bool_or(&self, e1: &Dynamic<'c>, e2: &Dynamic<'c>) -> Dynamic<'c> {
 		let ctx = self.solver.get_context();
-		self.bool.variants[0].tester.apply(&[e1]).as_bool().unwrap().ite(
+		self.sorts.bool.variants[0].tester.apply(&[e1]).as_bool().unwrap().ite(
 			// NULL, b
-			&self.bool.variants[0].tester.apply(&[e2]).as_bool().unwrap().ite(
+			&self.sorts.bool.variants[0].tester.apply(&[e2]).as_bool().unwrap().ite(
 				// NULL, NULL
 				e2,
 				// NULL, Some(b)
-				&self.bool.variants[1].accessors[0].apply(&[e2]).as_bool().unwrap().ite(
+				&self.sorts.bool.variants[1].accessors[0].apply(&[e2]).as_bool().unwrap().ite(
 					// NULL, Some(True)
 					e2,
 					// NULL, Some(False)
@@ -265,7 +290,7 @@ impl<'c> Ctx<'c> {
 				),
 			),
 			// Some(a), b
-			&self.bool.variants[1].accessors[0].apply(&[e1]).as_bool().unwrap().ite(
+			&self.sorts.bool.variants[1].accessors[0].apply(&[e1]).as_bool().unwrap().ite(
 				// Some(True), b
 				&self.bool_some(Bool::from_bool(ctx, true)),
 				// Some(False), b

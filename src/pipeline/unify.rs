@@ -1,9 +1,9 @@
-use std::cell::RefCell;
-use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::process::{Command, Stdio};
 use std::rc::Rc;
+use std::time::Instant;
 
+use crossbeam::sync::UnparkReason;
 use imbl::Vector;
 use itertools::Itertools;
 use z3::ast::{Ast, Bool, Dynamic, Int};
@@ -23,13 +23,9 @@ pub struct UnifyEnv<'c>(pub Rc<Ctx<'c>>, pub Vector<Dynamic<'c>>, pub Vector<Dyn
 impl UnifyEnv<'_> {
 	fn envs(&self) -> (Z3Env, Z3Env) {
 		let UnifyEnv(ctx, subst1, subst2) = self;
-		let h_ops = Rc::new(RefCell::new(HashMap::new()));
-		let agg_ops = Rc::new(RefCell::new(HashMap::new()));
-		let rel_h_ops = Rc::new(RefCell::new(HashMap::new()));
-		let env1 =
-			Z3Env(ctx.clone(), subst1.clone(), h_ops.clone(), agg_ops.clone(), rel_h_ops.clone());
-		let env2 =
-			Z3Env(ctx.clone(), subst2.clone(), h_ops.clone(), agg_ops.clone(), rel_h_ops.clone());
+		let z3_env = Z3Env::empty(ctx.clone());
+		let env1 = z3_env.extend_vals(subst1);
+		let env2 = z3_env.extend_vals(subst2);
 		(env1, env2)
 	}
 }
@@ -70,22 +66,25 @@ impl<'c> Unify<UExpr> for UnifyEnv<'c> {
 
 impl<'c> Unify<Vec<Expr>> for UnifyEnv<'c> {
 	fn unify(&self, es1: &Vec<Expr>, es2: &Vec<Expr>) -> bool {
+		let UnifyEnv(ctx, _, _) = self;
 		es1.len() == es2.len() && {
 			let (ref env1, ref env2) = self.envs();
 			let expr_eqs =
 				es1.iter().zip(es2).map(|(e1, e2)| env1.eval(e1)._eq(&env2.eval(e2))).collect_vec();
-			let eq = Bool::and(self.0.z3_ctx(), &expr_eqs.iter().collect_vec());
+			let eq = Bool::and(ctx.z3_ctx(), &expr_eqs.iter().collect_vec());
 			let h_ops_eq = env1.extract_equiv();
-			smt(&self.0.solver, h_ops_eq.implies(&eq))
+			let unify_start = Instant::now();
+			let (res, timed_out) = smt(&ctx.solver, h_ops_eq.implies(&eq));
+			ctx.update_smt_duration(unify_start.elapsed(), timed_out);
+			res
 		}
 	}
 }
 
 impl Z3Env<'_> {
 	pub fn extract_equiv(&self) -> Bool {
-		let Z3Env(ctx, _, h_ops, agg_ops, rel_h_ops) = self;
-		let (h_ops, agg_ops, rel_h_ops) =
-			(&*h_ops.borrow(), &*agg_ops.borrow(), &*rel_h_ops.borrow());
+		let Z3Env { ctx, h_ops, aggs, rel_h_ops, .. } = self;
+		let (h_ops, aggs, rel_h_ops) = (&*h_ops.borrow(), &*aggs.borrow(), &*rel_h_ops.borrow());
 		let expr_eqs = h_ops
 			.iter()
 			.tuple_combinations()
@@ -94,7 +93,7 @@ impl Z3Env<'_> {
 				(op1 == op2 && env.unify(args1, args2) && env.unify(rel1, rel2)).then(|| v1._eq(v2))
 			})
 			.collect_vec();
-		let agg_eqs = agg_ops
+		let agg_eqs = aggs
 			.iter()
 			.tuple_combinations()
 			.filter_map(|(((op1, lam1, env1), v1), ((op2, lam2, env2), v2))| {
@@ -177,18 +176,21 @@ where
 
 impl<'c> Unify<Term> for UnifyEnv<'c> {
 	fn unify(&self, Sigma(s1, t1): &Term, Sigma(s2, t2): &Term) -> bool {
-		if !perm_equiv(&s1, &s2) {
+		if !perm_equiv(s1, s2) {
 			return false;
 		}
 		log::info!("Unifying\n{}\n{}", t1, t2);
 		let UnifyEnv(ctx, subst1, subst2) = self;
 		let vars1 = s1.iter().map(|ty| ctx.var(ty, "v")).collect();
 		let subst1 = subst1 + &vars1;
-		perms(s1.iter().cloned().collect(), vars1.into_iter().collect()).take(24).any(|vars2| {
-			assert_eq!(vars2.len(), s2.len());
-			log::info!("Permutation: {:?}", vars2);
-			UnifyEnv(ctx.clone(), subst1.clone(), subst2 + &vars2.into()).unify(t1, t2)
-		})
+		perms(s1.iter().cloned().collect(), vars1.into_iter().collect()).take(24).enumerate().any(
+			|(i, vars2)| {
+				ctx.stats.borrow_mut().nontrivial_perms |= i > 0;
+				assert_eq!(vars2.len(), s2.len());
+				log::info!("Permutation: {:?}", vars2);
+				UnifyEnv(ctx.clone(), subst1.clone(), subst2 + &vars2.into()).unify(t1, t2)
+			},
+		)
 	}
 }
 
@@ -209,11 +211,14 @@ impl Unify<Inner> for UnifyEnv<'_> {
 		solver.pop(1);
 		log::info!("{}", equiv);
 		log::info!("{}", h_ops_equiv);
-		smt(solver, h_ops_equiv.implies(&equiv))
+		let unify_start = Instant::now();
+		let (res, timed_out) = smt(solver, h_ops_equiv.implies(&equiv));
+		ctx.update_smt_duration(unify_start.elapsed(), timed_out);
+		res
 	}
 }
 
-pub(crate) fn smt<'c>(solver: &'c z3::Solver, pred: Bool<'c>) -> bool {
+pub(crate) fn smt<'c>(solver: &'c z3::Solver, pred: Bool<'c>) -> (bool, bool) {
 	let smt: String = solver
 		.dump_smtlib(pred.not())
 		.replace(" and", " true")
@@ -272,12 +277,12 @@ pub(crate) fn smt<'c>(solver: &'c z3::Solver, pred: Bool<'c>) -> bool {
 				u2.unpark();
 			}
 		});
-		p.park_timeout(Ctx::timeout());
+		let reason = p.park_timeout(Ctx::timeout());
 		z3_cmd.kill().unwrap();
 		z3_cmd.wait().unwrap();
 		cvc5_cmd.kill().unwrap();
 		cvc5_cmd.wait().unwrap();
-		res.load()
+		(res.load(), matches!(reason, UnparkReason::Timeout))
 	})
 	.unwrap()
 }

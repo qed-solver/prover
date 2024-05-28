@@ -14,7 +14,7 @@ use env_logger::{Builder, Env, Target};
 use itertools::Itertools;
 use walkdir::WalkDir;
 
-use crate::pipeline::{unify, Input};
+use crate::pipeline::{unify, Input, Stats};
 
 mod pipeline;
 
@@ -32,8 +32,8 @@ fn visit<P: AsRef<Path>>(dir: P, mut cb: impl FnMut(usize, &Path)) -> io::Result
 
 #[derive(Debug)]
 enum CosetteResult {
-	Provable,
-	NotProvable,
+	Provable(Stats),
+	NotProvable(Stats),
 	ParseErr(serde_json::Error),
 	Panic(Box<dyn Any + Send>),
 }
@@ -51,21 +51,21 @@ fn main() -> io::Result<()> {
 			let mut buf_reader = BufReader::new(file);
 			let mut contents = String::new();
 			println!("#{}: {}", i, path.to_string_lossy().as_ref());
-			let old_time = Instant::now();
+			let start_time = Instant::now();
 			buf_reader.read_to_string(&mut contents).unwrap();
 			let result =
 				std::panic::catch_unwind(|| match serde_json::from_str::<Input>(&contents) {
 					Ok(rel) => {
-						let provable = unify(rel);
+						let (provable, case_stats) = unify(rel);
 						println!(
 							"Equivalence is {}provable for {}",
 							if provable { "" } else { "not " },
 							path.file_name().unwrap().to_str().unwrap(),
 						);
 						if provable {
-							Provable
+							Provable(case_stats)
 						} else {
-							NotProvable
+							NotProvable(case_stats)
 						}
 					},
 					Err(e) => {
@@ -80,20 +80,27 @@ fn main() -> io::Result<()> {
 					Panic(e)
 				},
 			};
-			let duration = Instant::now() - old_time;
-			let mut result_file = File::create(path.with_extension("res")).unwrap();
-			write!(
-				result_file,
-				"{}\n{}",
-				matches!(result, CosetteResult::Provable),
-				duration.as_secs_f32()
-			)
-			.unwrap();
+			let result_file = File::create(path.with_extension("result")).unwrap();
+			let case_stats = match &result {
+				Provable(stats) | NotProvable(stats) => {
+					let mut stats = stats.clone();
+					stats.provable = matches!(result, Provable(_));
+					stats.total_duration = start_time.elapsed();
+					stats
+				},
+				_ => {
+					let mut stats = Stats::default();
+					stats.panicked = true;
+					stats.total_duration = start_time.elapsed();
+					stats
+				},
+			};
+			serde_json::to_writer(result_file, &case_stats).unwrap();
 			stats.insert(path.to_string_lossy().to_string(), result);
 		})?;
 	}
 	println!("\n\nSTATISTICS");
-	let (a, b): (Vec<_>, _) = stats.values().partition(|v| matches!(v, CosetteResult::Provable));
+	let (a, b): (Vec<_>, _) = stats.values().partition(|v| matches!(v, CosetteResult::Provable(_)));
 	let (al, bl) = (a.len(), b.len());
 	for (name, result) in stats {
 		println!("{}\t{:?}", name, result);

@@ -78,13 +78,11 @@ impl Relation {
 			Singleton => Vector::new(),
 			Scan(table) => schemas[table.0].types.clone().into(),
 			Filter { source, .. } => source.scope(schemas),
-			Project { columns, .. } => columns.iter().map(|expr| expr.ty()).collect(),
+			Project { columns, .. } => columns.iter().map(Expr::ty).collect(),
 			Aggregate { columns, .. } => columns.iter().map(|agg| agg.ty.clone()).collect(),
-			Group { columns, keys: key, .. } => key
-				.iter()
-				.map(|expr| expr.ty())
-				.chain(columns.iter().map(|agg| agg.ty.clone()))
-				.collect(),
+			Group { columns, keys: key, .. } => {
+				key.iter().map(Expr::ty).chain(columns.iter().map(|agg| agg.ty.clone())).collect()
+			},
 			Join { left, kind: Semi | Anti, .. } | Correlate { left, kind: Semi | Anti, .. } => {
 				left.scope(schemas)
 			},
@@ -96,6 +94,19 @@ impl Relation {
 			Distinct(rel) => rel.scope(schemas),
 			Values { schema, .. } => schema.clone().into(),
 			Sort { source, .. } => source.scope(schemas),
+		}
+	}
+
+	pub fn complete(&self) -> bool {
+		use Relation::*;
+		match self {
+			Singleton | Scan(_) => true,
+			Filter { condition, source } => condition.complete() && source.complete(),
+			Project { columns, source } => columns.iter().all(Expr::complete) && source.complete(),
+			Join { kind: JoinKind::Inner, condition, left, right} => condition.complete() && left.complete() && right.complete(),
+			Union(rels) => rels.iter().all(Relation::complete),
+			Values { content, .. } => content.iter().flatten().all(Expr::complete),
+			_ => false
 		}
 	}
 }
@@ -146,7 +157,7 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 							});
 							pa.chain(once(pk))
 						});
-					UExpr::pred(Logic::And(key_constraints.collect()))
+					UExpr::pred(key_constraints.product())
 				};
 				Lambda(scope.clone(), app * Mul(constraints.collect()) * Mul(conds.collect()))
 			},
@@ -172,10 +183,9 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 				let matches = vars(lvl, scope.clone())
 					.into_iter()
 					.zip(columns)
-					.map(|(var, col)| Logic::Eq(var, cols_env.eval(col)))
-					.collect();
+					.map(|(var, col)| Logic::Eq(var, cols_env.eval(col)));
 				let app = UExpr::app(source, inner_vars);
-				Lambda(scope, UExpr::sum(inner_scope, UExpr::pred(Logic::And(matches)) * app))
+				Lambda(scope, UExpr::sum(inner_scope, UExpr::pred(matches.product()) * app))
 			},
 			// R(x) semi join S(y) on P[x, y]
 			// λ x. R(x) × ‖∑ y. [P[x, y]] × S(y)‖
@@ -273,11 +283,11 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 				match kind {
 					Inner => Lambda(scope, left_app * right_app),
 					Left => {
-						let nulls = right_vars.iter().map(|v| v.clone().is_null()).collect();
+						let nulls = right_vars.iter().map(|v| v.clone().is_null());
 						Lambda(
 							scope,
 							left_app.clone() * right_app
-								+ left_app * UExpr::pred(Logic::And(nulls)) * inner(false),
+								+ left_app * UExpr::pred(nulls.product()) * inner(false),
 						)
 					},
 					Semi => Lambda(scope, left_app * inner(true)),
@@ -368,11 +378,14 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 						.zip(key.clone())
 						.map(|(v, k)| Logic::Eq(v.clone(), key_env.eval(k)));
 					let app = UExpr::app(Env(schemas, subst, lvl).eval(source.clone()), vars);
-					UExpr::pred(Logic::And(matches.collect())) * app
+					UExpr::pred(matches.product()) * app
 				};
 				let body_lvl = lvl + scope.len();
 				let source_vars = vars(body_lvl, source_scope.clone());
 				let agged = |agg: AggCall| {
+					if agg.op == "LITERAL_AGG" && agg.args.len() == 1 {
+						return self.eval(agg.args[0].clone());
+					}
 					let inner_scope: Vector<_> = agg.args.iter().map(|e| e.ty()).collect();
 					let inner_lvl = body_lvl + inner_scope.len();
 					let source_vars = vars(inner_lvl, source_scope.clone());
@@ -385,12 +398,12 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 						.map(|(v, arg)| Logic::Eq(v.clone(), arg_env.eval(arg)));
 					let body = UExpr::sum(
 						source_scope.clone(),
-						UExpr::pred(Logic::And(matches.collect()))
+						UExpr::pred(matches.product())
 							* grouped(inner_lvl + source_scope.len(), source_vars),
 					);
 					let body = if agg.ignore_nulls {
-						let condition = inner_vars.iter().map(|v| !v.clone().is_null());
-						UExpr::pred(Logic::And(condition.collect())) * body
+						let conditions = inner_vars.iter().map(|v| !v.clone().is_null());
+						UExpr::pred(conditions.product()) * body
 					} else {
 						body
 					};
@@ -398,22 +411,19 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 					use shared::Expr::{Agg, HOp};
 					match agg.op.as_str() {
 						"COUNT" => Agg(Aggr(agg.op, inner_scope, body, Box::new(1u32.into()))),
-						_ if inner_scope.len() == 1 => {
+						_ if inner_scope.len() == 1 && inner_scope[0] == agg.ty => {
 							Agg(Aggr(agg.op, inner_scope, body, inner_vars[0].clone().into()))
 						},
 						_ => HOp(agg.op, vec![], Lambda(inner_scope, body).into(), agg.ty),
 					}
 				};
-				let aggs = agg_vars
-					.into_iter()
-					.zip(columns)
-					.map(|(v, agg)| Logic::Eq(v, agged(agg)))
-					.collect();
+				let aggs =
+					agg_vars.into_iter().zip(columns).map(|(v, agg)| Logic::Eq(v, agged(agg)));
 				let left = UExpr::squash(UExpr::sum(
 					source_scope.clone(),
 					grouped(body_lvl + source_scope.len(), source_vars),
 				));
-				Lambda(scope, left * UExpr::pred(Logic::And(aggs)))
+				Lambda(scope, left * UExpr::pred(aggs.product()))
 			},
 			Sort { mut collation, offset, limit, source } => {
 				// TODO: Better way to handle multiple sort columns.
@@ -481,8 +491,8 @@ impl Eval<(AggCall, Relation), syntax::Expr> for Env<'_> {
 		let Env(_, _, lvl) = self;
 		let Lambda(scope, body) = self.eval(source);
 		let body = if agg.ignore_nulls {
-			let condition = vars(lvl, scope.clone()).into_iter().map(|v| !v.is_null());
-			UExpr::pred(Logic::And(condition.collect())) * body
+			let conditions = vars(lvl, scope.clone()).into_iter().map(|v| !v.is_null());
+			UExpr::pred(conditions.product()) * body
 		} else {
 			body
 		};
@@ -490,7 +500,7 @@ impl Eval<(AggCall, Relation), syntax::Expr> for Env<'_> {
 		// TODO: Handle various agg calls.
 		match agg.op.as_str() {
 			"COUNT" => syntax::Expr::Agg(Aggr(agg.op, scope, body, Box::new(1u32.into()))),
-			_ if scope.len() == 1 => {
+			_ if scope.len() == 1 && scope[0] == agg.ty => {
 				let var = vars(lvl, scope.clone())[0].clone();
 				syntax::Expr::Agg(Aggr(agg.op, scope, body, var.into()))
 			},
@@ -534,6 +544,14 @@ impl Expr {
 			self
 		} else {
 			Expr::Op { op: "CAST".to_string(), args: vec![self], ty: DataType::Real, rel: None }
+		}
+	}
+
+	fn complete(&self) -> bool {
+		match self {
+			Expr::Op { rel: Some(_), .. } => false,
+			Expr::Col { .. } => true,
+			Expr::Op { args, rel: None, .. } => args.iter().all(Expr::complete)
 		}
 	}
 }
@@ -622,8 +640,8 @@ impl Eval<Expr, Logic> for Env<'_> {
 		match source.clone() {
 			e if let Some(l) = self.eval_logic(&e) => l,
 			Expr::Op { op, args, .. } => match op.to_uppercase().as_str() {
-				"AND" => Logic::And(args.into_iter().map(|arg| self.eval(arg)).collect()),
-				"OR" => Logic::Or(args.into_iter().map(|arg| self.eval(arg)).collect()),
+				"AND" => args.into_iter().map(|arg| self.eval(arg)).product(),
+				"OR" => args.into_iter().map(|arg| self.eval(arg)).sum(),
 				_ => Logic::Bool(self.eval(source)),
 			},
 			Expr::Col { .. } => Logic::Bool(self.eval(source)),

@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::time::Instant;
 
 use imbl::{vector, HashSet, Vector};
 use itertools::Itertools;
@@ -94,7 +95,7 @@ pub fn min_subst<'c>(
 			v,
 			cong.iter()
 				.find(|&&(_, e)| e == &normal::Expr::Var(v, e.ty()))
-				.map(|(g, _)| groups.get(&g).unwrap()),
+				.map(|(g, _)| groups.get(g).unwrap()),
 		)
 	});
 	let mut new_scope = Vector::new();
@@ -203,7 +204,7 @@ pub fn stablize<'c>(
 ) -> Option<(Vector<DataType>, Vector<Option<Expr<'c>>>)> {
 	let Env(subst, z3_env) = env;
 	let z3_env = &z3_env.extend(&scope);
-	let solver = &z3_env.0.solver;
+	let solver = &z3_env.ctx.solver;
 	let constraint = z3_env.eval(&logic);
 	let vars = shared::Expr::vars(subst.len(), scope.clone());
 	let exprs = vars
@@ -218,13 +219,17 @@ pub fn stablize<'c>(
 	solver.assert(&constraint);
 	let handle = solver.get_context().handle();
 	let checked = crossbeam::atomic::AtomicCell::new(false);
+	let timed_out = crossbeam::atomic::AtomicCell::new(false);
+	let equiv_start = Instant::now();
 	let (ids, res) = std::thread::scope(|s| {
 		let checked = &checked;
+		let timed_out = &timed_out;
 		let p = crossbeam::sync::Parker::new();
 		let u = p.unparker().clone();
 		s.spawn(move || {
 			p.park_timeout(Ctx::timeout());
 			if !checked.load() {
+				timed_out.store(true);
 				handle.interrupt();
 			}
 		});
@@ -233,6 +238,7 @@ pub fn stablize<'c>(
 		u.unpark();
 		(ids, res)
 	});
+	z3_env.ctx.update_equiv_class_duration(equiv_start.elapsed(), timed_out.into_inner());
 	solver.pop(1);
 	match res {
 		SatResult::Unsat => None,

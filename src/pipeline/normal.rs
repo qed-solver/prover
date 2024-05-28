@@ -15,7 +15,7 @@ use z3::{Config, Context, Solver};
 use super::shared::{Ctx, Lambda, Sigma, Typed};
 use super::stable::{self, stablize};
 use super::unify::{Unify, UnifyEnv};
-use crate::pipeline::relation::num_op;
+use crate::pipeline::relation::{num_cmp, num_op};
 use crate::pipeline::shared::{DataType, Eval, Neutral as Neut, Terms, VL};
 use crate::pipeline::{partial, shared};
 
@@ -41,7 +41,7 @@ pub struct Aggr(pub String, pub Vector<DataType>, pub Box<Inner>, pub Box<Expr>)
 impl Display for Aggr {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		let Aggr(name, scope, uexpr, expr) = self;
-		write!(f, "⨿{} {:?} {{", name, scope)?;
+		writeln!(f, "⨿{} {:?} {{", name, scope)?;
 		writeln!(indented(f).with_str("\t"), "{},", uexpr)?;
 		writeln!(indented(f).with_str("\t"), "{}", expr)?;
 		write!(f, "}}")
@@ -343,7 +343,7 @@ impl<'c> Eval<stable::Term<'c>, Option<Term>> for &Env {
 		let stable::Env(subst, z3_env) = clos_env;
 		let clos_env = &stable::Env(subst + new_subst, z3_env.extend(&scope));
 		let env = &(self + &new_scope);
-		let logic = env.eval(clos_env.eval(inner.logic)).simpl();
+		let logic = env.eval(clos_env.eval(inner.logic));
 		let apps = env.eval(clos_env.eval(inner.apps));
 		Some(Sigma(new_scope, Inner { logic, apps }))
 	}
@@ -370,19 +370,15 @@ impl Unify<partial::UExpr> for Env {
 		let config = Config::new();
 		let z3_ctx = Context::new(&config);
 		let ctx = Rc::new(Ctx::new(Solver::new(&z3_ctx)));
-		let h_ops = Rc::new(RefCell::new(HashMap::new()));
-		let agg_ops = Rc::new(RefCell::new(HashMap::new()));
-		let rel_h_ops = Rc::new(RefCell::new(HashMap::new()));
 		let subst = shared::Expr::vars(0, self.clone()).into_iter().map(Some).collect();
 		let z3_subst: Vector<_> = self.iter().map(|ty| ctx.var(ty, "v")).collect();
-		let env =
-			&stable::Env(subst, Z3Env(ctx.clone(), z3_subst.clone(), h_ops, agg_ops, rel_h_ops));
+		let env = &stable::Env(subst, Z3Env::new(ctx.clone(), z3_subst.clone()));
 		let t1 = env.eval(t1);
 		let t2 = env.eval(t2);
 		let t1: UExpr = self.eval(t1);
 		let t2: UExpr = self.eval(t2);
 		let uni_env = UnifyEnv(ctx, z3_subst.clone(), z3_subst);
-		(&uni_env).unify(&t1, &t2)
+		uni_env.unify(&t1, &t2)
 	}
 }
 
@@ -395,37 +391,142 @@ pub type AggMap<'c> =
 	HashMap<(String, Lambda<(Inner, Vec<Expr>)>, Vector<Dynamic<'c>>), Dynamic<'c>>;
 
 #[derive(Clone)]
-pub struct Z3Env<'c>(
-	pub Rc<Ctx<'c>>,
-	pub Vector<Dynamic<'c>>,
-	pub Rc<RefCell<HOpMap<'c>>>,
-	pub Rc<RefCell<AggMap<'c>>>,
-	pub Rc<RefCell<RelHOpMap<'c>>>,
-);
+pub struct Z3Env<'c> {
+	pub ctx: Rc<Ctx<'c>>,
+	pub subst: Vector<Dynamic<'c>>,
+	pub h_ops: Rc<RefCell<HOpMap<'c>>>,
+	pub aggs: Rc<RefCell<AggMap<'c>>>,
+	pub rel_h_ops: Rc<RefCell<RelHOpMap<'c>>>,
+}
 
 impl<'c> Z3Env<'c> {
+	pub fn empty(ctx: Rc<Ctx<'c>>) -> Self {
+		Self::new(ctx, vector![])
+	}
+
+	pub fn new(ctx: Rc<Ctx<'c>>, subst: Vector<Dynamic<'c>>) -> Self {
+		Z3Env {
+			ctx,
+			subst,
+			h_ops: Default::default(),
+			aggs: Default::default(),
+			rel_h_ops: Default::default(),
+		}
+	}
+
 	pub fn extend(&self, scope: &Vector<DataType>) -> Self {
-		let vars = scope.into_iter().map(|ty| self.0.var(ty, "v")).collect();
-		Z3Env(self.0.clone(), self.1.clone() + vars, self.2.clone(), self.3.clone(), self.4.clone())
+		let vars = scope.into_iter().map(|ty| self.ctx.var(ty, "v")).collect();
+		Z3Env { subst: self.subst.clone() + vars, ..self.clone() }
 	}
 
 	pub fn extend_vals(&self, vals: &Vector<Dynamic<'c>>) -> Self {
-		Z3Env(self.0.clone(), &self.1 + vals, self.2.clone(), self.3.clone(), self.4.clone())
+		Z3Env { subst: &self.subst + vals, ..self.clone() }
 	}
 
 	pub fn extend_vars(&self, scope: &Vector<DataType>) -> (Z3Env<'c>, Vector<Dynamic<'c>>) {
-		let vars = scope.into_iter().map(|ty| self.0.var(ty, "v")).collect();
-		(
-			Z3Env(self.0.clone(), &self.1 + &vars, self.2.clone(), self.3.clone(), self.4.clone()),
-			vars,
-		)
+		let vars = scope.into_iter().map(|ty| self.ctx.var(ty, "v")).collect();
+		(Z3Env { subst: &self.subst + &vars, ..self.clone() }, vars)
+	}
+
+	fn exists(&self, vars: &Vector<Dynamic<'c>>, body: &Bool<'c>) -> Bool<'c> {
+		let z3_ctx = self.ctx.z3_ctx();
+		let bounds = vars.iter().map(|v| v as &dyn Ast).collect_vec();
+		exists_const(z3_ctx, &bounds, &[], body)
+	}
+
+	fn equal(&self, ty: DataType, a1: &Dynamic<'c>, a2: &Dynamic<'c>) -> Dynamic<'c> {
+		use shared::DataType::*;
+		let ctx = &self.ctx;
+		assert_eq!(a1.get_sort(), a2.get_sort(), "{} and {} have different types.", a1, a2);
+		match ty {
+			Integer => ctx.int__eq(a1, a2),
+			Real => ctx.real__eq(a1, a2),
+			Boolean => ctx.bool__eq(a1, a2),
+			String => ctx.string__eq(a1, a2),
+			Custom(ty) => ctx.generic_eq(ty, a1, a2),
+		}
+	}
+
+	fn cmp(&self, ty: DataType, cmp: &str, a1: &Dynamic<'c>, a2: &Dynamic<'c>) -> Dynamic<'c> {
+		let ctx = &self.ctx;
+		use shared::DataType::*;
+		assert!(matches!(ty, Integer | Real | String));
+		match cmp {
+			">" | "GT" => match ty {
+				Integer => ctx.int_gt(a1, a2),
+				Real => ctx.real_gt(a1, a2),
+				_ => ctx.string_gt(a1, a2),
+			},
+			"<" | "LT" => match ty {
+				Integer => ctx.int_lt(a1, a2),
+				Real => ctx.real_lt(a1, a2),
+				_ => ctx.string_lt(a1, a2),
+			},
+			">=" | "GE" => match ty {
+				Integer => ctx.int_ge(a1, a2),
+				Real => ctx.real_ge(a1, a2),
+				_ => ctx.string_ge(a1, a2),
+			},
+			"<=" | "LE" => match ty {
+				Integer => ctx.int_le(a1, a2),
+				Real => ctx.real_le(a1, a2),
+				_ => ctx.string_le(a1, a2),
+			},
+			_ => unreachable!(),
+		}
+	}
+
+	// Some x.P
+	// exists x. (P[x] == true) => true
+	// exists x. (P[x] == null) => null
+	// otherwise, forall x. (P[x] == false) => false
+	// All x.P
+	// exists x. (P[x] == false) => false
+	// exists x. (P[x] == null), => null
+	// otherwise, forall x. (P[x] == true) => true
+	fn quant_cmp(&self, quant: &str, cmp: &str, args: &Vec<Expr>, rel: &Relation) -> Dynamic<'c> {
+		let ctx = &self.ctx;
+		let z3_ctx = self.ctx.z3_ctx();
+		let Lambda(scope, uexpr) = rel.clone();
+		assert_eq!(scope.len(), args.len());
+		let vals = args.into_iter().map(|a| self.eval(a)).collect_vec();
+		let (ref inner_env, vars) = self.extend_vars(&scope);
+		let cmp: Dynamic<'c> = match cmp {
+			"=" | "EQ" | "<>" | "!=" | "NE" => {
+				let cmps = vals
+					.iter()
+					.zip(&vars)
+					.zip(scope)
+					.map(|((v, x), ty)| match cmp {
+						"=" | "EQ" => self.equal(ty, v, x),
+						_ => self.ctx.bool_not(&self.equal(ty, v, x)),
+					})
+					.collect_vec();
+				self.ctx.bool_and_v(&cmps.iter().collect_vec())
+			},
+			_ if vals.len() == 1 => self.cmp(scope[0].clone(), cmp, &vals[0], &vars[0]),
+			_ => todo!(),
+		};
+		let body = inner_env.eval(&uexpr);
+		// r => exists x. v <cmp> x == r /\ |R(x)|
+		let p = |res| self.exists(&vars, &Bool::and(z3_ctx, &[&cmp._eq(res), &body]));
+		match quant {
+			"SOME" | "ANY" => p(&ctx.bool(Some(true))).ite(
+				&ctx.bool(Some(true)),
+				&p(&ctx.bool(None)).ite(&ctx.bool(None), &ctx.bool(Some(false))),
+			),
+			_ => p(&ctx.bool(Some(false))).ite(
+				&ctx.bool(Some(false)),
+				&p(&ctx.bool(None)).ite(&ctx.bool(None), &ctx.bool(Some(true))),
+			),
+		}
 	}
 }
 
 impl<'c> Eval<&Logic, Bool<'c>> for &Z3Env<'c> {
 	fn eval(self, source: &Logic) -> Bool<'c> {
 		use shared::Logic::*;
-		let Z3Env(ctx, _, _, _, _) = self;
+		let Z3Env { ctx, .. } = self;
 		let z3_ctx = ctx.z3_ctx();
 		match source {
 			Bool(e) => ctx.bool_is_true(&self.eval(e)),
@@ -449,30 +550,27 @@ impl<'c> Eval<&Logic, Bool<'c>> for &Z3Env<'c> {
 impl<'c> Eval<&UExpr, Bool<'c>> for &Z3Env<'c> {
 	fn eval(self, source: &UExpr) -> Bool<'c> {
 		let terms = source.iter().map(|t| self.eval(t)).collect_vec();
-		Bool::or(self.0.z3_ctx(), &terms.iter().collect_vec())
+		Bool::or(self.ctx.z3_ctx(), &terms.iter().collect_vec())
 	}
 }
 
 impl<'c> Eval<&Term, Bool<'c>> for &Z3Env<'c> {
-	fn eval(self, source: &Term) -> Bool<'c> {
-		let z3_ctx = self.0.z3_ctx();
-		let Sigma(scope, body) = source;
+	fn eval(self, Sigma(scope, body): &Term) -> Bool<'c> {
 		let (ref env, vars) = self.extend_vars(scope);
-		let bounds = vars.iter().map(|v| v as &dyn Ast).collect_vec();
-		exists_const(z3_ctx, &bounds, &[], &env.eval(body))
+		self.exists(&vars, &env.eval(body))
 	}
 }
 
 impl<'c> Eval<&Inner, Bool<'c>> for &Z3Env<'c> {
 	fn eval(self, source: &Inner) -> Bool<'c> {
-		Bool::and(self.0.z3_ctx(), &[&self.eval(&source.logic), &self.eval(&source.apps)])
+		Bool::and(self.ctx.z3_ctx(), &[&self.eval(&source.logic), &self.eval(&source.apps)])
 	}
 }
 
 impl<'c> Eval<&Vector<Neutral>, Bool<'c>> for &Z3Env<'c> {
 	fn eval(self, source: &Vector<Neutral>) -> Bool<'c> {
 		let apps: Vector<_> = self.eval(source);
-		let z3_ctx = self.0.z3_ctx();
+		let z3_ctx = self.ctx.z3_ctx();
 		if apps.is_empty() {
 			Bool::from_bool(z3_ctx, true)
 		} else {
@@ -484,7 +582,7 @@ impl<'c> Eval<&Vector<Neutral>, Bool<'c>> for &Z3Env<'c> {
 impl<'c> Eval<&Vector<Neutral>, Int<'c>> for &Z3Env<'c> {
 	fn eval(self, source: &Vector<Neutral>) -> Int<'c> {
 		let apps: Vector<_> = self.eval(source);
-		let z3_ctx = self.0.z3_ctx();
+		let z3_ctx = self.ctx.z3_ctx();
 		if apps.is_empty() {
 			Int::from_i64(z3_ctx, 1)
 		} else {
@@ -494,13 +592,14 @@ impl<'c> Eval<&Vector<Neutral>, Int<'c>> for &Z3Env<'c> {
 }
 
 fn table_name(head: &Head, env: &Z3Env, squashed: bool, domain: Vec<DataType>) -> String {
-	let Z3Env(_, subst, _, _, map) = env;
+	let Z3Env { subst, rel_h_ops, .. } = env;
 	match head {
 		Head::Var(VL(l)) => format!("r{}!{}", if squashed { "p" } else { "" }, l),
 		Head::HOp(op, args, rel) => {
-			let len = map.borrow().len();
+			let len = rel_h_ops.borrow().len();
 			let name = format!("rh{}!{}", if squashed { "p" } else { "" }, len);
-			map.borrow_mut()
+			rel_h_ops
+				.borrow_mut()
 				.entry((op.clone(), args.clone(), *rel.clone(), subst.clone(), squashed))
 				.or_insert((name, domain))
 				.0
@@ -514,8 +613,8 @@ impl<'c> Eval<&Neutral, Bool<'c>> for &Z3Env<'c> {
 		let domain = args.iter().map(|a| a.ty()).collect();
 		let args = args.iter().map(|v| self.eval(v)).collect_vec();
 		let args = args.iter().collect_vec();
-		self.0
-			.app(&(table_name(&head, self, true, domain) + "p"), &args, &DataType::Boolean, false)
+		self.ctx
+			.app(&(table_name(head, self, true, domain) + "p"), &args, &DataType::Boolean, false)
 			.as_bool()
 			.unwrap()
 	}
@@ -526,8 +625,8 @@ impl<'c> Eval<&Neutral, Int<'c>> for &Z3Env<'c> {
 		let domain = args.iter().map(|a| a.ty()).collect();
 		let args = args.iter().map(|v| self.eval(v)).collect_vec();
 		let args = args.iter().collect_vec();
-		self.0
-			.app(&table_name(&head, self, false, domain), &args, &DataType::Integer, false)
+		self.ctx
+			.app(&table_name(head, self, false, domain), &args, &DataType::Integer, false)
 			.as_int()
 			.unwrap()
 	}
@@ -536,7 +635,7 @@ impl<'c> Eval<&Neutral, Int<'c>> for &Z3Env<'c> {
 impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 	fn eval(self, source: &Expr) -> Dynamic<'c> {
 		use DataType::*;
-		let Z3Env(ctx, subst, h_ops, agg_ops, _) = self;
+		let Z3Env { ctx, subst, h_ops, aggs, .. } = self;
 		let parse = |ctx: &Ctx<'c>, input: &str, ty: &DataType| -> anyhow::Result<Dynamic<'c>> {
 			if input.to_lowercase() == "null" {
 				let null = match ty {
@@ -560,7 +659,7 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 						r.denom().to_i32().unwrap(),
 					))
 				},
-				Boolean => ctx.bool_some(Bool::from_bool(z3_ctx, input.to_lowercase().parse()?)),
+				Boolean => ctx.bool(Some(input.to_lowercase().parse()?)),
 				String => ctx.string_some(Str::from_str(z3_ctx, input).unwrap()),
 				_ => bail!("unsupported type {:?} for constant {}", ty, input),
 			})
@@ -568,7 +667,12 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 		match source {
 			Expr::Var(VL(l), _) => subst[*l].clone(),
 			Expr::Log(l) => ctx.bool_some(self.eval(l.as_ref())),
-			Expr::Op(op, args, ty) if args.is_empty() && let Ok(exp) = parse(ctx.as_ref(), op, ty) => exp,
+			Expr::Op(op, args, ty)
+				if args.is_empty()
+					&& let Ok(exp) = parse(ctx.as_ref(), op, ty) =>
+			{
+				exp
+			},
 			Expr::Op(op, expr_args, ty) => {
 				let args = expr_args.iter().map(|a| self.eval(a)).collect_vec();
 				let args = args.iter().collect_vec();
@@ -591,59 +695,13 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 						_ => unreachable!(),
 					},
 					cmp @ (">" | "GT" | "<" | "LT" | ">=" | "GE" | "<=" | "LE")
-						if expr_args[0].ty() == Integer =>
+						if matches!(expr_args[0].ty(), Integer | Real | String) =>
 					{
-						match cmp {
-							">" | "GT" => ctx.int_gt(args[0], args[1]),
-							"<" | "LT" => ctx.int_lt(args[0], args[1]),
-							">=" | "GE" => ctx.int_ge(args[0], args[1]),
-							"<=" | "LE" => ctx.int_le(args[0], args[1]),
-							_ => unreachable!(),
-						}
+						self.cmp(expr_args[0].ty(), cmp, args[0], args[1])
 					},
-					cmp @ (">" | "GT" | "<" | "LT" | ">=" | "GE" | "<=" | "LE")
-						if expr_args[0].ty() == Real =>
-					{
-						match cmp {
-							">" | "GT" => ctx.real_gt(args[0], args[1]),
-							"<" | "LT" => ctx.real_lt(args[0], args[1]),
-							">=" | "GE" => ctx.real_ge(args[0], args[1]),
-							"<=" | "LE" => ctx.real_le(args[0], args[1]),
-							_ => unreachable!(),
-						}
-					},
-					cmp @ (">" | "GT" | "<" | "LT" | ">=" | "GE" | "<=" | "LE")
-						if expr_args[0].ty() == String =>
-					{
-						match cmp {
-							">" | "GT" => ctx.string_gt(args[0], args[1]),
-							"<" | "LT" => ctx.string_lt(args[0], args[1]),
-							">=" | "GE" => ctx.string_ge(args[0], args[1]),
-							"<=" | "LE" => ctx.string_le(args[0], args[1]),
-							_ => unreachable!(),
-						}
-					},
-					cmp @ ("=" | "EQ" | "<>" | "!=" | "NE") => {
-						let (a1, a2) = (args[0], args[1]);
-						assert_eq!(
-							a1.get_sort(),
-							a2.get_sort(),
-							"{} and {} have different types.",
-							expr_args[0],
-							expr_args[1]
-						);
-						let eq = match expr_args[0].ty() {
-							Integer => ctx.int__eq(a1, a2),
-							Real => ctx.real__eq(a1, a2),
-							Boolean => ctx.bool__eq(a1, a2),
-							String => ctx.string__eq(a1, a2),
-							Custom(ty) => ctx.generic_eq(ty, a1, a2),
-						};
-						if cmp == "=" || cmp == "EQ" {
-							eq
-						} else {
-							ctx.bool_not(&eq)
-						}
+					"=" | "EQ" => self.equal(expr_args[0].ty(), args[0], args[1]),
+					"<>" | "!=" | "NE" => {
+						self.ctx.bool_not(&self.equal(expr_args[0].ty(), args[0], args[1]))
 					},
 					"NOT" if args.len() == 1 => ctx.bool_not(args[0]),
 					"AND" => ctx.bool_and_v(&args),
@@ -665,8 +723,12 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 					"CAST" if ty == &Real && expr_args[0].ty() == Integer => {
 						ctx.int_to_real(args[0])
 					},
-					"CAST" if let Expr::Op(op, args, _) = &expr_args[0] && args.is_empty()
-						&& let Ok(exp) = parse(ctx.as_ref(), op, ty) => exp,
+					"CAST"
+						if let Expr::Op(op, args, _) = &expr_args[0]
+							&& args.is_empty() && let Ok(exp) = parse(ctx.as_ref(), op, ty) =>
+					{
+						exp
+					},
 					"COUNT" | "SUM" | "MIN" | "MAX" => {
 						if args.len() == 1 {
 							args[0].clone()
@@ -674,46 +736,41 @@ impl<'c> Eval<&Expr, Dynamic<'c>> for &Z3Env<'c> {
 							ctx.app(&format!("f{}!{}", args.len(), op), &args, ty, true)
 						}
 					},
-					op => ctx.app(&format!("f!{}", op.replace("'", "\"")), &args, ty, true),
+					op => ctx.app(&format!("f!{}", op.replace('\'', "\"")), &args, ty, true),
 				}
 			},
+			// TODO: Support inequality between multiple values.
+			Expr::HOp(f, args, rel, DataType::Boolean)
+				if let Some((cmp, quant)) = f.split_whitespace().collect_tuple()
+					&& num_cmp(cmp) && args.len() == 1
+					&& matches!(quant, "SOME" | "ANY" | "ALL") =>
+			{
+				self.quant_cmp(quant, cmp, args, rel)
+			},
+			Expr::HOp(f, args, rel, DataType::Boolean)
+				if let Some((cmp, quant)) = f.split_whitespace().collect_tuple()
+					&& matches!(cmp, "=" | "EQ" | "<>" | "!=" | "NE")
+					&& matches!(quant, "SOME" | "ANY" | "ALL") =>
+			{
+				self.quant_cmp(quant, cmp, args, rel)
+			},
 			Expr::HOp(f, args, rel, DataType::Boolean) if f == "IN" => {
-				let z3_ctx = ctx.z3_ctx();
-				let (is_nulls, args, nulls): (Vec<_>, _, _) = args
-					.iter()
-					.map(|a| {
-						let null = ctx.none(&a.ty()).unwrap();
-						let a = self.eval(a);
-						(null._eq(&a), a, null)
-					})
-					.multiunzip();
-				let Lambda(_, uexpr) = *rel.clone();
-				let any_null = Bool::or(z3_ctx, &is_nulls.iter().collect_vec());
-				any_null.ite(
-					&ctx.bool_none(),
-					&(&self.extend_vals(&args)).eval(&uexpr).ite(
-						&ctx.bool_some(Bool::from_bool(z3_ctx, true)),
-						&(&self.extend_vals(&nulls))
-							.eval(&uexpr)
-							.ite(&ctx.bool_none(), &ctx.bool_some(Bool::from_bool(z3_ctx, false))),
-					),
-				)
+				self.quant_cmp("SOME", "=", args, rel)
 			},
 			Expr::HOp(f, args, rel, ty) => h_ops
 				.borrow_mut()
 				.entry((f.clone(), args.clone(), *rel.clone(), subst.clone()))
-				.or_insert_with(|| self.0.var(ty, "h"))
+				.or_insert_with(|| self.ctx.var(ty, "h"))
 				.clone(),
 			Expr::Agg(agg) => {
 				let Aggr(f, scope, inner, expr) = agg;
-				agg_ops
-					.borrow_mut()
+				aggs.borrow_mut()
 					.entry((
 						f.clone(),
 						Lambda(scope.clone(), (*inner.clone(), vec![*expr.clone()])),
 						subst.clone(),
 					))
-					.or_insert_with(|| self.0.var(&expr.ty(), "h"))
+					.or_insert_with(|| self.ctx.var(&expr.ty(), "h"))
 					.clone()
 			},
 		}

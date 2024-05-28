@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display, Formatter, Write};
 use std::hash::Hash;
-use std::iter::FromIterator;
+use std::iter::{FromIterator, Product, Sum};
 use std::ops::{Add, Mul, Not};
 use std::time::Duration;
 
@@ -134,6 +134,12 @@ impl<U: Clone, E: Clone> Mul for Logic<U, E> {
 	}
 }
 
+impl<U: Clone, E: Clone> Product for Logic<U, E> {
+	fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
+		Logic::And(iter.collect())
+	}
+}
+
 impl<U: Clone, E: Clone> Add for Logic<U, E> {
 	type Output = Self;
 
@@ -145,6 +151,12 @@ impl<U: Clone, E: Clone> Add for Logic<U, E> {
 			(l1, Or(ls2)) => Or(vector![l1] + ls2),
 			(l1, l2) => Or(vector![l1, l2]),
 		}
+	}
+}
+
+impl<U: Clone, E: Clone> Sum for Logic<U, E> {
+	fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+		Logic::Or(iter.collect())
 	}
 }
 
@@ -469,10 +481,10 @@ impl<'c> Ctx<'c> {
 	pub fn sort(&self, ty: &DataType) -> Sort<'c> {
 		use DataType::*;
 		match ty {
-			Boolean => self.bool.sort.clone(),
-			String => self.string.sort.clone(),
-			Integer => self.int.sort.clone(),
-			Real => self.real.sort.clone(),
+			Boolean => self.bool_sort(),
+			String => self.string_sort(),
+			Integer => self.int_sort(),
+			Real => self.real_sort(),
 			Custom(ty) => self.generic_sort(ty),
 		}
 	}
@@ -518,5 +530,17 @@ impl<'c> Ctx<'c> {
 		} else {
 			Duration::from_secs(10)
 		}
+	}
+
+	pub fn update_smt_duration(&self, duration: Duration, timed_out: bool) {
+		let mut stats = self.stats.borrow_mut();
+		stats.smt_duration += duration;
+		stats.smt_timed_out |= timed_out;
+	}
+
+	pub fn update_equiv_class_duration(&self, duration: Duration, timed_out: bool) {
+		let mut stats = self.stats.borrow_mut();
+		stats.equiv_class_duration += duration;
+		stats.equiv_class_timed_out |= timed_out;
 	}
 }

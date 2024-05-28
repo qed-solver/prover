@@ -123,7 +123,7 @@ impl Term {
 			match app.0 {
 				Head::HOp(op, args, _) if op == "limit" && args[0] == 0u32.into() => vector![],
 				Head::HOp(op, h_args, rel)
-					if ((op == "limit" && h_args[0] == 1u32.into()) && rel.degen(&context))
+					if ((op == "limit" && h_args[0] == 1u32.into()) && rel.degen(context))
 						|| (op == "offset" && h_args[0] == 0u32.into()) =>
 				{
 					(rel.app(app.1.clone()) * self)
