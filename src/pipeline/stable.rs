@@ -213,11 +213,19 @@ pub fn stablize<'c>(
 		.filter(|e| e.in_scope(subst.len() + scope.len()))
 		.unique()
 		.collect_vec();
-	let z3_asts = exprs.iter().map(|&e| z3_env.eval(e)).collect_vec();
-	let z3_asts = z3_asts.iter().map(|e| e as &dyn Ast).collect_vec();
+	let prev = solver.get_assertions().len();
 	solver.push();
 	solver.assert(&constraint);
-	let handle = solver.get_context().handle();
+	let config = &z3::Config::new();
+	let tmp_ctx = &z3::Context::new(config);
+	let tmp_solver = z3::Solver::new(tmp_ctx);
+	for a in solver.get_assertions() {
+		tmp_solver.assert(&a.translate(tmp_ctx));
+	}
+	let z3_asts = exprs.iter().map(|&e| z3_env.eval(e).translate(tmp_ctx)).collect_vec();
+	let z3_asts = z3_asts.iter().map(|e| e as &dyn Ast).collect_vec();
+	solver.pop(1);
+	let handle = tmp_ctx.handle();
 	let checked = crossbeam::atomic::AtomicCell::new(false);
 	let timed_out = crossbeam::atomic::AtomicCell::new(false);
 	let equiv_start = Instant::now();
@@ -233,13 +241,13 @@ pub fn stablize<'c>(
 				handle.interrupt();
 			}
 		});
-		let (ids, res) = solver.get_implied_equalities(z3_asts.as_slice());
+		let (ids, res) = tmp_solver.get_implied_equalities(z3_asts.as_slice());
 		checked.store(true);
 		u.unpark();
 		(ids, res)
 	});
 	z3_env.ctx.update_equiv_class_duration(equiv_start.elapsed(), timed_out.into_inner());
-	solver.pop(1);
+	assert_eq!(prev, solver.get_assertions().len());
 	match res {
 		SatResult::Unsat => None,
 		SatResult::Unknown => {
