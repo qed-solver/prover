@@ -281,17 +281,38 @@ impl Logic {
 
 pub type Env = Vector<DataType>;
 
+/// SQL value of an aggregate over an empty (zero) input bag. Scalar aggregation always
+/// returns exactly one row, and over an empty input `COUNT`/`$SUM0` yield `0` while every
+/// other aggregate (`SUM`, `AVG`, `MIN`, `MAX`, `ANY_VALUE`, string/array aggs, …) yields
+/// `NULL`. This is used to constant-fold an aggregate whose body normalized to the semiring
+/// zero; it is sound because the fold fires only when the bag is provably empty.
+fn empty_agg_value(op: &str, ty: DataType) -> Expr {
+	let lit = if matches!(op, "COUNT" | "$SUM0") { "0" } else { "NULL" };
+	Expr::Op(lit.to_string(), vec![], ty)
+}
+
 impl Eval<partial::Aggr, Expr> for &Env {
 	fn eval(self, agg: partial::Aggr) -> Expr {
 		use shared::Expr::*;
 		let op = agg.0.clone();
 		let ty = agg.ty();
-		let es = Agg(agg).split(&op, self).into_iter().map(|(scp, l, apps, e)| {
-			let env = &(self + &scp);
-			let inner = Inner { logic: env.eval(l), apps: env.eval(apps) };
-			Agg(Aggr(op.clone(), scp, Box::new(inner), Box::new(env.eval(e))))
-		});
-		Op(op.clone(), es.collect(), ty)
+		let es: Vec<_> = Agg(agg)
+			.split(&op, self)
+			.into_iter()
+			.map(|(scp, l, apps, e)| {
+				let env = &(self + &scp);
+				let inner = Inner { logic: env.eval(l), apps: env.eval(apps) };
+				Agg(Aggr(op.clone(), scp, Box::new(inner), Box::new(env.eval(e))))
+			})
+			.collect();
+		// No terms ⟺ the aggregated body is the semiring zero (empty `Values`, `LIMIT 0`,
+		// product with an empty relation), i.e. the bag is provably empty. Fold to the SQL
+		// empty-input value instead of leaving an uninterpreted nullary `Op(op, [])`, so that
+		// e.g. `COUNT`-over-empty and `$SUM0`-over-empty both become the literal `0`.
+		if es.is_empty() {
+			return empty_agg_value(&op, ty);
+		}
+		Op(op.clone(), es, ty)
 	}
 }
 
@@ -354,12 +375,21 @@ impl<'c> Eval<stable::Aggr<'c>, Expr> for &Env {
 		use shared::Expr::*;
 		let op = agg.0.clone();
 		let ty = agg.ty();
-		let es = Agg(agg).split(&op, self).into_iter().map(|(scp, l, apps, e)| {
-			let env = &(self + &scp);
-			let inner = Inner { logic: env.eval(l), apps: env.eval(apps) };
-			Agg(Aggr(op.clone(), scp, Box::new(inner), Box::new(env.eval(e))))
-		});
-		Op(op.clone(), es.collect(), ty)
+		let es: Vec<_> = Agg(agg)
+			.split(&op, self)
+			.into_iter()
+			.map(|(scp, l, apps, e)| {
+				let env = &(self + &scp);
+				let inner = Inner { logic: env.eval(l), apps: env.eval(apps) };
+				Agg(Aggr(op.clone(), scp, Box::new(inner), Box::new(env.eval(e))))
+			})
+			.collect();
+		// See `empty_agg_value`: an aggregate over a provably-empty bag folds to its SQL
+		// empty-input constant rather than an uninterpreted nullary op.
+		if es.is_empty() {
+			return empty_agg_value(&op, ty);
+		}
+		Op(op.clone(), es, ty)
 	}
 }
 
