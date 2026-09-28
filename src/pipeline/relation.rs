@@ -419,10 +419,18 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 				};
 				let aggs =
 					agg_vars.into_iter().zip(columns).map(|(v, agg)| Logic::Eq(v, agged(agg)));
-				let left = UExpr::squash(UExpr::sum(
-					source_scope.clone(),
-					grouped(body_lvl + source_scope.len(), source_vars),
-				));
+				// An empty grouping set (`GROUP BY ()`, i.e. scalar aggregation) always yields
+				// exactly one group — even over an empty source (SQL returns one row: COUNT->0,
+				// SUM/MAX->NULL). Guarding it with ‖∑ source‖ would drop that row when the source
+				// is empty, unsoundly equating it with `GROUP BY k` (which does produce 0 rows).
+				let left = if key.is_empty() {
+					UExpr::one()
+				} else {
+					UExpr::squash(UExpr::sum(
+						source_scope.clone(),
+						grouped(body_lvl + source_scope.len(), source_vars),
+					))
+				};
 				Lambda(scope, left * UExpr::pred(aggs.product()))
 			},
 			Sort { mut collation, offset, limit, source } => {
