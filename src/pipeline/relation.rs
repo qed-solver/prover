@@ -419,10 +419,16 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 				};
 				let aggs =
 					agg_vars.into_iter().zip(columns).map(|(v, agg)| Logic::Eq(v, agged(agg)));
-				let left = UExpr::squash(UExpr::sum(
-					source_scope.clone(),
-					grouped(body_lvl + source_scope.len(), source_vars),
-				));
+				let left = if key.is_empty() {
+					// Apparently the SQL standard mendates:
+					// "If there are no grouping columns, then the result of the <group by clause> is the grouped table consisting of T as its only group."
+					UExpr::one()
+				} else {
+					UExpr::squash(UExpr::sum(
+						source_scope.clone(),
+						grouped(body_lvl + source_scope.len(), source_vars),
+					))
+				};
 				Lambda(scope, left * UExpr::pred(aggs.product()))
 			},
 			Sort { mut collation, offset, limit, source } => {
