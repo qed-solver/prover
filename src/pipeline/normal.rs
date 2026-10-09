@@ -15,7 +15,7 @@ use z3::{Config, Context, Solver};
 use super::shared::{Ctx, Lambda, Sigma, Typed};
 use super::stable::{self, stablize};
 use super::unify::{Unify, UnifyEnv};
-use crate::pipeline::relation::{num_cmp, num_op};
+use crate::pipeline::relation::{num_cmp, num_op, SECONDARY_KEY_FN};
 use crate::pipeline::shared::{DataType, Eval, Neutral as Neut, Terms, VL};
 use crate::pipeline::{partial, shared};
 
@@ -113,6 +113,17 @@ impl Expr {
 			Expr::HOp(_, args, rel, _) => {
 				args.iter().all(|arg| arg.in_scope(lvl)) && rel.in_scope(lvl)
 			},
+		}
+	}
+
+	/// Whether this applies a function through which a secondary key determines a column.
+	pub(crate) fn via_secondary_key(&self) -> bool {
+		match self {
+			Expr::Op(op, args, _) => {
+				op.starts_with(SECONDARY_KEY_FN) || args.iter().any(Expr::via_secondary_key)
+			},
+			Expr::HOp(_, args, _, _) => args.iter().any(Expr::via_secondary_key),
+			Expr::Var(_, _) | Expr::Log(_) | Expr::Agg(_) => false,
 		}
 	}
 

@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::ops::Range;
 use std::time::Instant;
 
 use imbl::{vector, HashSet, Vector};
@@ -90,15 +91,17 @@ pub fn min_subst<'c>(
 	let level = subst.len();
 	let bound = level..level + scope.len();
 	let vars = bound.clone().map(VL);
-	let var_groups = vars.clone().map(|v| {
-		(
-			v,
-			cong.iter()
-				.find(|&&(_, e)| e == &normal::Expr::Var(v, e.ty()))
-				.map(|(g, _)| groups.get(g).unwrap()),
-		)
-	});
-	let mut new_scope = Vector::new();
+	let var_groups = vars
+		.clone()
+		.map(|v| {
+			(
+				v,
+				cong.iter()
+					.find(|&&(_, e)| e == &normal::Expr::Var(v, e.ty()))
+					.map(|(g, _)| groups.get(g).unwrap()),
+			)
+		})
+		.collect_vec();
 	let mut keys: HashSet<_> = vars.clone().collect();
 	let mut deps_map = BTreeMap::new();
 
@@ -109,32 +112,67 @@ pub fn min_subst<'c>(
 		HashSet::unions(vars.iter().map(|&v| saturate(v, deps_map)))
 	}
 
-	let (exprs, mut var_subst) = var_groups
-		.zip(scope.clone())
-		.map(|((v, es), ty)| {
-			keys.remove(&v);
-			if let Some((_, deps, expr)) = es
-				.into_iter()
-				.flatten()
-				.filter_map(|&expr| {
-					let deps = expr.deps(&bound);
-					let root_deps = root_deps(&deps, &deps_map);
-					root_deps.is_subset(&keys).then(|| (root_deps.len(), deps, expr))
-				})
-				.min_by_key(|a| a.0)
-			{
-				log::info!("[dep] {} -> {}", v, expr);
-				deps_map.insert(v, deps);
-				(expr.clone(), None)
-			} else {
-				keys.insert(v);
-				let new_v = VL(context.len() + new_scope.len());
-				log::info!("[key] {} ~> {}", v, new_v);
-				new_scope.push_back(ty.clone());
-				(normal::Expr::Var(v, ty.clone()), Some(Expr::Var(new_v, ty)))
-			}
-		})
-		.unzip();
+	// Picks the expression with the fewest root dependencies, all of which must still be keys.
+	fn choose<'e>(
+		es: Option<&Vec<&'e normal::Expr>>,
+		bound: &Range<usize>,
+		keys: &HashSet<VL>,
+		deps_map: &BTreeMap<VL, HashSet<VL>>,
+		secondary: bool,
+	) -> Option<(HashSet<VL>, &'e normal::Expr)> {
+		es.into_iter()
+			.flatten()
+			.filter(|expr| secondary || !expr.via_secondary_key())
+			.filter_map(|&expr| {
+				let deps = expr.deps(bound);
+				let root_deps = root_deps(&deps, deps_map);
+				root_deps.is_subset(keys).then(|| (root_deps.len(), deps, expr))
+			})
+			.min_by_key(|a| a.0)
+			.map(|(_, deps, expr)| (deps, expr))
+	}
+
+	// With two keys on a table, each key's columns can be expressed through the other's, and the
+	// greedy pass below would eliminate whichever comes first. One query could then sum over one
+	// key and an equivalent query over the other, which unification cannot match. So expressions
+	// through a secondary key are only tried, in a second pass, for the variables the first pass
+	// kept. Without such expressions the second pass eliminates nothing.
+	let mut exprs =
+		vars.clone().zip(scope.clone()).map(|(v, ty)| normal::Expr::Var(v, ty)).collect_vec();
+	let mut kept = vec![];
+	for (i, &(v, es)) in var_groups.iter().enumerate() {
+		keys.remove(&v);
+		if let Some((deps, expr)) = choose(es, &bound, &keys, &deps_map, false) {
+			log::info!("[dep] {} -> {}", v, expr);
+			deps_map.insert(v, deps);
+			exprs[i] = expr.clone();
+		} else {
+			keys.insert(v);
+			kept.push(i);
+		}
+	}
+	kept.retain(|&i| {
+		let (v, es) = var_groups[i];
+		keys.remove(&v);
+		if let Some((deps, expr)) = choose(es, &bound, &keys, &deps_map, true) {
+			log::info!("[dep] {} -> {}", v, expr);
+			deps_map.insert(v, deps);
+			exprs[i] = expr.clone();
+			false
+		} else {
+			keys.insert(v);
+			true
+		}
+	});
+	let mut new_scope = Vector::new();
+	let mut var_subst: Vector<_> = exprs.iter().map(|_| None).collect();
+	for i in kept {
+		let (v, ty) = (VL(level + i), scope[i].clone());
+		let new_v = VL(context.len() + new_scope.len());
+		log::info!("[key] {} ~> {}", v, new_v);
+		new_scope.push_back(ty.clone());
+		var_subst[i] = Some(Expr::Var(new_v, ty));
+	}
 	// Ensures v is mapped to some Expr
 	fn prune<'c>(
 		v: VL,

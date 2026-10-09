@@ -17,6 +17,11 @@ fn vars(level: usize, types: Vector<DataType>) -> Vector<syntax::Expr> {
 	types.into_iter().enumerate().map(|(i, ty)| syntax::Expr::Var(VL(level + i), ty)).collect()
 }
 
+/// Prefix of the functions through which a table's secondary keys (every key after the first)
+/// determine its other columns. `stable::min_subst` keeps the first key's columns as summation
+/// variables in preference to these, so adding a key does not change which column a sum ranges over.
+pub const SECONDARY_KEY_FN: &str = "rpu!";
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Relation {
@@ -150,9 +155,13 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 									}
 								});
 							let pk = Logic::Pred(format!("rpk!{}-{}", t, j), keys.clone());
+							let prefix = if j == 0 { "rpn!" } else { SECONDARY_KEY_FN };
 							let pa = args.into_iter().enumerate().map(move |(i, arg)| {
-								let f =
-									Op(format!("rpn!{}-{}-{}", t, i, j), keys.clone(), arg.ty());
+								let f = Op(
+									format!("{}{}-{}-{}", prefix, t, i, j),
+									keys.clone(),
+									arg.ty(),
+								);
 								Logic::Eq(arg, f)
 							});
 							pa.chain(once(pk))
