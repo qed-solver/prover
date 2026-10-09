@@ -1,4 +1,3 @@
-use std::iter::once;
 use std::ops::{Mul, Not};
 
 use imbl::{vector, Vector};
@@ -143,18 +142,27 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 					let app = UExpr::Neu(Neutral(Head::Var(VL(t)), vars.clone()));
 					app.clone() * UExpr::squash(app)
 				} else {
+					// The first key determines every other column. A later key only has to determine
+					// the first key's columns, which then determine the rest; making every column a
+					// function of every key would only add terms for `stable::stablize` to relate.
+					let first = &schema.primary[0];
 					let key_constraints =
 						schema.primary.iter().enumerate().flat_map(|(j, cols)| {
 							use shared::Expr::*;
-							let (keys, args): (Vec<_>, Vec<_>) =
-								vars.iter().cloned().enumerate().partition_map(|(i, v)| {
+							let (keys, args): (Vec<_>, Vec<_>) = vars
+								.iter()
+								.cloned()
+								.enumerate()
+								.filter(|(i, _)| j == 0 || cols.contains(i) || first.contains(i))
+								.partition_map(|(i, v)| {
 									if cols.contains(&i) {
 										Either::Left(v)
 									} else {
 										Either::Right(v)
 									}
 								});
-							let pk = Logic::Pred(format!("rpk!{}-{}", t, j), keys.clone());
+							let pk = (j == 0)
+								.then(|| Logic::Pred(format!("rpk!{}-{}", t, j), keys.clone()));
 							let prefix = if j == 0 { "rpn!" } else { SECONDARY_KEY_FN };
 							let pa = args.into_iter().enumerate().map(move |(i, arg)| {
 								let f = Op(
@@ -164,7 +172,7 @@ impl Eval<Relation, syntax::Relation> for Env<'_> {
 								);
 								Logic::Eq(arg, f)
 							});
-							pa.chain(once(pk))
+							pa.chain(pk)
 						});
 					UExpr::pred(key_constraints.product())
 				};
