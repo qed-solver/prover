@@ -1,7 +1,7 @@
 # The QED Prover
 
 This is a SQL query equivalence prover in Rust aiming for high performance and wide SQL feature coverage.
-For details, please see our [VLDB 2024 paper](https://www.vldb.org/pvldb/vol17/p3602-wang.pdf).
+For details, please see our [VLDB 2024 paper](https://www.vldb.org/pvldb/vol17/p3602-wang.pdf). 
 
 ## Install
 
